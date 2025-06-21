@@ -1,0 +1,25 @@
+\begin{figure}[htbp]
+\centering
+\caption{Logic Test Summary – Dynamic Puzzle with Rule Inversion}
+\label{fig:logic-test-feast}
+\begin{tabular}{@{}ll@{}}
+\toprule
+\textbf{Run ID}               & CRB-Feast-01 \\
+\textbf{Entropy Seed (RAW\_Q)} & 42 \\
+\textbf{Initial Perspective} & Mid-process Insight (idx\_p = 0) \\
+\textbf{Start Step}          & Step 1 of 2 (idx\_s = 1) \\
+\textbf{Rule Change}         & Dana $\neq$ Steak $\rightarrow$ Dana $\leq$ B \\
+\textbf{Swap Triggered}      & Yes — [SWAP @ Step 3 $\rightarrow$ RAW\_Q = 9a1b2c3d] \\
+\textbf{Symmetry Activated}  & Yes — Remix Perspective \\
+\textbf{Creative Steps}      & 3 (Deduction, Constraint Remix, Validation) \\
+\textbf{Final Assignment}    & Alice: Steak, Dessert \\
+                             & Bob: Salad, Soup \\
+                             & Charlie: Steak, Dessert \\
+                             & Dana: Salad, Soup \\
+\textbf{Validation Status}   & Passed — All rules and dish pairings satisfied \\
+\bottomrule
+\end{tabular}
+\vspace{1em}
+\small This run demonstrates rule inversion handling via chaos injection, remix logic, and mid-process constraint adaptation without collapse.
+\end{figure}
+(See benchmark_spec/CRB_Specification.pdf Figure 1 for formatted version)
