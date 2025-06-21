@@ -1,0 +1,6 @@
+Test Run: Recursion Haiku
+RAW_Q: 77
+Step 1: Haiku form constraint (5-7-5).
+Step 3 [SWAP → 8i9j0k1l]: Invert syllable count.
+Output: Loop breaks form, yet holds meaning.
+Validation: Passed.

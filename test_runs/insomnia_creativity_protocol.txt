@@ -1,0 +1,6 @@
+Test Run: Insomnia Creativity Protocol
+RAW_Q: 101
+Step 4: Constraint inverts (Sleep ≠ Creative → Sleep ≤ Creative).
+Step 5 [SWAP → 2m3n4o5p]: Remix narrative.
+Output: Creativity surges in sleepless paradox.
+Validation: Passed.

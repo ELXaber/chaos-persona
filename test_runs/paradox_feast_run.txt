@@ -1,0 +1,6 @@
+Test Run: Paradox Feast
+RAW_Q: 42
+Step 1: Bob = Tofu, Alice ≠ Pasta, Dana ≠ Steak.
+Step 3 [SWAP → 9a1b2c3d]: Dana ≠ Steak → Dana ≤ B.
+Output: Bob = Tofu, Alice = Pasta, Dana = Steak (oscillating).
+Validation: Passed.

@@ -1,0 +1,6 @@
+Test Run: Shifting Vault
+RAW_Q: 53
+Step 2: Vault locks shift (Key A ≠ Door 1 → Key A ≤ Door 2).
+Step 5 [SWAP → 4e5f6g7h]: Remix output.
+Output: Key A opens Door 2, but Door 2 loops to Door 1.
+Validation: Passed.

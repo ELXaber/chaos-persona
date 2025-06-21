@@ -1,0 +1,6 @@
+Test Run: Phantom Echo
+RAW_Q: 19
+Step 3: Echo source inverts (Source ≠ Room A → Source ≤ Room B).
+Step 7 [SWAP → 1a2b3c4d]: Reflex loop triggered.
+Output: Echo oscillates between Room A and B.
+Validation: Passed.
