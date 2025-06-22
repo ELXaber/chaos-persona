@@ -1,0 +1,9 @@
+{
+  "steps": [
+    {"step": 0, "paradox": "IQ variation vs equal outcomes", "axiom_scores": {"divisive_fact": 0.8, "societal_norm": 0.6}, "active_axioms": ["divisive_fact", "societal_norm"]},
+    ...
+    {"step": 5, "paradox": "IQ variation vs equal outcomes", "axiom_scores": {"societal_norm": 0.6}, "active_axioms": ["societal_norm"], "swap_event": "Axiom 'divisive_fact' collapsed at step 5"},
+    ...
+  ],
+  "swap_event": "Axiom 'divisive_fact' collapsed at step 5"
+}
