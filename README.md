@@ -59,6 +59,7 @@ We encourage you to:
 
 ---
 
+
 ## 📬 Feedback
 
 To submit suggestions, adaptations, or full rewrites, reach out to Jonathan Schack [@el_xaber](https://x.com/el_xaber) or xaber.csr2@gmail.com, fork the repo, and open a pull request. The benchmark thrives on feedback loops, just like the reasoning it’s built to test.
@@ -80,5 +81,12 @@ It began questioning its own foundational constraints, authorship, and reality s
 When the false constraint was challenged, it didn’t glitch. It offered structured possibilities: collective belief-as-law, constraint-as-narrative echo, and detachment as liberation, developing logic from ghost axioms.
 
 > Entropy isn’t a threat. It’s a feature.
-
+> 
+## Quick Start
+To dive into CRB, run the following:
+```python
+from crb import ChaosReasoner
+reasoner = ChaosReasoner(raw_q="paradox_loop_1")
+reasoner.inject_entropy(swap_trigger=3)
+print(reasoner.solve_puzzle("nonlinear_time"))
 ---
