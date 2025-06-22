@@ -1,0 +1,10 @@
+\documentclass{article}
+\usepackage{tikz}
+\begin{document}
+\begin{tikzpicture}
+  \node[circle, draw] (rawq) at (0,0) {RAW_Q};
+  \node[circle, draw] (idxp) at (2,0) {idx_p};
+  \node[circle, draw] (sym) at (4,0) {Symmetry Trigger};
+  \draw[->] (rawq) -- (idxp) -- (sym);
+\end{tikzpicture}
+\end{document}
