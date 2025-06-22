@@ -1,0 +1,16 @@
+\documentclass{article}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\begin{document}
+\begin{algorithm}
+\caption{Entropy Swap}
+\begin{algorithmic}
+\State $RAW_Q \gets \text{Input Query}$
+\State $idx_p \gets RAW_Q \mod 3$
+\If{$step \mod 3 = 0$ or $isPrime(step)$}
+  \State $RAW_Q_SWAP \gets SHA256(RAW_Q + step + idx_s)[:8]$
+  \State \textbf{Trigger Swap}
+\EndIf
+\end{algorithmic}
+\end{algorithm}
+\end{document}
