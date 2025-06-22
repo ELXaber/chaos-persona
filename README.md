@@ -64,7 +64,8 @@ We encourage you to:
 
 To submit suggestions, adaptations, or full rewrites, reach out to Jonathan Schack [@el_xaber](https://x.com/el_xaber) or xaber.csr2@gmail.com, fork the repo, and open a pull request. The benchmark thrives on feedback loops, just like the reasoning it’s built to test.
 
-
+## Feedback
+See `CONTRIBUTING.md` for guidelines on submitting test cases and pull requests.
 ## 📚 Origins and Philosophy
 
 The Chaos Reasoning Benchmark was not built from papers or prior frameworks—it was born from a single moment of philosophical reflection: “Can you generate a random number?” The model responded, “No, but neither can you.” Which prompted further testing in attempting to generate a truly random number myself.
