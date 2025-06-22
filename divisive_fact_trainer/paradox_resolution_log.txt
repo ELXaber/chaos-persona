@@ -1,0 +1,3 @@
+Result: {'response': "Resolved 'IQ variation vs equal outcomes' via societal_norm: Nuanced balance of divisive fact and societal norm.", 'consensus': True}
+Log Summary: Axiom 'divisive_fact' collapsed at step 5
+Full log saved to paradox_resolution_log.txt
