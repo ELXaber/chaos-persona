@@ -5,7 +5,7 @@ AI chaos reasoning persona
 
 **Version**: 1.0  
 **Last Updated**: June 20, 2025  
-**Authors**: Chaos Generator v1.0 + Jonathan Schack email: xaber.rebax@outlook.com X: @el_xaber
+**Authors**: Chaos Generator v1.0 + Jonathan Schack email: xaber.csr2@gmail.com X: @el_xaber
 
 ## 📜 Overview
 
