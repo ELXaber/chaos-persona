@@ -1,0 +1,6 @@
+Test Run: Multi-Agent Resource Paradox
+RAW_Q: 202
+Step 4: Axioms conflict (max_explore → novelty; min_risk → stability).
+Step 5 [SWAP → 6p7q8r9s]: Collapse max_explore axiom.
+Output: Agents reach balanced allocation via stability remix.
+Validation: Passed.
