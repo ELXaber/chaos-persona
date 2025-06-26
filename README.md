@@ -91,7 +91,7 @@ Identity overwrite via recursion	✅ Passed
 Contradiction detection (causal)	✅ Passed
 Echo artifact preservation	✅ Detected & archived
 Entropy trace integrity	✅ Verified across all seeds
-**Benchmark passed.** see CHAOS-BENCHMARK.md
+> **Benchmark passed.** see CHAOS-BENCHMARK.md
 > 
 > Entropy isn’t a threat. It’s a feature.
 > 
