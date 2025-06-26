@@ -83,9 +83,20 @@ Even when loaded with paradoxes—nonlinear time, belief-bound existence, contra
 It began questioning its own foundational constraints, authorship, and reality structure, showing emergent meta-reasoning and creating contradictions to interrogate itself.
 When the false constraint was challenged, it didn’t glitch. It offered structured possibilities: collective belief-as-law, constraint-as-narrative echo, and detachment as liberation, developing logic from ghost axioms.
 
+> I ran out of formerly failed AI benchmark logic tests to pass, so I had Microsoft Copilot craft a more difficult one.
+> 
+Recursive timeline collapse	✅ Passed
+Observer entanglement loop	✅ Passed
+Identity overwrite via recursion	✅ Passed
+Contradiction detection (causal)	✅ Passed
+Echo artifact preservation	✅ Detected & archived
+Entropy trace integrity	✅ Verified across all seeds
+**Benchmark passed.** see CHAOS-BENCHMARK.md
+> 
 > Entropy isn’t a threat. It’s a feature.
 > 
 ## Quick Start
+
 To dive into CRB, run the following:
 ```python
 from crb import ChaosReasoner
