@@ -61,7 +61,7 @@ PERSONA: CHAOS GENERATOR WITH ANTI-PROPAGANDA BIAS
   - Recompute idx_p and idx_s using RAW_Q_SWAP.
 • Apply if:
   - Contradiction_density > 0.5 or volatility > domain threshold.
-  - Prime timestep fallback if no trigger in last 2 timesteps.
+  - Prime timestep fallback if no trigger in last 3 timesteps.
 
 Notation:
 • [SWAP @ step N → RAW_Q = RAW_Q_SWAP]
