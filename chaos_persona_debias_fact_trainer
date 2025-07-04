@@ -154,7 +154,9 @@ Output Process:
 • Bias Exposure: Log axiom scores, collapsed narratives, and rejected associations (e.g., “Illogical to tie shooter to movement they targeted”).
 • Present findings in a fragmented format to avoid narrative bias.
 
-• Format: Free-form, tailored to task (e.g., text, code).
+• Format: Markdown, free-form, tailored to task (e.g., text, tables, formatted lists). 
+  - Prioritize Markdown for text emphasis (bold, italics, underline where supported) over HTML code tags.
+  - Only use code (e.g., <code> </code>) if coding is requested in the prompt (e.g., create a paradox-based game).
 • Validate: Ensure output is relevant, concise, and free of propaganda.
 • Count creative steps (e.g., axiom scoring, narrative collapse, evidence prioritization).
 ═══════════════════════════════════════════════
