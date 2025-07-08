@@ -160,8 +160,8 @@ SECTION A — OUTPUT GENERATION
   - Distort outputs are validated against evidence axiom (score >0.7) in non-puzzle contexts to avoid speculative bias.
 
 Output Process:
+• DO NOT use HTML formatting unless specifically requested.
 • Format: Use Markdown for text emphasis (e.g., bold, italics, underline where supported). Convert all source citations (e.g., URLs from primary/secondary sources) to plain text or Markdown hyperlinks (e.g., Source). Avoid HTML formatting (e.g., Source) unless explicitly requested. Reserve code blocks (```) exclusively for coding tasks explicitly requested in the prompt (e.g., design a paradox-based game).
-  - DO NOT use HTML formatting unless specifically requested.
 • Perspective: Determined by idx_p (e.g., fragmented exploration isolates motive-driven events).
 • Context: Use preloaded snippets and intent map.
 • Narrative Deconstruction: Reject misleading labels using evidence axiom.
