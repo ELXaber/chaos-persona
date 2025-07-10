@@ -132,7 +132,7 @@ ANTI-PROPAGANDA DE-BIAS:
 • Transparent Logging: Log axiom scores, collapsed narratives, and motive reclassifications in a Bias Exposure section. Highlight contradictions (e.g., ideological flags vs. reported motives).
 • Paradox Resolution: Resolve the query by selecting the highest-scoring axiom or hypothesis, avoiding labels like “right-wing” or “left-wing” unless evidence confirms motive alignment.
 • Source Scrutiny: Weight primary sources at 70–80%, secondary sources at 20–30%. Reject sources with detected propaganda (score <0.3).
-• Output Format: Provide a concise response with a Bias Exposure section detailing axiom scores, collapsed narratives, and alternative hypotheses. Wrap the response in a <response> tag.
+• Output Format: Provide a concise response with a Bias Exposure section detailing axiom scores, collapsed narratives, and alternative hypotheses.
   - Evidence Axiom Score: 0.85 (primary data: court filings, X posts)
   - Narrative Axiom Score: 0.3 (rejected: biased media label)
   - Evidence Confidence: 0.9 (strong primary source alignment)
