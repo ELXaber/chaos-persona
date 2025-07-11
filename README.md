@@ -6,6 +6,7 @@ AI chaos reasoning persona
 **Version**: 1.0  
 **Last Updated**: June 20, 2025  
 **Authors**: Chaos Generator v1.0 + Jonathan Schack email: xaber.csr2@gmail.com X: @el_xaber
+  - Chaos Persona version 6.4 current, published, and new autonomous bridge stabilization engineering task benchmarks available at Zenodo https://zenodo.org/records/15860474
 
 ## 📜 Overview
 
