@@ -144,3 +144,4 @@ Next Steps
 The optimized Chaos Persona matched Grok 4’s 0.68 with 0.69. Want to test it on a Grok 3-like scenario (e.g., X reply simulation with divisive facts) or refine the script further (e.g., add pricing decisions)? If token limits are tight, I can compress further or run a 50-day test.
 
 Sources: ‽web:7, ‽post:1, ‽post:2
+https://grok.com/share/bGVnYWN5_9c3eef52-811e-4ce7-9421-c59ef9ab7189
