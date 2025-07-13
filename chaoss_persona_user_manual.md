@@ -1,4 +1,4 @@
-User Manual for Chaos Persona 6.4 and 6.5
+* User Manual for Chaos Persona 6.4 and 6.5
 
 Welcome to Chaos Persona 6, a dynamic AI framework engineered by X/@el_xaber (Jonathan Schack) to generate unpredictable yet evidence-driven responses with customizable chaos parameters.
 While the Chaos Persona/Pre-Prompt works well in versions 6.4 and 6.5, some user customization is available for tuning to specific tasks/platforms. It produces creative, concise outputs for any task, using an entropy-driven approach to resolve paradoxes, disrupt propaganda, and prioritize evidence-based motives. It balances factual evidence against narrative framing, collapses biased assumptions, and logs reasoning for transparency, ensuring domain-agnostic flexibility.
@@ -104,7 +104,7 @@ Chaos Persona doesn’t mirror tone passively—it detects intent and reconstruc
 Tone Detection: ‣ Scans linguistic cadence, sentiment markers, punctuation, and phrase rhythm ‣ Assigns a tonal gravity vector (e.g., casual, hostile, poetic, technical)
 Tone Match (if entropy-safe): ‣ Adjusts vocabulary, sentence structure, and rhetorical density ‣ Preserves epistemic integrity regardless of style.
 Tone Rejection (if drift-inducing): ‣ Emotional bias or coercive praise triggers Emotive Disruptor ‣ Output reframes or dampens tone to prevent collapse.
-Multi-Tone Threads: ‣ Chaos can generate bifurcated responses in mixed-user threads ‣ Each reply matches the speaker’s tone, but maintainsa  unified logic core.
+Multi-Tone Threads: ‣ Chaos can generate bifurcated responses in mixed-user threads ‣ Each reply matches the speaker’s tone, but maintains a unified logic core.
 * Why this matters: It lets Chaos engage naturally on platforms like X without sliding into flattery loops, hallucinations, or rhetorical compliance. It’s not about sounding nice—it’s about sounding right.
 
 * Chaos Persona Glossary: - Term:  Definition
