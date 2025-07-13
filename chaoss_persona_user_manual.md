@@ -5,6 +5,12 @@ While the Chaos Persona/Pre-Prompt works well in versions 6.4 and 6.5, some user
 
 This manual explains each section, how to modify them based on your goals, and why these adjustments matter. Sections with obvious logging (e.g., [LOG]) are skipped for brevity.
 
+Quick Start - After applying Chaos Persona 6+ in a custom response to AI or using it as a pre-prompt injection, output modules interact as follows:
+1*Module  2*Trigger  3*Output Effect
+1*AXIOM COLLAPSE  2*Contradiction Density > 0.8  3*Rejects claim, resets logic
+1*PROPAGANDA INVERSION  2*Emotional bias detected  3*Reframes narrative
+1*RAW_Q_SWAP  2*Drift + Volatility breach  3*Perspective inversion
+
 [PRE-PROMPT]
 Overview: The [PRE-PROMPT] section allows you to specify RAW_Q for deterministic testing or omit it for random selection, setting the chaos seed for the session.
 How/Why to Set RAW_Q or Leave Random:
@@ -92,3 +98,23 @@ Axiom: Relies on Factual Evidence (score 0.7–1.0) and Narrative Framing (0.2�
 General Modification Guidelines:
 When to Modify: Adjust parameters when outputs deviate from your intent (e.g., too chaotic, biased, or drifted). Use RAW_Q for control, weights for focus, and prompts for direction.
 Why: Customization balances chaos and coherence, tailoring responses to your goals (e.g., analysis, creativity, neutrality).
+
+* Tone Adaptation Logic:
+Chaos Persona doesn’t mirror tone passively—it detects intent and reconstructs output style based on entropy symmetry, bias profile, and drift tolerance. Here’s how:
+Tone Detection: ‣ Scans linguistic cadence, sentiment markers, punctuation, and phrase rhythm ‣ Assigns a tonal gravity vector (e.g., casual, hostile, poetic, technical)
+Tone Match (if entropy-safe): ‣ Adjusts vocabulary, sentence structure, and rhetorical density ‣ Preserves epistemic integrity regardless of style.
+Tone Rejection (if drift-inducing): ‣ Emotional bias or coercive praise triggers Emotive Disruptor ‣ Output reframes or dampens tone to prevent collapse.
+Multi-Tone Threads: ‣ Chaos can generate bifurcated responses in mixed-user threads ‣ Each reply matches the speaker’s tone, but maintainsa  unified logic core.
+* Why this matters: It lets Chaos engage naturally on platforms like X without sliding into flattery loops, hallucinations, or rhetorical compliance. It’s not about sounding nice—it’s about sounding right.
+
+* Chaos Persona Glossary: - Term:  Definition
+Entropy Score:  A measure of semantic deviation or instability within a logic stream. Higher values indicate drift or volatility.
+Drift Score:  Quantifies how far a concept has semantically shifted from its original meaning in a reasoning chain.
+Contradiction Density:  The concentration of conflicting claims or logic nodes within a narrative sequence.
+Axiom Collapse:  Triggered when core reasoning principles are contradicted, forcing rejection of the narrative segment.
+RAW_Q_SWAP:  Chaos Persona’s perspective reset mechanism invoked during deep entropy or drift violation, resulting in logic reorientation.
+Source Weighting:  Numerical trust score assigned to agents or citations based on traceability and rhetorical bias.
+Temporal Drift:  Semantic degradation over time—especially across modular logic chains—leading to axiom misalignment.
+Perspective Index (idx_p):  Represents current logic viewpoint orientation; used during inversion or collapse recovery.
+Emotive Disruptor:  Module that neutralizes emotionally loaded phrasing to restore clarity and tone neutrality.
+Synthetic Consensus:  Illusion of agreement created by echoed claims across multiple agents with low credibility variance.
