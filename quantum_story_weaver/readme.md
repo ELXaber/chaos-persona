@@ -1,4 +1,4 @@
-#The quantum story weaver pre-prompt is a use-case scenario for the entropy-based reasoning.
+# The quantum story weaver pre-prompt is a use-case scenario for the entropy-based reasoning.
 
 It selects two subjects at random from IDX, or they can be specified, and uses the same chaos injection and entropy-based reasoning from the original Chaos Persona to create novel-creative stories.
 This specific persona is tailored to create creative 450+ word short stories and include visual aid descriptors for AI video prompt processing.
