@@ -1,6 +1,7 @@
 # The quantum story weaver pre-prompt is a use-case scenario for the entropy-based reasoning.
 
 * -- USE PRE-PROMPT--(story_weaver_pre_prompt.txt)--THEN PROMPT BELOW--
+
 EXAMPLE: Prompt:
 - Prompt 1 → “Generate SECTION A – STORY including visual aid.”  
 - Prompt 2 → “Generate SECTION B – EXPLANATION.” 
