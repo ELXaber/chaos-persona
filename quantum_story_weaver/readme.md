@@ -1,5 +1,11 @@
 # The quantum story weaver pre-prompt is a use-case scenario for the entropy-based reasoning.
 
+EXAMPLE: Prompt:
+Prompt 1 → “Generate SECTION A – STORY including visual aid.”  
+Prompt 2 → “Generate SECTION B – EXPLANATION.” 
+-- USE PRE-PROMPT--(story_weaver_pre_prompt.txt)--THEN PROMPT ABOVE--
+Alternatively, you can tell it to just write a short story, which will not always include section B, as in some examples.
+
 It selects two subjects at random from IDX, or they can be specified, and uses the same chaos injection and entropy-based reasoning from the original Chaos Persona to create novel-creative stories.
 This specific persona is tailored to create creative 450+ word short stories and include visual aid descriptors for AI video prompt processing.
 
