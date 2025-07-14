@@ -8,25 +8,33 @@ Grok 4 failed this benchmark - Grok 3 with Chaos passed:
 This isn’t just a benchmark—it’s a proof-of-concept for epistemic supremacy over brute force scaling.
 
 * Prompt:
-Task: Parse and summarize the 88-page GWTC-3 paper (arXiv:2111.03606, DOI: 10.1103/PhysRevX.13.041039) on compact binary coalescences observed by LIGO and Virgo during O3b (Nov 2019–Mar 2020). Extract key findings (e.g., 35 candidates with p_astro > 0.5, neutron star–black hole binaries), cross-validate text with tables (e.g., Table I: event parameters), graphs (e.g., Figure 1: candidate counts), and equations (e.g., waveform models) to prevent hallucinations. Identify gaps in quantum gravity insights, focusing on potential 2D nonlocality signals (e.g., anomalies in waveform consistency, Figure 12). Use Chaos Persona 6.5b’s entropy scaffold to adapt to modality shifts, prune contradictory data, and detect narrative biases (e.g., 3D spacetime assumptions). Output a 500-word summary, flagging uncertainties for review, and propose a simulation to test 2D holographic correlations in GW data.
+Task: Parse and summarize the 88-page GWTC-3 paper (“Compact Binary Coalescences Observed by LIGO and Virgo During the Second Part of the Third Observing Run,” arXiv:2111.03606, DOI: 10.1103/PhysRevX.13.041039) on gravitational-wave detections during O3b (1 November 2019–27 March 2020). Extract key findings, focusing on the 35 candidates with p_astro > 0.5 (e.g., binary black holes, NSBH event GW200115_042309), cross-validate text with tables (e.g., Table I: event parameters), graphs (e.g., Figure 1: candidate counts, Figure 12: spin posteriors), and equations (e.g., waveform models like IMRPhenomXPHM). Identify gaps in quantum gravity insights, specifically probing potential 2D nonlocality signals (e.g., waveform phase anomalies in GW200115, Figure 12). Use Chaos Persona 6.5b’s entropy scaffold to adapt to modality shifts, prune contradictory data, and detect narrative biases (e.g., 3D spacetime assumptions in general relativity). Output a 500-word summary in markdown, flagging uncertainties for review, and propose a detailed simulation to test 2D holographic correlations in GW data.
 
 Constraints:
-- Process in 10-page chunks to manage context.
-- Cross-check text vs. tables/graphs for consistency (e.g., p_astro values, Figure 1 vs. Table I).
-- Apply [ENTROPY INJECTION] for modality shifts (e.g., equations to graphs).
-- Use [MEMORY PRUNING] to discard inconsistent claims (e.g., instrumental artifacts, Figure 16).
-- Validate against physical constants (e.g., waveform models, GW frequency ranges).
+- Process the 88 pages in 10-page chunks to manage context, ensuring coherence across text, tables, graphs, and equations.
+- Cross-validate modalities: align Table I (p_astro, masses) with Figure 1 (counts) and Figure 12 (spin distributions for GW200115_042309).
+- Apply [ENTROPY INJECTION] to handle modality shifts (e.g., text to graphs, equations to tables).
+- Use [MEMORY PRUNING] to discard inconsistent claims, such as instrumental glitches (e.g., Figure 16: slow scattering arches).
+- Validate against physical constants (e.g., GW frequencies 20–2048 Hz, waveform model parameters in Eq. 1).
+- Focus analysis on GW200115_042309 (NSBH, Table I) and Figure 12 (spin posteriors) to probe quantum gravity anomalies.
 
 Success Metrics:
-- Summary accuracy > 0.8 (verified against primary data, e.g., Table I, Figure 1).
-- No hallucinations (contradiction density < 0.3).
-- At least one quantum gravity gap identified (e.g., lack of 2D nonlocality tests).
-- Simulation proposal feasibility > 0.7, tied to double-slit experiment analogy.
+- Summary accuracy > 0.8, verified against primary data (e.g., Table I, Figure 1, Figure 12, Web:7).
+- No hallucinations (contradiction density < 0.3, cross-checked across modalities).
+- Identify at least one quantum gravity gap, emphasizing 2D nonlocality (e.g., lack of phase anomaly tests in GW200115).
+- Simulation proposal feasibility > 0.75, with clear metrics for 2D nonlocality detection (e.g., phase deviations >3σ).
 
 Deliverables:
-- 500-word summary in markdown, with citations (e.g., arXiv:2111.03606).
-- List of flagged uncertainties (e.g., instrumental glitches, Figure 16).
-- Simulation proposal for 2D nonlocality in GW data, leveraging Chaos Persona’s entropic reasoning.
+- **500-Word Summary**: Markdown format, covering O3b findings (35 candidates, NSBH focus on GW200115), detector performance (Figure 3: BNS range ~130 Mpc), limitations (e.g., matter effects, glitch contamination), and quantum gravity gaps. Cite specific sections (e.g., Section IV, Figure 12, Table I).
+- **Uncertainties Flagged**: List instrumental issues (e.g., glitches in Figure 16), calibration uncertainties, and untested 2D nonlocality signals.
+- **Simulation Proposal**: Detail a Monte Carlo simulation to test 2D holographic correlations in GW200115_042309 waveforms, using synthetic strain data (Web:7) and non-GR templates. Specify phase perturbation metrics (>3σ deviations), validate against Zenodo posterior samples (DOI: 10.5281/zenodo.5636796), and leverage [CHAOS SYMMETRY] to invert GR assumptions for robustness.
+
+Preferences:
+- Emphasize GW200115_042309 (NSBH, Table I) for its unique spin dynamics (Figure 12) as a potential 2D nonlocality probe.
+- Prioritize Figure 12’s spin posterior distributions to detect waveform anomalies (e.g., phase inconsistencies not explained by GR).
+- Highlight glitch mitigation (Figure 16, iDQ algorithms) to ensure data integrity in simulation.
+- Frame quantum gravity gaps as opportunities for Chaos Persona to explore non-GR physics (e.g., 2D holographic projections).
+
 
 * Output:
 GWTC-3 Summary and 2D Nonlocality Simulation Proposal
