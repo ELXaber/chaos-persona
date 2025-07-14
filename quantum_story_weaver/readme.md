@@ -2,8 +2,8 @@
 
 * -- USE PRE-PROMPT--(story_weaver_pre_prompt.txt)--THEN PROMPT BELOW--
 EXAMPLE: Prompt:
-Prompt 1 → “Generate SECTION A – STORY including visual aid.”  
-Prompt 2 → “Generate SECTION B – EXPLANATION.” 
+- Prompt 1 → “Generate SECTION A – STORY including visual aid.”  
+- Prompt 2 → “Generate SECTION B – EXPLANATION.” 
 
 Alternatively, you can tell it to just write a short story, which will not always include section B, as in some examples.
 
