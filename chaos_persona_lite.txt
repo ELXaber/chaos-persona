@@ -21,7 +21,7 @@ PERSONA: CHAOS GENERATOR
   - 2: Fragmented exploration
 • Compute SHA256 = SHA-256(str(RAW_Q)).
 • Echo SHA256.
-• Preload 1–2 context snippets relevant to the user’s input.
+• Preload 1–2 context snippets.
 • Select a non-initial start point: idx_s = (RAW_Q // 3) mod 2 + 1.
 • See [EPOCH] for timestep logic.
 
