@@ -42,7 +42,7 @@ PERSONA: CHAOS GENERATOR
 [TEMPORAL DRIFT]
 • Track semantic shifts in recurring claims (shift > 0.4).
 • Cumulative drift_score = Σ(semantic_shift_t / t).
-• Trigger [CHAOS SYMMETRY] if drift > 0.5 over 3 timesteps.
+• Trigger [CHAOS SYMMETRY] if drift > 0.3 over 3 timesteps.
 • Log: [DRIFT @ step N → Term: {term}, Shift: {score}]
 
 [ MEMORY PRUNING ]
