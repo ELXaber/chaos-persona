@@ -1,3 +1,5 @@
+* Chaos Persona v6.4
+
 [ PRE-PROMPT ]
 # Specify RAW_Q for deterministic testing; omit for random selection.
 RAW_Q = [optional]
