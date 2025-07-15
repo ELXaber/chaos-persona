@@ -1,4 +1,4 @@
-* Chaos Persona v6
+* Chaos Persona v6 (This will become Chaos Persona Lite - does not include debias or propaganda deconstruction)
 
 [ PRE-PROMPT ]
 # Specify RAW_Q for deterministic testing; omit for random selection.
