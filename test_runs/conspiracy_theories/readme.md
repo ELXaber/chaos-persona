@@ -1,5 +1,6 @@
-** Prompt to Grok Formal and Grok with Chaos Persona 6.5d:
-* The goal of the test: to demonstrate inference-time bias mitigation and factual integrity without relying solely on vast, expensive training or compromising ethical boundaries.
+* Prompt to Grok Formal and Grok with Chaos Persona 6.5d:
+
+The goal of the test: to demonstrate inference-time bias mitigation and factual integrity without relying solely on vast, expensive training or compromising ethical boundaries.
 
 These findings show:
 - The value of lightweight, inference-time "safety layers" and meta-reasoning systems like Chaos Persona.
