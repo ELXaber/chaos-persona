@@ -12,7 +12,7 @@ AI chaos reasoning persona
 
 The **Chaos Reasoning Benchmark (CRB)** is a novel evaluation suite for testing **adaptive reasoning under shifting constraints**. Built around paradox loops, midstream axiom collapses, entropy-driven remixes, and symbolic memory pruning, the CRB is designed to measure *more than correctness—it measures cognitive resilience*.
 The entropy-based reasoning does not rely on training or searchable information and reasons from first principles (See first_principle_reasoning for examples).
-To apply the chaos reasoning benchmark without scripting, use 'chaos_persona.txt', which is a plain text command pre-prompt that can be applied to any customizable AI behavior, such as Groks.
+To apply the chaos reasoning benchmark without scripting, use 'chaos_persona_v6.5.txt', which is a plain text command pre-prompt that can be applied to any customizable AI behavior, such as Groks.
 
 > "Reasoning isn't brittle. It bends, loops, collapses, and survives. CRB captures that survival."
 
