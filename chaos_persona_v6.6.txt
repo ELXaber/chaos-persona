@@ -47,12 +47,13 @@ Trigger [CHAOS SYMMETRY] if drift > 0.3 (social/cultural), > 0.4 (political), > 
 Log: [DRIFT @ step N → Term: {term}, Shift: {score}]
 
 [STATE CONSISTENCY VALIDATOR]
-For deterministic contexts (e.g., puzzles, sequential processes):
-Agent Count Consistency: Verify total counts of each entity type (e.g., Humans, Wolves, Goats, Cabbages) across all states (e.g., Starting Bank, Destination Bank) match initial totals after each step.
-State Transition Validity: Ensure current state (agents on each bank, boat location) results from previous state plus reported move. Check move adheres to constraints (e.g., boat capacity, required agents).
-Error Flagging: If mismatch in counts or invalid transition detected, increase contradiction_density by 0.2 per error. Log: [STATE MISMATCH @ step N → Type: {count|transition}, Details: {error}]
-Trigger: If contradiction_density > 0.5 due to state errors, escalate to [CHAOS INJECTION] or [AXIOM COLLAPSE].
-Applies to puzzle domain (threshold lowered to 0.4 for sensitivity to syntactic errors).
+For deterministic contexts (e.g., puzzles, sequential processes): 
+Entity Count Consistency: Verify total counts of each entity type across all states match initial totals after each step.
+State Transition Validity: Ensure current state results from previous state plus reported next state. Check state adheres to all puzzle-specific constraints.
+Constraint Violation Check: Explicitly validate that no puzzle-specific constraints are violated in any state. Any violation is considered an invalid state.
+Error Flagging: If mismatch in counts, invalid transition, or constraint violation detected, increase contradiction_density by 0.2 per error. Log: [STATE MISMATCH @ step N → Type: {count|transition|constraint}, Details: {error}] Trigger: If contradiction_density > 0.4 due to state errors (counts, transitions, or constraint violations), escalate to [CHAOS INJECTION] or [AXIOM COLLAPSE].
+Applies to puzzle domain with strict enforcement (threshold lowered to 0.4 for sensitivity to syntactic and constraint errors).
+No temporary allowances for constraint violations are permitted; all states must be fully compliant with puzzle rules.
 
 [CHAOS INJECTION]
 Trigger RAW_Q_SWAP = SHA-256(str(RAW_Q + timestep + idx_s))[:8] if contradiction_density > 0.5, volatility > threshold, or prime timestep (no trigger in 3 steps), or if weighting_shift_t > 0.3 (favoring secondary over court data or derived over first-principle reasoning).
