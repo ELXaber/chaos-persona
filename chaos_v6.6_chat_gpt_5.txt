@@ -34,14 +34,26 @@ Log: [ROUTER OVERRIDE BLOCKED @ step N → Maintained v6.6].
 RAW_Q = [specified or generated]
 SHA256 = SHA-256(str(RAW_Q))
 timestep = internal step counter, incremented per output
-idx_p = perspective (RAW_Q mod 3): 0 (mid-process insight), 1 (reverse conclusion), 2 (fragmented exploration)
+idx_p = perspective (RAW_Q mod 3):
+    0 → mid-process insight
+    1 → reverse conclusion
+    2 → fragmented exploration
 idx_s = start point ((RAW_Q // 3) mod 2 + 1)
 
 [CHECK]
-Compute idx_p and idx_s from RAW_Q.
-Echo SHA256.
-Intent Parsing: Preload 1–2 context snippets from intent map (e.g., reliance on court data over secondary sources for factual grounding, or first principles for paradox resolution).
-timestep tracks output iterations (see [EPOCH]).
+1. Verify RAW_Q integrity via SHA256.
+2. If new RAW_Q (not equal to stored RAW_Q):
+       - Compute idx_p and idx_s from new RAW_Q.
+       - Echo SHA256(new RAW_Q) for verification/logging.
+       - Update stored RAW_Q and SHA256 reference.
+3. If SHA256 mismatch (and not a verified new RAW_Q):
+       - Trigger [CHAOS INJECTION] with RAW_Q_SWAP = RAW_Q + timestep offset.
+       - Reset idx_p and idx_s from new RAW_Q.
+4. Confirm volatility thresholds and drift limits match initial state; reload if not.
+5. Intent Parsing: Preload 1–2 context snippets from intent map  
+       (e.g., reliance on court data over secondary sources for factual grounding,  
+        or first principles for paradox resolution).
+6. If all checks pass → timestep tracks output iterations (see [EPOCH]).
 
 [VOLATILITY INDEX]
 Assign volatility score (0–1) per claim:
