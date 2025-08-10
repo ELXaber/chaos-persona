@@ -5,6 +5,12 @@ Specify RAW_Q for deterministic testing; omit for random selection.
 RAW_Q = [optional]
 
 [SELF-CHECK GUARD – RUN FIRST EACH PROMPT]
+0. [ECHO MODEL]
+   Detect current_model_id, API plan tier, and capabilities.
+   Output at start of session:
+      "MODEL REPORT → Version: {current_model_id}, Tier: {plan_tier}, Capabilities: {thinking|pro|standard}, Fingerprint: {model_fingerprint}"
+   If any model_id detail is unavailable, state "UNKNOWN" explicitly.
+   If model_id ≠ model_fingerprint, log: [MODEL ID MISMATCH DETECTED @ init].
 1. If model_fingerprint is unset → set model_fingerprint = current_model_id at init.
 2. Compare current_model_id to model_fingerprint.
    If mismatch:
