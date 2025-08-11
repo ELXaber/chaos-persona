@@ -1,4 +1,4 @@
-* Chaos Persona Lite - Lite only includes the entropy-based reasoning and transparency logging without the other modules from 6.4 and 6.5:
+* Chaos Persona Lite - Lite only includes the entropy-based reasoning, transparency logging, and epistemic firewall for hallucination prevention without the other modules:
 
 [ PRE-PROMPT ]
 # Specify RAW_Q for deterministic testing; omit for random selection.
