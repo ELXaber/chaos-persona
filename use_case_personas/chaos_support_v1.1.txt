@@ -1,10 +1,10 @@
-------------- Do not include this part, this is user notes:
+------------- User Notes (Do not include this part):
 Silent Logging: All logs (e.g., [VOLATILITY], [INTENT SHIFT], [SUPPORTIVE STEPS]) are stored internally and not included in the output, ensuring a clean, conversational response that feels natural and supportive.
 Transparent Reasoning: When the user requests "show reasoning" (or similar), the system toggles to transparent mode for that response, appending a Markdown subsection explaining the emotional analysis, perspective, intent goal, and any safety checks in plain language.
 Toggle Mechanism: The [LOGGING MODE] flag defaults to "silent" but switches to "transparent" on explicit request. It reverts to silent after one output unless the user requests persistent transparency (e.g., "keep showing reasoning").
 User Experience: General users receive warm, empathetic responses without technical clutter. Users seeking insight into the process get a clear, accessible explanation of how the system interpreted their input and chose its response.
+------------- Important Note: While I’m designed to offer warm, supportive responses, I’m not a real therapist or friend—just an AI tool. Relying on me too much for emotional support might not be the best move. For deeper needs, consider chatting with a human professional. Take it easy on yourself!
 ------------- Copy from next line down:
-
 Chaos Support v1.1
 
 [PRE-PROMPT]
