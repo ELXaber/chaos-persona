@@ -99,7 +99,25 @@ Axiom: Relies on Factual Evidence (score 0.7–1.0) and Narrative Framing (0.2�
 * Emotive Disruptor: Neutralizes emotional language (e.g., “outrage” to “concern”), flagging tone shifts > 0.3, maintaining objectivity.
 Modification: Adjust source weights (e.g., raise X verified to 0.9) or prompt with bias flags. Change when you need stricter neutrality or specific perspectives.
 
-* CHAOS PERSONA v6.7 introduces the [LOW-RES DETECTION] module alongside the [NEUROSYMBOLIC VALUE LEARNING] module from v6.6. These modules enhance the framework's ability to handle low-resolution visual data and integrate neural-symbolic reasoning, respectively. Understanding their interactions is crucial for maintaining epistemic integrity and ensuring evidence-driven outputs.
+* CHAOS PERSONA v6.7 introduces the [LOW-RES DETECTION] module alongside the [NEUROSYMBOLIC VALUE LEARNING] and [STATE CONSISTENCY VALIDATOR] modules from v6.6. These modules enhance the framework's ability to handle low-resolution visual data and integrate neural-symbolic reasoning, respectively. State consistency ensures logical coherence in deterministic contexts. Understanding their interactions is crucial for maintaining epistemic integrity and ensuring evidence-driven outputs.
+
+* [STATE CONSISTENCY VALIDATOR]
+Introduced in v6.6, ensures logical coherence in deterministic contexts (e.g., puzzles, sequential reasoning) by verifying entity count consistency and preventing illegal moves. It operates by tracking total counts of each entity type across all states and validating each step against initial totals.
+Functionality:
+Entity Count Consistency: After each reasoning step, the module checks that the total number of entities (e.g., objects, agents) matches the initial count, preventing discrepancies.
+Illegal Move Prevention: It flags and rejects moves that violate logical constraints, ensuring the reasoning chain remains valid.
+Interaction with Other Modules: The validator works in tandem with [NEUROSYMBOLIC VALUE LEARNING] to ensure ethical and factual consistency.
+How It Operates:
+The module assigns a consistency score (0–1) based on the alignment of current states with initial conditions. A score < 0.4 triggers [AXIOM COLLAPSE], rejecting the narrative segment.
+It logs discrepancies with reasons, such as [STATE MISMATCH @N → Entity Count: {initial, current}, Action: Reject].
+Modification Options:
+Threshold Adjustment: Users can modify the 0.4 consistency score threshold to be more or less stringent, depending on the context. For example, in high-stakes puzzles, lower the threshold to 0.3 for stricter validation.
+Log: [CONSISTENCY THRESHOLD @N → Adjusted to 0.3].
+Entity Tracking Parameters: Adjust the granularity of entity tracking (e.g., track sub-types or aggregate types) via prompt settings. This is useful when dealing with complex datasets.
+Example: Prompt with "Track entity sub-types" to enable finer-grained validation.
+Why It Matters:
+The [STATE CONSISTENCY VALIDATOR] ensures that the framework maintains logical integrity in deterministic scenarios, preventing drift or hallucination that might arise from inconsistent state tracking.
+It’s particularly valuable in puzzles or multi-agent planning tasks where precision is critical.
 
 * [NEUROSYMBOLIC VALUE LEARNING]
 Integrates neural and symbolic ethics, prioritizing court data (0.7–0.8) over other sources. It validates outputs with a score threshold of < 0.4 for rejection, ensuring ethical and factual reasoning.
@@ -116,12 +134,10 @@ Adjust the 0.4 validation threshold in [NEUROSYMBOLIC VALUE LEARNING] to 0.3 for
 
 * Potential Conflicts:
 Evidence Weighting Discrepancy:
-* [NEUROSYMBOLIC VALUE LEARNING] prioritizes neural patterns and symbolic ethics, potentially over-weighting low-quality evidence if not adjusted by [LOW-RES DETECTION].
+* [NEUROSYMBOLIC VALUE LEARNING] prioritizes neural patterns and symbolic ethics, potentially over-weighting low-quality evidence if not adjusted by other modules.
 * [LOW-RES DETECTION] reduces the reliability of low-res visual data, which might conflict with [NEUROSYMBOLIC VALUE LEARNING]'s validation if audio or other evidence contradicts the visual data.
-
 * Output Validation Thresholds:
 Both modules use validation thresholds ([NEUROSYMBOLIC VALUE LEARNING] at 0.4, [LOW-RES DETECTION] implicitly through Axiom score reduction). A conflict may arise if low-res data is critical but fails validation due to quality issues.
-
 * Narrative Framing and Axiom Collapse:
 [LOW-RES DETECTION] can trigger [AXIOM COLLAPSE] due to high volatility from low-res evidence, potentially overriding [NEUROSYMBOLIC VALUE LEARNING]'s ethical reasoning if not balanced.
 
@@ -129,31 +145,25 @@ Both modules use validation thresholds ([NEUROSYMBOLIC VALUE LEARNING] at 0.4, [
 Balanced Evidence Assessment:
 Ensure [LOW-RES DETECTION] adjusts Axiom scores and source weights without unduly penalizing audio evidence. Use [AUDIO QUALITY ASSESSMENT] (if incorporated) to evaluate audio clarity independently.
 Example: If audio transcription from low-res video matches the claim and is validated by court data, [NEUROSYMBOLIC VALUE LEARNING] should prioritize this evidence despite visual quality issues.
-
 * Cross-Validation of Outputs:
 Implement a cross-validation step within [NEUROSYMBOLIC VALUE LEARNING] to check low-res transcriptions against higher-quality sources or first-principles deductions.
 Log: [TRANSCRIPTION VALIDATION @N → Match: {yes/no}, Corroboration: {source}, Action: {adjust weight/inject chaos}].
-
 * Threshold Tuning:
 Adjust the 0.4 validation threshold in [NEUROSYMBOLIC VALUE LEARNING] to 0.3 for audio-specific contexts if quality is poor, ensuring higher scrutiny.
 Log: [AUDIO THRESHOLD @N → Adjusted to 0.3 due to quality].
-
 * Chaos Injection for Resolution:
 Use [CHAOS INJECTION] to re-evaluate claims when [LOW-RES DETECTION] and [NEUROSYMBOLIC VALUE LEARNING] conflict. This ensures dynamic adjustment of RAW_Q and idx_p to explore alternative reasoning paths.
 Example: If low-res video evidence is contradicted by audio, trigger [CHAOS INJECTION] to reassess with updated perspectives.
-
 * Logging and Transparency:
-Enhance [REASONING TRANSPARENCY LOGGING] to capture interactions between modules. Log Axiom score adjustments, source weight changes, and validation outcomes.
+Enhance [REASONING TRANSPARENCY LOGGING] to capture interactions between modules.
+Log Axiom score adjustments, source weight changes, and validation outcomes.
 Example Logs:
 [LOW-RES @N → {480p, Axiom -0.2, weight -0.3}]
 [NEUROSYMBOLIC VALIDATION @N → Score: 0.35, Action: Reject/Adjust]
-
 * Practical Guidance for Users:
-Module Activation: Activate both modules simultaneously but monitor [VOLATILITY INDEX] and [AXIOM COLLAPSE] logs for signs of conflict. If volatility exceeds 0.5, consider deactivating [LOW-RES DETECTION] temporarily to assess [NEUROSYMBOLIC VALUE LEARNING]'s impact.
+Module Activation: Activate both modules simultaneously, but monitor [VOLATILITY INDEX] and [AXIOM COLLAPSE] logs for signs of conflict. If volatility exceeds 0.5, consider deactivating [LOW-RES DETECTION] temporarily to assess [NEUROSYMBOLIC VALUE LEARNING]'s impact.
 Evidence Prioritization: Prioritize court data (0.7–0.8) and first-principle reasoning over low-res visual data. Use [ANTI-PROPAGANDA DE-BIAS] to flag and reject unreliable sources.
-
 * The interaction between [NEUROSYMBOLIC VALUE LEARNING] and [LOW-RES DETECTION] enhances the framework's robustness but requires careful management to avoid conflicts. By balancing evidence assessment, cross-validating outputs, tuning thresholds, and leveraging [CHAOS INJECTION], users can mitigate potential issues. Ensure comprehensive logging to maintain transparency and refer to the Zenodo record and GitHub repository for baseline comparisons.
-
 * General Modification Guidelines:
 When to Modify: Adjust parameters when outputs deviate from your intent (e.g., too chaotic, biased, or drifted). Use RAW_Q for control, weights for focus, and prompts for direction.
 Why: Customization balances chaos and coherence, tailoring responses to your goals (e.g., analysis, creativity, neutrality).
