@@ -25,8 +25,8 @@ Quick Start - After applying Chaos Persona 6+ in a custom response to AI or usin
 - Modification: Set a new value in [PRE-PROMPT] to alter the chaos trajectory. Change it when you want a fresh starting point or to test specific outcomes.
 * SHA256:
 - Role: A hash (e.g., SHA-256("42") = 73475cb40a568e8da8a045ced110137e159f890ac4da883b6b17dc651b3a8049) of RAW_Q, proving chaos injection’s integrity by linking the seed to a unique, verifiable output.
--- Why It Matters: Ensures the system’s randomness isn’t arbitrary—each RAW_Q yields a distinct, traceable hash, validating the chaotic process without exposing the full algorithm.
---  Modification: No direct adjustment; it auto-updates with RAW_Q changes.
+- Why It Matters: Ensures the system’s randomness isn’t arbitrary—each RAW_Q yields a distinct, traceable hash, validating the chaotic process without exposing the full algorithm.
+- Modification: No direct adjustment; it auto-updates with RAW_Q changes.
 * timestep = internal step counter:
 - Role: Increments per output (e.g., 30), tracking the session’s progression.
 -- Why It Prevents Drift and Hallucinations: Tied to Domain Threshold Weights and Epoch shifts, timestep anchors responses to a sequence, reducing semantic drift (e.g., “whistleblower” → “traitor”) by enforcing consistency over time. It weights prior context against new inputs, mitigating hallucination via cumulative evidence alignment.
