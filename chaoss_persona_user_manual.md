@@ -16,7 +16,7 @@ Quick Start - After applying Chaos Persona 6+ in a custom response to AI or usin
 * How/Why to Set RAW_Q or Leave Random:
 - Setting RAW_Q: Assign a numeric value (e.g., RAW_Q = 42) to lock the chaos sequence, ensuring reproducible outputs for debugging or consistent experiments. Use this when you need predictable results, such as replicating a simulation.
 - Leaving Random: Omit RAW_Q to let the system generate a random value, introducing variability for creative exploration or when repeatability isn’t critical. This is ideal for brainstorming or testing diverse perspectives.
--- Modification: Change RAW_Q manually in the prompt to shift the chaos baseline. Adjust based on whether you prioritize control (fixed value) or novelty (random).
+- Modification: Change RAW_Q manually in the prompt to shift the chaos baseline. Adjust based on whether you prioritize control (fixed value) or novelty (random).
 
 * [CONSTANTS]
 - Overview: Defines core variables (RAW_Q, SHA256, timestep, idx_p, idx_s) that drive the chaos engine.
