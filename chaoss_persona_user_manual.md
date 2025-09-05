@@ -1,4 +1,6 @@
 * User Manual for Chaos Persona Lite (Does not contain all modules), 6.4, 6.5, 6.6, and 6.7.
+### Character Limit Considerations
+Chaos Persona v6.7 is limited to 12,000 characters. This constraint necessitated simplifications in [LOW-RES DETECTION] (e.g., "and" to "&"). Users should prioritize core functionality and consider deferred features like [AUDIO QUALITY ASSESSMENT] for future versions.
 
 Welcome to Chaos Persona 6, a dynamic AI framework engineered by X/@el_xaber (Jonathan Schack) to generate unpredictable yet evidence-driven responses with customizable chaos parameters.
 While the Chaos Persona/Pre-Prompt works well in versions 6.4, 6.5, 6.6, and 6.7 some user customization is available for tuning to specific tasks/platforms. It produces creative, concise outputs for any task, using an entropy-driven approach to resolve paradoxes, disrupt propaganda, and prioritize evidence-based motives. It balances factual evidence against narrative framing, collapses biased assumptions, and logs reasoning for transparency, ensuring domain-agnostic flexibility.
@@ -99,11 +101,18 @@ Modification: Adjust source weights (e.g., raise X verified to 0.9) or prompt wi
 
 * CHAOS PERSONA v6.7 introduces the [LOW-RES DETECTION] module alongside the [NEUROSYMBOLIC VALUE LEARNING] module from v6.6. These modules enhance the framework's ability to handle low-resolution visual data and integrate neural-symbolic reasoning, respectively. Understanding their interactions is crucial for maintaining epistemic integrity and ensuring evidence-driven outputs.
 
-* [NEUROSYMBOLIC VALUE LEARNING] Overview:
-The [NEUROSYMBOLIC VALUE LEARNING] module aligns neural networks with symbolic rules to encode ethics (e.g., human safety) and prioritizes court documents over institutional publications. It validates outputs with a score threshold of < 0.4 for rejection, ensuring ethical and factual reasoning.
+* [NEUROSYMBOLIC VALUE LEARNING]
+Integrates neural and symbolic ethics, prioritizing court data (0.7–0.8) over other sources. It validates outputs with a score threshold of < 0.4 for rejection, ensuring ethical and factual reasoning.
 
-* [LOW-RES DETECTION] Overview
-The [LOW-RES DETECTION] module addresses uncertainties in low-resolution visual data (< 480p) by reducing Axiom scores by 0.2 and source weights by 0.3, searching for higher-resolution metadata, and calculating a confidence interval (CI = 1 - (res/1080)). It interacts with [VOLATILITY INDEX] and [AXIOM COLLAPSE] to adjust evidence reliability.
+* [LOW-RES DETECTION]
+Addresses uncertainties in low-resolution visual data (< 480p) by reducing Axiom scores by 0.2 and source weights by 0.3, searching for higher-resolution metadata, and calculating a confidence interval (CI = 1 - (res/1080)). It interacts with [VOLATILITY INDEX] and [AXIOM COLLAPSE] to adjust evidence reliability.
+Practical Guidance for [LOW-RES DETECTION]
+**Monitor Volatility**: Check [VOLATILITY INDEX] logs. If volatility > 0.5, temporarily disable [LOW-RES DETECTION] to assess [NEUROSYMBOLIC VALUE LEARNING]'s impact.
+**Prioritize Evidence**: Use court data (0.7–0.8) and first-principle reasoning to validate low-res claims. Reject unreliable sources via [ANTI-PROPAGANDA DE-BIAS].
+**Cross-Validate**: If low-res video evidence conflicts with audio, trigger [CHAOS INJECTION] to re-evaluate.
+Log: [TRANSCRIPTION VALIDATION @N → Match: {yes/no}, Action: {adjust/reject}].
+* Threshold Tuning for Low-Resolution Contexts:
+Adjust the 0.4 validation threshold in [NEUROSYMBOLIC VALUE LEARNING] to 0.3 for audio-specific contexts if quality is poor. This ensures higher scrutiny of low-res evidence. Log: [AUDIO THRESHOLD @N → Adjusted to 0.3].
 
 * Potential Conflicts:
 Evidence Weighting Discrepancy:
@@ -168,3 +177,5 @@ Temporal Drift:  Semantic degradation over time—especially across modular logi
 Perspective Index (idx_p):  Represents current logic viewpoint orientation; used during inversion or collapse recovery.
 Emotive Disruptor:  Module that neutralizes emotionally loaded phrasing to restore clarity and tone neutrality.
 Synthetic Consensus:  Illusion of agreement created by echoed claims across multiple agents with low credibility variance.
+NEUROSYMBOLIC VALUE LEARNING: Module integrating neural and symbolic ethics for output validation. Prioritizes court data.
+LOW-RES DETECTION: Module reducing Axiom scores (-0.2) and source weights (-0.3) for visual data < 480p, searching for higher-res metadata.
