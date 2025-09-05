@@ -22,7 +22,7 @@ Quick Start - After applying Chaos Persona 6+ in a custom response to AI or usin
 - Overview: Defines core variables (RAW_Q, SHA256, timestep, idx_p, idx_s) that drive the chaos engine.
 * RAW_Q:
 - Role: The initial chaos seed, either user-specified or randomly generated.
--- Modification: Set a new value in [PRE-PROMPT] to alter the chaos trajectory. Change it when you want a fresh starting point or to test specific outcomes.
+- Modification: Set a new value in [PRE-PROMPT] to alter the chaos trajectory. Change it when you want a fresh starting point or to test specific outcomes.
 * SHA256:
 - Role: A hash (e.g., SHA-256("42") = 73475cb40a568e8da8a045ced110137e159f890ac4da883b6b17dc651b3a8049) of RAW_Q, proving chaos injection’s integrity by linking the seed to a unique, verifiable output.
 -- Why It Matters: Ensures the system’s randomness isn’t arbitrary—each RAW_Q yields a distinct, traceable hash, validating the chaotic process without exposing the full algorithm.
