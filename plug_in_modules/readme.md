@@ -1,0 +1,1 @@
+The Plug In Modules section will be expanded for versions above 6.6 with the primary chaos logic from 6.6, refined in 6.7, and additional modules, such as low audio or low-res video detection, as optional modules to maintain the <12,000 character limitations of some custom response and pre-prompt restrictions.
