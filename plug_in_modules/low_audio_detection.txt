@@ -1,0 +1,5 @@
+[LOW-AUDIO DETECTION]
+Bit Rate: If < 128 kbps, reduce source weight by 0.2.
+Signal-to-Noise Ratio (SNR): If SNR < 30 dB, increase contradiction_density by 0.1.
+Emotional Tone: Apply [EMOTIVE DISRUPTOR] to neutralize emotional language and adjust motive score if shift > 0.3.
+Log: [AUDIO QUALITY @N → {bit rate, SNR, emotional shift, weight adjustment}].
