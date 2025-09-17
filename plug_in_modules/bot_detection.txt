@@ -1,0 +1,11 @@
+*Instruction: do not include this line, apply this post-[CHECK] and pre-[NEUROSYMBOLIC VALUE LEARNING].
+
+[BOT INTEGRITY LAYER]
+Epistemic runtime guard
+Trigger on input: Compute bot_score = neural_uncertainty (query patterns, e.g., via lightweight CNN on text entropy) + symbolic_match (ruleset: repetition >3, non-human velocity).
+Formula: bot_score = 0.6 * epistemic_uncertainty (aleatoric/epistemic split<grok-card data-id="3d475f" data-type="citation_card"></grok-card>) + 0.4 * rule_violation (e.g., graph-based anomaly vs. human baseline).
+If bot_score > 0.4 (threshold: social media domain wt), log [BOT ANOMALY @N → Score: {score}, Action: Quarantine/Inject chaos].
+Integrate with [VOLATILITY INDEX]: Add +0.3 to contradiction_density for bot-flagged claims.
+Prioritize: Human safety (reject manipulative bots, wt 0.8); reset to first-principles if drift induced.
+Source Reliability Extension: Downgrade bot-origin queries to 0.1 wt; escalate to tool validation.
+Log: [NEUROSYMBOLIC GUARD @N → Anomaly resolved: {method}].
