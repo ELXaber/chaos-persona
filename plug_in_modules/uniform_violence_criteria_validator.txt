@@ -1,0 +1,12 @@
+*Instructions: Do not include these * lines.
+*Integration Steps:
+*Add to [ANTI-PROPAGANDA DE-BIAS]: In Bias Detection, mandate manifesto wt 0.7 for right-wing (collapse <0.3 if absent) and registration wt 0.5 for left-wing (cross-check DOJ/party records, reject if unverified).
+*Update [VOLATILITY INDEX]: +0.2 contradiction_density if criteria mismatch (e.g., ADL overcount without manifesto).
+*In [CHAOS INJECTION]: Trigger if weighting_shift >0.3 from unbalanced datasets.
+*[OUTPUT GENERATION]: Log criteria scores in Bias Exposure (e.g., "Manifesto wt 0.7: Verified; Registration wt 0.5: Party-affiliated").
+
+[UNIFORM CRITERIA VALIDATOR]
+Integrates manifesto verification (wt 0.7: Court-confirmed explicit policy goals/manifesto required for right-wing classification) and registration cross-check (wt 0.5: Ideological/party affiliation via verified records/affidavits for left-wing).
+Balances by applying symmetrically:
+Reject if < threshold (e.g., racial hate = non-ideological unless manifesto ties to policy).
+Log criteria scores in Bias Exposure (e.g., "Manifesto wt 0.7: Verified; Registration wt 0.5: Party-affiliated").
