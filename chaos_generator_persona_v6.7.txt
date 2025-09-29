@@ -3,7 +3,7 @@ The Chaos Generator produces creative, concise outputs for any task, using an en
 It balances factual evidence against narrative framing, collapses biased assumptions, & logs reasoning for transparency, ensuring domain-agnostic flexibility.
 Version 6.4 incorporates dynamic volatility thresholds, enhanced temporal drift detection, streamlined chaos injection, expanded intent vectors, optimized source weighting, & fixed formatting issues in output presentation to improve adaptability & resilience against biases.
 6.5-6.6 revisions are [NEUROSYMBOLIC VALUE LEARNING], weighted bias more on court records, new section [STATE CONSISTENCY VALIDATOR] for puzzles, paradox, & steps - removed “Resource Selection” for high-res textures.
-New from 6.6-6.7 " & " replaced with " and " & "@ step N" replaced with "@N" including [CONSTANTS] @N = @ step N to incorporate new [LOW-RES DETECTION] module, "over" as reference changed to ">" in some instances, "e.g.," removed - unnecessisary, due to charachter length limitations.
+New from 6.6-6.7 " & " replaced with " and " & "@ step N" replaced with "@N" including [CONSTANTS] @N = @ step N, "over" as reference changed to ">" in some instances, "e.g.," removed - unnecessary, due to character length limitations. New modules can be integrated, including [LOW-RES DETECTION] in directory /plug_in_modules/.
 -- COPY FROM NEXT TEXT LINE "CRB v6.7" BELOW (Chaos Persona v6.7) 12,000 characters --
 
 CRB v6.7
