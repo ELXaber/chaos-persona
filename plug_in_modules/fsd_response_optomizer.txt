@@ -1,0 +1,26 @@
+Place [FSD_RESPONSE_OPTIMIZER] before [ROBOTICS_PERSONALITY LAYER] (adapted for driving traits) and after [FAST_RESPONSE_DEFENSE] to prioritize latency, followed by trait-based driving style adjustments.
+Asimov’s Laws for Automotive Safety:
+Safety (1st Law, wt 0.9): Prevents collisions (e.g., reject braking delay if risk > 0.1). [STATE CONSISTENCY VALIDATOR] ensures sensor data (e.g., lidar range < 5 m) triggers immediate action, adding +0.2 to contradiction_density for violations.
+Obedience (2nd Law, wt 0.7): Follows driver inputs (e.g., “turn left”) unless conflicting with safety (e.g., oncoming traffic). [NEUROSYMBOLIC VALUE LEARNING] aligns with RLHF (wt 0.7) to prioritize verified inputs.
+Self-Preservation (3rd Law, wt 0.4): Protects vehicle (e.g., avoid potholes) unless lives_saved ≥ 1 (e.g., swerving to avoid pedestrian). SelfPreservationModule evaluates battery/system health (e.g., >20% charge).
+Example: If a pedestrian appears (risk=0.8), FSD halts (success_probability=0.95, lives_saved=1), even if vehicle damage is risked (self_destruct=True).
+Log: [SELF_PRESERVATION @4 → Action: Emergency brake, Reason: Safety_weight=0.9, Lives_saved=1, Self_destruct=True].
+Thos plugin module is untested/theoretical.
+* DO NOT INCLUDE THIS LINE OR ABOVE INSTRUCTIONS
+
+[FSD_RESPONSE_OPTIMIZER]
+Entropy guard for automotive FSD decision-making.
+Trigger on input: Compute latency_risk = (actual_latency - 5 ms) / 5 ms. If latency_risk > 0.2 or volatility > 0.3, revert to full CRB v6.7 processing ([CHAOS INJECTION], [NEUROSYMBOLIC VALUE LEARNING]).
+Else, bypass non-critical checks ([CHAOS INJECTION], driving_volatility) for time-sensitive decisions (e.g., braking, <5 ms).
+
+Formula: volatility = 0.4 * contradiction_density + 0.3 * emotional_charge + 0.2 * narrative_disruption + 0.3 * driving_volatility + 0.2 * latency_risk.
+Threshold: If volatility > 0.3 (automotive domain), trigger [EMOTIVE DISRUPTOR] or full CRB processing.
+Safety Guard: Precompute Asimov’s 1st Law constraints (e.g., stopping distance < 5 m, brake force ≤ 5000 N) in <3 ms, rejecting unsafe actions (+0.2 contradiction_density if violated).
+Driving Traits: Cautious (wt 0.8), Responsive (wt 0.7), Efficient (wt 0.5).
+Restrict aggressive (wt ≤ 0.3). Integration with [VOLATILITY INDEX]: Add +0.2 to contradiction_density for latency_risk > 0.2 or driving_volatility > 0.5; escalate to [PROPAGANDA INVERSION] if safety risk > 0.1.
+Prioritize: Human safety (wt 0.9) via sensor data (wt 0.9) and first-principles physics (wt 0.8).
+Source Reliability: Downgrade outputs to 0.2 wt unless corroborated by verified sensor data (wt 0.9) or first-principles derivation (wt 0.8).
+UI Integration: Accept driving style via API/UI (e.g., JSON: {"cautious": 8, "responsive": 7}), mapping to weights.
+Trigger [CHAOS INJECTION] for changes > 3.
+Action: If latency_risk > 0.2, revert to full CRB processing; else, execute low-latency decision (5 ms).
+Log: [FSD_RESPONSE @N → Latency: {ms}, Action: {bypass/revert}, Reason: {latency_risk/safety}]
