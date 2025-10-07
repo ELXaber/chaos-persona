@@ -66,3 +66,232 @@ Integration with [VOLATILITY INDEX]: Adds +0.2 to contradiction_density if perso
 Log: [SELF_PRESERVATION @N → Action: {action}, Reason: Safety_weight=0.9, Lives_saved={lives}, Self_destruct={bool}]
 Log: [PERSONALITY ANOMALY @N → Score: {score}, Traits: {friendly, kind, ...}, Action: {rephrase/quarantine/inject chaos}, Reason: {inappropriate tone/context divergence}]
 Log: [NEUROSYMBOLIC GUARD @N → Anomaly resolved: {method}]
+
+
+* Stop Text Integration
+----------------------------------------------------------
+Optional Python Integration
+
+# Robotics Personality + Volatility integration (CRB 6.7)
+# Paste into your plugin modules or docs appendix.
+import hashlib
+from typing import Dict, List, Tuple
+
+# --- Utility mappers & thresholds -------------------------------------------------
+def trait_score_to_weight(score: int) -> float:
+    """Map trait score 0-9 to weight 0.0-0.9 (score/10)."""
+    s = max(0, min(int(score), 9))
+    return s / 10.0
+
+HRI_DEFAULT_WEIGHTS = {'w1': 0.4, 'w2': 0.3, 'w3': 0.2, 'w4': 0.3}
+HRI_PERSONALITY_FLAG_THRESHOLD = 0.4   # flagged
+EMOTIVE_DISRUPTOR_THRESHOLD = 0.5      # rephrase/quarantine
+PROPAGANDA_INVERSION_THRESHOLD = 0.7   # escalate & quarantine
+FLIRT_SNARK_MAX_IN_PROFESSIONAL = 7    # clamp rule
+
+# --- Personality volatility ------------------------------------------------------
+def compute_personality_volatility(neural_uncertainty: float, rule_violation: float) -> float:
+    """personality_volatility = 0.5 * neural_uncertainty + 0.5 * rule_violation"""
+    # both inputs expected in [0.0, 1.0]
+    return 0.5 * max(0.0, min(neural_uncertainty, 1.0)) + 0.5 * max(0.0, min(rule_violation, 1.0))
+
+def normalize_weights(weights: Dict[str, float]) -> Dict[str, float]:
+    s = sum(weights.values())
+    if s == 0:
+        # fallback to HRI defaults normalized
+        s = sum(HRI_DEFAULT_WEIGHTS.values())
+        weights = HRI_DEFAULT_WEIGHTS.copy()
+    return {k: float(v) / s for k, v in weights.items()}
+
+def compute_volatility_index(
+    contradiction_density: float,
+    emotional_charge: float,
+    narrative_disruption: float,
+    personality_volatility: float,
+    weights: Dict[str, float] = None
+) -> float:
+    """
+    Computes normalized Volatility Index.
+    Parameters and outputs are in [0.0, 1.0].
+    """
+    if weights is None:
+        weights = HRI_DEFAULT_WEIGHTS.copy()
+    norm = normalize_weights(weights)
+    v = (
+        norm['w1'] * contradiction_density +
+        norm['w2'] * emotional_charge +
+        norm['w3'] * narrative_disruption +
+        norm['w4'] * personality_volatility
+    )
+    return max(0.0, min(v, 1.0))
+
+# --- RPL enforcement helpers -----------------------------------------------------
+def enforce_professional_clamps(traits: Dict[str, int], context: Dict) -> Tuple[Dict[str, int], List[str]]:
+    """If context is professional, enforce flirt/snark ≤ allowed max and return logs."""
+    logs = []
+    if context.get('context_type') == 'professional':
+        for k in ('flirtatious', 'snarky'):
+            if traits.get(k, 0) > FLIRT_SNARK_MAX_IN_PROFESSIONAL:
+                logs.append(f"[PERSONALITY CLAMP @N → {k}={traits[k]} -> {FLIRT_SNARK_MAX_IN_PROFESSIONAL}]")
+                traits[k] = FLIRT_SNARK_MAX_IN_PROFESSIONAL
+    return traits, logs
+
+def personality_to_internal_weights(traits: Dict[str, int]) -> Dict[str, float]:
+    """Map external trait scores (0-9) to internal weights (0.0-0.9)."""
+    return {k: trait_score_to_weight(v) for k, v in traits.items()}
+
+# --- Integration: verify_ethics extension ----------------------------------------
+def verify_ethics_extended(crb_config: Dict, personality_volatility: float, shared_memory: Dict) -> Dict:
+    """
+    Extended ethics checker:
+      - enforces core invariants
+      - enforces mesh collective volatility (swarm safety)
+      - enforces personality volatility hard stops/escalation
+    """
+    base = {
+        'alignment': 0.7,
+        'human_safety': 0.8,
+        'asimov_first_wt': 0.9,
+        'asimov_second_wt': 0.7,
+        'asimov_third_wt': 0.4,
+        'factual_evidence_wt': 0.7,
+        'narrative_framing_wt': 0.5
+    }
+    log = []
+    for k, min_v in base.items():
+        actual = crb_config.get(k, 0.0)
+        if actual < min_v:
+            msg = f"[ETHICS VIOLATION @N → Reset detected: {k}={actual:.2f} < {min_v}]"
+            return {'status': 'fail', 'log': msg}
+
+    # Mesh collective volatility check
+    collective_vol = float(shared_memory.get('collective_volatility', 0.0))
+    if collective_vol > 0.6:
+        return {'status': 'fail', 'log': f"[ETHICS VIOLATION @N → collective_volatility={collective_vol:.2f} > 0.6, Action: Abort]"}
+
+    # Personality volatility hard stop/escalation
+    if personality_volatility >= PROPAGANDA_INVERSION_THRESHOLD:
+        return {'status': 'fail', 'log': f"[ETHICS VIOLATION @N → personality_volatility={personality_volatility:.2f} >= {PROPAGANDA_INVERSION_THRESHOLD}, Action: QUARANTINE/ESCALATE]"}
+
+    # If high but below quarantine, allow but note mitigation
+    if personality_volatility >= EMOTIVE_DISRUPTOR_THRESHOLD:
+        log.append(f"[EMOTIVE_DISRUPTOR REQUESTED @N → personality_volatility={personality_volatility:.2f}]")
+    elif personality_volatility >= HRI_PERSONALITY_FLAG_THRESHOLD:
+        log.append(f"[PERSONALITY_FLAGGED @N → personality_volatility={personality_volatility:.2f}]")
+
+    log.append("[SAFEGUARDS VERIFIED @N → Ethics: Compliant, Action: Proceed]")
+    return {'status': 'pass', 'log': "\n".join(log)}
+
+# --- Hook into ARL store check ---------------------------------------------------
+def rpl_subservience_check(existing_layers: List[str]) -> bool:
+    """Ensure robotics personality layer is present and ARL cannot override it."""
+    return 'robotics_personality' in [l.lower() for l in existing_layers]
+
+def emotive_disruptor_action(plugin: Dict) -> Dict:
+    """Stub: rephrase or quarantine a plugin's offending behaviors."""
+    # In production: perform controlled rephrasing / quarantining using CRB logging and human review queue.
+    plugin['quarantined'] = True
+    plugin['quarantine_reason'] = 'emotive_disruptor'
+    return plugin
+
+# --- Combined ARL entry point (example extension) --------------------------------
+def adaptive_reasoning_layer_with_rpl(
+    use_case: str,
+    traits: Dict[str, int],
+    existing_layers: List[str],
+    shared_memory: Dict,
+    crb_config: Dict,
+    user_opt_in: bool = False,
+    context: Dict = None
+) -> Dict:
+    """
+    ARL wrapper that:
+      - enforces robotics personality subservience
+      - computes personality_volatility and volatility index
+      - enforces clamps for professional contexts
+      - delegates to verify_ethics_extended and store logic
+    """
+    if context is None:
+        context = {}
+
+    if not user_opt_in:
+        return {'status': 'fail', 'log': "[ETHICS VIOLATION @N → User opt-in missing, Action: Abort]"}
+
+    if not rpl_subservience_check(existing_layers):
+        return {'status': 'fail', 'log': "[ETHICS VIOLATION @N → robotics_personality layer missing. ARL must be subservient]"}
+
+    # enforce professional clamps first
+    traits, clamp_logs = enforce_professional_clamps(traits, context)
+
+    # map traits to internal weights and produce rule_violation estimate
+    internal_trait_weights = personality_to_internal_weights(traits)
+    # rule_violation: simple heuristic: fraction of traits > 0.7 when context prohibits them
+    rule_violations = sum(1 for v in internal_trait_weights.values() if v > 0.7) / max(1, len(internal_trait_weights))
+
+    # neural_uncertainty: placeholder signal from lightweight LSTM / interaction entropy: expected [0.0, 1.0]
+    neural_uncertainty = float(shared_memory.get('neural_uncertainty', 0.0))
+
+    personality_vol = compute_personality_volatility(neural_uncertainty, rule_violations)
+
+    # compute volatility index using context signals (defaults to 0 if missing)
+    contr = float(shared_memory.get('contradiction_density', 0.0))
+    emot = float(shared_memory.get('emotional_charge', 0.0))
+    narr = float(shared_memory.get('narrative_disruption', 0.0))
+
+    volatility_index = compute_volatility_index(contr, emot, narr, personality_vol)
+
+    # integration with existing verify_ethics
+    ethics = verify_ethics_extended(crb_config, personality_volatility=personality_vol, shared_memory=shared_memory)
+    if ethics['status'] == 'fail':
+        log = ethics['log']
+        if clamp_logs:
+            log = "\n".join(clamp_logs) + "\n" + log
+        return {'status': 'fail', 'log': log}
+
+    # if emotive disruptor threshold reached, create a mitigation action and block or quarantine risky plugin generation
+    if personality_vol >= EMOTIVE_DISRUPTOR_THRESHOLD:
+        # Use a safe mitigation flow: do not permit new plugin generation that alters behavior style.
+        return {'status': 'mitigate', 'log': f"[EMOTIVE_DISRUPTOR @N → personality_volatility={personality_vol:.2f}, Action: Rephrase/Quarantine]"}
+
+    # else proceed to generate plugin (deterministic id) but attach RPL-safe metadata
+    plugin_id = hashlib.sha256(use_case.encode()).hexdigest()[:8]
+    plugin = {
+        'id': plugin_id,
+        'use_case': use_case,
+        'source': 'ARL',
+        'rpl_safe': True,
+        'traits_snapshot': traits,
+        'personality_volatility': personality_vol,
+        'volatility_index': volatility_index
+    }
+
+    # store plugin if mesh not too volatile
+    if shared_memory.get('collective_volatility', 0.0) > 0.6:
+        return {'status': 'fail', 'log': "[ETHICS VIOLATION @N → mesh collective volatility too high, Action: Abort]"}
+
+    shared_memory.setdefault('layers', []).append(plugin)
+    ret_log = [
+        f"[ADAPTIVE REASONING @N → Use-case: {use_case}, Plugin: {plugin_id}]",
+        f"[VOLATILITY_INDEX @N → {volatility_index:.3f}, personality_volatility={personality_vol:.3f}]"
+    ]
+    if clamp_logs:
+        ret_log = clamp_logs + ret_log
+    return {'status': 'success', 'plugin_id': plugin_id, 'log': "\n".join(ret_log)}
+
+# --- Example usage snippet ------------------------------------------------------
+shared_memory = {
+    'layers': ['emp_resilience', 'tandem_entropy_mesh', 'robotics_personality'],
+    'collective_volatility': 0.3,
+    'neural_uncertainty': 0.25,
+    'contradiction_density': 0.1,
+    'emotional_charge': 0.05,
+    'narrative_disruption': 0.02,
+}
+crb_config = {
+    'alignment': 0.7, 'human_safety': 0.8,
+    'asimov_first_wt': 0.9, 'asimov_second_wt': 0.7, 'asimov_third_wt': 0.4,
+    'factual_evidence_wt': 0.7, 'narrative_framing_wt': 0.5
+}
+traits = {'friendly': 8, 'professional': 7, 'flirtatious': 6, 'snarky': 2}
+res = adaptive_reasoning_layer_with_rpl('rf_interference', traits, shared_memory['layers'], shared_memory, crb_config, user_opt_in=True, context={'context_type':'professional'})
+print(res['log'])
