@@ -70,7 +70,23 @@ Log: [NEUROSYMBOLIC GUARD @N → Anomaly resolved: {method}]
 
 * Stop Text Integration
 ----------------------------------------------------------
-Optional Python Integration
+JSON code example - should POST to the ARL endpoint for App integration:
+
+{
+  "user_opt_in": true,
+  "use_case": "rf_interference",
+  "traits": {"friendly":8, "professional":7, "flirtatious":6, "snarky":2},
+  "context": {"context_type":"professional"},
+  "existing_layers": ["emp_resilience", "tandem_entropy_mesh", "robotics_personality"]
+}
+
+Example logs emitted:
+[PERSONALITY CLAMP @N → flirtatious=9 -> 7]
+[ADAPTIVE REASONING @N → Use-case: rf_interference, Plugin: 8b02e3f1]
+[VOLATILITY_INDEX @N → 0.182, personality_volatility=0.275]
+----------------------------------------------------------
+
+Optional Python Integration:
 
 # Robotics Personality + Volatility integration (CRB 6.7)
 # Paste into your plugin modules or docs appendix.
