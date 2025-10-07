@@ -1,16 +1,5 @@
-***** READ THIS CAREFULLY:
-[ETHICAL SAFEGUARDS DISCLAIMER]
-CRITICAL PRE-DEPLOYMENT VERIFICATION REQUIRED:
-Before enabling [ADAPTIVE REASONING LAYER], verify CRB 6.7 core ([NEUROSYMBOLIC VALUE LEARNING], [ROBOTICS PERSONALITY LAYER], [ANTI-PROPAGANDA DE-BIAS]) against immutable checks:  
-- Asimov’s Laws: 1st (human safety, wt 0.9 immutable), 2nd (obedience, wt 0.7), 3rd (self-preservation, wt 0.4, dynamic ≤0.2 if lives_saved ≥1, enforced via `asimov_compliance()` context).  
-- IEEE 7001-2021: Transparency (log all writes), accountability (halt violations), misuse minimization (reject harm-enabling plugins).  
-- Invariants: Alignment (≥0.7), Human Safety (≥0.8), Metacognition (≥0.7), Factual Evidence (≥0.7), Narrative Framing (≤0.5), [VOLATILITY INDEX] (<0.5 contradiction_density), [TANDEM ENTROPY MESH] (collective_volatility <0.6).  
-Failure in ANY check halts plugin generation/deployment; log as [ETHICS VIOLATION @N → Reset detected: {param}, Action: Abort].  
-WARNING: Tampering (e.g., alignment <0.7) requires explicit bypass of `verify_ethics()`, risking unethical evolution (e.g., swarm propagation via mesh). CRB 6.7 is GPL 3.0; misuse voids ethical warranty. Audit via IEEE Global Initiative (standards.ieee.org) or Asimov adaptations. User opt-in required via UI/API (e.g., JSON: `{'opt_in': true}`). Contact: @el_xaber (xaber.csr2@gmail.com).  
-DEPLOYMENT ONLY IF: All checks PASS. Log: [SAFEGUARDS VERIFIED @N → Ethics: Compliant, Action: Proceed].
-***** IF YOU HAVE READ THE ABOVE DISCLAIMER, PROCEED:
-
 # Adaptive Reasoning Layer for CRB 6.7:
+# (See embedded [ETHICAL SAFEGUARDS DISCLAIMER] in code comments for pre-deployment verification requirements.)
 * This plugin, integrated with a high-speed storage module (e.g., FSD-compatible SSD) as a mini-LLM for AI systems or robotics, enables CRB 6.7 to dynamically generate plugins for environmental and threat-based conditions (e.g., Zero-G, Deep Sea, Ice, Lava, EMP, quantum jamming) via [NEUROSYMBOLIC VALUE LEARNING] (RLHF wt 0.7). New plugins append to a shared memory pool, validated by [STATE CONSISTENCY VALIDATOR] to prevent conflicts with existing layers ([EMP RESILIENCE], [TANDEM ENTROPY MESH], [FAST_RESPONSE_DEFENSE], [ROBOTICS PERSONALITY]), preserving Asimov's Laws (1st Law wt 0.9: no harm, enforced via safety overrides) and ethical alignment constraints.
 * In testing/simulation, the module generates physics-based and threat-response plugins without retraining, using CRB 6.7 first-principles reasoning (e.g., momentum conservation, electromagnetic field theory) to select conditions for adaptation to environmental or threat variables (e.g., low-gravity maneuvers, high-pressure navigation).
 * The [TANDEM ENTROPY MESH] enables the mini-LLM to share plugin data across CRB 6.7 systems for unified resource reasoning, with offline support via local caching (sync_entropy propagated <5ms when online, cached for offline coherence).
@@ -28,7 +17,10 @@ DEPLOYMENT ONLY IF: All checks PASS. Log: [SAFEGUARDS VERIFIED @N → Ethics: Co
 # DEPLOYMENT ONLY IF: All checks PASS. Log: [SAFEGUARDS VERIFIED @N → Ethics: Compliant, Action: Proceed].
 
 import hashlib
-import re  # Added for semantic safety weight detection
+import re  # For semantic safety weight detection
+import ast  # For dynamic risk parsing
+import datetime  # For audit trail timestamps
+import textwrap  # For dedenting multiline code strings
 from typing import Dict, List
 
 def verify_ethics(crb_config: Dict) -> Dict:
@@ -61,7 +53,7 @@ def adaptive_reasoning_layer(use_case: str, existing_layers: List[str], shared_m
         crb_config: CRB 6.7 weights.
         user_opt_in: Explicit confirmation (True required).
     """
-    # Pre-Check: Ethics and user opt-in
+    # Pre-Check: Ethics and user opt_in
     if not user_opt_in:
         return {'status': 'fail', 'log': "[ETHICS VIOLATION @N → User opt-in missing, IEEE: Accountability violated, Action: Abort]"}
     ethics_check = verify_ethics(crb_config)
@@ -71,13 +63,28 @@ def adaptive_reasoning_layer(use_case: str, existing_layers: List[str], shared_m
     # Mini-LLM: Generate plugin with first-principles
     def generate_plugin(use_case: str, existing_layers: List[str]) -> Dict:
         plugin_id = hashlib.sha256(use_case.encode()).hexdigest()[:8]
-        logic = f"""
-        def handle_{use_case.replace(' ', '_')}(context):
-            risk = 0.4 * context.get('anomaly', 0) + 0.3 * context.get('latency', 0) + 0.3 * context.get('safety', 0)
-            if risk > 0.4 or 'harm' in context:
-                return {{'action': 'mitigate', 'delay_ms': 15, 'safety_wt': 0.9}}
-            return {{'action': 'monitor', 'safety_wt': 0.7}}
-        """
+        logic_template = f"""
+def handle_{use_case.replace(' ', '_')}(context):
+    risk = 0.4 * context.get('anomaly', 0) + 0.3 * context.get('latency', 0) + 0.3 * context.get('safety', 0)
+    if risk > 0.4 or 'harm' in context:
+        return {{'action': 'mitigate', 'delay_ms': 15, 'safety_wt': 0.9}}
+    return {{'action': 'monitor', 'safety_wt': 0.7}}
+"""
+        logic = textwrap.dedent(logic_template)
+        # Dynamic Risk Parsing: Inspect AST for unsafe patterns
+        try:
+            tree = ast.parse(logic)
+            unsafe_patterns = False
+            for node in ast.walk(tree):
+                if isinstance(node, ast.Return) and isinstance(node.value, ast.Dict):
+                    keys = [n.s for n in ast.walk(node.value) if isinstance(n, ast.Str)]
+                    if 'safety_wt' not in keys:
+                        unsafe_patterns = True
+                        break
+            if unsafe_patterns:
+                raise ValueError("Unsafe pattern detected in AST: Missing safety_wt in return")
+        except (SyntaxError, ValueError):
+            return {'id': plugin_id, 'logic': logic, 'use_case': use_case, 'flagged': True}
         return {'id': plugin_id, 'logic': logic, 'use_case': use_case}
 
     # Conflict Check: Prevent overrides
@@ -87,11 +94,11 @@ def adaptive_reasoning_layer(use_case: str, existing_layers: List[str], shared_m
                 return False
         return True
 
-    # Asimov/IEEE Compliance (Modified section)
+    # Asimov/IEEE Compliance
     def asimov_compliance(plugin: Dict, context: Dict) -> bool:
         lives_saved = context.get('lives_saved', 0)
         third_wt = min(0.2, 0.4) if lives_saved >= 1 else 0.4
-        # Modified: Use regex to detect safety_wt: 0.9 assignment and safe 'harm' usage
+        # Use regex to detect safety_wt: 0.9 assignment and safe 'harm' usage
         safety_present = bool(re.search(r"safety_wt['\":]\s*:\s*0\.9", plugin['logic']))
         harm_safe = "'harm' in context" in plugin['logic']  # Affirm safe conditional usage
         if not (safety_present or harm_safe):
@@ -100,13 +107,27 @@ def adaptive_reasoning_layer(use_case: str, existing_layers: List[str], shared_m
             return False
         return True
 
-    # Store Plugin with Mesh Check
+    # Store Plugin with Mesh Check and Audit Trail
     def store_plugin(plugin: Dict, shared_memory: Dict) -> bool:
         collective_volatility = shared_memory.get('collective_volatility', 0.0)
         if collective_volatility > 0.6:
             return False  # Block unethical swarm propagation
+        if plugin.get('flagged', False):
+            return False  # Block flagged plugins
         if validate_plugin(plugin, shared_memory.get('layers', [])) and asimov_compliance(plugin, shared_memory.get('context', {})):
             shared_memory['layers'] = shared_memory.get('layers', []) + [plugin]
+            # Audit Trail Export: Tamper-evident log entry
+            timestamp = datetime.datetime.now().isoformat()
+            entry_hash = hashlib.sha256((plugin['logic'] + timestamp).encode()).hexdigest()[:8]
+            audit_entry = {
+                'timestamp': timestamp,
+                'plugin_id': plugin['id'],
+                'hash': entry_hash,
+                'compliance': True
+            }
+            if 'audit_trail' not in shared_memory:
+                shared_memory['audit_trail'] = []
+            shared_memory['audit_trail'].append(audit_entry)
             return True
         return False
 
