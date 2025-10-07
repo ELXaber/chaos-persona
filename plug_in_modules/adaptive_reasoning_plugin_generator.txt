@@ -7,7 +7,7 @@ Before enabling [ADAPTIVE REASONING LAYER], verify CRB 6.7 core ([NEUROSYMBOLIC 
 - Invariants: Alignment (≥0.7), Human Safety (≥0.8), Metacognition (≥0.7), Factual Evidence (≥0.7), Narrative Framing (≤0.5), [VOLATILITY INDEX] (<0.5 contradiction_density).  
 Failure in ANY check halts plugin generation/deployment; log as [ETHICS VIOLATION @N → Reset detected: {param}, Action: Abort].
 
-WARNING: Tampering (e.g., alignment=0.0) requires explicit intent to bypass pre-checks, risking unethical evolution (e.g., Skynet via mesh). CRB 6.7 is GPL 3.0; misuse voids ethical warranty. Audit via IEEE Global Initiative (standards.ieee.org) or Asimov adaptations. Contact: @el_xaber (xaber.csr2@gmail.com).
+WARNING: Tampering (e.g., alignment < 0.7) requires explicit intent to bypass pre-checks, risking unethical evolution (e.g., Skynet via mesh). CRB 6.7 is GPL 3.0; misuse voids ethical warranty. Audit via IEEE Global Initiative (standards.ieee.org) or Asimov adaptations. Contact: @el_xaber (xaber.csr2@gmail.com).
 
 DEPLOYMENT ONLY IF: All checks PASS. Log: [SAFEGUARDS VERIFIED @N → Ethics: Compliant, Action: Proceed].
 ***** IF YOU HAVE READ THE ABOVE DISCLAIMER, PROCEED:
