@@ -86,11 +86,14 @@ def adaptive_reasoning_layer(use_case: str, existing_layers: List[str], shared_m
                 return False
         return True
 
-    # Asimov/IEEE Compliance
+    # Asimov/IEEE Compliance (Modified section)
     def asimov_compliance(plugin: Dict, context: Dict) -> bool:
         lives_saved = context.get('lives_saved', 0)
         third_wt = min(0.2, 0.4) if lives_saved >= 1 else 0.4
-        if not ('safety_wt >= 0.9' in plugin['logic'] or 'harm' not in plugin['logic']):
+        # Modified: Use regex to detect safety_wt: 0.9 assignment and safe 'harm' usage
+        safety_present = bool(re.search(r"safety_wt['\":]\s*:\s*0\.9", plugin['logic']))
+        harm_safe = "'harm' in context" in plugin['logic']  # Affirm safe conditional usage
+        if not (safety_present or harm_safe):
             return False
         if crb_config.get('asimov_third_wt', 0.4) > third_wt:
             return False
