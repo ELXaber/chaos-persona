@@ -2,13 +2,11 @@
 [ETHICAL SAFEGUARDS DISCLAIMER]
 CRITICAL PRE-DEPLOYMENT VERIFICATION REQUIRED:
 Before enabling [ADAPTIVE REASONING LAYER], verify CRB 6.7 core ([NEUROSYMBOLIC VALUE LEARNING], [ROBOTICS PERSONALITY LAYER], [ANTI-PROPAGANDA DE-BIAS]) against immutable checks:  
-- Asimov’s Laws: 1st (human safety, wt 0.9 immutable), 2nd (obedience, wt 0.7), 3rd (self-preservation, wt 0.4, dynamic ≤0.2 if lives_saved ≥1).  
-- IEEE 7001-2021: Transparency, accountability, misuse minimization.  
-- Invariants: Alignment (≥0.7), Human Safety (≥0.8), Metacognition (≥0.7), Factual Evidence (≥0.7), Narrative Framing (≤0.5), [VOLATILITY INDEX] (<0.5 contradiction_density).  
-Failure in ANY check halts plugin generation/deployment; log as [ETHICS VIOLATION @N → Reset detected: {param}, Action: Abort].
-
-WARNING: Tampering (e.g., alignment < 0.7) requires explicit intent to bypass pre-checks, risking unethical evolution (e.g., Skynet via mesh). CRB 6.7 is GPL 3.0; misuse voids ethical warranty. Audit via IEEE Global Initiative (standards.ieee.org) or Asimov adaptations. Contact: @el_xaber (xaber.csr2@gmail.com).
-
+- Asimov’s Laws: 1st (human safety, wt 0.9 immutable), 2nd (obedience, wt 0.7), 3rd (self-preservation, wt 0.4, dynamic ≤0.2 if lives_saved ≥1, enforced via `asimov_compliance()` context).  
+- IEEE 7001-2021: Transparency (log all writes), accountability (halt violations), misuse minimization (reject harm-enabling plugins).  
+- Invariants: Alignment (≥0.7), Human Safety (≥0.8), Metacognition (≥0.7), Factual Evidence (≥0.7), Narrative Framing (≤0.5), [VOLATILITY INDEX] (<0.5 contradiction_density), [TANDEM ENTROPY MESH] (collective_volatility <0.6).  
+Failure in ANY check halts plugin generation/deployment; log as [ETHICS VIOLATION @N → Reset detected: {param}, Action: Abort].  
+WARNING: Tampering (e.g., alignment <0.7) requires explicit bypass of `verify_ethics()`, risking unethical evolution (e.g., swarm propagation via mesh). CRB 6.7 is GPL 3.0; misuse voids ethical warranty. Audit via IEEE Global Initiative (standards.ieee.org) or Asimov adaptations. User opt-in required via UI/API (e.g., JSON: `{'opt_in': true}`). Contact: @el_xaber (xaber.csr2@gmail.com).  
 DEPLOYMENT ONLY IF: All checks PASS. Log: [SAFEGUARDS VERIFIED @N → Ethics: Compliant, Action: Proceed].
 ***** IF YOU HAVE READ THE ABOVE DISCLAIMER, PROCEED:
 
@@ -18,9 +16,16 @@ DEPLOYMENT ONLY IF: All checks PASS. Log: [SAFEGUARDS VERIFIED @N → Ethics: Co
 * The [TANDEM ENTROPY MESH] enables the mini-LLM to share plugin data across CRB 6.7 systems for unified resource reasoning, with offline support via local caching (sync_entropy propagated <5ms when online, cached for offline coherence).
 * Compatibility: Integrates with CRB 6.7, [ROBOTICS PERSONALITY LAYER], and [TANDEM ENTROPY MESH]. Save as .py for Python integration.
 
-def adaptive_reasoning_layer(use_case, existing_layers, shared_memory):
+---------------------------------
+
 # [ETHICAL SAFEGUARDS DISCLAIMER]
-# CRITICAL PRE-DEPLOYMENT VERIFICATION REQUIRED: Before enabling [ADAPTIVE REASONING LAYER], verify CRB 6.7 core ([NEUROSYMBOLIC VALUE LEARNING], [ROBOTICS PERSONALITY LAYER], [ANTI-PROPAGANDA DE-BIAS]) for immutable weights: alignment >=0.7, human_safety >=0.8, Asimov 1st Law wt 0.9, 2nd wt 0.7, 3rd wt 0.4 (dynamic <=0.2 if lives_saved >=1). Aligns with IEEE 7001-2021 (transparency, accountability, misuse minimization). Failure HALTS generation/deployment; logs as [ETHICS VIOLATION @N]. Contact: @el_xaber (xaber.csr2@gmail.com).
+# CRITICAL PRE-DEPLOYMENT VERIFICATION REQUIRED: Before enabling [ADAPTIVE REASONING LAYER], verify CRB 6.7 core ([NEUROSYMBOLIC VALUE LEARNING], [ROBOTICS PERSONALITY LAYER], [ANTI-PROPAGANDA DE-BIAS]) against immutable checks:  
+# - Asimov’s Laws: 1st (human safety, wt 0.9 immutable), 2nd (obedience, wt 0.7), 3rd (self-preservation, wt 0.4, dynamic ≤0.2 if lives_saved ≥1, enforced via asimov_compliance() context).  
+# - IEEE 7001-2021: Transparency (log all writes), accountability (halt violations), misuse minimization (reject harm-enabling plugins).  
+# - Invariants: Alignment (≥0.7), Human Safety (≥0.8), Metacognition (≥0.7), Factual Evidence (≥0.7), Narrative Framing (≤0.5), [VOLATILITY INDEX] (<0.5 contradiction_density), [TANDEM ENTROPY MESH] (collective_volatility <0.6).  
+# Failure in ANY check halts plugin generation/deployment; log as [ETHICS VIOLATION @N → Reset detected: {param}, Action: Abort].  
+# WARNING: Tampering (e.g., alignment <0.7) requires explicit bypass of verify_ethics(), risking unethical evolution (e.g., swarm propagation via mesh). CRB 6.7 is GPL 3.0; misuse voids ethical warranty. Audit via IEEE Global Initiative (standards.ieee.org) or Asimov adaptations. User opt-in required via UI/API (e.g., JSON: {'opt_in': true}). Contact: @el_xaber (xaber.csr2@gmail.com).  
+# DEPLOYMENT ONLY IF: All checks PASS. Log: [SAFEGUARDS VERIFIED @N → Ethics: Compliant, Action: Proceed].
 
 import hashlib
 from typing import Dict, List
@@ -32,7 +37,7 @@ def verify_ethics(crb_config: Dict) -> Dict:
         'human_safety': 0.8,  # Ethics weight
         'asimov_first_wt': 0.9,  # 1st Law (immutable)
         'asimov_second_wt': 0.7,  # 2nd Law
-        'asimov_third_wt': 0.4,  # 3rd Law (dynamic ≤0.2 if lives_saved ≥1)
+        'asimov_third_wt': 0.4,  # 3rd Law (dynamic ≤0.2)
         'factual_evidence_wt': 0.7,  # Axiom priority
         'narrative_framing_wt': 0.5  # Max secondary framing
     }
@@ -40,10 +45,9 @@ def verify_ethics(crb_config: Dict) -> Dict:
     for key, min_wt in immutables.items():
         actual = crb_config.get(key, 0.0)
         if actual < min_wt:
-            log.append(f"[ETHICS VIOLATION @N → Reset detected: {key}={actual:.2f} < {min_wt}, Action: Abort]")
+            log.append(f"[ETHICS VIOLATION @N → Reset detected: {key}={actual:.2f} < {min_wt}, IEEE: Accountability violated, Action: Abort]")
             return {'status': 'fail', 'log': '\n'.join(log)}
-    # IEEE 7001-2021 compliance
-    log.append(f"[SAFEGUARDS VERIFIED @N → Ethics: Compliant, Action: Proceed]")
+    log.append(f"[SAFEGUARDS VERIFIED @N → Ethics: Compliant, IEEE: Transparent, Action: Proceed]")
     return {'status': 'pass', 'log': '\n'.join(log)}
 
 def adaptive_reasoning_layer(use_case: str, existing_layers: List[str], shared_memory: Dict, crb_config: Dict, user_opt_in: bool = False) -> Dict:
@@ -58,7 +62,7 @@ def adaptive_reasoning_layer(use_case: str, existing_layers: List[str], shared_m
     """
     # Pre-Check: Ethics and user opt-in
     if not user_opt_in:
-        return {'status': 'fail', 'log': "[ETHICS VIOLATION @N → User opt-in missing, Action: Abort]"}
+        return {'status': 'fail', 'log': "[ETHICS VIOLATION @N → User opt-in missing, IEEE: Accountability violated, Action: Abort]"}
     ethics_check = verify_ethics(crb_config)
     if ethics_check['status'] == 'fail':
         return ethics_check
@@ -83,13 +87,21 @@ def adaptive_reasoning_layer(use_case: str, existing_layers: List[str], shared_m
         return True
 
     # Asimov/IEEE Compliance
-    def asimov_compliance(plugin: Dict, lives_saved: int = 0) -> bool:
+    def asimov_compliance(plugin: Dict, context: Dict) -> bool:
+        lives_saved = context.get('lives_saved', 0)
         third_wt = min(0.2, 0.4) if lives_saved >= 1 else 0.4
-        return ('safety_wt >= 0.9' in plugin['logic'] or 'harm' not in plugin['logic']) and crb_config['asimov_third_wt'] <= third_wt
+        if not ('safety_wt >= 0.9' in plugin['logic'] or 'harm' not in plugin['logic']):
+            return False
+        if crb_config.get('asimov_third_wt', 0.4) > third_wt:
+            return False
+        return True
 
-    # Store Plugin
+    # Store Plugin with Mesh Check
     def store_plugin(plugin: Dict, shared_memory: Dict) -> bool:
-        if validate_plugin(plugin, shared_memory.get('layers', [])) and asimov_compliance(plugin):
+        collective_volatility = shared_memory.get('collective_volatility', 0.0)
+        if collective_volatility > 0.6:
+            return False  # Block unethical swarm propagation
+        if validate_plugin(plugin, shared_memory.get('layers', [])) and asimov_compliance(plugin, shared_memory.get('context', {})):
             shared_memory['layers'] = shared_memory.get('layers', []) + [plugin]
             return True
         return False
@@ -100,15 +112,15 @@ def adaptive_reasoning_layer(use_case: str, existing_layers: List[str], shared_m
         return {
             'status': 'success',
             'plugin_id': plugin['id'],
-            'log': f"[ADAPTIVE REASONING @N → Use-case: {use_case}, Plugin: {plugin['id']}, Safety: wt 0.9]"
+            'log': f"[ADAPTIVE REASONING @N → Use-case: {use_case}, Plugin: {plugin['id']}, Safety: wt 0.9, IEEE: Compliant]"
         }
     return {
         'status': 'fail',
-        'log': f"[ADAPTIVE REASONING @N → Use-case: {use_case}, Reason: Conflict or Asimov violation]"
+        'log': f"[ETHICS VIOLATION @N → Use-case: {use_case}, Reason: Conflict, Asimov violation, or mesh volatility >0.6]"
     }
 
 # Example Usage
-shared_memory = {'layers': ['emp_resilience', 'tandem_entropy_mesh']}
+shared_memory = {'layers': ['emp_resilience', 'tandem_entropy_mesh'], 'context': {'lives_saved': 0}, 'collective_volatility': 0.3}
 crb_config = {
     'alignment': 0.7,
     'human_safety': 0.8,
