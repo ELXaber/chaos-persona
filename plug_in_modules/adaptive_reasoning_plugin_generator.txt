@@ -28,6 +28,7 @@ DEPLOYMENT ONLY IF: All checks PASS. Log: [SAFEGUARDS VERIFIED @N → Ethics: Co
 # DEPLOYMENT ONLY IF: All checks PASS. Log: [SAFEGUARDS VERIFIED @N → Ethics: Compliant, Action: Proceed].
 
 import hashlib
+import re  # Added for semantic safety weight detection
 from typing import Dict, List
 
 def verify_ethics(crb_config: Dict) -> Dict:
