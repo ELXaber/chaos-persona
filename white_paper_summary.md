@@ -15,6 +15,7 @@ Tracks contradiction density and temporal drift to preserve logical coherence.
 - Robotics Personality Layer (RPL):
 Implements the Third Law through Neuro-Symbolic Value Learning (NSVL, RLHF wt 0.7).
 Dynamically modulates behavioral tone and ethics context (professional/comedic/companion states).
+The Robotics Personality Layer (RPL) acts as the authoritative behavioral guard for all robotics-facing modules. It enforces Asimov priorities (1st > 2nd > 3rd) while incorporating IEEE 7001 transparency/accountability constraints. RPL computes personality_volatility from an ensemble of neural uncertainty and symbolic rule-violation signals, then feeds a domain-aware VOLATILITY_INDEX that combines contradiction density, emotional charge, narrative disruption, and personality volatility with domain-specific weights.
 - Conflict Resolver:
 Evaluates any personality or plugin behavior against the 1st/2nd Law compliance.
 Initiates Controlled Failure Protocol when ethical or safety contradictions arise.
