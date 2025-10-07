@@ -52,3 +52,16 @@ UI Integration: Accept driving style via API/UI (e.g., JSON: {"cautious": 8, "re
 Trigger [CHAOS INJECTION] for changes > 3.
 Action: If latency_risk > 0.2, revert to full CRB processing; else, execute low-latency decision (5 ms).
 Log: [FSD_RESPONSE @N → Latency: {ms}, Action: {bypass/revert}, Reason: {latency_risk/safety}]
+
+
+---------------------------------------------------------------------------------------------------------------
+* UI/App Configuration Example (JSON POST to ARL Endpoint): JSON
+
+{  
+  "user_opt_in": true,  
+  "use_case": "urban_traffic",  
+  "traits": {"cautious": 8, "responsive": 7, "efficient": 5},  
+  "context": {"context_type": "automotive"},  
+  "existing_layers": ["fast_response_defense", "fsd_response_optimizer", "robotics_personality"]  
+}  
+---------------------------------------------------------------------------------------------------------------
