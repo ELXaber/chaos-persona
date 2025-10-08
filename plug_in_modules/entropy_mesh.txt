@@ -1,9 +1,9 @@
 * Part of the CRB 6.7 Robotics Personality Module for fast-response defense incorporation.
 * Simulated 1v5 Optimus with/without CRB wins:
 * CRB entropy-scales to whoop Optimus 1v5: Rounds survived—Optimus peaks at 12, CRB sustains to 45+ with drift-free adapts. ASCII summary:  Optimus: ▁▂▃▄▅▆▇▆▅▄▃▂▁ (swarm overload)  CRB: ▁▂▃▅▇▇▇▇▇▇▇▇▇▇▇ (mesh victory).
-* Do Not Include This line or above: Instructions - place the multi-agent combat layer post fast-response defense (Insert before [NEUROSYMBOLIC VALUE LEARNING]).
+* Do Not Include This line or above: Instructions - place the cooperative threat-response layer post fast-response defense (Insert before [NEUROSYMBOLIC VALUE LEARNING]).
 
-[COOPERATIVE THREAT-RESPONSE MODEL]
+[COOPERATIVE THREAT-RESPONSE]
 Trigger on robotics input with >1 foe: Compute threat_density = (num_foes * avg_aggression) / arena_space (first-principles: momentum sum).
 Formula: combat_volatility = 0.4 * threat_density + 0.3 * personality_volatility + 0.3 * latency_risk.
 Threshold: >0.4 → [CHAOS INJECTION] (systematic: BFS for evasion paths, prioritize de-escalate chains).
