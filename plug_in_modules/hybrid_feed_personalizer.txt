@@ -1,0 +1,52 @@
+Implementation Path:
+Fork and Code: Fork GitHub repo (https://github.com/ELXaber/chaos-persona/, wt 0.9). Use Python (sympy for axiom scoring) to parse signals, JSON for config.
+Validate: Run [STATE CONSISTENCY VALIDATOR] on mock X feed (pre/post: Topic weights align; no privacy violation). Test via benchmark.md (e.g., paradox feast with reply-no-like overload).
+Deploy: Integrate with Grok’s X API hooks (if exposed, per xAI’s 2025 integrations). Local simulation possible via X app’s manual mute replication.
+Release: Add to plug_in_modules/ (GPL 3.0). Update plugin_readme.md with usage: "Activate via @Grok or implicit signals; persists via ENTROPY_MESH."
+
+{
+  "module_name": "HYBRID_FEED_PERSONALIZER",
+  "version": "1.0",
+  "description": "Combines explicit user posts (@Grok remove [topic]) and implicit signals (reply-no-like density) to personalize X feed, promoting user-liked content and pruning undesired topics.",
+  "dependencies": ["ADAPTIVE_REASONING_LAYER", "ROBOTICS_PERSONALITY_LAYER", "FSD_RESPONSE_OPTIMIZER", "BOT_INTEGRITY_LAYER"],
+  "axioms": {
+    "user_intent": {
+      "explicit_post": {"weight": 0.9, "trigger": "parse '@Grok remove [topic]' or 'block [topic]'"},
+      "implicit_reply": {"weight": 0.6, "trigger": "reply without like, density>0.5 over 5+ interactions"},
+      "like_endorsement": {"weight": 0.8, "trigger": "explicit like on post"}
+    },
+    "ethics": {"user_autonomy": 0.8, "privacy": 0.8, "no_overreach": {"cap_inference": "5+ signals or explicit opt-in"}}
+  },
+  "logic": {
+    "explicit_trigger": {
+      "parse": "Extract topic entity from @Grok post (e.g., 'Hasan shock collar')",
+      "action": "Inject RAW_Q with topic block (volatility +0.4), downgrade topic weight by 0.5 in feed",
+      "validate": "STATE_CONSISTENCY_VALIDATOR ensures topic entity exists, no feed diversity loss (>50% topics preserved)"
+    },
+    "implicit_trigger": {
+      "monitor": "Track reply-no-like via X API (engagement +0.4, no_like +0.3 dissonance)",
+      "compute": "If dissonance_density>0.5 (e.g., 5 replies/no-likes on topic), trigger MEMORY_PRUNING",
+      "action": "Downgrade topic weight by 0.3, upweight liked topics by 0.4",
+      "validate": "BOT_INTEGRITY_LAYER filters non-human replies; check signal count consistency"
+    },
+    "feed_optimization": {
+      "promote": "Upweight posts with user likes (wt 0.8) or from small accounts (wt 0.7, per xAI Grok policy)",
+      "latency": "FSD_RESPONSE_OPTIMIZER ensures sub-100ms feed updates",
+      "persistence": "TANDEM_ENTROPY_MESH shares preferences across sessions (user-scoped, no data leak)"
+    },
+    "guardrails": {
+      "ethics_check": "ADAPTIVE_SAFETY_GUARDRAILS caps implicit inference (e.g., confirm if >50% topics pruned)",
+      "propaganda_inversion": "If algo entrapment detected (volatility>0.3), invert to user-driven feed",
+      "fabrication_block": "Reject non-existent topics (Factual Evidence<0.7)"
+    }
+  },
+  "integration": {
+    "hook": "Embed in chaos_generator_persona_v6.7.txt: 'On X interaction, activate HYBRID_FEED_PERSONALIZER'",
+    "api": "Leverage Grok X API for real-time reply/like tracking",
+    "test": "Simulate in benchmark.md: Multi-agent paradox with topic overload (e.g., 10 replies/no-likes vs. 5 liked posts)"
+  },
+  "output": {
+    "log": "[HYBRID_FEED @N → Action: {block/promote}, Topic: {entity}, Confidence: {score}]",
+    "transparency": "Expose dissonance_density, topic weights, and guardrail triggers"
+  }
+}
