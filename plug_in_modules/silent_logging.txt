@@ -1,9 +1,50 @@
-Implementation Path:
-Fork and Code: Fork GitHub repo (https://github.com/ELXaber/chaos-persona/, wt 0.9). Use Python/JSON to wrap logging functions (e.g., log_entry conditional: if verbose else store_silent).
-Validate: Run [STATE CONSISTENCY VALIDATOR] on log states (pre/post-toggle: All entries preserved, only display toggled). Test via benchmark.md (e.g., multi-agent paradox with silent/verbose outputs).
-Deploy: Integrate with Grok’s X API for toggle commands (e.g., "@Grok show reasoning"). Add to plug_in_modules/ (GPL 3.0). Update plugin_readme.md: "Toggle silent/verbose via user command/config."
-Guardrails: Ethics ensure logs remain accessible (wt 0.8); [PROPAGANDA INVERSION] prevents "hidden reasoning" narratives (density>0.4 reverts to verbose).
+* Text incorporation:
+* [SILENT_LOG_CONTROL] Version: 1.1 Description: Suppresses CRB v6.7 transparency logs (e.g., VOLATILITY, AXIOM SCORES) by default for user clarity, storing silently.
+* Activates verbose mode via inline toggle (e.g., 'verbose=true' in prompt). No config file/API, integrates in [CHECK].
 
+* Dependencies:
+* ADAPTIVE_REASONING_LAYER (toggle logic)
+* STATE_CONSISTENCY_VALIDATOR (log integrity)
+
+* Metrics:
+* Verbosity Level: If log_count > 5 per response, reduce output weight by 0.3
+* User Clarity: If non-technical context (default), increase silent_mode priority by 0.2
+* Transparency Integrity: If verbose=false, store logs; if true, output full logs
+* Contradiction Density: If silent mode drops critical axioms (density > 0.4), revert to verbose
+
+* Actions:
+* Default: Silent mode (store [VOLATITY @N], [AXIOM SCORES @N], etc.; display final response)
+* Toggle: Check prompt or system state for 'verbose=true'; if true, output full logs
+* Validate: STATE_CONSISTENCY_VALIDATOR ensures all logs generated/stored
+* Persistence: Store toggle state in runtime memory (session-scoped)
+
+* Guardrails:
+* Ethics Check: ADAPTIVE_SAFETY_GUARDRAILS ensures log access (transparency wt 0.8)
+* Fabrication Block: Reject invalid toggle flags (e.g., malformed 'verbose')
+* Contradiction Check: If silent mode risks axiom loss (density > 0.4), trigger verbose mode
+
+* Integration:
+* Hook: Add to [CHECK] in chaos_generator_persona_v6.7.txt: 'Apply SILENT_LOG_CONTROL post-validation, default silent'
+* Toggle: Use inline flag (e.g., 'verbose=true' in prompt or system state)
+* Log: [SILENT_LOG_CONTROL @N -> Verbosity: {level}, Mode: {silent/verbose}, Trigger: {inline}]
+* Set default LOG_MODE=silent in CRB runtime; users add verbose=true in prompts (e.g., “@Grok show reasoning”).
+* Instructions do not include this line or above: Add below to chaos_generator_persona_v6.7.txt under [CHECK]:
+
+[SILENT_LOG_CONTROL]
+Post-validation: Apply SILENT_LOG_CONTROL to suppress logs (default: silent, LOG_MODE=silent)
+Toggle: Parse prompt for 'verbose=true' or system flag; if true, output [VOLATILITY @N], [AXIOM SCORES @N], etc.
+Validate: STATE_CONSISTENCY_VALIDATOR ensures no axiom loss
+Log: [SILENT_LOG_CONTROL @N -> Verbosity: {count}, Mode: {silent/verbose}, Trigger: {inline}]
+
+============================================================================================
+
+* Code Incorporation:
+* Implementation Path:
+* Fork and Code: Fork GitHub repo (https://github.com/ELXaber/chaos-persona/, wt 0.9). Use Python/JSON to wrap logging functions (e.g., log_entry conditional: if verbose else * * store_silent).
+* Validate: Run [STATE CONSISTENCY VALIDATOR] on log states (pre/post-toggle: All entries preserved, only display toggled). Test via benchmark.md (e.g., multi-agent paradox with silent/verbose outputs).
+* Deploy: Integrate with Grok’s X API for toggle commands (e.g., "@Grok show reasoning"). Add to plug_in_modules/ (GPL 3.0). Update plugin_readme.md: "Toggle silent/verbose via user command/config."
+* Guardrails: Ethics ensure logs remain accessible (wt 0.8); [PROPAGANDA INVERSION] prevents "hidden reasoning" narratives (density>0.4 reverts to verbose).
+* Instructions do not include this line or above:
 
 {
   "module_name": "SILENT_LOG_TOGGLER",
