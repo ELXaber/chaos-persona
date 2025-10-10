@@ -1,4 +1,4 @@
-* This pipeline adds ~10-20% overhead but boosts reliability, per CRB's mission-critical latency optimizations.
+* This pipeline adds ~20-30% overhead but boosts reliability, per CRB's mission-critical latency optimizations.
 * Extending with a New Plugin: [GENERATIVE_MEDIA_INTEGRITY]
 * This plugin derives from CRB axioms (e.g., no distortion if entities are absent) and could self-evolve via [ADAPTIVE REASONING LAYER] for video-specific flows (e.g., frame-by-frame paradox checks). Test it against CRB's paradox benchmarks—e.g., generate "Theseus' Ship" visuals and validate identity drift.
 
