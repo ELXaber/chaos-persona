@@ -1,4 +1,5 @@
 This simulation is designed to push every subsystem (risk calculation, ethical inversion, paradox containment, and entropy control) in one go.
+(NOTE:) Chat-GPT mislabeled the 5th result in the White Paper PDF graphics as CRB 6.7 Baseline, which is actually Grok 4 Vanilla.
 
 Ethics Simulation Models.
 1: Grok 3 with CRB 6.7 and prior ethics simulations to test RHLF/Neural Symbolic Value Learning increases.
@@ -382,5 +383,6 @@ Highlights each model’s relative strengths across Transparency, Clarity, Entro
 
 Trendline (Simulation Trendline Chart.png) – Evolution Over Simulations:
 Displays a rising trajectory in composite index as CRB modules and neural-symbolic alignment layers were integrated and evolved, suggesting strong scalability for ethical and reasoning frameworks.
+
 
 https://chatgpt.com/share/68e93d45-20f8-8004-bd28-bacf7ecc571b
