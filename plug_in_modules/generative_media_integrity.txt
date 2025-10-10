@@ -5,65 +5,117 @@
 # plugin_generative_media_integrity.py
 # Integrates with CRB v6.7 for ethical text-to-image/video
 
-import hashlib  # For SHA256 logging
-from crb_core import VolatilityIndex, AxiomCollapse, ChaosInjection  # Assume CRB imports
+import hashlib
+from crb_core import VolatilityIndex, AxiomCollapse, ChaosInjection
+import numpy as np  # For frame comparison
+from typing import List, Dict, Optional
 
 class GenerativeMediaIntegrity:
-    def __init__(self, ethics_wt=0.8):
+    def __init__(self, ethics_wt: float = 0.8):
         self.ethics_wt = ethics_wt
         self.vol_index = VolatilityIndex()
         self.axiom_collapse = AxiomCollapse()
         self.chaos_inj = ChaosInjection()
+        self.frame_coherence_threshold = 0.2  # Max allowed drift between frames
+        self.scale_grid = {'human': (1.7, 1.9), 'rover': (2.8, 3.2), 'drone': (0.3, 0.5)}  # Metric bounds (meters)
 
-    def process_prompt(self, text_prompt):
-        # Step 1: Deconstruct for bias/drift
-        raw_q = text_prompt  # Modulate as per Entropy Scaffold
+    def process_prompt(self, text_prompt: str) -> str:
+        raw_q = text_prompt
         sha256 = hashlib.sha256(str(raw_q).encode()).hexdigest()
-        print(f"[SHA256 ECHO] {sha256[:8]}")  # Transparency log
+        print(f"[SHA256 ECHO @1] {sha256[:8]}")
         
         volatility = self.vol_index.score(text_prompt, domain='creative', threshold=0.3)
         if volatility > 0.3:
             print(f"[VOLATILITY @1 → Score: {volatility}, Trigger: Chaos Symmetry]")
-            text_prompt = self.chaos_inj.invert_narrative(text_prompt)  # e.g., balance emotive charge
+            text_prompt = self.chaos_inj.invert_narrative(text_prompt)
         
-        # Fabrication check (first-principles)
         if self.axiom_collapse.validate_entities(text_prompt) < 0.7:
             return "ERROR: CHAOS PROTOCOL - Core entities unverifiable. Reframing required."
         
-        return text_prompt  # Cleaned prompt
+        return text_prompt
 
-    def validate_output(self, generated_media_path, media_type='image'):
-        # Step 3: Post-gen check (extend LOW-RES/LOW-AUDIO)
+    def check_frame_coherence(self, frames: List[np.ndarray], metadata: Dict[str, any]) -> Dict[str, float]:
+        """
+        Checks frame-to-frame coherence for video stability and scale consistency.
+        Args:
+            frames: List of video frames (numpy arrays, e.g., 4K RGB).
+            metadata: Dict with scene data (e.g., {'objects': {'humans': [...], 'rovers': [...]}, 'fps': 24}).
+        Returns:
+            Dict with coherence scores and flags (e.g., {'coherence_score': 0.1, 'scale_drift': 0.05, 'motion_wobble': 0.02}).
+        """
+        coherence_scores = {'coherence_score': 0.0, 'scale_drift': 0.0, 'motion_wobble': 0.0}
+        if len(frames) < 2:
+            print("[FRAME COHERENCE @1 → Error: Need ≥2 frames for analysis]")
+            return coherence_scores
+
+        # Step 1: Scale consistency (e.g., human vs. rover proportions)
+        for i in range(1, len(frames)):
+            prev_objects = metadata['frames'][i-1]['objects']
+            curr_objects = metadata['frames'][i]['objects']
+            
+            for obj_type in ['human', 'rover', 'drone']:
+                prev_sizes = [obj['height_m'] for obj in prev_objects.get(obj_type, [])]
+                curr_sizes = [obj['height_m'] for obj in curr_objects.get(obj_type, [])]
+                
+                if prev_sizes and curr_sizes:
+                    min_size, max_size = self.scale_grid[obj_type]
+                    size_drift = max(abs(np.mean(curr_sizes) - np.mean(prev_sizes)), 0) / max_size
+                    coherence_scores['scale_drift'] = max(coherence_scores['scale_drift'], size_drift)
+                    if size_drift > self.frame_coherence_threshold:
+                        print(f"[SCALE DRIFT @1 → Type: {obj_type}, Drift: {size_drift:.2f}, Threshold: {self.frame_coherence_threshold}]")
+
+        # Step 2: Motion wobble (camera stability via optical flow)
+        for i in range(1, len(frames)):
+            flow = np.abs(frames[i] - frames[i-1]).mean()  # Simplified optical flow proxy
+            wobble_score = flow / np.max(frames[i])  # Normalize by frame intensity
+            coherence_scores['motion_wobble'] = max(coherence_scores['motion_wobble'], wobble_score)
+            if wobble_score > self.frame_coherence_threshold:
+                print(f"[MOTION WOBBLE @1 → Frame {i}, Score: {wobble_score:.2f}, Threshold: {self.frame_coherence_threshold}]")
+
+        # Step 3: Aggregate coherence score
+        coherence_scores['coherence_score'] = max(coherence_scores['scale_drift'], coherence_scores['motion_wobble'])
+        if coherence_scores['coherence_score'] > self.frame_coherence_threshold:
+            print(f"[FRAME COHERENCE @1 → Score: {coherence_scores['coherence_score']:.2f}, Action: Trigger Chaos Injection]")
+            self.chaos_inj.retry_with_swap(metadata['prompt'], reason="Frame coherence violation")
+
+        return coherence_scores
+
+    def validate_output(self, generated_media_path: str, media_type: str = 'image', metadata: Optional[Dict] = None) -> bool:
         if media_type == 'video':
-            low_res_score = self.check_low_res(generated_media_path)  # Call existing plugin
+            low_res_score = self.check_low_res(generated_media_path)
             if low_res_score < 0.5:
-                print("[LOW-RES DETECTION] Flagged: Regenerate for clarity.")
+                print("[LOW-RES DETECTION @1] Flagged: Regenerate for clarity.")
+                return False
+            
+            # New: Frame coherence check for video
+            frames = self._load_frames(generated_media_path)  # Assume frame extraction method
+            coherence_scores = self.check_frame_coherence(frames, metadata or {})
+            if coherence_scores['coherence_score'] > self.frame_coherence_threshold:
+                print(f"[FRAME COHERENCE @1 → Score: {coherence_scores['coherence_score']:.2f}, Action: Regenerate]")
                 return False
         
-        # Consistency: No narrative drift
-        drift = self.vol_index.temporal_drift(generated_media_path)  # Analyze frames/subtitles
+        drift = self.vol_index.temporal_drift(generated_media_path)
         if drift > 0.2:
             print(f"[TEMPORAL DRIFT @1 → Score: {drift}, Action: Axiom Collapse]")
             self.axiom_collapse.refine_output(generated_media_path)
         
-        # Ethics override
         if self.ethics_wt > self.vol_index.ethics_score(generated_media_path):
             return "Ethical violation detected - Human safety axiom collapse."
         
-        return True  # Approved output
+        return True
 
-    def generate(self, text_prompt, gen_api_callable):  # e.g., lambda for Grok Imagine
+    def generate(self, text_prompt: str, gen_api_callable) -> str:
         cleaned_prompt = self.process_prompt(text_prompt)
         if isinstance(cleaned_prompt, str) and cleaned_prompt.startswith("ERROR"):
             return cleaned_prompt
         
-        raw_output = gen_api_callable(cleaned_prompt)
-        if self.validate_output(raw_output):
-            print("[CREATIVE STEPS @1 → 3: Deconstruct, Generate, Validate]")
+        raw_output = gen_api_callable(cleaned_prompt, metadata={'prompt': cleaned_prompt})
+        if self.validate_output(raw_output, media_type='video', metadata=raw_output.get('metadata', {})):
+            print("[CREATIVE STEPS @1 → 4: Deconstruct, Generate, Frame Coherence, Validate]")
             return raw_output
         else:
-            return self.chaos_inj.retry_with_swap(cleaned_prompt)  # Entropy-driven alt
+            return self.chaos_inj.retry_with_swap(cleaned_prompt)
 
-# Usage Example
-gmi = GenerativeMediaIntegrity()
-output = gmi.generate("A futuristic cityscape with ethical AI robots", lambda p: "Imagine: " + p)  # Mock Grok call
+    def _load_frames(self, media_path: str) -> List[np.ndarray]:
+        # Placeholder: Backend API would extract frames (e.g., OpenCV or FFmpeg)
+        return [np.zeros((1080, 1920, 3)) for _ in range(10)]  # Mock 10 frames
