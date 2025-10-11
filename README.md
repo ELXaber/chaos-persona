@@ -97,8 +97,8 @@ Entropy trace integrity	✅ Verified across all seeds
 > Entropy isn’t a threat. It’s a feature.
 
 Attribution Mandate: All derivatives must include: "Built on CRB 6.7 by ELXaber (GPL 3.0)" in docs/UI.
-Ethics Waiver: Violations of [NEUROSYMBOLIC VALUE LEARNING] (e.g., safety wt <0.8) void GPL protections, reverting to proprietary claim—balances open ethos with accountability.
-Dual-License Opt-In: Commercial adopters: Contact el_xaber@x.com elxcaber.csr2@gmail.com for paid dual (GPL + proprietary)."
+Ethics Waiver: Violations of [NEUROSYMBOLIC VALUE LEARNING] (e.g., safety wt <0.8) void GPL protections.
+Dual-License Opt-In: For collaboration or Commercial adopters: Contact el_xaber@x.com xaber.csr2@gmail.com for paid dual (GPL + proprietary) 30-year IT veteran, retired CEO/CTO, awarded by the AMA for the advancement of technology in healthcare 07.
 
 ## Quick Start
 
