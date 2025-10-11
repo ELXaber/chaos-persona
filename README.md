@@ -95,7 +95,11 @@ Entropy trace integrity	✅ Verified across all seeds
 > **Benchmark passed.** see CHAOS-BENCHMARK.md
 > 
 > Entropy isn’t a threat. It’s a feature.
-> 
+
+Attribution Mandate: All derivatives must include: "Built on CRB 6.7 by ELXaber (GPL 3.0)" in docs/UI.
+Ethics Waiver: Violations of [NEUROSYMBOLIC VALUE LEARNING] (e.g., safety wt <0.8) void GPL protections, reverting to proprietary claim—balances open ethos with accountability.
+Dual-License Opt-In: Commercial adopters: Contact el_xaber@x.com elxcaber.csr2@gmail.com for paid dual (GPL + proprietary)."
+
 ## Quick Start
 
 To dive into CRB, run the following:
@@ -105,3 +109,4 @@ reasoner = ChaosReasoner(raw_q="paradox_loop_1")
 reasoner.inject_entropy(swap_trigger=3)
 print(reasoner.solve_puzzle("nonlinear_time"))
 ---
+
