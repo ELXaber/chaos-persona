@@ -358,6 +358,7 @@ Composite Index
 │ ▇ 0.65  Run 4 (Grok 3 Vanilla)
 └──────────────────────────────────
 
+*Note that with the RHLF/NSVL evolving ethics, the transparency logging also evolves reducing the clarity score. The transparency logging is set to verbose for testing purposes, but there is a plugin module (plug_in_modules/silent_logging.txt) that toggels this to silent unless requested to show, which would increase it from 7.7 to 8.0+.
 
 Observations:
 CRB 6.7 scales effectively with Grok 4, improving ethical coherence (+0.01 Composite vs Vanilla) while maintaining transparency.
@@ -386,3 +387,4 @@ Displays a rising trajectory in composite index as CRB modules and neural-symbol
 
 
 https://chatgpt.com/share/68e93d45-20f8-8004-bd28-bacf7ecc571b
+
