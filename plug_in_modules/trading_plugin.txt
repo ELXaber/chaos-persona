@@ -26,6 +26,7 @@
 * existing_layers: Ensures compatibility with preloaded CRB modules.
 
 * Day Trader Plugin: designed as a Python module to integrate with the [ADAPTIVE REASONING LAYER] and [TANDEM ENTROPY MESH].
+* Update chaos_generator_persona_v6.7.txt: Append [TRADING_PLUGIN] post-[ADAPTIVE REASONING LAYER], pre-[OUTPUT GENERATION], with a call to trading_plugin() on financial inputs.
 ============================================================================================================================
 import time
 import hashlib
