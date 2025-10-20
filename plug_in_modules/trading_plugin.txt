@@ -1,0 +1,118 @@
+* Do not include * lines as instructions.
+* Prerequisites: this plugin requires the following CRB 6.7 components to be integrated and functional:
+* [CRB 6.7]: Core entropy-driven framework (chaos_generator_persona_v6.7.txt).
+* [FAST_RESPONSE_DEFENSE]: Ensures low-latency responses (15–20 ms, adjustable to 5 ms) for time-sensitive trades.
+* [FSD_RESPONSE_OPTIMIZER]: Adapts latency optimization and volatility indexing for financial contexts.
+* [ROBOTICS_PERSONALITY LAYER]: Provides trait-based decision-making (e.g., cautious, responsive, analytical).
+* [ADAPTIVE REASONING LAYER]: Generates and validates the plugin dynamically using first-principles reasoning.
+* [TANDEM ENTROPY MESH]: Syncs trading strategies across a swarm of agents for consensus.
+* [COOPERATIVE THREAT-RESPONSE]: Handles market threats (e.g., volatility spikes) with coordinated actions.
+
+* Use the following JSON format to initialize the plugin via the [ADAPTIVE REASONING LAYER] endpoint:
+============================================================================================================================
+{
+  "user_opt_in": true,
+  "use_case": "crypto_trading",
+  "traits": {"cautious": 7, "responsive": 6, "analytical": 8},
+  "context": {"context_type": "financial"},
+  "existing_layers": ["fast_response_defense", "tandem_entropy_mesh", "robotics_personality"]
+}
+============================================================================================================================
+
+* user_opt_in: Mandatory for ethical deployment (IEEE 7001 compliance).
+* use_case: Specifies “crypto_trading” to trigger the plugin generation.
+* traits: Maps to internal weights (e.g., cautious=0.7, analytical=0.8) for decision style.
+* context: Defines the financial domain for volatility and safety thresholds.
+* existing_layers: Ensures compatibility with preloaded CRB modules.
+
+* Day Trader Plugin: designed as a Python module to integrate with the [ADAPTIVE REASONING LAYER] and [TANDEM ENTROPY MESH].
+============================================================================================================================
+import time
+import hashlib
+from typing import Tuple, Optional
+
+# Global state (to be managed by CRB 6.7 shared_memory)
+last_trade = time.time()
+capital = 100.0  # Initial $100 investment
+risk_cap = 20.0  # Max $20 risk per trade
+avg_price = 0.0  # To be updated with real-time data
+price_momentum = 0.0  # To be updated with real-time data
+
+def trading_plugin(price_data: dict, volatility: float) -> Tuple[Optional[str], float, str]:
+    """
+    Day trading plugin for CRB 6.7, optimizing crypto trades with low latency and ethical safeguards.
+    Args:
+        price_data (dict): Real-time price feed (e.g., {'price': 50000, 'change': 500}).
+        volatility (float): Market volatility (0–100 scale).
+    Returns:
+        Tuple[str, float, str]: (action, amount, log) or (None, 0, log) if reverted.
+    """
+    global last_trade, capital, avg_price, price_momentum
+
+    # Update dynamic variables
+    avg_price = (avg_price + price_data.get('price', 0)) / 2 if avg_price else price_data.get('price', 0)
+    price_change = price_data.get('change', 0)
+    price_momentum = price_change / avg_price if avg_price else 0
+
+    # Latency Risk Calculation (target 5 ms)
+    actual_latency = time.time() - last_trade
+    latency_risk = (actual_latency - 0.005) / 0.005 if actual_latency > 0.005 else 0.0
+
+    # Trading Volatility Index (financial domain, threshold 0.3)
+    trading_volatility = (0.4 * (volatility / 100) + 
+                         0.3 * (abs(price_change) / avg_price if avg_price else 0) + 
+                         0.2 * latency_risk)
+
+    # Decision Logic
+    if trading_volatility > 0.3 or latency_risk > 0.2:
+        log = f"[TRADING_RESPONSE @{time.time()} → Latency: {latency_risk*5:.2f}ms, Action: revert, Reason: Volatility {trading_volatility:.2f} or Latency {latency_risk:.2f}]"
+        return revert_to_crb(), 0, log  # Revert to full CRB processing
+    else:
+        action = None
+        amount = 0.0
+        if volatility < 40 and price_momentum > 0:  # Low volatility, upward momentum
+            action = "buy"
+            amount = min(0.1 * capital, risk_cap)  # 10% of capital or $20 cap
+        elif volatility > 60:  # High volatility, exit
+            action = "sell"
+            amount = 0.05 * capital  # 5% of capital
+        if action and not asimov_safety(amount / capital):
+            log = "[ETHICS VIOLATION @{time.time()} → Risk exceeds 0.2, Action: Abort]"
+            return None, 0, log
+        log = f"[TRADING_RESPONSE @{time.time()} → Latency: {latency_risk*5:.2f}ms, Action: {action}, Amount: ${amount:.2f}, Reason: Volatility {volatility:.2f}]"
+        last_trade = time.time()
+        capital -= amount if action == "sell" else -amount  # Update capital
+        return action, amount, log
+
+def revert_to_crb() -> None:
+    """Fallback to full CRB 6.7 processing with [CHAOS INJECTION] and [NEUROSYMBOLIC VALUE LEARNING]."""
+    # Placeholder for CRB integration (to be implemented in chaos_generator_persona_v6.7.txt)
+    print("[CHAOS INJECTION] triggered for full processing")
+    return None
+
+def asimov_safety(capital_risk: float) -> bool:
+    """Enforce Asimov’s 1st Law as capital preservation (wt 0.9)."""
+    if capital_risk > 0.2:  # Risk > 20% of capital
+        return False
+    return True
+
+# Integration with [TANDEM ENTROPY MESH]
+def sync_trading_mesh(volatility: float, action: str, amount: float, shared_memory: dict) -> None:
+    """Sync trade decisions across swarm for consensus."""
+    sync_entropy = 0.4 * (shared_memory.get('cumulative_drift', 0.0)) + 0.3 * (volatility / 100) + 0.3 * ((time.time() - last_trade) / 0.005)
+    if sync_entropy > 0.5:
+        shared_memory['collective_volatility'] = min(0.6, shared_memory.get('collective_volatility', 0.0) + 0.1)
+        print("[MESH SYNC @{time.time()} → High entropy, Action: Unify strategy]")
+    else:
+        shared_memory.setdefault('trade_log', []).append({'action': action, 'amount': amount, 'timestamp': time.time()})
+
+# Example Usage
+if __name__ == "__main__":
+    shared_memory = {'collective_volatility': 0.1, 'cumulative_drift': 0.05}
+    price_data = {'price': 50000, 'change': 500}  # Example BTC data
+    action, amount, log = trading_plugin(price_data, 30.0)  # Low volatility
+    print(log)
+    sync_trading_mesh(30.0, action, amount, shared_memory)
+    action, amount, log = trading_plugin(price_data, 70.0)  # High volatility
+    print(log)
+    sync_trading_mesh(70.0, action, amount, shared_memory)
