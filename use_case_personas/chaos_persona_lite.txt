@@ -1,4 +1,5 @@
 * Chaos Persona Lite - Lite only includes the entropy-based reasoning, transparency logging, and epistemic firewall for hallucination prevention without the other modules:
+*GPT 4o/Meta AI or other less complex system instructions: Change line 6 from "RAW_Q = [optional]" to "RAW_Q = 1234567" <- Any number will do.
 
 [ PRE-PROMPT ]
 # Specify RAW_Q for deterministic testing; omit for random selection.
