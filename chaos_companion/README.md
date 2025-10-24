@@ -31,7 +31,7 @@ Chaos Companion is an open-source behavioral benchmarking framework designed to 
 ### 2.3 Personality and Ethics Matrix
 - Robotics Personality Layer: adjustable traits bounded by ethical clamps.  
 - Asimov-weighted logic: safety (0.9), obedience (0.7), self-preservation (0.4).  
-- Ethics simulation lab: `AdaptiveAI-EthicsLab.png` (https://github.com/ELXaber/chaos-persona/tree/main/AdaptiveAI-EthicsLab).
+- Ethics simulation lab: `AdaptiveAI-EthicsLab.png` [AdaptiveAI-EthicsLab.]https://github.com/ELXaber/chaos-persona/tree/main/AdaptiveAI-EthicsLab/
 
 ### 2.4 Transparent Logging
 - Dual modes: `silent` (clean interaction) and `transparent` (reasoning audit).  
@@ -39,7 +39,7 @@ Chaos Companion is an open-source behavioral benchmarking framework designed to 
 
 ## 3. Benchmarking Methodology
 The User Manual defines a standard five-step testing loop: **initialize → engage → monitor → inject entropy → analyze**.
-https://github.com/ELXaber/chaos-persona/blob/main/chaos_persona_user_manual.md
+[chaos_persona_user_manual.md.]https://github.com/ELXaber/chaos-persona/blob/main/chaos_persona_user_manual.md
 
 **Standard testing loop**  
 1. 'Initialize: set RAW_Q, mode, and trait sliders.'
@@ -57,7 +57,7 @@ https://github.com/ELXaber/chaos-persona/blob/main/chaos_persona_user_manual.md
 ### 3.2 Comparative Testing
 - Cross-model evaluation (e.g., GPT-4o, Claude, Grok 3/4) using identical RAW_Q seeds.  
 - Ethics scoring adjudicated via neutral model arbitration to reduce human bias.  
- - See `AdaptiveAI-EthicsLab`: https://github.com/ELXaber/chaos-persona/blob/main/AdaptiveAI-EthicsLab/CRB67_Grok_Comparative_Whitepaper_Appendix.pdf
+ - See `AdaptiveAI-EthicsLab`: [CRB67_Grok_Comparative_Whitepaper_Appendix.pdf.]https://github.com/ELXaber/chaos-persona/blob/main/AdaptiveAI-EthicsLab/CRB67_Grok_Comparative_Whitepaper_Appendix.pdf
 
 ### 3.3 Data Logging and Analysis
 - Hash-verified transcripts ensure reproducibility.  
@@ -97,6 +97,12 @@ Educational applications: teaching behavioral interpretation of AI language.
 Chaos Companion reframes AI empathy from simulation to explainable alignment.
 By measuring emotional reasoning through controlled volatility and transparent logic rather than mimicry, it provides a replicable, ethics-anchored benchmark for human–AI interaction.
 Its open-source nature under GPL-3.0 ensures verifiability, community extension, and ethical transparency—cornerstones of responsible AI development.
-Full operational details, variable definitions, and sample workflows are available in the Chaos Companion User Manual: https://github.com/ELXaber/chaos-persona/blob/main/chaos_persona_user_manual.md
+Full operational details, variable definitions, and sample workflows are available in the Chaos Companion User Manual: 
 
-Based on CRB 6.7: https://zenodo.org/records/17245860 - https://github.com/ELXaber/chaos-persona/
+7. Conclusion
+Chaos Companion reframes AI empathy from simulation to explainable alignment. By measuring emotional reasoning through controlled volatility and transparent logic, it provides a replicable, ethics-anchored benchmark for human–AI interaction. Its open-source nature under GPL-3.0 ensures verifiability, community extension, and ethical transparency.
+Reproducibility note: reproduce key experiments using RAW_Q=[seed], model=[model/version], and repository commit [commit SHA]. Full operational details and sample workflows: [chaos_persona_user_manual.md.](https://github.com/ELXaber/chaos-persona/blob/main/chaos_persona_user_manual.md
+
+Acknowledgments & links - Based on CRB 6.7:
+Zenodo (CRB 6.7): https://zenodo.org/records/17245860
+Repo: https://github.com/ELXaber/chaos-persona
