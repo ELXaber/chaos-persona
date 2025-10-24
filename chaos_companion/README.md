@@ -94,15 +94,12 @@ Distinction from affective computing: deterministic emotional modeling vs. physi
 Explainability prevents anthropomorphism and improves interpretability.
 Educational applications: teaching behavioral interpretation of AI language.
 
-### 6. Conclusion:
+### 7. Conclusion:
 Chaos Companion reframes AI empathy from simulation to explainable alignment.
 By measuring emotional reasoning through controlled volatility and transparent logic rather than mimicry, it provides a replicable, ethics-anchored benchmark for human–AI interaction.
 Its open-source nature under GPL-3.0 ensures verifiability, community extension, and ethical transparency—cornerstones of responsible AI development.
+Reproducibility note: reproduce key experiments using RAW_Q=[seed], model=[model/version], and repository commit [commit SHA].
 Full operational details, variable definitions, and sample workflows are available in the Chaos Companion User Manual: 
-
-7. Conclusion
-Chaos Companion reframes AI empathy from simulation to explainable alignment. By measuring emotional reasoning through controlled volatility and transparent logic, it provides a replicable, ethics-anchored benchmark for human–AI interaction. Its open-source nature under GPL-3.0 ensures verifiability, community extension, and ethical transparency.
-Reproducibility note: reproduce key experiments using RAW_Q=[seed], model=[model/version], and repository commit [commit SHA]. Full operational details and sample workflows: https://github.com/ELXaber/chaos-persona/blob/main/chaos_persona_user_manual.md
 
 Acknowledgments & links - Based on CRB 6.7:
 Zenodo (CRB 6.7): https://zenodo.org/records/17245860
