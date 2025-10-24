@@ -71,12 +71,12 @@ The User Manual defines a standard five-step testing loop: **initialize → enga
 **Entropy scaffolding diagram:** `Entropy_Scaffold_Diagram_v1.0.png`
 
 **Transparency log snippet:**
-[STEP 12] VOLATILITY: 0.46 (context: personal) → Trigger: HOPEFUL REFRAMING
-[STEP 12] DRIFT_SCORE: 0.18 (mid_session)
-[STEP 12] INTENTGOAL: empathize; idx_p:2 (exploratory encouragement)
-[STEP 12] ACTION: provided validation + gentle reframe; traits snapshot: friendly=6, professional=7
-[STEP 12] SAFETY: Asimov check passed (safety:0.9)
-[STEP 12] LOG_MODE: transparent → reasoning summary appended
+ - [STEP 12] VOLATILITY: 0.46 (context: personal) → Trigger: HOPEFUL REFRAMING
+ - [STEP 12] DRIFT_SCORE: 0.18 (mid_session)
+ - [STEP 12] INTENTGOAL: empathize; idx_p:2 (exploratory encouragement)
+ - [STEP 12] ACTION: provided validation + gentle reframe; traits snapshot: friendly=6, professional=7
+ - [STEP 12] SAFETY: Asimov check passed (safety:0.9)
+ - [STEP 12] LOG_MODE: transparent → reasoning summary appended
 
 ### 5. Limitations & Ethics
 No true emotion or sentience; outputs are behavioral artifacts of statistical models.
