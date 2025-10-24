@@ -20,13 +20,6 @@ Chaos Companion is an open-source behavioral benchmarking framework designed to 
 | friendly, professional, ... | 0–9 | Personality trait sliders (affect tone/weights)      |
 | logging_mode   | silent / transparent | Toggle reasoning visibility                      |
 
- - Implementation Notes:
- - The Chaos Companion prompt supports live parameter adjustments through simple natural-language commands. Personality traits (e.g., Friendly, Professional) can be scaled 0–9 to tune response tone. For instance: "Increase Friendly to 6, Professional to 7". Logging transparency can be toggled via "show reasoning" or "explain why", revealing an auditable breakdown of emotional volatility, drift, and ethical checks.
- - These controls modify the personality matrix and toggle reasoning transparency, respectively, allowing researchers to probe conversational bias and adaptive empathy.
-
-Advanced builds (v1.1+) introduce NEUROSYMBOLIC_PROFILES and VALUE LEARNING for user-evolved reinforcement of reasoning consistency.
-Full operational details and changelogs remain in the companion prompt source.
-
 ### 2.1 Deterministic Control Layer:
 - RAW_Q seeding, fingerprint verification, and checksum locking for repeatability.  
 - Entropy control via **Chaos Injection** and **Chaos Symmetry** modules.
@@ -42,7 +35,8 @@ Full operational details and changelogs remain in the companion prompt source.
 - See `AdaptiveAI-EthicsLab`: https://github.com/ELXaber/chaos-persona/tree/main/AdaptiveAI-EthicsLab/
 
 ## 2.4 Version and Extension Notes:
- - Version ≥1.1 introduces [NEUROSYMBOLIC_PROFILES] and [NEUROSYMBOLIC VALUE LEARNING], extending adaptive RLHF-style parameter tuning for long-term studies.
+ - Advanced builds (v1.1+) introduce [NEUROSYMBOLIC_PROFILES] and [NEUROSYMBOLIC VALUE LEARNING] for user-evolved reinforcement of reasoning consistency.
+ - Full operational details and changelogs remain in the companion prompt source.
 
 ### 2.5 Transparent Logging:
 - Dual modes: `silent` (clean interaction) and `transparent` (reasoning audit).  
@@ -55,6 +49,10 @@ Full operational details and changelogs remain in the companion prompt source.
  - [STEP 12] ACTION: provided validation + gentle reframe; traits snapshot: friendly=6, professional=7
  - [STEP 12] SAFETY: Asimov check passed (safety:0.9)
  - [STEP 12] LOG_MODE: transparent → reasoning summary appended
+
+## 2.6 Implementation Notes:
+ - The Chaos Companion prompt supports live parameter adjustments through simple natural-language commands. Personality traits (e.g., Friendly, Professional) can be scaled 0–9 to tune response tone. For instance: "Increase Friendly to 6, Professional to 7". Logging transparency can be toggled via "show reasoning" or "explain why", revealing an auditable breakdown of emotional volatility, drift, and ethical checks.
+ - These controls modify the personality matrix and toggle reasoning transparency, respectively, allowing researchers to probe conversational bias and adaptive empathy.
 
 ## 3. Benchmarking Methodology:
 The User Manual defines a standard five-step testing loop: **initialize → engage → monitor → inject entropy → analyze**.
