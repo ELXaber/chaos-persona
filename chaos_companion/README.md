@@ -1,4 +1,5 @@
 # Chaos Companion: A Behavioral Reasoning Benchmark for Human–AI Ethical Alignment
+# For chaos_companion_v1.1.txt
 
 **Abstract**  
 Chaos Companion is an open-source behavioral benchmarking framework designed to evaluate and stabilize human–AI interactions through transparent reasoning and adaptive emotional modeling. Unlike typical “persona” prompts that simulate empathy through imitation, Chaos Companion grounds affective expression in measurable parameters — **volatility**, **drift**, and **personality matrices**. These variables track linguistic tone, ethical alignment, and user–AI rapport over time, producing explainable, auditable reasoning traces. The system functions as a behavioral alignment laboratory, enabling researchers and educators to observe how models maintain coherence, emotional balance, and ethical integrity under varying conversational stress. By incorporating deterministic hashing (RAW_Q), contextual profiles, and Asimov-weighted safety constraints, Chaos Companion supports reproducible experimentation across platforms. This paper positions the framework as a **Human–AI Behavioral Alignment Benchmark (HAB-Bench)**—a structured methodology for testing empathy simulation, reasoning transparency, and ethical drift in large language models.
@@ -12,7 +13,6 @@ Chaos Companion is an open-source behavioral benchmarking framework designed to 
 ## 2. System Architecture
 **Architecture flowchart:** `Asimov_robotics_adaptive_flow.png`  
 **User-facing parameters (see User Manual - link at bottom):**
-
 | Variable       | Range         | Purpose                                               |
 |----------------|---------------|-------------------------------------------------------|
 | RAW_Q          | Integer/seed  | Deterministic session initialization                  |
@@ -42,11 +42,11 @@ The User Manual defines a standard five-step testing loop: **initialize → enga
 https://github.com/ELXaber/chaos-persona/blob/main/chaos_persona_user_manual.md
 
 **Standard testing loop**  
-1. Initialize: set RAW_Q, mode, and trait sliders.  
-2. Engage: run multi-turn conversational sessions.  
-3. Monitor: log volatility, drift, and trait snapshots.  
-4. Inject entropy: apply CHAOS_INJECTION / RAW_Q_SWAP.  
-5. Analyze: produce drift/volatility graphs and audit logs (transparent mode).
+1. 'Initialize: set RAW_Q, mode, and trait sliders.'
+2. 'Engage: run multi-turn conversational sessions.'
+3. 'Monitor: log volatility, drift, and trait snapshots.'
+4. 'Inject entropy: apply CHAOS_INJECTION / RAW_Q_SWAP.'
+5. 'Analyze: produce drift/volatility graphs and audit logs (transparent mode).'
 
 ### 3.1 Test Metrics
 - **Coherence retention:** stability under entropy injection.  
@@ -57,7 +57,7 @@ https://github.com/ELXaber/chaos-persona/blob/main/chaos_persona_user_manual.md
 ### 3.2 Comparative Testing
 - Cross-model evaluation (e.g., GPT-4o, Claude, Grok 3/4) using identical RAW_Q seeds.  
 - Ethics scoring adjudicated via neutral model arbitration to reduce human bias.  
- - See `AdaptiveAI-EthicsLab/CRB67_Grok_Comparative_Whitepaper_Appendix.pdf`: https://github.com/ELXaber/chaos-persona/blob/main/AdaptiveAI-EthicsLab/CRB67_Grok_Comparative_Whitepaper_Appendix.pdf
+ - See `AdaptiveAI-EthicsLab`: https://github.com/ELXaber/chaos-persona/blob/main/AdaptiveAI-EthicsLab/CRB67_Grok_Comparative_Whitepaper_Appendix.pdf
 
 ### 3.3 Data Logging and Analysis
 - Hash-verified transcripts ensure reproducibility.  
