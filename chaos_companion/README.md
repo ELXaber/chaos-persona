@@ -101,6 +101,6 @@ Its open-source nature under GPL-3.0 ensures verifiability, community extension,
 Reproducibility note: reproduce key experiments using RAW_Q=[seed], model=[model/version], and repository commit [commit SHA].
 Full operational details, variable definitions, and sample workflows are available in the Chaos Companion User Manual: 
 
-Acknowledgments & links - Based on CRB 6.7:
-Zenodo (CRB 6.7): https://zenodo.org/records/17245860
-Repo: https://github.com/ELXaber/chaos-persona
+## Acknowledgments & links - Based on CRB 6.7:
+ - Zenodo (CRB 6.7): https://zenodo.org/records/17245860
+ - Repo: https://github.com/ELXaber/chaos-persona
