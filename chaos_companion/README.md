@@ -86,7 +86,7 @@ The User Manual defines a standard five-step testing loop: **initialize → enga
 - Comparative tests show clearer self-correction and reasoning transparency relative to standard “empathetic” prompts.  
 **Entropy scaffolding diagram:** `Entropy_Scaffold_Diagram_v1.0.png`
 
-### 5. Limitations & Ethics
+## 5. Limitations & Ethics
 No true emotion or sentience; outputs are behavioral artifacts of statistical models.
 Performance depends on base model capability and RLHF constraints.
 GPL-3.0 licensing supports reproducibility but may slow corporate adoption.
@@ -109,6 +109,6 @@ Its open-source nature under GPL-3.0 ensures verifiability, community extension,
 Reproducibility note: reproduce key experiments using RAW_Q=[seed], model=[model/version], and repository commit [commit SHA].
 Full operational details, variable definitions, and sample workflows are available in the Chaos Companion User Manual: 
 
-### Acknowledgments & links - Based on CRB 6.7:
+## Acknowledgments & links - Based on CRB 6.7:
  - Zenodo (CRB 6.7): https://zenodo.org/records/17245860
  - Repo: https://github.com/ELXaber/chaos-persona
