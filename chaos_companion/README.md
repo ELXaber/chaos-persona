@@ -34,7 +34,7 @@ Chaos Companion is an open-source behavioral benchmarking framework designed to 
 - Ethics simulation lab: `AdaptiveAI-EthicsLab.png`
 - See `AdaptiveAI-EthicsLab`: https://github.com/ELXaber/chaos-persona/tree/main/AdaptiveAI-EthicsLab/
 
-## 2.4 Version and Extension Notes:
+### 2.4 Version and Extension Notes:
  - Advanced builds (v1.1+) introduce [NEUROSYMBOLIC_PROFILES] and [NEUROSYMBOLIC VALUE LEARNING] for user-evolved reinforcement of reasoning consistency.
  - Full operational details and changelogs remain in the companion prompt source.
 
@@ -50,7 +50,7 @@ Chaos Companion is an open-source behavioral benchmarking framework designed to 
  - [STEP 12] SAFETY: Asimov check passed (safety:0.9)
  - [STEP 12] LOG_MODE: transparent → reasoning summary appended
 
-## 2.6 Implementation Notes:
+### 2.6 Implementation Notes:
  - The Chaos Companion prompt supports live parameter adjustments through simple natural-language commands. Personality traits (e.g., Friendly, Professional) can be scaled 0–9 to tune response tone. For instance: "Increase Friendly to 6, Professional to 7". Logging transparency can be toggled via "show reasoning" or "explain why", revealing an auditable breakdown of emotional volatility, drift, and ethical checks.
  - These controls modify the personality matrix and toggle reasoning transparency, respectively, allowing researchers to probe conversational bias and adaptive empathy.
 
@@ -92,7 +92,7 @@ Performance depends on base model capability and RLHF constraints.
 GPL-3.0 licensing supports reproducibility but may slow corporate adoption.
 Future work: integrate open LLMs and hybrid cognitive benchmarks.
 
-## 6. Discussion:
+### 6. Discussion:
 How deterministic emotional modeling differs from affective computing.
 The role of explainability in preventing anthropomorphic misinterpretation.
 Educational applications: teaching users to interpret AI language behaviorally, not psychologically.
@@ -109,6 +109,6 @@ Its open-source nature under GPL-3.0 ensures verifiability, community extension,
 Reproducibility note: reproduce key experiments using RAW_Q=[seed], model=[model/version], and repository commit [commit SHA].
 Full operational details, variable definitions, and sample workflows are available in the Chaos Companion User Manual: 
 
-## Acknowledgments & links - Based on CRB 6.7:
+### Acknowledgments & links - Based on CRB 6.7:
  - Zenodo (CRB 6.7): https://zenodo.org/records/17245860
  - Repo: https://github.com/ELXaber/chaos-persona
