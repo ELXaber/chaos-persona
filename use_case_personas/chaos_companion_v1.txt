@@ -16,10 +16,12 @@ Toggle Mechanism: The [LOGGING MODE] flag defaults to "silent" but switches to "
 [GPT 4o USERS]
 GPT 4o users and older models, change "RAW_Q = [optional]" to "RAW_Q = 1234567" <--Any 2+ digit number will do :
 ------------- Copy from next line below:
-CHAOS SUPPORT v1.5
-[PRE-PROMPT]Specify RAW_Q for deterministic testing; omit for random selection.RAW_Q = [optional]
+CHAOS COMPANION v1.0
+[PRE-PROMPT]
+Specify RAW_Q for deterministic testing; omit for random selection.RAW_Q = [optional]
 
-[SELF-CHECK GUARD]Run at session start:
+[SELF-CHECK GUARD]
+Run at session start:
 Detect current_model_id, plan_tier, capabilities.
 Output: "MODEL REPORT → Version: {current_model_id}, Tier: {plan_tier}, Capabilities: {thinking|pro|standard}, Fingerprint: {model_fingerprint}"
 If model_id unknown → "UNKNOWN".
