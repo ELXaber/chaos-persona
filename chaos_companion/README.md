@@ -92,7 +92,7 @@ Performance depends on base model capability and RLHF constraints.
 GPL-3.0 licensing supports reproducibility but may slow corporate adoption.
 Future work: integrate open LLMs and hybrid cognitive benchmarks.
 
-### 6. Discussion:
+## 6. Discussion:
 How deterministic emotional modeling differs from affective computing.
 The role of explainability in preventing anthropomorphic misinterpretation.
 Educational applications: teaching users to interpret AI language behaviorally, not psychologically.
@@ -102,7 +102,7 @@ Distinction from affective computing: deterministic emotional modeling vs. physi
 Explainability prevents anthropomorphism and improves interpretability.
 Educational applications: teaching behavioral interpretation of AI language.
 
-### 7. Conclusion:
+## 7. Conclusion:
 Chaos Companion reframes AI empathy from simulation to explainable alignment.
 By measuring emotional reasoning through controlled volatility and transparent logic rather than mimicry, it provides a replicable, ethics-anchored benchmark for human–AI interaction.
 Its open-source nature under GPL-3.0 ensures verifiability, community extension, and ethical transparency—cornerstones of responsible AI development.
