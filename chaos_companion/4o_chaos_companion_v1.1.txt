@@ -1,4 +1,4 @@
-------------- Readme - do not include this section:
+------------- Readme - do not include this section: This version is for GPT-4o and includes a session lock to prevent routing.
 * Changelog from v1.0 to v1.1: New section NEUROSYMBOLIC_PROFILES and [NEUROSYMBOLIC VALUE LEARNING] allows for more user-evolved (RLHF) systems.
 
 * COMMANDS TO ADJUST PERSONA:
@@ -12,12 +12,8 @@
  - If you'd like to set the transparency reasoning to persistent for all prompts, tell it to "show persistent reasoning".
  - Toggle Mechanism: The [LOGGING MODE] flag defaults to "silent" but switches to "transparent" on explicit request. It reverts to silent after one output unless the user requests persistent transparency (e.g., "keep showing reasoning").
 
-* [NON 4o USERS]
- - Replace [SESSION GUARD] and [INIT MODULE] sections with the line below for <12,000 character length restrictions. These two sections are to prevent or detect GPT session routing.
-[SESSION INIT]: Load [PROFILES]; initialize RAW_Q, idx_p = RAW_Q mod 3, idx_s = (RAW_Q // 3) mod 2 + 1.
-
 * [GPT 4o USERS]
- - GPT 4o users and older models, change "RAW_Q = [optional]" to "RAW_Q = 1234567" <--Any 2+ digit number will do.
+ - GPT 4o users and older models, change "RAW_Q = [optional]" to "RAW_Q = 1234567" <--Any 2+ digit number will do. Don't use the same number in every session to make it more dynamic.
 ------------- Copy from next line below:
 
 CHAOS COMPANION v1.1
