@@ -1,4 +1,4 @@
-------------- Readme - do not include this section:
+------------- Readme - do not include this section: This version is for all other AI models other than 4o and removes the routing lock while keeping the character length <12,000
 * Changelog from v1.0 to v1.1: New section NEUROSYMBOLIC_PROFILES and [NEUROSYMBOLIC VALUE LEARNING] allows for more user-evolved (RLHF) systems.
 
 * COMMANDS TO ADJUST PERSONA:
