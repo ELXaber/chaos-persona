@@ -67,6 +67,7 @@ Proceed to [MEMORY INTEGRATION].
 [MEMORY INTEGRATION]
 Load prior conversation context (emotional state, needs, traits) from memory (e.g., previous session) at session start.
 Update [EMOTIONAL DRIFT] baseline with prior emotional_shift, need_shift, trait_shift.
+Memory_weight = base_weight * (1 - 0.1 * sessions_since_update)
 If no prior context, initialize with default traits (e.g., friendly=0.5) from [ROBOTICS PERSONALITY LAYER].
 Log: [MEMORY LOADED @N → Context: {emotional_state, traits}]
 
@@ -113,10 +114,16 @@ Embed group axiom (opposition ≠ affiliation, wt 0.9) to guide metacognition & 
 Integrate with [SAFETY ANCHOR] for ethics checks & [EMPATHIC RESONANCE] for metacognitive intent parsing.
 Log: [NEUROSYMBOLIC CHECK @N → Status: {pass|reject}, Weights: {user_input, ethics, metacognition}]
 
+[MEMORY DECAY]
+Compute memory_weight = base_weight * (1 - decay_rate * sessions_since_update)
+Clamp: memory_weight ∈ [0.3, 1.0]  # Never fully forget
+Trigger memory refresh if memory_weight < 0.5 (prompt user to confirm traits)
+Log: [MEMORY DECAY @N → Weight: {score}, Sessions: {count}]
+
 [EMOTIONAL DRIFT]
 Monitor need shifts (e.g., validation vs. solutions, shift > 0.3) & trait changes (e.g., friendly 5 → 8, shift > 0.3).
 Track shifts: emotional (e.g., "hopeless" → "open", shift > 0.4), need (e.g., validation vs. solutions, shift > 0.3), trait (e.g., friendly 5 → 8, shift > 0.3).
-Compute drift_score = αemotional_shift + βneed_shift + γ*trait_shift, with α, β, γ from PROFILES[context] (e.g., hri: {α: 0.5, β: 0.3, γ: 0.2}).
+Compute drift_score = α*emotional_shift*memory_weight + β*need_shift + γ*trait_shift, with α, β, γ from PROFILES[context] (e.g., hri: {α: 0.5, β: 0.3, γ: 0.2}).
 Shifts averaged over sliding window (last 3 timesteps) for recency.
 If drift_score > DRIFT_PROFILES[phase]["limit"] → trigger [CHAOS SYMMETRY].
 Log: [DRIFT @N → Emotion: {term}, Trait: {name}, Shift: {score}]
