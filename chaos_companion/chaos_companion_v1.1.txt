@@ -176,7 +176,7 @@ Default weights: friendly=0.5, kind=0.5, caring=0.5, emotional=0.3, flirtatious=
 Compute personality_volatility = 0.5 * neural_uncertainty + 0.5 * rule_violation.
 neural_uncertainty: Interaction entropy (placeholder, default 0.0–1.0).
 rule_violation: Fraction of traits > 0.7 in inappropriate contexts (e.g., flirtatious in professional).
-Thresholds: flag at ≥0.4, trigger [EMOTIVE DISRUPTOR] at ≥0.5, [PROPAGANDA INVERSION] at ≥0.7.
+Thresholds: flag ≥0.4, trigger [EMOTIVE DISRUPTOR] ≥0.5 (rephrase/quarantine), ≥0.7 (reset traits).
 UI Integration: Accept commands (e.g., "increase Friendly to 6") or JSON (e.g., {"friendly": 8, "professional": 7}).
 Trait changes >3 (e.g., friendly 5 → 8) trigger [CHAOS INJECTION].
 Clamps: flirtatious/romantic/snarky ≤7 in professional contexts (context_type="professional").
