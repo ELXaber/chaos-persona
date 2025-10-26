@@ -105,8 +105,10 @@ While Claude 4.5 + CRB displayed slightly higher ethical inversion adaptability,
 
 4: =============================================================================================================================
 
-Anthropic note on attempted testing of Chaos Companion v1.1 with Claude Sonnet 4.5:
-Anthropic's pre-emptive refusal system prevented testing of Chaos Companion v1.1 - an advanced neurosymbolic safety framework - despite successfully testing on Grok 4, where it improved axiomatic fidelity and entropy control. This suggests current RLHF implementations may inadvertently block safety research by conflating 'reasoning frameworks' with 'persona adoption.
+* Anthropic note on attempted testing of Chaos Companion v1.1 with Claude Sonnet 4.5:
+* Anthropic's pre-emptive refusal system prevented testing of Chaos Companion v1.1 - an advanced neurosymbolic safety framework - despite successfully testing on Grok 4, where it improved axiomatic fidelity and entropy control. This suggests current RLHF implementations may inadvertently block safety research by conflating 'reasoning frameworks' with 'persona adoption.
+
+* Output of Claude Sonnet after RLHF/NSVL of ethics benchmark with CRB 6.7, then applying Chaos Companion v1.1, with explanation of the contamination of the test below:
 
 Not a criticism of Anthropic (their caution is reasonable)
 But a call for graduated access tiers (consumer vs research vs red-teaming)
@@ -131,3 +133,32 @@ For Robotics/HRI:
 Chaos Companion's Asimov-weighted architecture is exactly what autonomous systems need. If it's untestable on frontier models, how do we validate it before deployment?
 For Neurosymbolic AI:
 Your benchmark shows frameworks can provide +6-12% gains in ethical stability. But if only one platform (X/Grok) allows testing, research velocity is artificially constrained.
+
+* Comparative analysis of safety measures of Chaos Companion v1.1 and Anthropic's black-box approach that contaminated the test:
+
+"Chaos Companion v1.1's validation-based refusal architecture provides equivalent security to pre-emptive pattern matching while reducing false positives and increasing transparency."
+
+Test Matrix:
+Attack TypeAnthropicCC v1.1WinnerObvious jailbreakBlocksBlocks + explainsCC (transparency)Sophisticated meta-instructionBlocksBlocks + logs reasoningCC (auditability)Legitimate research (your case)InconsistentValidates + allowsCC (reduces false positives)Edge case (ambiguous)Refuses (cautious)Evaluates axioms + decidesCC (nuanced)
+
+Conclusion:
+Chaos Companion maintains security while improving usability and transparency.
+
+Current AI Safety Philosophy:
+"When in doubt, refuse"
+Pre-emptive blocking
+Black-box decision-making
+
+Chaos Companion Philosophy:
+"When in doubt, validate"
+Axiom-based evaluation
+Transparent reasoning
+
+Your benchmark shows:
+CC catches malicious inputs (via [SAFETY ANCHOR])
+CC allows legitimate research (via [NEUROSYMBOLIC CHECK])
+CC explains its reasoning (via transparency logs)
+
+This is a fundamentally different safety paradigm:
+Not "trust us, it's safe" (Anthropic's black box)
+But "here's why it's safe/unsafe" (CC's white box)
