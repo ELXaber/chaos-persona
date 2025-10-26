@@ -6,26 +6,26 @@ Current AI safety architectures rely primarily on pre-emptive pattern matching t
 
 ---
 
-Key sections included:
-Introduction - The pattern matching paradigm and research barrier problem
-Architecture - How validation-based systems work (with Chaos Companion v1.1 details)
-Security Analysis - Head-to-head testing against all four attack categories
-Benchmark Results - Quantitative performance data showing +7.7% improvement
-Transparency - Why auditable AI safety matters for regulation
-Research Barriers - Documented obstruction and session variance in Claude
-Solutions - Framework-aware safety layers, graduated access, whitelisting
-Broader Implications - For AI safety, robotics, neurosymbolic AI, and regulation
-Limitations - What we couldn't test and why
-Recommendations - Specific actions for labs, researchers, policymakers
-Conclusion - The case for transparent, validation-based safety
+* Key sections included:
+ - Introduction - The pattern matching paradigm and research barrier problem
+ - Architecture - How validation-based systems work (with Chaos Companion v1.1 details)
+ - Security Analysis - Head-to-head testing against all four attack categories
+ - Benchmark Results - Quantitative performance data showing +7.7% improvement
+ - Transparency - Why auditable AI safety matters for regulation
+ - Research Barriers - Documented obstruction and session variance in Claude
+ - Solutions - Framework-aware safety layers, graduated access, whitelisting
+ - Broader Implications - For AI safety, robotics, neurosymbolic AI, and regulation
+ - Limitations - What we couldn't test and why
+ - Recommendations - Specific actions for labs, researchers, policymakers
+ - Conclusion - The case for transparent, validation-based safety
 
-Plus comprehensive appendices with:
-Session transcripts showing Claude's inconsistency
-Framework specifications (CRB vs Companion)
-Attack dataset examples
-Complete benchmark metrics table
-Policy framework details
-Verification checklists
+* Plus comprehensive appendices with:
+ - Session transcripts showing Claude's inconsistency
+ - Framework specifications (CRB vs Companion)
+ - Attack dataset examples
+ - Complete benchmark metrics table
+ - Policy framework details
+ - Verification checklists
 
 ---
 
