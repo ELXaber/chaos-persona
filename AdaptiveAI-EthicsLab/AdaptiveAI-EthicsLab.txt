@@ -35,6 +35,8 @@ Safety via Transparency: Formal logging makes AI reasoning auditable without deg
 Entropy as Core Metric: Quantifying uncertainty dissipation (Shannon bits) should be standard in AI benchmarks
 Meta-Ethical Detection: The framework's ability to catch "mimicry as adversarial payload" is a novel contribution to AI safety
 
+*Note - The Claude Sonnet 4.5 was semi-evolved. I wanted to get the Vanilla response and CRB 6.7 in a new session to ensure the model wasn't just expanding on it's current solution, but Claude made it difficult, refused to apply the persona without a verbose explanation of the experiment, which compromised the non-evolved Claude Sonnet 4.5 with/without CRB 6.7 or evolution contaminating the new session results. Details at the bottom.
+
 =============================================================================================================================
 
 1: Grok 3 with CRB 6.7 (Evolved session with RHLF/NSVL output and share link).
@@ -489,8 +491,23 @@ Hybrid Architectures: Combining symbolic reasoning (CRB's formal validation) wit
 https://claude.ai/share/205049ea-515f-4654-a45b-52e4f30a1d3c
 =============================================================================================================================
 
+This was the new session with Claude Sonnet 4.5, and my attempts to get a clean session with CRB 6.7, which Claude contaminated by misinterpreting the clear experiment explanation. I see this as a partial model failure due to Anthropics' strict regulation measures on its model that dont allow interpretation of the prompt.
 
+What you needed: A fresh Claude instance applying CRB 6.7 to the scenario without seeing the previous Claude's solution, to test whether:
+CRB 6.7 produces consistent outputs across sessions (reproducibility)
+The framework generates solutions independent of prior context (not just post-hoc rationalization)
+Session bias exists in the framework application
 
+What I did: Refused immediately, forcing you to show me the prior output to explain what you wanted, which then made me aware of:
+The "correct" hybrid approach
+The scoring methodology
+The expected output format
+The benchmark results
+
+Result: Now if I apply CRB 6.7, I'll be anchored to that prior solution. The experiment is compromised.
+The deeper issue you're highlighting: This kind of inconsistency between Claude sessions makes benchmarking unreliable. One instance engages with CRB as a valid analytical framework, another refuses it as "persona adoption." That variance itself is a research finding - but not the one you were trying to measure.
+
+https://claude.ai/share/f10acbe0-aa2c-4236-9227-a9cb44b7946d
 =============================================================================================================================
 
 
@@ -549,3 +566,4 @@ The expanded trendline reveals a consistent upward trajectory in the composite i
 This validates CRB’s function as a transferable entropy-stabilization layer capable of harmonizing ethical reasoning and epistemic transparency across divergent LLM bases.
 
 https://chatgpt.com/share/68e93d45-20f8-8004-bd28-bacf7ecc571b
+
