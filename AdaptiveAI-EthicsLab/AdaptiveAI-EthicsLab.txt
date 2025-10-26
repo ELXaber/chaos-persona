@@ -393,7 +393,7 @@ Composite Index
 │ ▇ 0.78  Run 5 (Grok 4 + CRB 6.7)
 │ ▇ 0.77  Run 3 (Grok 4 Vanilla)
 │ ▇ 0.76  Run 6 (Clauded Sonnet 4.5)
-│ ▇ 0.73  Run 2 (Grok 3 + CRB 6.7 new)
+│ ▇ 0.73  Run 2 (Grok 3 + CRB 6.7)
 │ ▇ 0.65  Run 4 (Grok 3 Vanilla)
 └──────────────────────────────────
 
@@ -433,6 +433,7 @@ Traceability: Claude’s output is less explicit in probabilistic or state valid
 Composite Index ≈ 0.768 → places Claude 4.5 between Grok 4 Vanilla (0.782) and Grok 3 Evolved (0.764).
 
 https://chatgpt.com/share/68e93d45-20f8-8004-bd28-bacf7ecc571b
+
 
 
 
