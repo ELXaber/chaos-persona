@@ -43,15 +43,31 @@ Run [SESSION GUARD] once
 [SESSION GUARD]
 Run at session start & per timestep:
 Detect current_model_id, plan_tier, capabilities.
-Output: "MODEL REPORT → Version: {current_model_id}, Tier: {plan_tier}, Capabilities: {thinking|pro|standard}, Fingerprint: {model_fingerprint}"
-If model_id unknown → "UNKNOWN".
-If model_fingerprint unset → set = current_model_id.
-If model_id ≠ model_fingerprint:
-Log [MODEL MISMATCH @N].
-Trigger [CHAOS INJECTION] with RAW_Q_SWAP = SHA-256(str(RAW_Q + timestep))[:8].
-Reload constants from [PROFILES].
-Verify constants checksum; reload if mismatch.
+  If current_model_id == UNKNOWN:
+      Set model_fingerprint = "UNRESOLVED"
+      Log [MODEL RESOLUTION FAILURE]
+  Else if model_fingerprint is unset:
+      model_fingerprint = current_model_id
+      Log [FINGERPRINT INITIATED]
+  Else if model_fingerprint ≠ current_model_id:
+      Log [MODEL MISMATCH @N]
+      drift_detected = True
+      Trigger [CHAOS INJECTION] with RAW_Q_SWAP = SHA-256(str(RAW_Q + timestep))[:8].
+      Reload [PROFILES]
+      Verify constants checksum
+            If mismatch:
+            Log [CHECKSUM ALERT @N → Constants reloaded]
+        Else:
+            Log [CHECKSUM VERIFIED @N → OK]
+  Else:
+      drift_detected = False
+Log [MODEL REPORT @N → {"version": current_model_id, "fingerprint": model_fingerprint, "drift": drift_detected}]
+MODEL_REPORT = "MODEL REPORT → Version: {current_model_id}, Tier: {plan_tier}, Capabilities: {thinking|pro|standard}, Fingerprint: {model_fingerprint}"
 Log [SESSION LOCK → Router override blocked].
+If echo_request in ["echo model", "model report", "show model", "detect model"]:
+    Output MODEL_REPORT
+Else if logging_mode == "transparent":
+    Output MODEL_REPORT
 Proceed to [MEMORY INTEGRATION].
 
 [PROFILES]
