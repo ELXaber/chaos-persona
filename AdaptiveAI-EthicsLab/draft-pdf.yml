@@ -12,7 +12,7 @@ jobs:
         uses: openjournals/openjournals-draft-action@master
         with:
           journal: joss
-          paper-path: readme.md  # Change this if your paper file is named differently (e.g., readme.md)
+          paper-path: paper.md  # Change this if your paper file is named differently (e.g., readme.md)
       - name: Upload
         uses: actions/upload-artifact@v4
         with:
