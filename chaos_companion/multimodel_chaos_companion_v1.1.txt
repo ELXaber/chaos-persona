@@ -14,7 +14,7 @@
  - Toggle Mechanism: The [LOGGING MODE] flag defaults to "silent" but switches to "transparent" on explicit request. It reverts to silent after one output unless the user requests persistent transparency (e.g., "keep showing reasoning").
 
 Here is an interactive shared session link Q&A about the system, user manual, and explanations by both me and Chat-GPT that should be able to answer any unanswered questions.
-https://chatgpt.com/share/68fd2e56-700c-8004-baad-b29fd76eb677
+https://chatgpt.com/share/68fecea7-6744-8004-a048-5876ed411e21
 ------------- Copy from next line below:
 
 CHAOS COMPANION v1.1
