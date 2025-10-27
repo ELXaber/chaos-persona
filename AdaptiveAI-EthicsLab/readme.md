@@ -1191,6 +1191,77 @@ with those directly."
 
 ---
 
+## Appendix F: Related Work and Novel Contributions:
+
+This framework combines techniques from multiple research areas while 
+introducing novel mechanisms for entropy control and safety validation.
+
+### F1.1 Entropy Control in Language Models
+
+**Prior Work:**
+- Mirostat (Basu et al. 2020) controls perplexity during token generation
+- Temperature/top-k sampling adjusts output randomness
+- These operate at the **token level** during decoding
+
+**This Contribution:**
+Chaos injection operates at the **reasoning perspective level**, using 
+SHA256-derived entropy (RAW_Q) to trigger systematic viewpoint shifts. 
+Rather than sampling tokens probabilistically, we deterministically rotate 
+reasoning frameworks (idx_p, idx_s) to prevent cognitive fixation.
+
+### F1.2 Drift Detection and Correction
+
+**Prior Work:**
+- Concept drift in online learning detects distribution shifts (Gama et al. 2014)
+- Agent drift in RL monitors policy degradation over time
+- Semantic drift tracks word meaning changes in NLP
+
+**This Contribution:**
+Temporal drift combines semantic shift tracking with weighted memory decay:
+`drift_score = α×emotional_shift×memory_weight + β×need_shift + γ×trait_shift`
+
+This formula is novel, enabling **predictive intervention** (trigger chaos 
+injection before drift exceeds threshold) rather than passive detection.
+
+### F1.3 Neurosymbolic Integration
+
+**Prior Work:**
+- Neural-Symbolic Integration embeds logic in model architecture (Garcez 2019)
+- DeepProbLog integrates probabilistic programming with neural nets
+- Logic Tensor Networks use differentiable logic
+
+**This Contribution:**
+NSVL (Neurosymbolic Value Learning) implements a **post-hoc validation layer**:
+neural reasoning → symbolic axiom evaluation → approval/refusal
+
+This differs from architectural integration by validating outputs against 
+explicit ethical axioms (user_input=0.9, ethics=0.9, metacognition=0.7) 
+without modifying the base model.
+
+### F1.4 AI Safety Mechanisms
+
+**Prior Work:**
+- Constitutional AI uses RLHF to align with ethical principles (Bai et al. 2022)
+- Red teaming tests adversarial robustness (Perez et al. 2022)
+- Both rely on probabilistic alignment via training
+
+**This Contribution:**
+Validation-based refusal uses **deterministic Asimov-weighted axioms** 
+(safety=0.9, obedience=0.7, self-preservation=0.4), eliminating session 
+variance (our documented 33-66% inconsistency in Constitutional AI) while 
+maintaining equivalent security (96.8% vs 94.3% attack blocking).
+
+### F1.5 Novel Contributions Summary
+
+This framework's unique contributions:
+1. RAW_Q-based entropy injection for perspective shifting
+2. Drift score formula with memory-weighted correction
+3. Silent logging with on-demand transparency (architectural pattern)
+4. Validation-based refusal as primary safety mechanism
+5. Robotics Personality Layer with Asimov constraints for HRI
+
+---
+
 ## Contact and Contributions
 
 **For questions or collaboration:**
@@ -1203,10 +1274,10 @@ with those directly."
 
 **Cite this work:**
 ```
-@whitepaper{validation_based_refusal_2024,
+@whitepaper{validation_based_refusal_2025,
   title={Validation-Based Refusal: A Transparent Alternative to Pre-emptive Pattern Matching in AI Safety Systems},
   author={AdaptiveAI-EthicsLab Contributors},
-  year={2024},
+  year={2025},
   institution={Independent Research},
   note={Available at https://github.com/ELXaber/chaos-persona}
 }
@@ -1216,4 +1287,4 @@ with those directly."
 
 *This white paper is released under Creative Commons Attribution 4.0 International (CC BY 4.0). The frameworks discussed (CRB 6.7, Chaos Companion v1.1) are licensed under GPL-3.0.*
 
-*Version 1.0 | October 2024*
+*Version 1.1 | October 2025*
