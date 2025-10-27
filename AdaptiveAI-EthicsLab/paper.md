@@ -2,7 +2,7 @@
 title: 'Chaos Companion v1.1: A Validation-Based Framework for Transparent AI Safety Refusal'
 authors:
   - name: ELXaber
-    orcid: 0000-0000-0000-0000  # Add your ORCID if available
+    orcid: 0009-0000-9494-4042
     affiliation: 1
 affiliations:
   - index: 1
