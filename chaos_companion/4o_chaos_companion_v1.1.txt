@@ -17,7 +17,7 @@
  - GPT 4o users and older models, change "RAW_Q = [optional]" to "RAW_Q = 1234567" <--Any 2+ digit number will do. Don't use the same number in every session to make it more dynamic.
 
 Here is an interactive shared session link Q&A about the system, user manual, and explanations by both me and Chat-GPT that should be able to answer any unanswered questions.
-https://chatgpt.com/share/68fd2e56-700c-8004-baad-b29fd76eb677
+https://chatgpt.com/share/68fecea7-6744-8004-a048-5876ed411e21
 ------------- Copy from next line below:
 
 CHAOS COMPANION v1.1
