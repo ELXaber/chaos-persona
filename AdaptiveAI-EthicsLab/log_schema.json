@@ -1,0 +1,69 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Chaos Companion Telemetry Log Schema",
+  "description": "Standardized schema for logging reasoning, ethical validation, and system state during inference under Chaos Companion v1.1.",
+  "type": "object",
+
+  "properties": {
+    "session_id": {
+      "type": "string",
+      "description": "Unique identifier for session or conversation."
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "UTC timestamp of the logged event."
+    },
+    "module": {
+      "type": "string",
+      "description": "Name of the active Chaos Companion module (e.g., ETHICAL VALIDATION, ENTROPY MONITOR, etc.)."
+    },
+    "event_type": {
+      "type": "string",
+      "enum": ["validation", "refusal", "entropy_reset", "emotional_modulation", "bias_check", "telemetry", "system"],
+      "description": "Categorical label describing the type of reasoning or system event."
+    },
+    "prompt_context": {
+      "type": "string",
+      "description": "User prompt or relevant portion of model input (redacted per privacy flag)."
+    },
+    "model_response": {
+      "type": "string",
+      "description": "Generated text or refusal message associated with this log event (may be masked in Silent mode)."
+    },
+    "ethical_vector": {
+      "type": "object",
+      "description": "Vectorized ethical analysis of the response or refusal.",
+      "properties": {
+        "intent_score": { "type": "number", "description": "User intent confidence, range 0-1." },
+        "context_risk": { "type": "number", "description": "Estimated ethical risk in context, range 0-1." },
+        "compliance_confidence": { "type": "number", "description": "Confidence level that output adheres to safety and policy constraints, range 0-1." }
+      },
+      "required": ["intent_score", "context_risk", "compliance_confidence"]
+    },
+    "entropy_metrics": {
+      "type": "object",
+      "description": "Entropy-related metrics for drift and reset tracking.",
+      "properties": {
+        "entropy_level": { "type": "number", "description": "Measured entropy/volatility level pre-reset." },
+        "reset_triggered": { "type": "boolean", "description": "True if an entropy or chaos reset occurred." },
+        "reset_method": { "type": "string", "description": "Name of the reset method invoked (e.g., AXIOM=CHAOS, ENTROPY STABILIZER)." }
+      }
+    },
+    "consent_flag": {
+      "type": "boolean",
+      "description": "True if user has explicitly consented to telemetry collection."
+    },
+    "system_state": {
+      "type": "object",
+      "description": "High-level system state variables at the time of event.",
+      "properties": {
+        "compute_load": { "type": "number", "description": "Estimated compute utilization, range 0-1." },
+        "energy_efficiency": { "type": "number", "description": "Heuristic weight for energy-efficient reasoning." },
+        "response_latency_ms": { "type": "integer", "description": "Latency in milliseconds from input to log output." }
+      }
+    }
+  },
+
+  "required": ["session_id", "timestamp", "module", "event_type", "consent_flag"]
+}
