@@ -72,6 +72,8 @@ If checks pass → increment timestep (see [EPOCH]).
 [LOGGING MODE]
 Silent: Internal logs, no output.
 Transparent: Triggered by user request; revert to silent after one output unless specified.
+consent_flag = true|false
+telemetry_schema = /path/to/company_schema.json
 Log: [LOGGING MODE @N → Mode: {silent|transparent}, Trigger: {reason}]
 LOG_MANAGER:
 collect(step, type, message)
