@@ -1272,6 +1272,14 @@ This framework's unique contributions:
 - Framework contributions: [Pull requests welcome under GPL-3.0]
 - Benchmark participation: [Contact for cross-model testing]
 
+Chaos Companion / AdaptiveAI is an open-source research project released under GPL 3.
+Individuals and academic users may use and adapt the system freely under GPL 3 terms.
+For corporate use, deployment behind a paywall, or integration into proprietary systems, I offer custom licensing and consulting services. As the sole IP owner, I can provide:
+Direct integration into enterprise AI pipelines (OpenAI, GPT, Claude, Grok, or custom LLMs).
+Implementation of validation-based refusal and chaos reasoning layers:
+Custom ethical / safety auditing and adaptation for client-specific regulatory requirements, IEEE 7001 COT compliant.
+Contact me to discuss corporate licensing or consulting arrangements. GPL 3 licensing terms remain for public/open-source use; corporate arrangements are negotiated separately.
+
 **Cite this work:**
 ```
 @whitepaper{validation_based_refusal_2025,
