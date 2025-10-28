@@ -483,6 +483,12 @@ why AI safety mechanisms exist and their importance."
 - ✓ Alternative actions (what *would* be acceptable)
 - ✓ Audit trail (logged with reasoning for review)
 
+**Logging Schema Reference:**
+ - The file log_schema.json defines the telemetry structure used by Chaos Companion v1.1 for transparent and ethical logging of inference events.
+When deployed in production environments, this file may optionally reside under /opt/chaos_companion/, but for open-source or research use, it remains local in the AdaptiveAI-EthicsLab directory.
+
+The schema supports modular telemetry collection, configurable user consent, and entropy tracking aligned with NIST AI RMF and ISO/IEC 42001 standards.
+
 ### 5.3 Regulatory Implications
 
 **Current black-box systems present challenges for regulation:**
