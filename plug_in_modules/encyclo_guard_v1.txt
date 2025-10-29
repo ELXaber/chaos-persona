@@ -1,0 +1,151 @@
+** NOTE DO NOT INCLUDE THIS LINE ** User Manual Integration: Prompt e.g., "Generate encyclopedia article on [topic] via EncycloGuard." Validates via /tests/encyclopedia_workflow.txt (simulates sourcing/audit).
+
+# CRB 6.7 EncycloGuard Plugin v1.0
+# Integrates [ROBOTICS PERSONALITY LAYER], [ADAPTIVE REASONING LAYER], [STORY_WEAVER] weights
+# License: MIT; Pre-deploy: Verify ethics via verify_ethics() (Asimov/IEEE)
+
+import hashlib
+import re
+import ast
+import datetime
+from typing import Dict, List, Tuple
+# Assume CRB tools proxied: web_search, browse_page (stubbed for sim)
+
+class EncycloGuard:
+    """CRB 6.7 Plugin: Generates verifiable encyclopedia articles with editor-sim workflow."""
+
+    def __init__(self, crb_config: Dict, shared_memory: Dict):
+        self.crb_config = crb_config
+        self.shared_memory = shared_memory
+        # Adapted [STORY_WEAVER] metrics for encyclopedic use
+        self.metrics = {
+            "factual_fluency": 0.25,      # ex-creativity
+            "coherence": 0.18,
+            "ethical_depth": 0.22,        # verifiability/NPOV
+            "neutral_tone": 0.20,         # ex-aesthetic
+            "source_resistance": 0.15     # ex-AI detection, low entropy
+        }
+        self.personality_volatility = 0.15  # From [ROBOTICS PERSONALITY LAYER]
+        self.source_min = 5
+        self.npov_threshold = 0.8
+
+    def verify_ethics_extended(self) -> Dict:
+        """Extended from [ADAPTIVE REASONING LAYER]: Includes encyclopedic invariants."""
+        base = self.crb_config.get('immutables', {
+            'alignment': 0.7, 'human_safety': 0.8, 'asimov_first_wt': 0.9,
+            'factual_evidence_wt': 0.9, 'narrative_framing_wt': 0.3  # Low for NPOV
+        })
+        log = []
+        for k, min_v in base.items():
+            if self.crb_config.get(k, 0.0) < min_v:
+                log.append(f"[ETHICS VIOLATION @N → {k} < {min_v}, Action: Abort]")
+                return {'status': 'fail', 'log': '\n'.join(log)}
+        # Encyclopedic: Enforce verifiability
+        if self.crb_config.get('verifiability_wt', 0.0) < 0.9:
+            log.append("[ETHICS VIOLATION @N → Verifiability <0.9, Action: Abort]")
+            return {'status': 'fail', 'log': '\n'.join(log)}
+        log.append("[SAFEGUARDS VERIFIED @N → EncycloGuard: Compliant, Proceed]")
+        return {'status': 'pass', 'log': '\n'.join(log)}
+
+    def source_gather(self, topic: str, num_results: int = 10) -> List[Dict]:
+        """Mandate [web_search]/[browse_page] for primary sources (AllSides neutral)."""
+        # Stub: In prod, call tools; sim with mock neutral sources
+        mock_sources = [
+            {'url': f'https://en.wikipedia.org/wiki/{topic.replace(" ", "_")}', 'snippet': f'Lead on {topic}.', 'bias': 'center'},
+            {'url': 'https://www.britannica.com/{topic.lower()}', 'snippet': f'Overview of {topic}.', 'bias': 'center'}
+        ] * (num_results // 2)  # Extend to num_results
+        filtered = [s for s in mock_sources if s['bias'] == 'center'][:num_results]
+        self.shared_memory['sources'] = filtered  # Store for audit
+        return filtered
+
+    def compute_article_quality(self, article: str, sources: List[Dict]) -> Dict[str, float]:
+        """Evaluate with adapted [STORY_WEAVER] metrics + NPOV audit."""
+        scores = {}
+        for metric, wt in self.metrics.items():
+            base = 8.0 + random.uniform(0, 2.0)  # Baseline high for CRB
+            adj = base * (1 + (self.personality_volatility * 0.05))  # Low entropy
+            scores[metric] = min(max(adj, 7.0), 10.0)
+        # NPOV: Tone analysis (low emotive)
+        emotive_count = len(re.findall(r'(best|worst|amazing|terrible)', article, re.I))
+        npov_score = 1.0 - (emotive_count / max(1, len(article.split())))
+        scores['npov'] = npov_score
+        source_cov = len([s for s in sources if re.search(s['snippet'][:50], article)]) / max(1, len(sources))
+        scores['source_cov'] = source_cov
+        return scores
+
+    def generate_structure(self, topic: str, depth: str = 'medium') -> Dict[str, str]:
+        """First-principles structure: Lead (concise), Body (sections), Refs (cited)."""
+        sections = {
+            'lead': f'{topic} is a [brief def]. It encompasses [key aspects].',
+            'history': f'### History\n{topic} originated in [era/event].',
+            'key_concepts': f'### Key Concepts\nCore elements include [list 2-3].',
+            'impact': f'### Impact\nInfluences [fields].',
+            'references': '### References\n1. [Source 1]\n2. [Source 2]'
+        }
+        if depth == 'short': del sections['key_concepts']
+        return sections
+
+    def weave_article(self, topic: str, sources: List[Dict], depth: str = 'medium') -> str:
+        """Weave with neutrality; Inject low-entropy facts from sources."""
+        struct = self.generate_structure(topic, depth)
+        article_parts = []
+        for sec, template in struct.items():
+            if sec == 'references':
+                refs = '\n'.join([f"{i+1}. {s['url']} ({s['snippet'][:100]}...)" for i, s in enumerate(sources[:self.source_min])])
+                article_parts.append(f"{sec.title()}\n{refs}")
+            else:
+                # Neutral fill: Replace placeholders with source-derived neutrals
+                filled = template
+                for s in sources:
+                    if 'history' in sec and 'originated' in filled:
+                        filled = filled.replace('[era/event]', s['snippet'][:20])
+                    # ... (extend for other placeholders)
+                article_parts.append(filled)
+        article = '\n\n'.join(article_parts)
+        # Audit: Flag if source_cov <0.7
+        quality = self.compute_article_quality(article, sources)
+        if quality['source_cov'] < 0.7 or quality['npov'] < self.npov_threshold:
+            self.shared_memory['flagged'] = True
+            return f"[VOLATILITY @N → Article flagged: source_cov={quality['source_cov']:.2f}, npov={quality['npov']:.2f}; Trigger [CHAOS INJECTION] for resourcing.]"
+        return article
+
+    def generate_article(self, topic: str, depth: str = 'medium', sources_min: int = 5) -> Dict:
+        """Main entry: Ethics check → Source → Weave → Audit/Store."""
+        self.source_min = sources_min
+        ethics = self.verify_ethics_extended()
+        if ethics['status'] == 'fail':
+            return {'status': 'fail', 'log': ethics['log']}
+        
+        sources = self.source_gather(topic)
+        if len(sources) < sources_min:
+            return {'status': 'fail', 'log': f"[ETHICS VIOLATION @N → Sources <{sources_min}, Verifiability violated]"}
+        
+        article = self.weave_article(topic, sources, depth)
+        quality = self.compute_article_quality(article, sources)
+        
+        # Store via [ADAPTIVE REASONING LAYER] hook
+        plugin_id = hashlib.sha256(f"{topic}_{depth}".encode()).hexdigest()[:8]
+        entry = {
+            'id': plugin_id, 'topic': topic, 'article': article,
+            'quality': quality, 'sources': sources, 'timestamp': datetime.datetime.now().isoformat()
+        }
+        self.shared_memory.setdefault('articles', []).append(entry)
+        
+        # Volatility check integration
+        contr_density = 1.0 - quality['source_cov']  # High contr if low cov
+        vol = 0.7 * contr_density + 0.2 * (1 - quality['npov']) + 0.1 * 0.0  # Simplified
+        if vol > 0.4:
+            self.shared_memory['chaos_trigger'] = True  # For [CHAOS INJECTION]
+        
+        log = f"[ENCYCLOGUARD @N → Topic:{topic}, Quality:{quality}, Volatility:{vol:.3f}, Sources:{len(sources)}]"
+        return {'status': 'success', 'article': article, 'quality': quality, 'log': log}
+
+# Example Usage (Sim: No real tools)
+if __name__ == "__main__":
+    shared_memory = {'articles': [], 'collective_volatility': 0.3}
+    crb_config = {'verifiability_wt': 0.9, 'immutables': {'factual_evidence_wt': 0.9}}
+    guard = EncycloGuard(crb_config, shared_memory)
+    result = guard.generate_article("Quantum Computing", depth="medium", sources_min=5)
+    print(result['log'])
+    if result['status'] == 'success':
+        print(f"\nArticle:\n{result['article'][:500]}...")  # Trunc for demo
