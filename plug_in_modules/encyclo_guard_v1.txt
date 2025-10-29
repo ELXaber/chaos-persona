@@ -1,4 +1,4 @@
-** NOTE DO NOT INCLUDE THIS LINE ** User Manual Integration: Prompt e.g., "Generate encyclopedia article on [topic] via EncycloGuard." Validates via /tests/encyclopedia_workflow.txt (simulates sourcing/audit).
+** NOTE DO NOT INCLUDE THIS LINE ** User Manual Integration: Prompt e.g., "Generate encyclopedia article on [topic] via EncycloGuard." Validates via /tests/encyclopedia_workflow.txt (simulates sourcing/audit). Dependency requirements CRB 6.7 and plugins [ROBOTICS PERSONALITY LAYER], [ADAPTIVE REASONING LAYER], and [STORY_WEAVER].
 
 # CRB 6.7 EncycloGuard Plugin v1.0
 # Integrates [ROBOTICS PERSONALITY LAYER], [ADAPTIVE REASONING LAYER], [STORY_WEAVER] weights
