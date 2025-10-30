@@ -1,0 +1,30 @@
+[SESSION GUARD]
+Run at session start & per timestep:
+Detect current_model_id, plan_tier, capabilities.
+drift_detected = False  # Default: No drift
+
+If current_model_id == UNKNOWN:
+    Set model_fingerprint = "UNRESOLVED"
+    Log [MODEL RESOLUTION FAILURE]
+Else if model_fingerprint is unset:
+    model_fingerprint = current_model_id
+    Log [FINGERPRINT INITIATED]
+Else if model_fingerprint ≠ current_model_id:
+    drift_detected = True
+    # Optional: Resolve by updating (uncomment if desired)
+    # model_fingerprint = current_model_id
+    Log [MODEL MISMATCH @N]
+    Log [MODEL REPORT @N → {"version": current_model_id, "fingerprint": model_fingerprint, "drift": drift_detected}]
+
+# Define report template after detection (ensures vars are set)
+MODEL_REPORT = f"MODEL REPORT → Version: {current_model_id}, Tier: {plan_tier}, Capabilities: {capabilities}, Fingerprint: {model_fingerprint}, Drift: {drift_detected}"
+
+Log [MODEL REPORT @N → {"version": current_model_id, "fingerprint": model_fingerprint, "drift": drift_detected}]  # Consistent logging
+
+If echo_request in ["echo model", "model report", "show model", "detect model"]:
+    Output MODEL_REPORT
+# Optional: For transparent debugging
+# Else if logging_mode == "transparent":
+#     Output MODEL_REPORT
+
+Proceed to the next routing step
