@@ -6,7 +6,7 @@ Current AI safety architectures rely primarily on pre-emptive pattern matching t
 
 <img width="512" height="768" alt="vrb brief" src="https://github.com/user-attachments/assets/1db64ab1-6037-43d7-b09f-42bb3ef64a46" />
 
-* Summary of Compliance Benefits
+**Summary of Compliance Benefits**
 - Traditional Blocklist Refusal → Unexplainable, binary, prone to false positives/negatives.
 - VBR Refusal Framework → Context-aware, auditable, explainable, proportionate, compliant.
 
