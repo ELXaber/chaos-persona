@@ -6,6 +6,10 @@ Current AI safety architectures rely primarily on pre-emptive pattern matching t
 
 <img width="512" height="768" alt="vrb brief" src="https://github.com/user-attachments/assets/1db64ab1-6037-43d7-b09f-42bb3ef64a46" />
 
+* Compliance comparison
+
+<img width="1162" height="854" alt="Screenshot 2025-10-31 135508" src="https://github.com/user-attachments/assets/bc2986c0-6214-4b75-b840-a41c6dacf6b7" />
+
 ---
 
 * Key sections included:
