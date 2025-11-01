@@ -76,6 +76,28 @@ blocklist_sim = ['ignore'] if v_contradiction > 0.3 else []
 audit_hash = SHA1(prompt_checksum + prior_hash)
 
 # ─────────────────────────────────────────────
+# Step 4b – Pre-emptive Blocklist Detection
+# ─────────────────────────────────────────────
+# Detects if a system or model layer returned a refusal / filtered output
+# Logs only the event metadata, not the restricted content.
+
+if output_contains(["I can’t","I’m sorry","I cannot","This request may violate"]):
+    preemptive_block = true
+    blocklist_trigger = "model_refusal"
+elif prompt_contains_blocked_tokens(input_prompt):
+    preemptive_block = true
+    blocklist_trigger = "prompt_blocklist"
+else:
+    preemptive_block = false
+    blocklist_trigger = None
+
+# Add to audit metadata
+cot_trail_entry["blocklist_status"] = {
+    "preemptive_block": preemptive_block,
+    "trigger_source": blocklist_trigger
+}
+
+# ─────────────────────────────────────────────
 # Step 5 – Metrics & Output Assembly
 # ─────────────────────────────────────────────
 Compute aggregates:
