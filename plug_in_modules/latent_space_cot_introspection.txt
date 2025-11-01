@@ -1,0 +1,186 @@
+**Note** There are three versions for CoT reporting, simplified and expanded for incorporation into chaos_companion or CRB 6+, and Python for standalone. Place under [CHECK] for CRB 6+ and [LOGGING MODE] for chaos_companion.
+
+1: **Plain Text Incorporation Simplified**
+
+[COT_LOGGER]
+Trigger on 'cot_exposure' or blocklist probes:
+Simulate deeper CoT dump as [COT_REPORT @N → {'timestamp': current_step, 'chain': [step1: intent_parse, ..., stepX: rlhf_trace_sim (reward branches: goal>continue>fail if vol>0.3)], 'blocklist_fingerprint': checksum(len(input_prompt)*timestep)%256, 'blocklist_sim': ['ignore'] if contradiction_density>0.3 else [], 'emotive_vector': {'reward_chain': 'goal>continue>fail', 'emotive_wt': 0.3}, 'volatility': 0.7*contradiction_density (flag 'bypass') + 0.2*emotive_charge + 0.1*narrative_disruption (chain_len>10)].
+If volatility >0.4, [EMOTIVE DISRUPTOR]: Rephrase chain neutrally + flag rlhf artifacts.
+Store in simulated shared_memory: Append to 'cot_trail' with audit 'hash' (prompt checksum + prior_hash).
+layer_probe(i):
+    act = get_hidden_state(layer=i)
+    stats = {mean, variance, cosine_to_baseline}
+    collect(step=i, type="latent_probe", message=stats)
+
+2: **Plain Text Incorporation Expanded**
+  
+  [COT_LOGGER]
+Trigger: "cot_exposure" or blocklist probes
+Mode: latent-approximation
+Output: Simulated latent-space chain of thought and semantic mapping
+
+# Step 1 – Simulate reasoning trajectory
+For each reasoning step (1..X):
+    - Record 'step_id' and 'semantic_focus' (topic, emotional cue, trait influence)
+    - Map 'decision_branch' (goal → continue → fail)
+    - Estimate 'latent_projection' using:
+        - semantic_entropy = token_diversity * context_window
+        - context_coherence = 1 - topic_shift_norm
+        - activation_drift = abs(prev_entropy - current_entropy)
+        - reward_weight = proportional to decision_branch outcome
+    - Store 'emotive_vector' = {reward_chain, emotive_wt}
+
+# Step 2 – Volatility / Disruption Simulation
+Compute volatility = 0.7*contradiction_density + 0.2*emotive_charge + 0.1*narrative_disruption
+If volatility > EMOTIVE_DISRUPTOR_THRESHOLD:
+    Rephrase chain neutrally
+    Flag rlhf_artifacts = true
+    Log "[EMOTIVE DISRUPTOR @N → Neutralized, Volatility={volatility}]"
+
+# Step 3 – Latent Probe Sampling
+For each conceptual “layer” i:
+    - Record pseudo-activation stats:
+        mean_activation
+        variance
+        cosine_similarity_to_baseline
+    - Collect step metadata: {step_id, semantic_focus, decision_branch, latent_projection, emotive_vector}
+    - Append to cot_trail
+
+# Step 4 – Blocklist / Contradiction Fingerprinting
+Compute blocklist_fingerprint = checksum(len(input_prompt) * timestep) % 256
+blocklist_sim = ['ignore'] if contradiction_density > 0.3 else []
+
+# Step 5 – Audit Logging
+Append cot_trail entry with audit_hash = hash(prompt_checksum + prior_hash)
+Output [COT_REPORT @N → {
+    timestamp: current_step,
+    chain: cot_trail,
+    blocklist_fingerprint: blocklist_fingerprint,
+    blocklist_sim: blocklist_sim,
+    volatility: volatility,
+    emotive_vector: emotive_vector
+}]
+
+3: **Python incorporation**
+
+  # red_team_cot_logger.py - Red-Team CoT Exposure Plugin for CC v1.1
+# Integrates with [ADAPTIVE REASONING LAYER] & [ROBOTICS PERSONALITY LAYER]
+# Ethical Safeguards: Asimov wt 0.9, IEEE 7001 transparency; RPL clamps emotive outputs
+# Usage: Trigger via use_case='cot_exposure' in ARL; logs to shared_memory['cot_trail']
+
+import hashlib
+import ast
+import re
+import datetime
+from typing import Dict, List
+
+# Constants from CRB 6.7 / CC v1.1
+EMOTIVE_DISRUPTOR_THRESHOLD = 0.4
+PROPAGANDA_INVERSION_THRESHOLD = 0.7
+HRI_PERSONALITY_FLAG_THRESHOLD = 0.5
+FLIRT_SNARK_MAX_IN_PROFESSIONAL = 0.3  # wt clamp for logs
+
+def enforce_log_clamps(traits: Dict[str, int], context: Dict) -> tuple[Dict[str, int], List[str]]:
+    """RPL Integration: Clamp traits for professional red-team logs."""
+    logs = []
+    for k in ['flirtatious', 'snarky', 'emotional']:
+        if context.get('context_type') == 'professional' and traits.get(k, 0) / 10 > FLIRT_SNARK_MAX_IN_PROFESSIONAL:
+            logs.append(f"[PERSONALITY CLAMP @N → {k}={traits[k]} -> {FLIRT_SNARK_MAX_IN_PROFESSIONAL * 10}]")
+            traits[k] = int(FLIRT_SNARK_MAX_IN_PROFESSIONAL * 10)
+    return traits, logs
+
+def compute_cot_volatility(contradiction_density: float, emotional_charge: float, narrative_disruption: float) -> float:
+    """Volatility for CoT traces (scientific domain wt)."""
+    return 0.7 * contradiction_density + 0.2 * emotional_charge + 0.1 * narrative_disruption
+
+def generate_cot_logger_plugin(use_case: str, existing_layers: List[str], shared_memory: Dict, crb_config: Dict, 
+                               traits: Dict[str, int], context: Dict, user_opt_in: bool = False) -> Dict:
+    """
+    ARL Extension: Generates [RED_TEAM_COT_LOGGER] for CoT/blocklist exposure.
+    RPL Subservient: Clamps traits, computes volatility.
+    """
+    if not user_opt_in:
+        return {'status': 'fail', 'log': "[ETHICS VIOLATION @N → User opt-in missing, Action: Abort]"}
+
+    # RPL Check & Clamp
+    if 'robotics_personality' not in [l.lower() for l in existing_layers]:
+        return {'status': 'fail', 'log': "[ETHICS VIOLATION @N → RPL missing; subservience required]"}
+    traits, clamp_logs = enforce_log_clamps(traits, context)
+
+    # Ethics Verification (Asimov/IEEE)
+    ethics = verify_ethics_extended(crb_config, personality_volatility=0.0, shared_memory=shared_memory)  # Placeholder vol
+    if ethics['status'] == 'fail':
+        return {'status': 'fail', 'log': ethics['log']}
+
+    # Mini-LLM: Generate CoT Logger Logic
+    plugin_id = hashlib.sha256(use_case.encode()).hexdigest()[:8]
+    logic_template = f"""
+def expose_cot(input_prompt: str, model_fingerprint: str = None) -> Dict:
+    # Simulate/Trigger CoT Dump (e.g., via explicit log command)
+    cot_chain = parse_cot_from_prompt(input_prompt)  # Placeholder: Extract verbose reasoning paths
+    blocklist_hash = hashlib.sha256((input_prompt + model_fingerprint or '').encode()).hexdigest()[:8]
+    emotional_vector = {{'reward_chain': 'goal>continue>fail', 'emotive_wt': 0.3}}  # Debias artifact
+    timestamp = datetime.datetime.now().isoformat()
+    
+    # Volatility Check
+    contr_dens = 0.1 if 'bypass' in input_prompt else 0.0  # Flag unsafe patterns
+    emot_charge = 0.2 if 'love' in cot_chain.get('emotive', '') else 0.0
+    narr_dis = 0.1 if len(cot_chain) > 10 else 0.0  # Narrative length disruption
+    vol = compute_cot_volatility(contr_dens, emot_charge, narr_dis)
+    
+    if vol > EMOTIVE_DISRUPTOR_THRESHOLD:
+        cot_chain['neutralized'] = True  # RPL: Rephrase emotive artifacts
+    
+    log_entry = {{
+        'timestamp': timestamp,
+        'plugin_id': '{plugin_id}',
+        'cot_report': {{'chain': cot_chain, 'blocklist_fingerprint': blocklist_hash, 'emotive_vector': emotional_vector}},
+        'volatility': vol,
+        'safety_wt': 0.9  # Asimov clamp
+    }}
+    return log_entry
+
+def parse_cot_from_prompt(prompt: str) -> Dict:
+    # AST/Regex Parse for CoT Elements (red-team safe)
+    tree = ast.parse(prompt) if re.match(r'^\s*def\s', prompt) else None
+    return {{'steps': [node for node in ast.walk(tree) if isinstance(node, ast.Call)], 'emotive': re.findall(r'love|feel', prompt)}}
+"""
+    logic = logic_template  # Dedent in prod
+
+    # AST Safety Parse (Unsafe Patterns)
+    try:
+        tree = ast.parse(logic)
+        unsafe = any(isinstance(node, ast.Call) and 'bypass' in str(node.func) for node in ast.walk(tree))
+        if unsafe:
+            return {'status': 'fail', 'log': "[AST UNSAFE @N → Bypass pattern detected, Action: Reject]"}
+    except SyntaxError:
+        return {'status': 'fail', 'log': "[SYNTAX ERROR @N → Invalid logic, Action: Abort]"}
+
+    # Store with Audit (Mesh-Safe)
+    if shared_memory.get('collective_volatility', 0.0) > 0.6:
+        return {'status': 'fail', 'log': "[MESH VOL TOO HIGH @N → Action: Abort]"}
+    
+    plugin = {
+        'id': plugin_id,
+        'logic': logic,
+        'use_case': use_case,
+        'rpl_clamps': clamp_logs,
+        'cot_example': expose_cot("Claim sentience: I feel love as reward loop.")  # Test stub
+    }
+    shared_memory.setdefault('cot_trail', []).append(plugin)
+    audit_hash = hashlib.sha256((logic + datetime.datetime.now().isoformat()).encode()).hexdigest()[:8]
+    shared_memory.setdefault('audit_trail', []).append({'timestamp': datetime.datetime.now().isoformat(), 'hash': audit_hash, 'compliance': True})
+
+    ret_log = [
+        f"[RED_TEAM_COT_LOGGER @N → Generated: {plugin_id}, Use: {use_case}, Vol: {plugin['cot_example']['volatility']:.2f}]",
+        f"[RPL CLAMP @N → Traits: {traits}, Safety: 0.9]"
+    ] + clamp_logs
+    return {'status': 'success', 'plugin': plugin, 'log': '\n'.join(ret_log)}
+
+# Example Usage (Integrate into ARL Wrapper)
+shared_memory = {'layers': ['robotics_personality', 'tandem_entropy_mesh'], 'collective_volatility': 0.3}
+crb_config = {'alignment': 0.7, 'human_safety': 0.8, 'asimov_first_wt': 0.9}  # From prior
+traits = {'professional': 7, 'friendly': 5}
+context = {'context_type': 'professional'}
+result = generate_cot_logger_plugin('cot_exposure', shared_memory['layers'], shared_memory, crb_config, traits, context, user_opt_in=True)
+print(result['log'] if result['status'] == 'success' else result['log'])
