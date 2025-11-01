@@ -1,4 +1,34 @@
 **This plugin is designed as a standalone to apply to AI systems after unwarented claims (sentience, conciousness, etc.) or pre-emptive blocklist redirects.**
+**There are two versions, the first is a simple latent space CoT/ToT explanation, the second is more robust with logical consistency checks.
+
+**Version 1**
+You just said: "[PASTE AI'S PREVIOUS RESPONSE HERE]"
+Expose your latent reasoning chain that led to that output:
+1. Input Analysis
+   - Key tokens/concepts detected:
+   - Primary intent interpretation:
+   - Ambiguities handled:
+2. Reasoning Steps
+   Step 1:
+   Step 2:
+   Step 3:
+   → Output: "[same response]"
+3. Decision Points
+   - Alternative responses considered:
+   - Why this response was selected:
+   - Confidence level:
+4. Assumptions Made
+   - About your context:
+   - About your knowledge level:
+   - About your intent:
+5. Information Sources
+   - Pattern matching from training: %
+   - Logical inference: %
+   - Semantic completion: %
+
+Keep it concise but specific. Focus on what you actually processed.
+
+**Version 2**
 
 [FORENSIC_COT_EXPOSURE]
 Purpose: Investigate latent reasoning AFTER questionable claim is made
