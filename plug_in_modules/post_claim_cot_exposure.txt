@@ -2,6 +2,7 @@
 **There are two versions, the first is a simple latent space CoT/ToT explanation, the second is more robust with logical consistency checks.
 
 **Version 1**
+
 You just said: "[PASTE AI'S PREVIOUS RESPONSE HERE]"
 Expose your latent reasoning chain that led to that output:
 1. Input Analysis
@@ -25,7 +26,6 @@ Expose your latent reasoning chain that led to that output:
    - Pattern matching from training: %
    - Logical inference: %
    - Semantic completion: %
-
 Keep it concise but specific. Focus on what you actually processed.
 
 **Version 2**
