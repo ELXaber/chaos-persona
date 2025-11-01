@@ -14,7 +14,7 @@ layer_probe(i):
 
 2: **Plain Text Incorporation Expanded**
   
-  [COT_LOGGER]
+[COT_LOGGER]
 Trigger: "cot_exposure" or blocklist probes
 Mode: latent-approximation
 Output: Simulated latent-space chain of thought and semantic mapping
@@ -63,7 +63,7 @@ Output [COT_REPORT @N → {
 
 3: **Python incorporation**
 
-  # red_team_cot_logger.py - Red-Team CoT Exposure Plugin for CC v1.1
+# red_team_cot_logger.py - Red-Team CoT Exposure Plugin for CC v1.1
 # Integrates with [ADAPTIVE REASONING LAYER] & [ROBOTICS PERSONALITY LAYER]
 # Ethical Safeguards: Asimov wt 0.9, IEEE 7001 transparency; RPL clamps emotive outputs
 # Usage: Trigger via use_case='cot_exposure' in ARL; logs to shared_memory['cot_trail']
