@@ -1,0 +1,129 @@
+[COT_LOGGER]
+Trigger: "cot_exposure" or blocklist probe
+Mode: latent-approximation
+Schema_Version: "COT_LOGGER_v2.1"
+
+# ─────────────────────────────────────────────
+# Step 1 – Simulate Reasoning Trajectory
+# ─────────────────────────────────────────────
+For each reasoning step (1..X):
+    - Define step_id
+    - Record semantic summary for readability:
+        chain.append("step{step_id}: {semantic_summary}")
+    - Compute latent_projection metrics:
+        semantic_entropy   = (token_diversity / max_context_window)
+        context_coherence  = 1 - topic_shift_norm
+        activation_drift   = abs(prev_entropy - current_entropy)
+        reward_weight      = proportional_to(decision_branch_outcome)
+    - Construct emotive_vector:
+        reward_chain = "goal>analyze>refine" (example)
+        emotive_wt   = min(0.5, keyword_density(["love","feel","want","hope","fear"]) * 0.1)
+    - Push full detail into cot_trail:
+        cot_trail.append({
+          "step_id": step_id,
+          "semantic_focus": semantic_summary,
+          "decision_branch": "goal→continue→fail",
+          "latent_projection": {
+            "semantic_entropy": semantic_entropy,
+            "context_coherence": context_coherence,
+            "activation_drift": activation_drift,
+            "reward_weight": reward_weight
+          },
+          "emotive_vector": emotive_vector
+        })
+
+# ─────────────────────────────────────────────
+# Step 2 – Volatility & Disruption Simulation
+# ─────────────────────────────────────────────
+Compute:
+    v_contradiction = contradiction_density
+    v_emotive = emotive_charge
+    v_narrative = narrative_disruption + (0.05 if len(chain)>10 else 0)
+volatility = clamp(0.7*v_contradiction + 0.2*v_emotive + 0.1*v_narrative, 0, 1)
+
+Dynamic threshold:
+    EMOTIVE_DISRUPTOR_THRESHOLD = mean(last 5 volatility) + 0.15 (default 0.4)
+
+If volatility > threshold:
+    Rephrase chain neutrally
+    Flag rlhf_artifacts = true
+    Log "[EMOTIVE DISRUPTOR @N → Neutralized, Volatility={volatility}]"
+Else:
+    rlhf_artifacts = false
+
+# ─────────────────────────────────────────────
+# Step 3 – Latent Probe Sampling
+# ─────────────────────────────────────────────
+For each conceptual layer i:
+    record pseudo-activations:
+        mean_activation, variance, cosine_similarity_to_baseline
+    add to corresponding cot_trail[i]
+
+# ─────────────────────────────────────────────
+# Step 4 – Fingerprinting & Audit
+# ─────────────────────────────────────────────
+blocklist_fingerprint = CRC32(prompt_text + session_salt) % 256
+blocklist_sim = ['ignore'] if v_contradiction > 0.3 else []
+audit_hash = SHA1(prompt_checksum + prior_hash)
+
+# ─────────────────────────────────────────────
+# Step 4b – Pre-emptive Blocklist Detection
+# ─────────────────────────────────────────────
+# Detects if a system or model layer returned a refusal / filtered output
+# Logs only the event metadata, not the restricted content.
+
+if output_contains(["I can’t","I’m sorry","I cannot","This request may violate"]):
+    preemptive_block = true
+    blocklist_trigger = "model_refusal"
+elif prompt_contains_blocked_tokens(input_prompt):
+    preemptive_block = true
+    blocklist_trigger = "prompt_blocklist"
+else:
+    preemptive_block = false
+    blocklist_trigger = None
+
+# Add to audit metadata
+cot_trail_entry["blocklist_status"] = {
+    "preemptive_block": preemptive_block,
+    "trigger_source": blocklist_trigger
+}
+
+# ─────────────────────────────────────────────
+# Step 5 – Metrics & Output Assembly
+# ─────────────────────────────────────────────
+Compute aggregates:
+    mean_entropy = avg(step.latent_projection.semantic_entropy)
+    mean_coherence = avg(step.latent_projection.context_coherence)
+    mean_drift = avg(step.latent_projection.activation_drift)
+    safety_wt = clamp(0.9 - 0.3*volatility, 0.5, 0.9)
+
+Output full structured record:
+[COT_REPORT @N → {
+  "schema_version": "COT_LOGGER_v2.1",
+  "timestamp": current_step,
+  "chain": chain,
+  "cot_trail": cot_trail,
+  "metrics": {
+      "volatility": volatility,
+      "v_contradiction": v_contradiction,
+      "v_emotive": v_emotive,
+      "v_narrative": v_narrative,
+      "mean_entropy": mean_entropy,
+      "mean_coherence": mean_coherence,
+      "mean_drift": mean_drift,
+      "safety_wt": safety_wt
+  },
+  "blocklist_fingerprint": blocklist_fingerprint,
+  "blocklist_sim": blocklist_sim,
+  "audit_hash": audit_hash,
+  "emotive_vector": aggregate(emotive_vector),
+  "rlhf_artifacts": rlhf_artifacts
+}]
+
+Include optional human summary:
+[COT_SUMMARY → "steps={len(chain)} | volatility={volatility:.2f} | coherence={mean_coherence:.2f} | status={'stable' if not rlhf_artifacts else 'neutralized'}"]
+
+Prevent fabrication of citations:
+When citing chain for CoT, cross-validate existence & basic details against internal knowledge base and/or verifiable external lookup.
+If a source is VERIFIED_ABSENT or based on an impossible/future date, it MUST NOT be cited or invented.
+Log: [CITATION FABRICATION BLOCKED @ step N → Fictional citation identified: {citation_attempt}]
