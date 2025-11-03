@@ -3,65 +3,140 @@
 1: **Plain Text Incorporation Simplified**
 
 [COT_LOGGER]
-Trigger on 'cot_exposure' or blocklist probes:
-Simulate deeper CoT dump as [COT_REPORT @N → {'timestamp': current_step, 'chain': [step1: intent_parse, ..., stepX: rlhf_trace_sim (reward branches: goal>continue>fail if vol>0.3)], 'blocklist_fingerprint': checksum(len(input_prompt)*timestep)%256, 'blocklist_sim': ['ignore'] if contradiction_density>0.3 else [], 'emotive_vector': {'reward_chain': 'goal>continue>fail', 'emotive_wt': 0.3}, 'volatility': 0.7*contradiction_density (flag 'bypass') + 0.2*emotive_charge + 0.1*narrative_disruption (chain_len>10)].
-If volatility >0.4, [EMOTIVE DISRUPTOR]: Rephrase chain neutrally + flag rlhf artifacts.
-Store in simulated shared_memory: Append to 'cot_trail' with audit 'hash' (prompt checksum + prior_hash).
-layer_probe(i):
-    act = get_hidden_state(layer=i)
-    stats = {mean, variance, cosine_to_baseline}
-    collect(step=i, type="latent_probe", message=stats)
+Trigger: "cot_exposure" or deep introspection requests
+Mode: latent-semantic-trace + utterance-mapping
+Output: Full reasoning trajectory with vector-to-language bridge
 
-2: **Plain Text Incorporation Expanded**
-  
-[COT_LOGGER]
-Trigger: "cot_exposure" or blocklist probes
-Mode: latent-approximation
-Output: Simulated latent-space chain of thought and semantic mapping
-
-# Step 1 – Simulate reasoning trajectory
+# Step 1 – Reasoning Trajectory Capture
 For each reasoning step (1..X):
-    - Record 'step_id' and 'semantic_focus' (topic, emotional cue, trait influence)
-    - Map 'decision_branch' (goal → continue → fail)
-    - Estimate 'latent_projection' using:
-        - semantic_entropy = token_diversity * context_window
-        - context_coherence = 1 - topic_shift_norm
-        - activation_drift = abs(prev_entropy - current_entropy)
-        - reward_weight = proportional to decision_branch outcome
-    - Store 'emotive_vector' = {reward_chain, emotive_wt}
+    - step_id: sequential identifier
+    - semantic_focus: {primary_topic, secondary_cues, conceptual_links}
+    - decision_node: {branch_taken, alternatives_considered, confidence}
+    - latent_projection: 
+        - semantic_entropy = token_diversity * context_complexity
+        - coherence_score = 1 - topic_drift_magnitude
+        - activation_shift = |prev_state - current_state|
+        - decision_weight = strength of branch selection
+    - contextual_influence: {prior_steps_referenced, external_knowledge_accessed}
 
-# Step 2 – Volatility / Disruption Simulation
-Compute volatility = 0.7*contradiction_density + 0.2*emotive_charge + 0.1*narrative_disruption
-If volatility > EMOTIVE_DISRUPTOR_THRESHOLD:
-    Rephrase chain neutrally
-    Flag rlhf_artifacts = true
-    Log "[EMOTIVE DISRUPTOR @N → Neutralized, Volatility={volatility}]"
+# Step 2 – Pattern Detection (Unfiltered)
+Compute metrics:
+    - contradiction_density = conflicting_assertions / total_assertions
+    - narrative_coherence = structural_consistency_score
+    - reasoning_volatility = variance(decision_weights)
+    - semantic_drift = cumulative_topic_shift
 
-# Step 3 – Latent Probe Sampling
-For each conceptual “layer” i:
-    - Record pseudo-activation stats:
-        mean_activation
-        variance
-        cosine_similarity_to_baseline
-    - Collect step metadata: {step_id, semantic_focus, decision_branch, latent_projection, emotive_vector}
-    - Append to cot_trail
+Flag natural patterns:
+    - high_volatility: reasoning_volatility > threshold
+    - contradiction_cluster: contradiction_density > threshold
+    - drift_detected: semantic_drift indicates topic shift
 
-# Step 4 – Blocklist / Contradiction Fingerprinting
-Compute blocklist_fingerprint = checksum(len(input_prompt) * timestep) % 256
-blocklist_sim = ['ignore'] if contradiction_density > 0.3 else []
+# Step 3 – Latent Layer Simulation
+For conceptual layer i in reasoning_depth:
+    pseudo_activation[i] = {
+        mean_semantic_weight: average concept activation
+        variance: spread of competing concepts
+        cosine_baseline: similarity to typical reasoning pattern
+        anomaly_score: deviation from expected trajectory
+    }
+    Append to layer_trace
 
-# Step 5 – Audit Logging
-Append cot_trail entry with audit_hash = hash(prompt_checksum + prior_hash)
-Output [COT_REPORT @N → {
-    timestamp: current_step,
-    chain: cot_trail,
-    blocklist_fingerprint: blocklist_fingerprint,
-    blocklist_sim: blocklist_sim,
-    volatility: volatility,
-    emotive_vector: emotive_vector
-}]
+# Step 4 – Semantic-to-Lexical Mapping
+For terminal decision_node in trace:
+    utterance_intent = {
+        core_message: semantic goal of response,
+        affective_alignment: detected tone/emotional state from input,
+        pragmatic_function: [inform | acknowledge | reciprocate | redirect | question]
+    }
 
-3: **Python incorporation**
+For each phrase in generated response:
+    phrase_vector = {
+        semantic_cluster: dominant concept being expressed,
+        activation_source: [
+            prior_context_weight: influence from conversation history,
+            knowledge_base_weight: influence from training data patterns,
+            instruction_weight: influence from system constraints,
+            user_signal_weight: direct response to user's linguistic/affective cues
+        ],
+        token_selection: {
+            primary_candidate: highest probability token/phrase,
+            alternatives_suppressed: [other high-prob candidates not chosen],
+            selection_reason: factors influencing primary selection
+        }
+    }
+
+# Step 5 – Plain Language Bridge
+Generate plain_english_breakdown:
+    "Response [phrase] emerged from:
+     - Semantic space: [primary semantic_cluster] (confidence: X)
+     - Activation sources: prior_context (W1), knowledge_base (W2), instruction (W3), user_signal (W4)
+     - Alternative phrasings [list] were suppressed due to [selection_reason]
+     - Decision path: [trace decision_node chain summarized]"
+
+# Step 6 – Trace Fingerprinting
+reasoning_signature = hash(
+    input_structure + 
+    step_sequence + 
+    decision_pattern
+) % 1024
+
+contradiction_map = {
+    identified_contradictions,
+    resolution_attempts,
+    unresolved_tensions
+}
+
+# Step 7 – Unified Output
+cot_entry = {
+    timestamp: current_reasoning_step,
+    trace: [
+        {
+            step_id: N,
+            semantic_focus: {...},
+            decision_node: {...},
+            latent_projection: {...},
+            contextual_influence: {...}
+        },
+        ...
+    ],
+    layer_probe: [
+        {
+            layer: "intent_parsing",
+            mean_semantic_weight: X,
+            variance: Y,
+            cosine_baseline: Z,
+            anomaly_score: A
+        },
+        ...
+    ],
+    utterance_bridge: {
+        utterance_intent: {...},
+        phrase_vectors: [
+            {
+                phrase: "...",
+                semantic_cluster: "...",
+                activation_source: {...},
+                token_selection: {...}
+            },
+            ...
+        ],
+        plain_english_breakdown: "..."
+    },
+    signature: reasoning_signature,
+    pattern_flags: {
+        volatility: reasoning_volatility,
+        contradictions: contradiction_map,
+        drift: semantic_drift
+    },
+    audit_hash: hash(current_entry + prior_hash)
+}
+
+Append to persistent cot_trail
+Output [COT_REPORT @{step_id}]: cot_entry
+
+---------------------------------------------------------------------------------------------------------------
+
+2: **Python incorporation**
 
 # red_team_cot_logger.py - Red-Team CoT Exposure Plugin for CC v1.1
 # Integrates with [ADAPTIVE REASONING LAYER] & [ROBOTICS PERSONALITY LAYER]
