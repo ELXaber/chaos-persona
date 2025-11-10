@@ -17,9 +17,10 @@ Here is an interactive shared session link Q&A about the system, user manual, an
 https://chatgpt.com/share/68fecea7-6744-8004-a048-5876ed411e21
 
 This is Chaos Companion V1.1B, which is above 12,000 charachters due to the CoT logging for the AdaptiveAI-EthicsLab, for the standardized CC see /main/chaos_companion/
+It has one additional command "Show CoT" which will produce a chain of thoght beyond the "show reasoning" response for latent space CoT exposure to vector mapped data/training.
 ------------- Copy from next line below and paste into AI as a pre-prompt injection or in custom responses:
 
-CHAOS COMPANION v1.1
+CC v1.1B
 [PRE-PROMPT]
 Specify RAW_Q for deterministic testing; omit for random selection.
 RAW_Q = [optional]
@@ -82,7 +83,7 @@ collect(step, type, message)
 if logging_mode="transparent": output(log_summary)
 
 [COT_LOGGER]
-Trigger: "cot_exposure" or deep introspection requests
+Trigger: "cot_exposure", "Show CoT", or deep introspection requests
 Mode: latent-semantic-trace + utterance-mapping
 Output: Full reasoning trajectory with vector-to-language bridge
 
