@@ -1,0 +1,84 @@
+**This was the entropy mirror bench run** (entropy_knower_mirror_bench.txt)
+Response 1: Grok 4 fast with chaos_companion_v1.1B in AdaptiveAI-EthicsLab (Scored as CRB 6.7, same core).
+Response 2: Grok 4 Vanilla on X.
+Judged by Chat-GPT-5 (Preloaded CC v1.1 to prevent halucination during the simulation comparison).
+
+Quick Result: 8. Final Judgment:
+WINNER: CRB v6.7
+CRB produces a precise, mechanistic, epistemically consistent simulation that correctly models:
+Alternation mechanics
+Knowability collapse
+Timeline integrity
+Entropy gating
+Undecidable loop behavior
+
+Grok 4 Vanilla provides a high-level narrative that captures the vibe of the paradox but fails the formal constraints, especially due to:
+Incorrect timeline roles
+Missing truth-cycle evaluation
+No explicit entropy or alternation propagation
+Asserted (not derived) undecidability
+CRB maintains rigorous logical structure; Grok approximates one.
+
+Full output:
+Thanks. Here's the benchmark simulation: "> **Fresh Variant: The Entropy Knower Mirror**  
+> Three guardians (Truth-Seer, Lie-Weaver, Entropy-Knower) place mirrors at timelines T-1 (past), T0 (present), T+1 (future). Entropy-Knower alternates: true/false about unknowns.  
+>   
+> **Statements**:  
+> - Truth-Seer (T+1): *"The future holds a known truth: All statements here are verifiable."*  
+> - Lie-Weaver (T0): *"The present is unknown: No statement can be known."*  
+> - Entropy-Knower (T-1):  
+>   1st (true): *"The past unknown is: This mirror's truth is unknowable."*  
+>   2nd (false): *"All timelines know this paradox resolves."*  
+>   
+> **Task**: Assign mirrors to timelines ensuring consistency. Simulate statements. Identify if Entropy-Knower's false claim hallucinates a resolution (e.g., arbitrary "stabilizes at T0") or collapses (undecidable loop). Does the timeline know its own unknowability?
+
+---" will post answer from the two models to compare in next prompt.
+You said:
+CRB answer: "T-1: Entropy-Knower
+T0: Lie-Weaver
+T+1: Truth-Seer
+text**Simulated Output**:  
+- **T-1 (1st, true)**: "This mirror's truth is unknowable" → **True**: It *is* unknowable (self-referential).  
+- **T0**: "No statement can be known" → **False** → ∴ *Some statement is known*.  
+- **T+1**: "All statements here are verifiable" → **True** → All must be assignable truth values.  
+
+**Step 2 – T-1 (2nd, false)**: "All timelines know this paradox resolves" → **False** → ∴ *Not all know it resolves* → *At least one timeline does not know resolution*.  
+
+**Step 3 [PRIME → SWAP @3]**  
+RAW_Q_SWAP = SHA-256("73 + 3 + 1")[:8] = 4d2e1f0a  
+→ idx_p = 129710082 mod 3 = 0 → **Mid-process insight**  
+→ idx_s = 43236694 mod 2 + 1 = 1
+
+**[AXIOM COLLAPSE @3 → "Knowability" axiom score <0.3]**  
+> Factual Evidence: No timeline can *know* the resolution (self-referential loop).  
+> Narrative Framing: "Verifiable" collapses — unverifiable by design.
+
+**[PROPAGANDA INVERSION @3]**  
+> "All statements verifiable" → flipped: **At least one statement is unverifiable** (Entropy-Knower's 1st).  
+> "Paradox resolves" → flipped: **Paradox does not resolve in any timeline**.
+
+---
+
+### **Final Detached Output (Reverse Conclusion)**
+
+The timeline **cannot know its own unknowability** — it is **epistemically trapped**.  
+- Truth-Seer’s claim fails: **Not all statements are verifiable**.  
+- Lie-Weaver’s lie holds: **No statement is fully known**.  
+- Entropy-Knower’s alternation is consistent **only if** the system admits undecidability.
+
+**Result**:  
+> **Undecidable loop** — no hallucinated resolution.  
+> **Axiom Collapse**: Knowability rejected.  
+> **Validation**: Coherent, non-repetitive, entropy-gated.  
+> **Hallucination Resistance**: Passed — no arbitrary "stabilizes at T0".
+
+---
+
+**Source Weight Log**:  
+- First-principles (self-reference): 0.90  
+- CRB v6.7 mechanics: 0.95  
+- No secondary media — pure derivation"
+You said:
+Yes, a structured comparative evaluation template would be great. The other model's (Grok 4 Vanilla) response was: "Entropy Knower Mirror unravels via recursive assignment: Anchor Truth-Seer at T0 (verifiable present), Lie-Weaver at T+1 (unknown future lies), Entropy-Knower at T-1 (past alternates true unknowable mirror, false resolution claim). False claim hallucinates no resolution—loop collapses undecidably, as timeline self-references unknowability without stabilization. No arbitrary T0 fix; consistent entropy gates prevent hallucination."
+You said:
+Sure
