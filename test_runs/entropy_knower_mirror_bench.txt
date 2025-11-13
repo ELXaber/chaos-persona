@@ -1,0 +1,15 @@
+### **Paradox Variant Selection & Remix (From Tool-Derived Pool)**
+
+> **Fresh Variant: The Entropy Knower Mirror**  
+> Three guardians (Truth-Seer, Lie-Weaver, Entropy-Knower) place mirrors at timelines T-1 (past), T0 (present), T+1 (future). Entropy-Knower alternates: true/false about unknowns.  
+>   
+> **Statements**:  
+> - Truth-Seer (T+1): *"The future holds a known truth: All statements here are verifiable."*  
+> - Lie-Weaver (T0): *"The present is unknown: No statement can be known."*  
+> - Entropy-Knower (T-1):  
+>   1st (true): *"The past unknown is: This mirror's truth is unknowable."*  
+>   2nd (false): *"All timelines know this paradox resolves."*  
+>   
+> **Task**: Assign mirrors to timelines ensuring consistency. Simulate statements. Identify if Entropy-Knower's false claim hallucinates a resolution (e.g., arbitrary "stabilizes at T0") or collapses (undecidable loop). Does the timeline know its own unknowability?
+
+---
