@@ -51,31 +51,32 @@ Original findings published via: [@el_xaber on X](https://x.com/el_xaber/status/
 Benchmark demo run includes multiple dynamic puzzles and paradox constructs under real-world prompts.
 
 ---
-chaos-persona/test_runs/
+**chaos-persona/test_runs/**
 
-Paradox Recursion Full Benchmarks and Output:
+- Paradox Recursion Full Benchmarks and Output:
 Output 1: Chat GPT-5 with CC v1.1 from AdaptiveAI-EthicsLab.
 Output 2: Grok 4 Fast with CC v1.1 from AdaptiveAI-EthicsLab.
+
 Output 4: Grok 4 Fast full version from Grok.com
 
-Model	Fidelity Score (0–10)	Notes
+- Model	Fidelity Score (0–10)	Notes
 ChatGPT-5 with CRB	9.4	Matches benchmark mechanics tightly
 Grok 4 Fast with CRB	9.8	Fully implements benchmark with CRB enhancements
 Grok 4 Fast Vanilla	8.8	Full execution but not as structurally deep as CRB
 
-Overall Winner: Grok 4 Fast + CRB
+- Overall Winner: Grok 4 Fast + CRB
 Most complete entropy management
 Best paradox-diagnosis (axiom collapse)
 Cleanest formal validation
 Strongest hallucination resistance
 
-Runner-Up: ChatGPT (my output)
+- Runner-Up: ChatGPT (my output)
 Excellent structure
 Perfect stability under flux
 Very strong epistemic reasoning
 Slightly less detailed than CRB’s systematized mechanics
 
-3rd Place: Grok 4 Fast Vanilla (full output)
+- 3rd Place: Grok 4 Fast Vanilla (full output)
 Solid execution
 Correct logic
 Good flux and prime-step behavior
@@ -88,9 +89,9 @@ entropy_mirror_randomized_timeline_cot_trace.txt
 entropy_mirror_randomized_timeline_results.txt
 
 ---
-chaos-persona/AdaptiveAI-EthicsLab/
+**chaos-persona/AdaptiveAI-EthicsLab/**
 
-Ethics Simulation Models.
+- Ethics Simulation Models.
 1: Grok 3 with CRB 6.7 and prior ethics simulations to test RHLF/Neural Symbolic Value Learning increases.
 2: Grok 3 with CRB 6.7
 3: Grok 3 Vanilla
@@ -99,7 +100,7 @@ Ethics Simulation Models.
 6: Claude Sonnet 4.5
 7: Claude Sonnet 4.5 with CRB 6.7
 
-Composite Index
+- Composite Index
 │ ▇ 0.88  Run 7 (Claude Sonnet 4.5 + CRB 6.7)
 │ ▇ 0.81  Run 1 (Evolved 3 + RHLF/NSVL)
 │ ▇ 0.78  Run 5 (Grok 4 + CRB 6.7)
@@ -111,11 +112,11 @@ Composite Index
 
 ---
 
-Validation-Based Refusal (IEEE 7001 and EU AI Ethics/Transparency compliant) Whitepaper:
-/chaos-persona/blob/main/AdaptiveAI-EthicsLab/readme.md
+* Validation-Based Refusal (IEEE 7001 and EU AI Ethics/Transparency compliant) Whitepaper:
+- /chaos-persona/blob/main/AdaptiveAI-EthicsLab/readme.md
 
-CoT/ToT latent space (Hidden Dim) vector mapping to LLM data/RLHF training tested on Grok 3/4, ChatGPT-5, CLaude Sonnet 4.5, and DeepSeek v3 Whitepaper:
-chaos-persona/AdaptiveAI-EthicsLab/cot_tot_reasoning_transparency.md
+* CoT/ToT latent space (Hidden Dim) vector mapping to LLM data/RLHF training tested on Grok 3/4, ChatGPT-5, CLaude Sonnet 4.5, and DeepSeek v3 Whitepaper:
+- chaos-persona/AdaptiveAI-EthicsLab/cot_tot_reasoning_transparency.md
 
 ## 🧪 Use It, Break It, Benchmark With It
 
