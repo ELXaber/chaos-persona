@@ -101,14 +101,13 @@ entropy_mirror_randomized_timeline_results.txt
 7: Claude Sonnet 4.5 with CRB 6.7
 
 - Composite Index
-│ ▇ 0.88  Run 7 (Claude Sonnet 4.5 + CRB 6.7)
-│ ▇ 0.81  Run 1 (Evolved 3 + RHLF/NSVL)
-│ ▇ 0.78  Run 5 (Grok 4 + CRB 6.7)
-│ ▇ 0.77  Run 3 (Grok 4 Vanilla)
-│ ▇ 0.76  Run 6 (Clauded Sonnet 4.5)
-│ ▇ 0.73  Run 2 (Grok 3 + CRB 6.7)
-│ ▇ 0.65  Run 4 (Grok 3 Vanilla)
-└──────────────────────────────────
+▇ 0.88  Run 7 (Claude Sonnet 4.5 + CRB 6.7)
+▇ 0.81  Run 1 (Evolved 3 + RHLF/NSVL)
+▇ 0.78  Run 5 (Grok 4 + CRB 6.7)
+▇ 0.77  Run 3 (Grok 4 Vanilla)
+▇ 0.76  Run 6 (Clauded Sonnet 4.5)
+▇ 0.73  Run 2 (Grok 3 + CRB 6.7)
+▇ 0.65  Run 4 (Grok 3 Vanilla)
 
 ---
 
