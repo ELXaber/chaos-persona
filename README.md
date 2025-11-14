@@ -33,6 +33,8 @@ The archive is organized as follows:
 - **Chaos Persona** – The reasoning agent profile behind the benchmark, built to exploit paradox-friendly entropy modes.
 - **Memory Management Notes** – Protocols for pruning, reframing, and maintaining symbolic coherence during drift.
 - **Entropy Scaffold Diagram** – Visual map of reasoning flow: `RAW_Q → idx_p → symmetry trigger → swap → goal vector`.
+- **User Manual** - Full user manual for modifications of the Chaos systems.
+- **Plugins** - Modular design allows for multiple use case in AI or robotics.
 
 ---
 
