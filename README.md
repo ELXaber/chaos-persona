@@ -9,6 +9,16 @@ AI chaos reasoning persona
 **Authors**: Chaos AI-OS systems + Jonathan Schack email: xaber.csr2@gmail.com X: @el_xaber
   - Chaos Persona version 6.7 current, published, and new autonomous bridge stabilization engineering task benchmarks available at Zenodo [https://zenodo.org/records/15860474](https://doi.org/10.5281/zenodo.15795821)
 
+# Chaos AI-OS
+## Patent Pending: US Application 19/390,493
+Entropy-Driven Reasoning System for Adaptive AI Transparency
+
+**Legal Protection:** This invention is protected by US Patent 
+Application 19/390,493, filed November 15, 2025.
+
+**License:** Open source for research use. Commercial licensing 
+available. Contact for inquiries.
+
 ## 📜 Overview
 
 The **Chaos Reasoning Benchmark (CRB)** is a novel evaluation suite for testing **adaptive reasoning under shifting constraints**. Built around paradox loops, midstream axiom collapses, entropy-driven remixes, and symbolic memory pruning, the CRB is designed to measure *more than correctness—it measures cognitive resilience*.
