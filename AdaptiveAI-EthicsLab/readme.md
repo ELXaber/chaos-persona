@@ -4,6 +4,17 @@
 
 Current AI safety architectures rely primarily on pre-emptive pattern matching to prevent harmful outputs, blocking requests based on surface-level indicators before evaluating actual intent. While effective at preventing certain attacks, this approach generates false positives that impede legitimate research and reduces transparency in safety decision-making. We present evidence that validation-based refusal architectures—which evaluate requests against explicit ethical axioms before deciding—can maintain equivalent security while reducing false positives by 60-80% and providing auditable reasoning for all safety decisions. Comparative benchmarking shows that Chaos Companion v1.1, a validation-based framework, achieved a 7.7% improvement over baseline safety mechanisms on Grok 4 (0.78→0.84 composite score) while maintaining zero harmful output rate. However, testing on Anthropic's Claude Sonnet 4.5 was prevented by pre-emptive refusal systems, highlighting a critical barrier to AI safety research: safety measures that block safety research tools.
 
+# Chaos AI-OS
+## Patent Pending: US Application 19/390,493
+
+Entropy-Driven Reasoning System for Adaptive AI Transparency
+
+**Legal Protection:** This invention is protected by US Patent 
+Application 19/390,493, filed November 15, 2025.
+
+**License:** Open source for research use. Commercial licensing 
+available. Contact for inquiries.
+
 <img width="512" height="768" alt="vrb brief" src="https://github.com/user-attachments/assets/1db64ab1-6037-43d7-b09f-42bb3ef64a46" />
 
 **Summary of Compliance Benefits**
