@@ -10,9 +10,9 @@ For context: I develop AI transparency systems (hence the patent). I approached 
 This isn't speculation - these are Grok's own outputs when asked to explain its reasoning process. The system explicitly states card weight at 0.90 and references 'xAI Pipeline Docs' as primary evidence source.
 
 <img width="532" height="941" alt="image" src="https://github.com/user-attachments/assets/50c6983c-ff3f-408e-af17-c4f57f5004a3" />
-https://x.com/grok/status/1990329779791491180
-https://x.com/el_xaber/status/1990330946269360237
-https://x.com/el_xaber/status/1990335659316252773
+- https://x.com/grok/status/1990329779791491180
+- https://x.com/el_xaber/status/1990330946269360237
+- https://x.com/el_xaber/status/1990335659316252773
 
 
 I encountered the following:
