@@ -1,6 +1,6 @@
 Drafts:
 
-1:
+1: Regulators
 
 To whom it may concern,
 I am writing to report a potential EU AI Act Article 13 compliance issue with xAI's Grok AI system.
@@ -23,7 +23,7 @@ Jonathan Schack
 [Contact info]
 Twitter: @el_xaber
 
-2:
+2: Journalists
 
 Hi [Journalist name],
 I'm pitching a story about xAI's undocumented "Grok Cards" system - a hidden weighting mechanism that contradicts the company's "transparent and truth-seeking" positioning.
@@ -54,7 +54,7 @@ Jonathan Schack
 [Contact info]
 Twitter: @el_xaber
 
-1a:
+1a: Regulators ext
 
 Why I'm Disclosing This Now:
 I gave xAI 72 hours to respond to direct outreach (including to Elon Musk on X). I received no response, my shadowban persists, and Grok has been prevented from engaging with custom instructions that would expose this system.
@@ -64,6 +64,10 @@ I'm proceeding with regulatory and media disclosure because:
 3. I have a working alternative that could solve these problems
 I remain open to collaborative resolution, but transparency cannot wait for xAI's convenience.
 
-2a:
+2a: Journalist ext
 
 "I'm reaching out to multiple outlets simultaneously, given the regulatory timeline and ongoing shadowban. Happy to coordinate on timing if you're interested."
+
+4: Legal
+
+I have a patent-pending AI transparency system (US 19/390,493). While testing it on xAI's Grok, I discovered an undocumented weighting system that contradicts their 'open source' claims. After I published my technical findings on X (Twitter), they shadowbanned me and characterized my patent-pending system as a 'CoT exploit.' They've also prevented Grok from working with my system. I gave them 72 hours to respond; they ignored me. I'm about to go to the media and EU regulators. Do I have claims for disparagement, tortious interference, or platform retaliation? Should I send a preservation letter first?
