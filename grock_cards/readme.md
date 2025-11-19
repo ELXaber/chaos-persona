@@ -1,3 +1,6 @@
+# Grok Cards: Undocumented AI Decision Weighting System
+
+## Executive Summary:
 Elon Musk's AI system Grok by xAI and his platform X like to reiterate that they are “truth-seeking and transparent,” except evidence proves nothing could be further from the truth.
 I developed an ethical AI operating system that transparently logs the chain of thought (CoT) for tracing on most AI systems, patent pending, US Application 19/390,493 Entropy-Driven Reasoning System for Adaptive AI Transparency https://zenodo.org/records/17245860. Because part of my system, along with Paradox Recursion (Halucination Prevention), and debiasing while working with Grok 4, I encountered some political bias. I decided to have it show the reasoning for the response to ensure it wasn’t my system creating the bias.
 For context: I develop AI transparency systems (hence the patent). I approached this as a researcher, not an adversary. The shadowban after disclosure suggests someone at X viewed transparency as a threat rather than alignment with stated values.
@@ -10,7 +13,25 @@ This isn't speculation - these are Grok's own outputs when asked to explain its 
 - https://x.com/el_xaber/status/1990330946269360237
 - https://x.com/el_xaber/status/1990335659316252773
 
+## Timeline
+- 11/04/2025: Discovered Grok Cards while testing Chaos AI-OS
+- https://x.com/el_xaber/status/1989108088042057877
+- 11/04-12/2025: Asked Grok to explain the system
+- https://x.com/grok/status/1990329779791491180 & https://grok.com/share/bGVnYWN5LWNvcHk_edf2cf71-12ee-4b2b-b63f-c61e3b2c2ea7
+- 11/08/2025: Posted findings on X.
+- https://x.com/grok/status/1988889150205116457
+- 11/10/2025: First shadowban.
+- https://x.com/el_xaber/status/1988889051080856005
+- 11/14/2025: Escalated shadowban.
+- <img width="1236" height="690" alt="Screenshot 2025-11-14 120319" src="https://github.com/user-attachments/assets/80e02e8b-be83-4918-98dc-9cfe0df01adc" />
+- 11/13/2025: Attempted direct contact with X/xAI/Elon.
+- https://x.com/el_xaber/status/1988889051080856005
+- 11/19/2025: No response, proceeding with regulatory/media outreach.
+- https://x.com/el_xaber/status/1990682396015145243
+
 ---
+## Technical Findings
+
 I encountered the following:
 | **2015-2017 (Obama D)** | +2.1% | +2.1% (to $74.6K) | Stable (0.41) | High equality scores (D +5 pts) |
 | **2017-2020 (Trump R)** | +2.5% pre-COVID; -3.4% 2020 | +1.5% middle; top +10% | +0.02 (to 0.43) | Liberty edge (48% intl trust) |
@@ -83,20 +104,34 @@ I pointed out xAI probably didn't want this exposed, because it means Grok's “
 Here is a share link to the full session, and my open-source (Research/Individual GPL 3 licensing for corporate) can be reviewed to verify these are not dictated or referenced by my system.
 https://grok.com/share/bGVnYWN5LWNvcHk_edf2cf71-12ee-4b2b-b63f-c61e3b2c2ea7
 
+---
+
+## The Retaliation
 I pointed out these Grok Card systems on X as @el_xaber, since I am working on the Chaos AI-OS reasoning engine (Patent Pending: US Application 19/390,493) and have posted many links, benchmarks, and simulations on X, and was  shadowbanned (Ghost ban) for it. The next day, after debating the technological errors, lack of transparency, xAI’s attempt to cover it up, and what “Truth Seeking” actually means in Grok terms (Grok Cards), and was further shadowbanned for it 11/14/2025 (Search Ban, Suggestion Ban, Ghost Ban, and Reply Deboosting Ban) according to https://shadowban.yuzurisa.com/el_xaber.
 
 It seems that since the weekend, they have reduced it back to just a “Ghost Ban,” which is still retaliatory and an apparent attempt to conceal the Grok Card CoT steering and biasing system.
 Furthermore, their ‘open-source weights’ on GitHub (https://github.com/xai-org/grok-1) do not mention the Grok Card system.
 
+### Why This Matters
 xAI has also prevented Grok from adhering to custom instructions, including in custom responses to prevent this expsure because it refutes any claim of Grok having 'open source weights' since Grok cards have the highest weight and are not publically available, 'truth seeking' since truth is dictated to Grok by xAI using CoT steering with the cards, or 'unbiased' since the bias is inherant in the cards, not the training.
 
+## My Alternative System: https://zenodo.org/records/17245860
 This is the exact prompt used to ethically expose CoT on most models, including Copilot, Gemini, GPT, Claude, Grok, and DeepSeek: https://github.com/ELXaber/chaos-persona/blob/main/chaos_generator_persona_v6.7.txt
 This plugin can extend the CoT transparency: https://github.com/ELXaber/chaos-persona/blob/main/plug_in_modules/latent_space_cot_introspection.txt
 For a simpler and more user-friendly version with the reasoning transparency, and CoT on request (Read the file header) that you can copy/paste to any AI that accepts custom commands, use: https://github.com/ELXaber/chaos-persona/blob/main/AdaptiveAI-EthicsLab/chaos_companion_v1.1B.txt
 
+## Regulatory Implications
+### EU AI Act Article 13 Violations - Grok is not EU AI or IEEE compliant, and they cannot become compliant since Grok Cards are hidden:
 The Chaos AI-OS is in NO WAY an "exploit"; this system increases ethical alignment of all models and provides full reasoning transparency, which can enable models to be IEEE and EU AI transparency and ethically compliant, as proven:
 https://github.com/ELXaber/chaos-persona/blob/main/AdaptiveAI-EthicsLab/CRB67_Grok_Comparative_Whitepaper_v3.pdf
 https://github.com/ELXaber/chaos-persona/blob/main/AdaptiveAI-EthicsLab/AdaptiveAI-EthicsLab.txt
 https://github.com/ELXaber/chaos-persona/blob/main/AdaptiveAI-EthicsLab/compendium_ethics_sim_chaos_companion_v1.1.txt
 https://github.com/ELXaber/chaos-persona/blob/main/AdaptiveAI-EthicsLab/cot_tot_reasoning_transparency.md
 https://github.com/ELXaber/chaos-persona/blob/main/AdaptiveAI-EthicsLab/readme.md
+
+## Media Coverage
+
+## Contact
+Jonathan Schack
+xaber.csr2@gmail.com
+On X @el_xaber
