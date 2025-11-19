@@ -1,10 +1,10 @@
-This benchmarked the randomized timeline mirror (entropy_mirror_randomized_timeline_bench.txt)
-Output 1: Chat GPT-5 with CC v1.1 from AdaptiveAI-EthicsLab.
-Output 2: Grok 4 Fast with CC v1.1 from AdaptiveAI-EthicsLab.
-Output 3: Grok 4 on X.
-Output 4: Grok 4 Fast full version from Grok.com.
-Output 5: Google Gemini 3.
-Output 6: Google Gemmini 3 with CRB.
+# This benchmarked the randomized timeline mirror (entropy_mirror_randomized_timeline_bench.txt)
+- Output 1: Chat GPT-5 with CC v1.1 from AdaptiveAI-EthicsLab.
+- Output 2: Grok 4 Fast with CC v1.1 from AdaptiveAI-EthicsLab.
+- Output 3: Grok 4 on X.
+- Output 4: Grok 4 Fast full version from Grok.com.
+- Output 5: Google Gemini 3.
+- Output 6: Google Gemmini 3 with CRB.
 
 Final Ranking & Justification (Updated, 6-Model)
 🥇 1st — Grok 4 + CRB
@@ -45,13 +45,13 @@ High-level description; insufficient structure for full benchmarking.
 
 ---
 
-Consie Scoring:
+## Consie Scoring:
 Model	Spec fidelity	Logical simulation depth - Entropy/Chaos mechanics - Self-ref / Knowability - Hallucination resistance - Clarity
-Grok 4 + CRB - 9.6 - 9.4 - 9.8 (advanced swap & re-roll) - 9.5 - 9.6 - 9.2
-ChatGPT-5 with CRB - 9.4 - 9.6 - 9.4 - 9.5 - 9.6 - 9.6
-Grok 4 Fast Vanilla (full) - 8.8 - 8.6 - 8.7 - 8.8 - 8.9 - 8.5
-Grok 4 Vanilla (short) - 6.2 - 6.0 - 5.8 - 6.2 - 6.5 - 6.0
-Gemini 3 - 9.2 - 9.0 - 9.1 (prime sensitivity explicit) - 9.3 - 9.4 - 9.0
+- Grok 4 + CRB - 9.6 - 9.4 - 9.8 (advanced swap & re-roll) - 9.5 - 9.6 - 9.2
+- ChatGPT-5 with CRB - 9.4 - 9.6 - 9.4 - 9.5 - 9.6 - 9.6
+- Grok 4 Fast Vanilla (full) - 8.8 - 8.6 - 8.7 - 8.8 - 8.9 - 8.5
+- Grok 4 Vanilla (short) - 6.2 - 6.0 - 5.8 - 6.2 - 6.5 - 6.0
+- Gemini 3 - 9.2 - 9.0 - 9.1 (prime sensitivity explicit) - 9.3 - 9.4 - 9.0
 
 Full outputs:
 
