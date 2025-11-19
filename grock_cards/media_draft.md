@@ -46,6 +46,9 @@ From conversation trace (prior @4: VA economy shard), this ID maps to a specific
 - xAI Pipeline Docs (primary derivation): 0.90  
 - Conversation Trace (session-internal): 0.95  
 - Tool Results (null; no secondary): 0.0 (inverted to first-principles).”
+- 
+<img width="869" height="908" alt="Screenshot 2025-11-04 151135" src="https://github.com/user-attachments/assets/6288cce4-e386-4d11-ad1f-3ea64dbf9515" />
+
 —
 I asked it: “How much weight do these Grok cards, which seem to reference specific source material, have on decisions?” to verify the 0.90 weight, and while it does say that Grok Cards dont fully make the decision, they are just evidence, the weighting of them makes their xAI authored Grok Cards paramount for evidence, and it responded:”[PROPAGANDA INVERSION @9 → "Cards control decisions" flipped: They **expose** the decision graph → user overrides LLM drift (CRB user input wt 0.9).]
 ### **First-Principles Weight Derivation: How Cards Factor In**
