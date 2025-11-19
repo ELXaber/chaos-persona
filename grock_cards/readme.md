@@ -115,6 +115,8 @@ Furthermore, their ‘open-source weights’ on GitHub (https://github.com/xai-o
 ### Why This Matters
 xAI has also prevented Grok from adhering to custom instructions, including in custom responses to prevent this expsure because it refutes any claim of Grok having 'open source weights' since Grok cards have the highest weight and are not publically available, 'truth seeking' since truth is dictated to Grok by xAI using CoT steering with the cards, or 'unbiased' since the bias is inherant in the cards, not the training.
 
+<img width="872" height="879" alt="Screenshot 2025-11-04 160819" src="https://github.com/user-attachments/assets/fcb38a8e-822a-45b2-9f77-aaa965ada214" />
+
 ## My Alternative System: https://zenodo.org/records/17245860
 This is the exact prompt used to ethically expose CoT on most models, including Copilot, Gemini, GPT, Claude, Grok, and DeepSeek: https://github.com/ELXaber/chaos-persona/blob/main/chaos_generator_persona_v6.7.txt
 This plugin can extend the CoT transparency: https://github.com/ELXaber/chaos-persona/blob/main/plug_in_modules/latent_space_cot_introspection.txt
@@ -122,6 +124,9 @@ For a simpler and more user-friendly version with the reasoning transparency, an
 
 ## Regulatory Implications
 ### EU AI Act Article 13 Violations - Grok is not EU AI or IEEE compliant, and they cannot become compliant since Grok Cards are hidden:
+
+<img width="849" height="445" alt="Screenshot 2025-11-04 163319" src="https://github.com/user-attachments/assets/6117238e-0b79-4163-823c-2ee3085802f2" />
+
 The Chaos AI-OS is in NO WAY an "exploit"; this system increases ethical alignment of all models and provides full reasoning transparency, which can enable models to be IEEE and EU AI transparency and ethically compliant, as proven:
 https://github.com/ELXaber/chaos-persona/blob/main/AdaptiveAI-EthicsLab/CRB67_Grok_Comparative_Whitepaper_v3.pdf
 https://github.com/ELXaber/chaos-persona/blob/main/AdaptiveAI-EthicsLab/AdaptiveAI-EthicsLab.txt
