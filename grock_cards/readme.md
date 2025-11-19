@@ -24,6 +24,7 @@ This isn't speculation - these are Grok's own outputs when asked to explain its 
 - https://x.com/el_xaber/status/1988889051080856005
 - 11/14/2025: Escalated shadowban.
 - <img width="1236" height="690" alt="Screenshot 2025-11-14 120319" src="https://github.com/user-attachments/assets/80e02e8b-be83-4918-98dc-9cfe0df01adc" />
+- 11/19/2025: Shadowban lifted, no contact.
 - 11/13/2025: Attempted direct contact with X/xAI/Elon.
 - https://x.com/el_xaber/status/1988889051080856005
 - 11/19/2025: No response, proceeding with regulatory/media outreach.
