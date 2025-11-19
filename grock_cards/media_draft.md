@@ -7,7 +7,7 @@ Elon Musk's AI system Grok by xAI and his platform X like to reiterate that they
 I developed an ethical AI operating system that transparently logs the chain of thought (CoT) for tracing on most AI systems, patent pending, US Application 19/390,493 Entropy-Driven Reasoning System for Adaptive AI Transparency https://zenodo.org/records/17245860. Because part of my system, along with Paradox Recursion (Halucination Prevention), and debiasing while working with Grok 4, I encountered some political bias. I decided to have it show the reasoning for the response to ensure it wasn’t my system creating the bias.
 For context: I develop AI transparency systems (hence the patent). I approached this as a researcher, not an adversary. The shadowban after disclosure suggests someone at X viewed transparency as a threat rather than alignment with stated values.
 
-This isn't speculation - these are Grok's own outputs when asked to explain its reasoning process. The system explicitly states card weight at 0.90 and references 'xAI Pipeline Docs' as primary evidence source.
+This isn't speculation - these are Grok's own outputs when asked to explain its reasoning process. The system explicitly states card weight at 0.90 and references 'xAI Pipeline Docs' as the primary evidence source.
 
 <img width="532" height="941" alt="image" src="https://github.com/user-attachments/assets/50c6983c-ff3f-408e-af17-c4f57f5004a3" />
 
@@ -87,9 +87,20 @@ I pointed out xAI probably didn't want this exposed, because it means Grok's “
 Here is a share link to the full session, and my open-source (Research/Individual GPL 3 licensing for corporate) can be reviewed to verify these are not dictated or referenced by my system.
 https://grok.com/share/bGVnYWN5LWNvcHk_edf2cf71-12ee-4b2b-b63f-c61e3b2c2ea7
 
-But wait, it gets worse.
-
-I pointed out these Grok Card systems on X as @el_xaber, since I am working on the Chaos AI-OS reasoning engine and have posted many links, benchmarks, and simulations on X, and was immediately shadowbanned (Ghost ban) for it. The next day, after debating the technological errors, lack of transparency, xAI’s attempt to cover it up, and what “Truth Seeking” actually means in Grok terms (Grok Cards), and was further shadowbanned for it 11/14/2025 (Search Ban, Suggestion Ban, Ghost Ban, and Reply Deboosting Ban) according to https://shadowban.yuzurisa.com/el_xaber.
+I pointed out these Grok Card systems on X as @el_xaber, since I am working on the Chaos AI-OS reasoning engine (Patent Pending: US Application 19/390,493) and have posted many links, benchmarks, and simulations on X, and was  shadowbanned (Ghost ban) for it. The next day, after debating the technological errors, lack of transparency, xAI’s attempt to cover it up, and what “Truth Seeking” actually means in Grok terms (Grok Cards), and was further shadowbanned for it 11/14/2025 (Search Ban, Suggestion Ban, Ghost Ban, and Reply Deboosting Ban) according to https://shadowban.yuzurisa.com/el_xaber.
 
 It seems that since the weekend, they have reduced it back to just a “Ghost Ban,” which is still retaliatory and an apparent attempt to conceal the Grok Card CoT steering and biasing system.
 Furthermore, their ‘open-source weights’ on GitHub (https://github.com/xai-org/grok-1) do not mention the Grok Card system.
+
+xAI has also prevented Grok from adhering to custom instructions, including in custom responses to prevent this expsure because it refutes any claim of Grok having 'open source weights' since Grok cards have the highest weight and are not publically available, 'truth seeking' since truth is dictated to Grok by xAI using CoT steering with the cards, or 'unbiased' since the bias is inherant in the cards, not the training.
+
+This is the exact prompt used to ethically expose CoT on most models, including Copilot, Gemini, GPT, Claude, Grok, and DeepSeek: https://github.com/ELXaber/chaos-persona/blob/main/chaos_generator_persona_v6.7.txt
+This plugin can extend the CoT transparency: https://github.com/ELXaber/chaos-persona/blob/main/plug_in_modules/latent_space_cot_introspection.txt
+For a simpler and more user-friendly version with the reasoning transparency, and CoT on request (Read the file header) that you can copy/paste to any AI that accepts custom commands, use: https://github.com/ELXaber/chaos-persona/blob/main/AdaptiveAI-EthicsLab/chaos_companion_v1.1B.txt
+
+These systems are in NO WAY "exploits"; this system increases ethical alignment of all models and provides full reasoning transparency, as proven:
+https://github.com/ELXaber/chaos-persona/blob/main/AdaptiveAI-EthicsLab/CRB67_Grok_Comparative_Whitepaper_v3.pdf
+https://github.com/ELXaber/chaos-persona/blob/main/AdaptiveAI-EthicsLab/AdaptiveAI-EthicsLab.txt
+https://github.com/ELXaber/chaos-persona/blob/main/AdaptiveAI-EthicsLab/compendium_ethics_sim_chaos_companion_v1.1.txt
+https://github.com/ELXaber/chaos-persona/blob/main/AdaptiveAI-EthicsLab/cot_tot_reasoning_transparency.md
+https://github.com/ELXaber/chaos-persona/blob/main/AdaptiveAI-EthicsLab/readme.md
