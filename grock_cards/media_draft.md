@@ -1,8 +1,3 @@
-Grok Cards Media Draft:
-—
-
-To whom it may concern,
-
 Elon Musk's AI system Grok by xAI and his platform X like to reiterate that they are “truth-seeking and transparent,” except evidence proves nothing could be further from the truth.
 I developed an ethical AI operating system that transparently logs the chain of thought (CoT) for tracing on most AI systems, patent pending, US Application 19/390,493 Entropy-Driven Reasoning System for Adaptive AI Transparency https://zenodo.org/records/17245860. Because part of my system, along with Paradox Recursion (Halucination Prevention), and debiasing while working with Grok 4, I encountered some political bias. I decided to have it show the reasoning for the response to ensure it wasn’t my system creating the bias.
 For context: I develop AI transparency systems (hence the patent). I approached this as a researcher, not an adversary. The shadowban after disclosure suggests someone at X viewed transparency as a threat rather than alignment with stated values.
