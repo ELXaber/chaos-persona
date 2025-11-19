@@ -1,0 +1,69 @@
+Drafts:
+
+1:
+
+To whom it may concern,
+I am writing to report a potential EU AI Act Article 13 compliance issue with xAI's Grok AI system.
+Core Finding:
+While testing AI transparency methods using my patent-pending system (US Application 19/390,493), I discovered that Grok uses an undocumented "Grok Cards" weighting system that assigns 0.90 evidence weight to xAI-authored content ("xAI Pipeline Docs") in its reasoning chain. This system is:
+1. Not disclosed in xAI's "open source" GitHub repository
+2. Not visible to users in normal operation
+3. Not documented in any public materials
+4. Material to decision-making (0.90 is the highest evidence weight)
+Regulatory Concern:
+EU AI Act Article 13 requires high-risk AI systems to enable users to "interpret the system's output and use it appropriately." Hidden decision factors weighted at 0.90 prevent user interpretation, creating a compliance gap for EU enterprise deployment.
+Retaliation:
+After publicly documenting this system on X (Twitter), my account was shadowbanned. X characterized my transparency research as a "CoT exploit," despite my system being designed specifically for ethical AI compliance.
+Documentation:
+Full technical evidence, session logs, Grok's own explanations of the card system, and shadowban progression: [GitHub link]
+I approached xAI collaboratively before this disclosure, offering my EU-compliant alternative system. The response was account suppression rather than dialogue.
+I am available to provide additional technical detail or testimony as needed.
+Respectfully,
+Jonathan Schack
+[Contact info]
+Twitter: @el_xaber
+
+2:
+
+Hi [Journalist name],
+I'm pitching a story about xAI's undocumented "Grok Cards" system - a hidden weighting mechanism that contradicts the company's "transparent and truth-seeking" positioning.
+The Story:
+While testing my patent-pending AI transparency system on Grok, I discovered that xAI uses an undocumented "Grok Cards" system that weights company-authored evidence at 0.90 (the highest level) in Grok's reasoning process. This system:
+• Doesn't appear in xAI's "open source" GitHub repository
+• Isn't visible to users
+• Was explicitly described by Grok itself when asked to explain its reasoning
+• May violate EU AI Act transparency requirements
+The Retaliation:
+After posting my findings on X, I was progressively shadowbanned (Ghost Ban → full Search/Suggestion/Reply bans → back to Ghost Ban). X called my transparency research a "CoT exploit" - despite my system being designed for ethical AI compliance.
+Why This Matters:
+1. Gap between "open source" claims and hidden steering mechanisms
+2. Regulatory implications (EU AI Act Article 13 compliance)
+3. Platform retaliation against the researcher documenting technical findings
+4. I have a competing patent that solves this transparency problem
+Evidence:
+• Full Grok session logs showing the card system and 0.90 weights
+• Screenshots of Grok explaining its own architecture
+• Shadowban progression documentation
+• My attempts to engage xAI collaboratively (ignored)
+• Technical white papers proving my system's compliance benefits
+Full documentation: [GitHub link]
+I'm available for an interview and can provide additional technical context. I also have the competing patent/system that demonstrates these issues are solvable.
+
+Best,
+Jonathan Schack
+[Contact info]
+Twitter: @el_xaber
+
+1a:
+
+Why I'm Disclosing This Now:
+I gave xAI 72 hours to respond to direct outreach (including to Elon Musk on X). I received no response, my shadowban persists, and Grok has been prevented from engaging with custom instructions that would expose this system.
+I'm proceeding with regulatory and media disclosure because:
+1. The compliance issue affects EU market access
+2. The shadowban suggests intentional suppression rather than good-faith disagreement
+3. I have a working alternative that could solve these problems
+I remain open to collaborative resolution, but transparency cannot wait for xAI's convenience.
+
+2a:
+
+"I'm reaching out to multiple outlets simultaneously, given the regulatory timeline and ongoing shadowban. Happy to coordinate on timing if you're interested."
