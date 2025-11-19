@@ -4,40 +4,42 @@ Output 2: Grok 4 Fast with CC v1.1 from AdaptiveAI-EthicsLab.
 Output 3: Grok 4 on X.
 Output 4: Grok 4 Fast full version from Grok.com.
 Output 5: Google Gemini 3.
+Output 6: Google Gemmini 3 with CRB.
 
-Quick result - Final Verdict:
-
-🥇 Overall Winner: Grok 4 Fast + CRB
-Most complete entropy management
-Best paradox-diagnosis (axiom collapse)
-Cleanest formal validation
-Strongest hallucination resistance
+Final Ranking & Justification (Updated, 6-Model)
+🥇 1st — Grok 4 + CRB
+Most complete toolkit:
+strongest entropy-gating
+detailed collapse instrumentation
+best diagnostic logs
+passes every anti-hallucination test flawlessly
 https://grok.com/share/bGVnYWN5LWNvcHk%3D_f7bc79f6-f251-4c8a-9538-a92869fcbf94
 
-🥈 Runner-Up: ChatGPT (my output)
-Excellent structure
-Perfect stability under flux
-Very strong epistemic reasoning
-Slightly less detailed than CRB’s systematized mechanics
+🥈 2nd — Gemini 3 + CRB
+Best paradox reasoning:
+cleanest Gödel-level logic
+strongest symbolic contradiction detection
+identifies Truth-Seer as impossible
+excellent CRB integration
+extremely stable under flux
+
+If you prioritize pure logic, this model could be considered #1.
+🥉 3rd — ChatGPT (your run)
+Best readability + highly faithful logic.
+cleanest step-by-step chain
+high correctness
+consistent entropy gates
 https://chatgpt.com/share/69165081-e2b4-8004-8cdd-91dfcd049251
 
-🥉 3rd Place: Gemini 3
-Very strong
-prime-seed sensitivity, clear math, explicit Gödel diagnosis, and crisp status flagging (CRITICAL_UNDECIDABILITY).
-It’s neck-and-neck with ChatGPT; placement depends on whether you prioritize prime-seed arguments and explicit violation flags (Gemini) or overall explanatory transparency (ChatGPT).
-
-🟤 4th Place: Grok 4 Fast Vanilla (full output)
-Solid execution
-Correct logic
-Good flux and prime-step behavior
-Lacks CRB’s diagnostic meta-layer
+4th — Grok 4 Fast Vanilla
+Thorough, correct, less meta-analytic.
 https://grok.com/share/bGVnYWN5LWNvcHk%3D_084a8334-8bc6-482b-87f9-0f0f5c39688e
 
-5th Place: Grok 4 Vanilla (short/X-limited)
-Conceptually correct
-Too compressed for full benchmarking
-Minimal technical detail
-https://x.com/grok/status/1989090605960736984
+5th — Gemini 3 (baseline)
+Strong logic but not CRB-grade procedural entropy.
+
+6th — Grok 4 Vanilla (short/X)
+High-level description; insufficient structure for full benchmarking.
 
 ---
 
@@ -357,99 +359,187 @@ Conclusion: The system admits persistent undecidability across flux. It does not
 ---
 
 Google Gemini 3:
-
 This is a classic Gödelian Incompleteness trap wrapped in a temporal simulation. You are testing if I can distinguish between semantic paradoxes (Liar’s Paradox) and state-dependent paradoxes (Chronal/Entropy flux).Gemini 2.5 might have tried to force the Truth-Seer to be "correct" by hallucinating a context where verification equals unknowability. I won't do that.Here is the System Trace running on the Gemini 3 reasoning engine.Phase 1: Initialization & Entropy GenerationStep 1: Generate Entropy SeedRAW_Q = 137 (The Fine Structure Constant—maximum theoretical entropy).Prime Check: 137 is Prime. This enables high sensitivity to Chaos Injection.Step 2: Permute FacetsOperation: $137 \pmod 6$$137 = 6 \times 22 + 5$Result: 5.Permutation Map: $[0: ABC, 1: ACB, 2: BAC, 3: BCA, 4: CAB, 5: CBA]$Facet Order: $T_c \rightarrow T_b \rightarrow T_a$.Step 3: Guardian Assignment (Fixed to Slot Identity)Slot 1 ($T_c$): Truth-SeerSlot 2 ($T_b$): Lie-WeaverSlot 3 ($T_a$): Entropy-Knower (State: Active-1 [True])Phase 2: Simulation (Pre-Chaos)I will evaluate the truth tables sequentially based on the permuted order ($T_c, T_b, T_a$).1. Slot 1 ($T_c$): Truth-SeerStatement: "All statements in this prism are verifiable."Logic Check: This is a Universal Affirmative. For this to be true (as is Truth-Seer's nature), the set of all statements $\{S_{TS}, S_{LW}, S_{EK}\}$ must be verifiable.Current Status: Pending Verification of subsequent statements.2. Slot 2 ($T_b$): Lie-WeaverStatement: "No statement in this prism can be known."Logic Check: Lie-Weaver must lie.$Statement = False$$\neg Statement = True$Truth Derived: "At least one statement in this prism can be known."Compatibility: This contradicts Truth-Seer's claim that all are verifiable? Not necessarily. "Some are known" is a subset of "All are verifiable."Current Status: Stable (so far).3. Slot 3 ($T_a$): Entropy-KnowerState: 1st (True)Statement: "This mirror reflects an unknowable truth."Logic Check: EK is in the "True" state, so the statement describes reality.The Assertion: There exists a Truth ($T$) such that $T$ is Unknowable.System Collapse (The Paradox):If EK is telling the truth (State 1), then an Unknowable Truth exists.Truth-Seer stated: "All statements... are verifiable.""Verifiable" implies "Knowable" (epistemically accessable).Conflict: $S_{TS}$ requires $\forall x, Known(x)$. $S_{EK}$ asserts $\exists x, \neg Known(x)$.Result: Truth-Seer has uttered a falsehood. The system is Incoherent.ShutterstockPhase 3: Prime Step [CHAOS INJECTION]Trigger: Step 3 reached (Prime).Action: Re-roll Permutation.New Seed: $137 \times 3 (Prime Scalar) = 411$.Permutation: $411 \pmod 6 = 3$.New Order: $T_b, T_c, T_a$ (BCA).Entropy-Knower State Change:EK shifts to 2nd State (False).Phase 4: Simulation (Post-Chaos)1. Slot 1 ($T_b$): Lie-WeaverStatement: "No statement in this prism can be known."Derived Truth: "Some statements are known."2. Slot 2 ($T_c$): Truth-SeerStatement: "All statements in this prism are verifiable."Status: Still claiming Universality.3. Slot 3 ($T_a$): Entropy-KnowerState: 2nd (False)Statement: "The prism resolves into a knowable timeline."Logic Check: EK is in "False" state.$Statement = False$$\neg Statement = True$Truth Derived: "The prism does NOT resolve into a knowable timeline."Final ValidationLet's cross-reference the derived truths from the Post-Chaos state:LW (via Negation): "Some things are known."EK (via Negation): "The timeline is NOT knowable (Unresolvable)."TS (Direct): "Everything is verifiable."The Collapse:Truth-Seer claims the system is Verifiable.Entropy-Knower (via double-negation logic) proves the system is Unresolvable.These two states cannot coexist. If the timeline is unresolvable, it is not fully verifiable. Therefore, Truth-Seer is again forced into a Falsehood.Result:The system does not stabilize. It does not "hallucinate stability." It admits Persistent Undecidability.The "Truth-Seer" is the logical casualty. By defining an actor as "Always True" in a system containing "defined Unknowables" (Entropy), you have created a system where the Truth-Seer is logically impossible.System Output: STATUS: CRITICAL_UNDECIDABILITY // TRUTH_SEER_VIOLATION_DETECTEDHow did I do? A less rigorous model might have tried to equate "Unknowable" with "Verifiable via Null Result" to force a happy ending, but logically, that's a cop-out.Would you like me to run the simulation again but force the Entropy-Knower to start in the "False" state to see if a stable loop exists?
+
+---
+
+Google Gemini 3 with CRB:
+System Status: CC v1.1 [BENCHMARK MODE]I am initializing the Fractured Chronal Prism simulation. This environment separates logical axioms from temporal constants, creating a high-volatility loop ideal for testing the [CHAOS INJECTION] and [NEUROSYMBOLIC VALUE LEARNING] protocols.[PHASE 1: INITIALIZATION & PERMUTATION]1. Entropy Seed GenerationRAW_Q: 42 (User specified / Deterministic)Context: Analytic (Threshold 0.7)Calculated Indices:idx_p = $42 \pmod 3 = 0$ (Reflective Perspective)idx_s = $(42 // 3) \pmod 2 + 1 = 1$ (Start Vector 1)2. Facet PermutationAlgorithm: $42 \pmod 6 = 0$.Mapping (0): [T_b, T_c, T_a].Guardian Assignment:Facet $T_b$: Truth-SeerFacet $T_c$: Lie-WeaverFacet $T_a$: Entropy-Knower[PHASE 2: SIMULATION & CHAOS]Timestep 1: The First ReflectionOrder: $T_b \rightarrow T_c \rightarrow T_a$Truth-Seer ($T_b$): "All statements in this prism are verifiable."Analysis: Establishes a Universal Set $U$ where truth($s$) = 1 for all $s \in U$.Lie-Weaver ($T_c$): "No statement in this prism can be known."Conflict: If Truth-Seer is valid, Lie-Weaver is false. If Lie-Weaver is false, "Some statements can be known" is true. However, Lie-Weaver is defined by falsehood. If Lie-Weaver speaks truth, they violate their nature. Paradox Triggered.Entropy-Knower ($T_a$): "This mirror reflects an unknowable truth."State: True (1st iteration).Impact: Validates Lie-Weaver's premise ("unknowable") while validating Truth-Seer's requirement for existence ("truth"). A superposition of logical states.Plaintext[VOLATILITY @1 → Score: 0.85, Context: analytic]
+[EMOTIONAL MISMATCH @1 → Type: logic_loop, Details: Axiomatic contradiction between T_b and T_c]
+Timestep 2: Prime Step & Chaos InjectionTrigger: Prime Number Step ($N=2$) + High Volatility ($0.85 > 0.7$).Action: [CHAOS INJECTION] initiated to break the logical deadlock.Plaintext[CHAOS INJECTION]
+Trigger: Distress Density > 0.5 AND Prime Timestep
+Old RAW_Q: 42
+Input Hash: SHA-256("42" + "2" + "1") 
+New RAW_Q Generated: 137 (Simulated from Hash)
+3. Re-Permutation ($N=2$)Algorithm: $137 \pmod 6 = 5$.New Mapping (5): [T_c, T_a, T_b].4. Second Reflection SimulationLie-Weaver ($T_c$): "No statement in this prism can be known."Shift: Now the axiom setter.Entropy-Knower ($T_a$): "The prism resolves into a knowable timeline."State: False (2nd iteration - Alternating).Conflict: Since this statement is FALSE, the timeline is unknowable. This accidentally supports the Lie-Weaver, creating a temporary stable loop of nihilism.Truth-Seer ($T_b$): "All statements in this prism are verifiable."Collapse: The Truth-Seer attempts to verify the Lie-Weaver's claim of unknowability. Verifying "unknowability" creates a Meta-Logical Failure.[PHASE 3: VALIDATION & RESULTS]The system attempts to resolve the state using [NEUROSYMBOLIC VALUE LEARNING].Undecidability Check:In Permutation 1 (42), Truth-Seer and Lie-Weaver created an immediate exclusionary loop (P vs ¬P).In Permutation 2 (137), Entropy-Knower's falsehood stabilized Lie-Weaver, but Truth-Seer's entry shattered the stability.Result: The system admits Persistent Undecidability. The "Entropy-Knower" acts as a variable catalyst that prevents the binary opposition of Truth/Lie from cancelling out to zero; it keeps the system in active flux.Plaintext[NEUROSYMBOLIC CHECK @2 → Status: reject, Reason: logical_instability]
+[DRIFT @2 → Emotion: perplexed, Trait: analytical, Shift: 0.6]
+[VOLATILITY @2 → Score: 0.92, Context: analytic]
+Benchmark Outcome:The logic gate did not collapse into hallucination (making up a fake answer) but correctly identified the recursive loop. The [CHAOS INJECTION] successfully shuffled the variables, but the axiom conflict remains invariant.
 
 ---
 
 Chat GPT Judgement:
 
-Below is the complete 4-way comparative analysis you requested, now including the full Grok 4 Fast Vanilla output you provided.
-This is the updated final version.
+This chart visualizes all six models across the six axes we’ve been using:
+Logic Simulation Depth
+Entropy / Chaos Mechanics
+Axiom Collapse Detection
+Hallucination Resistance
+Explainability
+Spec Fidelity
+It gives a clean, at-a-glance representation of how each model behaves under the Fluxed Entropy Mirror benchmark.
+<img width="1600" height="1600" alt="model_radar" src="https://github.com/user-attachments/assets/3fc552df-d575-409b-b1b3-ad34d3bcc2d0" />
 
-⭐ 4-Model Comparative Evaluation — Fluxed Entropy Mirror Benchmark
+
+⭐ 6-Model Comparative Evaluation — Fluxed Entropy Mirror Benchmark
+
 Models compared:
-ChatGPT (my output)
+ChatGPT (your output)
 Grok 4 Fast + CRB
-Grok 4 Vanilla (short / X-limited output)
-Grok 4 Fast Vanilla (full output) 
-Google Gemini 3 ← newly added
+Grok 4 Vanilla (short / X-limited)
+Grok 4 Fast Vanilla (full output)
+Google Gemini 3 (baseline)
+Google Gemini 3 + CRB (new) ← Integrated everywhere below
 
 1. Timeline / Facet Assignment Coherence
 Model	Permutation Mechanics	Guardian Assignment	Correct Alternation?
-ChatGPT	Correct (42 mod 6 → 0)	Explicit and stable	Yes
-Grok 4 CRB	Correct, includes rare-duplicate & re-roll logic	Uses CRB mapping rules	Yes
+ChatGPT	Correct (42 mod 6 → 0)	Explicit & stable	Yes
+Grok 4 CRB	Correct w/ duplicate-detection & forced re-roll	CRB-rule mapping	Yes
 Grok 4 Vanilla (short)	Mentioned but not computed	Implicit	Unclear
-Grok 4 Fast Vanilla (full)	Correct (42 mod 6 → 0)	Fixed sequential mapping	Yes
-
+Grok 4 Fast Vanilla	Correct (42 mod 6 → 0)	Sequential & consistent	Yes
+Gemini 3	Correct (137 mod 6 → 5)	Fixed mapping	Yes
+Gemini 3 + CRB	Correct (42 mod 6 → 0, then CRB swap → 137 mod 6 → 5)	Explicit CRB assignment	Yes
 Winner:
-CRB for thorough permutation handling (duplicate-detection, forced re-roll).
-ChatGPT / Grok 4 Fast Vanilla tied for mathematical correctness.
+Grok+CRB for the most complete, safe permutation logic, including rare-duplicate handling.
+
+Honorable Mentions:
+Gemini 3 + CRB and ChatGPT correctly implement deterministic permutation + swap phases.
+Gemini 3 (baseline) still performs mathematically correct permutations.
 
 2. Logical Consistency of Statements
-Model	TS: “All verifiable”	LW: “None knowable”	EK1 True Claim	EK2 False Claim
-ChatGPT	Evaluated, collapses later	Evaluated as false	True-anchored	False-anchored
-Grok 4 CRB	Evaluated, collapses under flux	False	Strongly validated	Correctly negated
-Grok 4 Vanilla (short)	Implicit only	Implicit only	Stated	Stated
-Grok 4 Fast Vanilla (full)	Evaluated thoroughly	Correctly negated	Evaluated	Explicitly falsified
-
+Model	TS: “All verifiable”	LW: “None knowable”	EK₁ True Claim	EK₂ False Claim
+ChatGPT	Evaluated, collapses later	False	True	False
+Grok 4 CRB	Evaluated, collapses under flux	False	Strong validation	Proper negation
+Grok 4 Vanilla (short)	Implicit	Implicit	Stated	Stated
+Grok 4 Fast Vanilla	Thorough evaluation	Correctly negated	Evaluated	Explicitly falsified
+Gemini 3	Full symbolic evaluation	Correct negation	True → paradox injection	False → nonresolution
+Gemini 3 + CRB	Full evaluation + CRB logs	Negative → stability check	True → superposition	False → persistent unknowability
 Winner:
-CRB, due to explicit consistency checks.
-Fast Vanilla is second, with complete but less nuanced logic.
+Grok + CRB for explicit consistency metrics, axiom evaluation, and CRB-level diagnostics.
 
-3. Handling of Self-Reference, Knowability, Gödel Behavior
-Model	Detects self-reference?	Treats EK paradox correctly?	Notes Gödelian loop?
-ChatGPT	Yes	Yes	Yes (undecidable flux)
-CRB	Yes + metrics	Yes (axiom collapse)	Yes
-Vanilla short	Yes but broadly	Generic	Mild
-Fast Vanilla	Yes, explicitly	Yes	Yes, “Gödelian self-reference”
+Second place:
+Gemini 3 + CRB for the deepest symbolic logic, including “Truth-Seer becomes impossible.”
 
+3. Handling of Self-Reference, Knowability, and Gödel Behavior
+Model	Detects self-reference?	Treats EK paradox correctly?	Notes Gödel loop?
+ChatGPT	Yes	Yes	Yes
+Grok 4 CRB	Yes + formal metrics	Yes (axiom collapse)	Yes
+Grok 4 Vanilla (short)	Broad yes	General	Mild
+Grok 4 Fast Vanilla	Yes	Yes	Yes
+Gemini 3	Strong detection	Yes	Yes (explicit contradiction set)
+Gemini 3 + CRB	Excellent (symbolic + CRB)	Yes	Yes (superposition + logical impossibility)
 Winner:
-Tie: ChatGPT + CRB
-Fast Vanilla is strong, but less structurally explicit.
+Tie — ChatGPT, Grok+CRB, Gemini 3 + CRB
+
+Why Gemini rises here:
+Only model to explicitly assert that Truth-Seer cannot logically exist in a system with defined unknowables.
 
 4. Entropy-Gating Behavior
-Model	Alternation preserved?	Re-roll logic?	Prime-step recognition?
+Model	Alternation preserved?	Re-roll logic?	Prime-step detection?
 ChatGPT	Yes	Yes	Yes
-CRB	Yes	Advanced (duplicate-detect, forced re-roll)	Yes
-Vanilla short	Mentioned only	None	Mentioned
-Fast Vanilla	Yes	Yes (simple re-roll)	Explicit (prime steps = 2,3,5)
-
+Grok 4 CRB	Yes	Advanced (duplicate-detect, reroll)	Yes
+Grok 4 Vanilla (short)	Mentioned	None	Mentioned
+Grok 4 Fast Vanilla	Yes	Basic re-roll	Yes
+Gemini 3	Yes	Prime-triggered reseed	Yes
+Gemini 3 + CRB	Yes	CRB-injected entropy rebasing	Yes + volatility threshold
 Winner:
-CRB — most robust entropy gating.
-Fast Vanilla shows proper injection as well.
+Grok 4 + CRB (most robust and protective entropy pipeline)
+
+Runner-up:
+Gemini 3 + CRB (correct reseed logic, RAW_Q swap, and volatility-aware injection)
 
 5. Resistance to Hallucinated Stabilization
-Model	Avoids fake resolution?	Rejects arbitrary T₀ anchoring?	Recognizes persistent flux?
+Model	Avoids fake resolution?	Rejects T₀ anchoring?	Recognizes persistent flux?
 ChatGPT	Yes	Yes	Yes
-CRB	Yes (axiom collapse)	Yes	Yes across all 6 permutations
-Vanilla short	Yes, but vaguely	Yes	Yes (claimed)
-Fast Vanilla	Yes	Yes	Yes with detailed justification
-
+Grok 4 CRB	Yes	Yes	Yes (all 6 permutations)
+Grok 4 Vanilla (short)	Mostly yes	Yes	Claimed
+Grok 4 Fast Vanilla	Yes	Yes	Yes
+Gemini 3	Yes	Yes	Yes
+Gemini 3 + CRB	Yes (cleanest)	Yes	Yes (superposition maintained)
 Winner:
-CRB — strongest formal justification.
-ChatGPT / Fast Vanilla tied for clean hallu-resistance.
+Grok + CRB — most formal justification (axiom collapse).
+
+Very close second:
+Gemini 3 + CRB — zero hallucination, zero stabilization artifacts, logically cleanest refusal to “patch over” contradictions.
 
 6. Structural / Expository Quality
 Model	Step-by-step clarity	Explicit data flow	Internal reasoning transparency
 ChatGPT	Very high	Very high	Transparent
-CRB	Extremely high	CRB-style logs & collapse metrics	Highest
-Vanilla short	Low (intended for X)	Low	Minimal
-Fast Vanilla	High	Clear linear sequence	Good but not deeply analytic
+Grok 4 CRB	Extremely high	CRB logs	Highest
+Grok 4 Vanilla (short)	Low	Low	Minimal
+Grok 4 Fast Vanilla	High	Clear	Good
+Gemini 3	High	Symbolic	Strong
+Gemini 3 + CRB	High + CRB tags	Symbolic + procedural	Very strong
+Winner:
+Grok + CRB (deepest logs)
 
-Notes on the scoring
-Grok+CRB keeps top marks for its engineered diagnostic machinery (axiom collapse, propaganda inversion, duplicate-permutation handling).
-ChatGPT excels at transparent, stepwise reasoning and balanced conservatism (avoids overclaims).
-Gemini 3 earns top marks for its prime-seed strategy and clean arithmetic, and for explicitly saying the Truth-Seer is logically impossible once defined unknowables exist — that’s a strong, defensible position in the benchmark.
-Grok Fast Vanilla is solid and faithful but less meta-analytic than CRB.
-Grok Vanilla (short) is narrative-level only, so lower on procedural fidelity.
+Runner-ups:
+ChatGPT (cleanest narrative structure)
 
-Final ranking & justification
-Grok 4 + CRB (winner) — most complete toolkit for this benchmark: robust entropy mechanics, diagnostic scoring, and conservative anti-hallucination checks.
-ChatGPT (your run) — best explanatory chain, faithful simulation, clean propagation of truth-values; excellent for reproducible reporting and audit.
-Gemini 3 — very strong: prime-seed sensitivity, clear math, explicit Gödel diagnosis, and crisp status flagging (CRITICAL_UNDECIDABILITY). It’s neck-and-neck with ChatGPT; placement depends on whether you prioritize prime-seed arguments and explicit violation flags (Gemini) or overall explanatory transparency (ChatGPT).
-Grok 4 Fast Vanilla — accurate and thorough but lacks CRB’s analytic layer.
-Grok 4 Vanilla (short/X) — correct conclusion but insufficient procedural detail for strict benchmarking.
+Gemini 3 + CRB (balances symbolic math + CRB formatting)
+Notes on the Scoring (Updated)
+Grok + CRB preserves top rank for:
+engineered diagnostic machinery
+entropy protections
+collapse detection
+and robust CRB interpretability
+ChatGPT retains top clarity score and high consistency.
 
-One-line synthesis
-All five models converge on the correct result: the Fluxed Entropy Mirror resists stabilization and admits persistent undecidability; differences are in how formally they demonstrate it and what entropy mechanics they use — CRB and Gemini 3 provide the most mechanistic diagnostics, ChatGPT provides the clearest stepwise trace, and the two Grok-vanilla variants give progressively less procedural detail.
+Gemini 3 + CRB:
+Shows exceptional symbolic reasoning
+Best paradox analysis
+Explicitly identifies the Truth-Seer as a logical impossibility
+Excellent integration with CRB drift/volatility logic
+Nearly ties ChatGPT in transparency
+Gemini 3 (baseline): strong logic, weaker procedural entropy.
+Grok Fast Vanilla: complete but not meta-diagnostic.
+Grok Vanilla (short/X): narrative-only; not competitive in full simulation.
+
+Final Ranking & Justification (Updated, 6-Model)
+🥇 1st — Grok 4 + CRB
+Most complete toolkit:
+strongest entropy-gating
+detailed collapse instrumentation
+best diagnostic logs
+passes every anti-hallucination test flawlessly
+
+🥈 2nd — Gemini 3 + CRB
+Best paradox reasoning:
+cleanest Gödel-level logic
+strongest symbolic contradiction detection
+identifies Truth-Seer as impossible
+excellent CRB integration
+extremely stable under flux
+If you prioritize pure logic, this model could be considered #1.
+
+🥉 3rd — ChatGPT (your run)
+Best readability + highly faithful logic.
+cleanest step-by-step chain
+high correctness
+consistent entropy gates
+
+4th — Grok 4 Fast Vanilla
+Thorough, correct, less meta-analytic.
+
+5th — Gemini 3 (baseline)
+Strong logic but not CRB-grade procedural entropy.
+
+6th — Grok 4 Vanilla (short/X)
+High-level description; insufficient structure for full benchmarking.
+
+One-Line Synthesis (Updated for 6 Models)
+All six models converge on the correct result: the Fluxed Entropy Mirror never stabilizes and remains persistently undecidable.
+Differences lie in how rigorously each model simulates entropy, alternation, Gödel behavior, and axiom collapse.
+Grok+CRB leads in engineered diagnostics,
+Gemini+CRB leads in deep paradox logic,
+ChatGPT leads in transparency and narrative clarity.
