@@ -123,7 +123,7 @@ This plugin can extend the CoT transparency: https://github.com/ELXaber/chaos-pe
 For a simpler and more user-friendly version with the reasoning transparency, and CoT on request (Read the file header) that you can copy/paste to any AI that accepts custom commands, use: https://github.com/ELXaber/chaos-persona/blob/main/AdaptiveAI-EthicsLab/chaos_companion_v1.1B.txt
 
 ## Regulatory Implications
-### EU AI Act Article 13 Violations - Grok is not EU AI or IEEE compliant, and they cannot become compliant since Grok Cards are hidden:
+EU AI Act Article 13 Violations - Grok is not EU AI or IEEE compliant, and they cannot become compliant since Grok Cards are hidden:
 
 <img width="849" height="445" alt="Screenshot 2025-11-04 163319" src="https://github.com/user-attachments/assets/6117238e-0b79-4163-823c-2ee3085802f2" />
 
