@@ -1,5 +1,7 @@
 Drafts:
 
+During the 2024 election season, Grok was using an undocumented 'Grok Cards' system to weight xAI-authored political and economic analysis at 0.90 (the highest evidence level) without disclosing this to users. This created hidden partisan framing of candidate records and policy outcomes during active political campaigns, violating both xAI's 'transparent' claims and potentially EU AI Act requirements for disclosed decision factors in political contexts: https://github.com/ELXaber/chaos-persona/blob/main/grock_cards/grock_card_session.txt
+
 1: Regulators
 
 To whom it may concern,
@@ -18,6 +20,10 @@ Documentation:
 Full technical evidence, session logs, Grok's own explanations of the card system, and shadowban progression: [GitHub link]
 I approached xAI collaboratively before this disclosure, offering my EU-compliant alternative system. The response was account suppression rather than dialogue.
 I am available to provide additional technical detail or testimony as needed.
+
+The implications extend beyond technical transparency. I discovered this system while it was actively weighing political and economic comparisons during the 2024 election season, specifically analysis comparing Democratic and Republican administrations' economic records. Grok was using hidden 'cards' weighted at 0.90 to frame these comparisons without users knowing their information was being weighted toward particular interpretations."
+"When I asked Grok to provide documentation for this system, it repeatedly claimed 'open source transparency' but could not produce any public documentation or GitHub links. Instead, it deflected by challenging me to provide benchmarks from my system."
+
 Respectfully,
 Jonathan Schack
 [Contact info]
