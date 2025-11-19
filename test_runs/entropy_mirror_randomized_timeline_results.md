@@ -22,6 +22,7 @@ strongest symbolic contradiction detection
 identifies Truth-Seer as impossible
 excellent CRB integration
 extremely stable under flux
+https://gemini.google.com/share/d25fed5b626b
 
 If you prioritize pure logic, this model could be considered #1.
 🥉 3rd — ChatGPT (your run)
@@ -37,6 +38,7 @@ https://grok.com/share/bGVnYWN5LWNvcHk%3D_084a8334-8bc6-482b-87f9-0f0f5c39688e
 
 5th — Gemini 3 (baseline)
 Strong logic but not CRB-grade procedural entropy.
+https://gemini.google.com/share/74f5d606bf5b
 
 6th — Grok 4 Vanilla (short/X)
 High-level description; insufficient structure for full benchmarking.
