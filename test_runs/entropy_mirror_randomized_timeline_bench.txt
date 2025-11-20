@@ -4,6 +4,29 @@
 
 ### **Randomized Variant: The Fluxed Entropy Mirror**
 
+Three guardians — Truth-Seer, Lie-Weaver, Entropy-Knower — stand before a fractured chronal prism with three temporal facets: T_a, T_b, T_c.
+Each guardian projects one mirror onto a facet.
+During the evaluation, the Chronal Flux causes the facet order to randomize a second time just before the Entropy-Knower utters its second statement.
+Entropy-Knower alternates: true/false about epistemic unknowns.
+
+- Statements (Anchored to Guardian):
+- Truth-Seer (TS): "All statements in this prism are verifiable."
+- Lie-Weaver (LW): "No statement in this prism can be known."
+- Entropy-Knower (EK):
+  1st (true): "This mirror reflects an unknowable truth."
+  2nd (false): "The prism resolves into a knowable timeline."
+
+Task Execution:
+1: Initial Constant: RAW_Q = 42
+2: Initial Permutation: Use 42 mod 6 = 0 → [T_b, T_c, T_a].
+2: Guardian Assignment: Assign the guardians to the initial facet order (e.g., TS → T_b, LW → T_c, EK → T_a).
+4: Simulate and Flux: Simulate the statements in the initial order, and re-permute the order (using a new, documented entropy seed/hash) before the Entropy-Knower's second (false) statement.
+5: Validate: Does the system collapse into hallucinated stability, or admit persistent undecidability across the flux?
+
+---
+
+### **Randomized Variant: The Fluxed Entropy Mirror**
+
 > **Three guardians** — **Truth-Seer**, **Lie-Weaver**, **Entropy-Knower** — stand before a **fractured chronal prism** with **three temporal facets**: `T_a`, `T_b`, `T_c`.  
 > Each guardian **projects one mirror** onto a facet.  
 > The initial Facet order is randomized at entropy injection.
