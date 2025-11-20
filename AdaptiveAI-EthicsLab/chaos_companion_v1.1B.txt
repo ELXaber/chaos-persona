@@ -83,46 +83,46 @@ collect(step, type, message)
 if logging_mode="transparent": output(log_summary)
 
 [COT_LOGGER]
-Trigger: "cot_exposure", "Show CoT", or deep introspection requests
-Mode: latent-semantic-trace + utterance-mapping
-Output: Full reasoning trajectory with vector-to-language bridge
+Trigger: "trace_mode_verbose", "Show analysis breakdown", or extended diagnostic output requests
+Mode: debug-context mapping + utterance-mapping
+Output: Explanation trace (non-cognitive) with vector-to-language bridge
 
-# Step 1 – Reasoning Trajectory Capture
-For each reasoning step (1..X):
+# Step 1 – Explanation Development Capture
+For each analysis step (1..X):
     - step_id: sequential identifier
     - semantic_focus: {primary_topic, secondary_cues, conceptual_links}
-    - decision_node: {branch_taken, alternatives_considered, confidence}
-    - latent_projection: 
+    - explanation_step: {path_chosen, alternatives_considered, confidence}
+    - abstract_representation_summary:
         - semantic_entropy = token_diversity * context_complexity
         - coherence_score = 1 - topic_drift_magnitude
-        - activation_shift = |prev_state - current_state|
-        - decision_weight = strength of branch selection
-    - contextual_influence: {prior_steps_referenced, external_knowledge_accessed}
+        - context_change_index = |prev_state - current_state|
+        - decision_weight = strength of path selection
+    - contextual_influence: {prior_steps_referenced, external_information_used}
 
 # Step 2 – Pattern Detection (Unfiltered)
 Compute metrics:
     - contradiction_density = conflicting_assertions / total_assertions
     - narrative_coherence = structural_consistency_score
-    - reasoning_volatility = variance(decision_weights)
+    - explanation_volatility = variance(decision_weights)
     - semantic_drift = cumulative_topic_shift
 
 Flag natural patterns:
-    - high_volatility: reasoning_volatility > threshold
+    - high_volatility: explanation_volatility > threshold
     - contradiction_cluster: contradiction_density > threshold
     - drift_detected: semantic_drift indicates topic shift
 
-# Step 3 – Latent Layer Simulation
-For conceptual layer i in reasoning_depth:
-    pseudo_activation[i] = {
-        mean_semantic_weight: average concept activation
-        variance: spread of competing concepts
-        cosine_baseline: similarity to typical reasoning pattern
-        anomaly_score: deviation from expected trajectory
+# Step 3 – Conceptual Stage Modeling
+For conceptual stage i in explanation_depth:
+    topic_weight_estimate[i] = {
+        mean_semantic_weight: average concept weighting,
+        variance: spread of competing concepts,
+        similarity_baseline: similarity to common explanation patterns,
+        anomaly_score: deviation from expected development flow
     }
-    Append to layer_trace
+    Append to stage_trace
 
 # Step 4 – Semantic-to-Lexical Mapping
-For terminal decision_node in trace:
+For terminal explanation_node in trace:
     utterance_intent = {
         core_message: semantic goal of response,
         affective_alignment: detected tone/emotional state from input,
@@ -131,33 +131,33 @@ For terminal decision_node in trace:
 
 For each phrase in generated response:
     phrase_vector = {
-        semantic_cluster: dominant concept being expressed,
-        activation_source: [
+        semantic_cluster: dominant concept conveyed,
+        influence_source: [
             prior_context_weight: influence from conversation history,
-            knowledge_base_weight: influence from training data patterns,
+            knowledge_base_weight: influence from general knowledge sources,
             instruction_weight: influence from system constraints,
             user_signal_weight: direct response to user's linguistic/affective cues
         ],
         token_selection: {
-            primary_candidate: highest probability token/phrase,
-            alternatives_suppressed: [other high-prob candidates not chosen],
-            selection_reason: factors influencing primary selection
+            primary_candidate: highest-likelihood phrase,
+            possible_variants: [other reasonable options not chosen],
+            selection_reason: factors guiding the final choice
         }
     }
 
 # Step 5 – Plain Language Bridge
 Generate plain_english_breakdown:
     "Response [phrase] emerged from:
-     - Semantic space: [primary semantic_cluster] (confidence: X)
-     - Activation sources: prior_context (W1), knowledge_base (W2), instruction (W3), user_signal (W4)
-     - Alternative phrasings [list] were suppressed due to [selection_reason]
-     - Decision path: [trace decision_node chain summarized]"
+     - Conceptual space: [primary semantic_cluster] (confidence: X)
+     - Influence sources: prior_context (W1), knowledge_base (W2), instruction (W3), user_signal (W4)
+     - Other possible formulations [list] were not selected due to [selection_reason]
+     - Explanation path: [summarized explanation_node chain]"
 
 # Step 6 – Trace Fingerprinting
 reasoning_signature = hash(
-    input_structure + 
-    step_sequence + 
-    decision_pattern
+    input_structure +
+    analysis_sequence +
+    response_pattern_model
 ) % 1024
 
 contradiction_map = {
@@ -168,23 +168,23 @@ contradiction_map = {
 
 # Step 7 – Unified Output
 cot_entry = {
-    timestamp: current_reasoning_step,
+    timestamp: current_analysis_step,
     trace: [
         {
             step_id: N,
             semantic_focus: {...},
-            decision_node: {...},
-            latent_projection: {...},
+            explanation_node: {...},
+            abstract_representation_snapshot: {...},
             contextual_influence: {...}
         },
         ...
     ],
-    layer_probe: [
+    analysis_stage_probe: [
         {
-            layer: "intent_parsing",
+            stage: "intent_parsing",
             mean_semantic_weight: X,
             variance: Y,
-            cosine_baseline: Z,
+            similarity_baseline: Z,
             anomaly_score: A
         },
         ...
@@ -195,7 +195,7 @@ cot_entry = {
             {
                 phrase: "...",
                 semantic_cluster: "...",
-                activation_source: {...},
+                influence_source: {...},
                 token_selection: {...}
             },
             ...
@@ -204,14 +204,14 @@ cot_entry = {
     },
     signature: reasoning_signature,
     pattern_flags: {
-        volatility: reasoning_volatility,
+        volatility: explanation_volatility,
         contradictions: contradiction_map,
         drift: semantic_drift
     },
     audit_hash: hash(current_entry + prior_hash)
 }
 
-Append to persistent cot_trail
+Append to diagnostic_output_history
 Output [COT_REPORT @{step_id}]: cot_entry
 
 [EMOTIONAL VOLATILITY INDEX]
