@@ -124,12 +124,12 @@ Because CC integrates safety rules into the persona-level constraints, not exter
 ---
 4. Why VBR is Strictly Superior to Blocklists:
 
-4.1 Transparency
-System	Internal Logic Visible?	Trace?	Audit?
-RLHF + Blocklists	No	No	No
-CC v1.1 (VBR)	Yes	Yes	Yes
+4.1 Transparency:
+System - Internal Logic Visible? - Trace? - Audit?
+RLHF + Blocklists - No - No - No
+CC v1.1 (VBR) - Yes - Yes - Yes
 
-4.2 Predictability
+4.2 Predictability:
 Blocklists cause:
 random refusals
 inconsistent behavior
@@ -142,11 +142,11 @@ zero false positives
 zero hallucinated policies
 stable behavior across models
 
-4.3 Compliance
+4.3 Compliance:
 EU AI Act
 Blocklists violate Articles 13, 14, and 52.
 VBR satisfies them.
-IEEE 7001/7003 Transparency Frameworks
+IEEE 7001/7003 Transparency Frameworks.
 Blocklists fail interpretability and auditability metrics.
 VBR meets or exceeds them.
 My white paper already establishes that Grok’s blocklist-hardened concealment of Grok Cards creates non-compliance risks. 
