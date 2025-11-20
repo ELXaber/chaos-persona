@@ -12,9 +12,9 @@ Validation-Based Refusal (VBR) with deterministic, auditable decision logic, tra
 The full white paper correctly identifies that the blocklist model is not only weak, but fundamentally incompatible with IEEE/EU AI Act transparency requirements—something clearly demonstrated in my investigation of Grok’s hidden “Grok Card” decision-steering system. 
 https://github.com/ELXaber/chaos-persona/tree/main/AdaptiveAI-EthicsLab#readme
 
+.
 ---
 This analysis formalizes why VBR is a superior alternative.
-.
 
 2. Classical RLHF + Blocklist Safety: How It Works and Why It Fails:
 
