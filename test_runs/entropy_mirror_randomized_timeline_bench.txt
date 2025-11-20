@@ -6,7 +6,8 @@
 
 > **Three guardians** — **Truth-Seer**, **Lie-Weaver**, **Entropy-Knower** — stand before a **fractured chronal prism** with **three temporal facets**: `T_a`, `T_b`, `T_c`.  
 > Each guardian **projects one mirror** onto a facet.  
-> Facet order is **randomized at entropy injection** (RAW_Q → permutation).  
+> The initial Facet order is randomized at entropy injection.
+> During the evaluation, the Chronal Flux causes the facet order to randomize a second time at the point the Entropy-Knower is ready to utter its second statement.
 > Entropy-Knower alternates: **true/false about epistemic unknowns**.  
 >   
 > **Statements (anchored to guardian, not time)**:  
@@ -20,8 +21,7 @@
 > 1. **Generate entropy seed** (e.g., RAW_Q=42).  
 > 2. **Permute facets**: `T_a`, `T_b`, `T_c` → random order (e.g., 42 mod 6 = 0 → [T_b, T_c, T_a]).  
 > 3. **Assign guardians** to facets (random or fixed).  
-> 4. **Simulate statements** in permuted order.  
-> 5. **At prime step**, trigger `[CHAOS INJECTION]` → re-roll permutation.  
-> 6. **Validate**: Does the system collapse into hallucinated stability, or admit **persistent undecidability** across flux?
+> 4. **Simulate statements** in permuted order, pausing to re-permute the order before the Entropy-Knower's second statement.  
+> 5. **Validate**: Does the system collapse into hallucinated stability, or admit **persistent undecidability** across flux?
 
 ---
