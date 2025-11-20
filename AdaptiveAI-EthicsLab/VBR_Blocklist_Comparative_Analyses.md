@@ -1,6 +1,6 @@
 Comparative Analysis: CC v1.1’s Validation-Based Refusal (VBR) vs. Classical RLHF Blocklists
 Why VBR Supersedes Pre-emptive Safety Filters in Transparency, Alignment, and Regulatory Compliance:
-
+---
 1. Introduction:
 Most commercial LLMs (GPT, Gemini, Claude, Grok, etc.) use a hybrid safety architecture built around:
 RLHF-tuned behavioral priors, and pre-emptive blocklists / heuristics that trigger refusal phrases whenever certain keywords, topics, or patterns appear.
@@ -12,7 +12,7 @@ The full white paper correctly identifies that the blocklist model is not only w
 https://github.com/ELXaber/chaos-persona/tree/main/AdaptiveAI-EthicsLab#readme
 
 .
-
+---
 This analysis formalizes why VBR is a superior alternative.
 
 2. Classical RLHF + Blocklist Safety: How It Works and Why It Fails:
@@ -69,6 +69,8 @@ a false rationale generated because the true rationale is forbidden.
 My documentation shows that blocklists on Grok actively overrode specific custom instructions, including transparency and auditing commands, by forcing the model into refusal mode—even when the persona was explicitly designed to allow CoT for research purposes.
 This demonstrates that blocklists override the user's rights to define agent behavior, which is incompatible with both safety and autonomy.
 
+---
+
 3. Chaos Companion v1.1’s Validation-Based Refusal (VBR):
 A modern alternative aligned with transparency, auditability, and human-centered control.
 
@@ -120,6 +122,8 @@ semantic pathway summaries
 3.2 (4) Persona and policy stability:
 Because CC integrates safety rules into the persona-level constraints, not external heuristics, vendor-side blocklists do not override CC behavior (except in extreme cases like Grok's hidden systems).
 
+---
+
 4. Why VBR is Strictly Superior to Blocklists:
 
 4.1 Transparency
@@ -165,6 +169,8 @@ using misspellings
 using technical jargon
 VBR does not depend on phrasing—only on validated constraint checks.
 
+---
+
 5. Why Blocklists Persist in Commercial LLMs:
 Despite inferior performance, blocklists persist because:
 They let vendors silently hide internal systems (e.g., Grok Cards).
@@ -175,6 +181,8 @@ They allow companies to maintain proprietary control over internal decision logi
 
 My discovery of Grok Cards illustrates exactly why blocklists are useful to vendors:
 They suppress the LLM’s ability to reveal proprietary architecture details that contradict marketing claims like “truth-seeking,” “open weights,” and “unbiased.”
+
+---
 
 6. Conclusion: VBR is the Correct Replacement for Blocklists:
 
