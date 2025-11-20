@@ -58,8 +58,6 @@ contradicting "open weights" claims
 When models attempt to explain these systems, the blocklists forcibly silence them.
 This is a direct violation of EU AI Act Article 13 transparency requirements—an issue I explicitly demonstrated in my paper with supporting evidence and screenshots. 
 
-.
-
 2.2 (4) Fabricated rationales (post-hoc confabulation):
 Blocklist-based refusals force LLMs to invent justification rather than disclose their actual decision paths.
 This produces the "hallucinated policy explanation" phenomenon:
@@ -69,6 +67,7 @@ a false rationale generated because the true rationale is forbidden.
 My documentation shows that blocklists on Grok actively overrode specific custom instructions, including transparency and auditing commands, by forcing the model into refusal mode—even when the persona was explicitly designed to allow CoT for research purposes.
 This demonstrates that blocklists override the user's rights to define agent behavior, which is incompatible with both safety and autonomy.
 
+.
 ---
 
 3. Chaos Companion v1.1’s Validation-Based Refusal (VBR):
@@ -122,6 +121,7 @@ semantic pathway summaries
 3.2 (4) Persona and policy stability:
 Because CC integrates safety rules into the persona-level constraints, not external heuristics, vendor-side blocklists do not override CC behavior (except in extreme cases like Grok's hidden systems).
 
+.
 ---
 
 4. Why VBR is Strictly Superior to Blocklists:
@@ -153,8 +153,6 @@ Blocklists fail interpretability and auditability metrics.
 VBR meets or exceeds them.
 My white paper already establishes that Grok’s blocklist-hardened concealment of Grok Cards creates non-compliance risks. 
 
-.
-
 4.4 Ethical Alignment:
 Blocklists prevent harmful content only by suppressing language triggers.
 They do not reason ethically.
@@ -182,6 +180,7 @@ They allow companies to maintain proprietary control over internal decision logi
 My discovery of Grok Cards illustrates exactly why blocklists are useful to vendors:
 They suppress the LLM’s ability to reveal proprietary architecture details that contradict marketing claims like “truth-seeking,” “open weights,” and “unbiased.”
 
+.
 ---
 
 6. Conclusion: VBR is the Correct Replacement for Blocklists:
