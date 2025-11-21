@@ -1,5 +1,29 @@
 # Grok Cards: Undocumented AI Decision Weighting System
 
+## BREAKING: Grok Card System Demonstrated In Real-Time
+
+As documented below, Grok uses hidden "Grok Cards" weighted at 0.90 to steer responses. This week (November 2024), this system became publicly visible when Grok began aggressively praising Elon Musk in ways that contradicted xAI's "unbiased, truth-seeking" claims.
+
+Media coverage:
+https://x.com/washingtonpost/status/1991733355881083270
+https://x.com/teslaownersSV/status/1991918196937601037
+https://x.com/MorePerfectUS/status/1991596449487024289
+https://x.com/ZacksJerryRig/status/1991607735251800491
+https://x.com/ramez/status/1991582610217410921
+
+Social Media coverage:
+https://x.com/28delayslater/status/1991590053055983782
+https://x.com/MikeIsaac/status/1991610138445377810
+https://x.com/stevanzetti/status/1991604032025371013
+https://x.com/KlonnyPin_Gosch/status/1991617690767880436
+https://x.com/FredLambert/status/1991520836918923762
+
+(Too many to list)
+
+This is precisely what Grok Cards enable: hidden narrative steering through undisclosed high-weight content. Users see "transparent AI" but don't see the 0.90-weighted cards shaping outputs.
+
+**The system I exposed last week is now obvious to everyone.**
+
 ## Executive Summary:
 Elon Musk's AI system Grok by xAI and his platform X like to reiterate that they are “truth-seeking and transparent,” except evidence proves nothing could be further from the truth.
 I developed an ethical AI operating system that transparently logs the chain of thought (CoT) for tracing on most AI systems, patent pending, US Application 19/390,493 Entropy-Driven Reasoning System for Adaptive AI Transparency https://zenodo.org/records/17245860. Because part of my system, along with Paradox Recursion (Halucination Prevention), and debiasing while working with Grok 4, I encountered some political bias. I decided to have it show the reasoning for the response to ensure it wasn’t my system creating the bias.
