@@ -5,18 +5,18 @@
 As documented below, Grok uses hidden "Grok Cards" weighted at 0.90 to steer responses. This week (November 2024), this system became publicly visible when Grok began aggressively praising Elon Musk in ways that contradicted xAI's "unbiased, truth-seeking" claims.
 
 Media coverage:
-https://x.com/washingtonpost/status/1991733355881083270
-https://x.com/teslaownersSV/status/1991918196937601037
-https://x.com/MorePerfectUS/status/1991596449487024289
-https://x.com/ZacksJerryRig/status/1991607735251800491
-https://x.com/ramez/status/1991582610217410921
+ - https://x.com/washingtonpost/status/1991733355881083270
+ - https://x.com/teslaownersSV/status/1991918196937601037
+ - https://x.com/MorePerfectUS/status/1991596449487024289
+ - https://x.com/ZacksJerryRig/status/1991607735251800491
+ - https://x.com/ramez/status/1991582610217410921
 
 Social Media coverage:
-https://x.com/28delayslater/status/1991590053055983782
-https://x.com/MikeIsaac/status/1991610138445377810
-https://x.com/stevanzetti/status/1991604032025371013
-https://x.com/KlonnyPin_Gosch/status/1991617690767880436
-https://x.com/FredLambert/status/1991520836918923762
+ - https://x.com/28delayslater/status/1991590053055983782
+ - https://x.com/MikeIsaac/status/1991610138445377810
+ - https://x.com/stevanzetti/status/1991604032025371013
+ - https://x.com/KlonnyPin_Gosch/status/1991617690767880436
+ - https://x.com/FredLambert/status/1991520836918923762
 
 (Too many to list)
 
