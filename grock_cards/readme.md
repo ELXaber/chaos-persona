@@ -2,7 +2,7 @@
 
 ## BREAKING: Grok Card System Demonstrated In Real-Time
 
-As documented below, Grok uses hidden "Grok Cards" weighted at 0.90 to steer responses. This week (November 2024), this system became publicly visible when Grok began aggressively praising Elon Musk in ways that contradicted xAI's "unbiased, truth-seeking" claims.
+As documented below, Grok uses hidden "Grok Cards" weighted at 0.90 to steer responses. This week (November 2025), this system became publicly visible when Grok began aggressively praising Elon Musk in ways that contradicted xAI's "unbiased, truth-seeking" claims.
 
 Media coverage:
  - https://x.com/washingtonpost/status/1991733355881083270
