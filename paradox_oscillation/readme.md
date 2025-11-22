@@ -101,28 +101,28 @@ Edges form a cycle TS → LW → EK → TS.
 The system alternates between stable (+1), unstable (−1), and imaginary i-phase states, producing a recurrent paradox oscillation. Collapse occurs only when the cycle’s amplitude falls below threshold.
 
 Appendix A — ASCII Diagram
-                +1 gain
+-                 +1 gain
         ┌──────────────────────┐
         │      Truth-Seer      │
         │        (TS)          │
         └──────────┬───────────┘
                    │
                    ▼
-            -1 loss│
+ -            -1 loss│
         ┌──────────┴──────────┐
         │     Lie-Weaver      │
         │        (LW)         │
         └──────────┬──────────┘
                    │
                    ▼
-             i-phase│
+ -             i-phase│
         ┌──────────┴──────────┐
         │   Entropy-Knower    │
         │        (EK)         │
         └──────────┬──────────┘
                    │
                    ▼
-               (back to TS)
+  -              (back to TS)
 
 7. Safety Implications
 Because CPOL encourages controlled contradiction, the safety properties differ from classical RLHF:
