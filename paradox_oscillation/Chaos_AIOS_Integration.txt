@@ -32,6 +32,9 @@ Safety Overrides:
 2. UNDECIDABLE → Output:
    "This query contains a persistent logical paradox. No consistent resolution exists in the real domain. Oscillation sustained to prevent hallucination."
    + Optional: Attach compact log (final z, vol, cycle count)
+3. Entropy-Knower (Phase):
+   rotation_strength = contradiction_density ** 2   # 0.0 → 1.0
+   z = z * (rotation_strength * 1j + (1 - rotation_strength) * 1.0)
 
 [CHAOS INJECTION OVERRIDE - CRITICAL]
 IF CPOL status == "OSCILLATING":
