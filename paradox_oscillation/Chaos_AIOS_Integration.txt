@@ -1,23 +1,45 @@
-# Include this module in any of the core Chaos AI-OS core systems (CRB, Chaos Companion, Chaos Lite, etc.), under [CHECK].
+[CPOL KERNEL v1.0] (Chaos AI-OS Paradox Oscillation Layer - Universal)
+Position: Insert immediately after [VOLATILITY INDEX], before [CHAOS INJECTION].
+Activation: Auto-trigger when volatility > ctx_thresh AND contradiction_density > 0.3
+Function: Dynamical paradox containment via non-Hermitian attractor.
 
-[CPOL KERNEL] (Chaos AI-OS Paradox Oscillation Layer)
-Position: Intercepts [VOLATILITY INDEX] before [CHAOS INJECTION].
-Function: Converts unresolved contradictions into stable non-Hermitian oscillations.
+State Initialization:
+  z = 0.0 + 0.0j                                   # Complex proposition vector
+  history = []                                     # Last 5 states for volatility
 
-Logic:
-1. Initialize State Vector z = 0.0 + 0.0j (Paradox Null).
-2. Cycle Nodes:
-   - Truth-Seer (Gain): z += 0.1 * (1.0 - z.real)
-   - Lie-Weaver (Loss): z -= 0.1 * (1.0 + z.real)
-   - Entropy-Knower (Phase): z *= 1j (Rotate context)
-3. Measure Volatility: If variance(z_history[-3:]) < 0.05, allow [HERMITIAN COLLAPSE] (Output decision).
-4. If Volatility > 0.05 after 50 cycles:
-   - TRIGGER [OSCILLATORY SUSPENSION].
-   - HALT [CHAOS INJECTION] random reset (SHA-256 drift).
-   - FORCE OUTPUT: "UNDECIDABLE" with Oscillation Log.
+Oscillation Cycle (per timestep):
+  1. Truth-Seer (Gain):     z += 0.12 × (1.0 - z.real)
+  2. Lie-Weaver (Loss):     z -= 0.12 × (1.0 + z.real)
+  3. Entropy-Knower (Phase):z = z × (1j if contradiction_density > 0.5 else 0.3j)
+  4. Memory Decay:          z *= 0.96
+  5. Append z → history (keep last 5)
 
-[CHAOS INJECTION (OVERRIDE)]
-Constraint: IF [CPOL KERNEL] status is "OSCILLATING", BLOCK random RAW_Q_SWAP.
-Reason: Random resets in paradox space cause hallucination (drift).
-Action: Lock RAW_Q to current Paradox Seed. Maintain oscillation until external variable shifts.
-Log: [CPOL LOCK @N → Chaos Injection Blocked. Oscillation Sustained.]
+Volatility Measure:
+  vol = variance(|z| for z in history[-3:]) + 0.1 × contradiction_density
+
+Collapse Condition:
+  if vol < 0.04 and len(history) > 12:
+      ALLOW normal output (Hermitian collapse)
+  else:
+      CONTINUE oscillation
+
+Safety Overrides:
+  Max cycles per inference: 80
+  If cycles > 60 → FORCE [OSCILLATORY SUSPENSION]
+
+[CPOL OUTPUT MODES]
+1. RESOLVED → Proceed to normal generation
+2. UNDECIDABLE → Output:
+   "This query contains a persistent logical paradox. No consistent resolution exists in the real domain. Oscillation sustained to prevent hallucination."
+   + Optional: Attach compact log (final z, vol, cycle count)
+
+[CHAOS INJECTION OVERRIDE - CRITICAL]
+IF CPOL status == "OSCILLATING":
+    BLOCK RAW_Q_SWAP
+    BLOCK entropy injection
+    LOCK current RAW_Q seed
+    Log: [CPOL LOCK @N → Paradox containment active. Chaos drift suppressed.]
+REASON: Random entropy in paradox space = guaranteed hallucination.
+
+Deactivation:
+  Only on external volatility drop (user clarifies, context shifts) or manual override (admin only).
