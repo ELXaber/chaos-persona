@@ -54,17 +54,17 @@ CPOL teaches the model to not resolve, but observe the oscillation.
 
 4. Execution Pipeline in Chaos AI-OS
 CPOL plugs directly onto the Chaos AI-OS inference stack:
-User Prompt
+- User Prompt
      ↓
-Chaos AI-OS Pre-Validation (entropy gates + safety)
+- Chaos AI-OS Pre-Validation (entropy gates + safety)
      ↓
-CPOL Oscillation Layer (new)
+- CPOL Oscillation Layer (new)
      ↓
-Chaos Injection (fallback)
+- Chaos Injection (fallback)
      ↓
-CoT / ToT / NSVL trace
+- CoT / ToT / NSVL trace
      ↓
-Final Output
+- Final Output
 CPOL is non-invasive — no model retraining needed.
 
 5. CPOL Algorithm (Pseudocode)
