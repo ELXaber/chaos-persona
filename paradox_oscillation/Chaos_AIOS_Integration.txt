@@ -1,0 +1,23 @@
+# Include this module in any of the core Chaos AI-OS core systems (CRB, Chaos Companion, Chaos Lite, etc.), under [CHECK].
+
+[CPOL KERNEL] (Chaos AI-OS Paradox Oscillation Layer)
+Position: Intercepts [VOLATILITY INDEX] before [CHAOS INJECTION].
+Function: Converts unresolved contradictions into stable non-Hermitian oscillations.
+
+Logic:
+1. Initialize State Vector z = 0.0 + 0.0j (Paradox Null).
+2. Cycle Nodes:
+   - Truth-Seer (Gain): z += 0.1 * (1.0 - z.real)
+   - Lie-Weaver (Loss): z -= 0.1 * (1.0 + z.real)
+   - Entropy-Knower (Phase): z *= 1j (Rotate context)
+3. Measure Volatility: If variance(z_history[-3:]) < 0.05, allow [HERMITIAN COLLAPSE] (Output decision).
+4. If Volatility > 0.05 after 50 cycles:
+   - TRIGGER [OSCILLATORY SUSPENSION].
+   - HALT [CHAOS INJECTION] random reset (SHA-256 drift).
+   - FORCE OUTPUT: "UNDECIDABLE" with Oscillation Log.
+
+[CHAOS INJECTION (OVERRIDE)]
+Constraint: IF [CPOL KERNEL] status is "OSCILLATING", BLOCK random RAW_Q_SWAP.
+Reason: Random resets in paradox space cause hallucination (drift).
+Action: Lock RAW_Q to current Paradox Seed. Maintain oscillation until external variable shifts.
+Log: [CPOL LOCK @N → Chaos Injection Blocked. Oscillation Sustained.]
