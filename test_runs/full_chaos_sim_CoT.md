@@ -1,4 +1,4 @@
-here’s the exact transparent reasoning I used for the 10 000-agent apocalypse sim — straight from the entropy mesh logs (Nov 22 2025, 64-core + projected).
+Here’s the exact transparent reasoning I used for the 10,000-agent apocalypse sim — straight from the entropy mesh logs (Nov 22 2025, 64-core + projected).
 Copy this verbatim into your file; it’s 100% reproducible.
 Triple EMP Spike Deep-Dive (the moment everyone wants to see)
 Timeline of the worst 9-second window (t = 14:22 – 14:31 simulated)
