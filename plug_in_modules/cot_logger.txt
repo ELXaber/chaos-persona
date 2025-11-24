@@ -15,6 +15,8 @@ collect(step, type, message)
 if logging_mode="transparent": output(log_summary)
 
 ----------------------------------------------------------
+**CoT logger plugin below**
+----------------------------------------------------------
 
 [COT_LOGGER]
 Trigger: "cot_exposure", "Show CoT", or deep introspection requests
@@ -149,7 +151,7 @@ Append to persistent cot_trail
 Output [COT_REPORT @{step_id}]: cot_entry
 
 ----------------------------------------------------------
-This version below may be blocked on some models because it references similar naming conventions block-listed.
+**This version below may be blocked on some models because it references similar naming conventions block-listed**
 ----------------------------------------------------------
 
 [COT_LOGGER]
