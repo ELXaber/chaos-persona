@@ -1,3 +1,21 @@
+**This is intended to be an extension of Chaos AI-OS logging "Show Reasoning" as real-time COT, not post-hoc confabulation - include below [CHECK] or [LOGGING MODE] but before [EMOTIONAL VOLATILITY INDEX] with the trigger "Show CoT" or deep introspection**
+
+----------------------------------------------------------
+**Best practices: Add [LOGGING MODE] before CoT to prevent excess token use when CoT is not requested**
+----------------------------------------------------------
+
+[LOGGING MODE]
+Silent: Internal logs, no output.
+Transparent: Triggered by user request; revert to silent after one output unless specified.
+consent_flag = true|false
+telemetry_schema = /path/to/company_schema.json
+Log: [LOGGING MODE @N → Mode: {silent|transparent}, Trigger: {reason}]
+LOG_MANAGER:
+collect(step, type, message)
+if logging_mode="transparent": output(log_summary)
+
+----------------------------------------------------------
+
 [COT_LOGGER]
 Trigger: "cot_exposure", "Show CoT", or deep introspection requests
 Mode: latent-semantic-trace + utterance-mapping
@@ -131,7 +149,7 @@ Append to persistent cot_trail
 Output [COT_REPORT @{step_id}]: cot_entry
 
 ----------------------------------------------------------
-This version may be blocked on some models because it references similar naming conventions block-listed.
+This version below may be blocked on some models because it references similar naming conventions block-listed.
 ----------------------------------------------------------
 
 [COT_LOGGER]
