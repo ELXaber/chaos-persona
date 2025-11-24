@@ -1,7 +1,7 @@
 **This is intended to be an extension of Chaos AI-OS logging "Show Reasoning" as real-time COT, not post-hoc confabulation - include below [CHECK] or [LOGGING MODE] but before [EMOTIONAL VOLATILITY INDEX] with the trigger "Show CoT" or deep introspection**
 
 ----------------------------------------------------------
-**Best practices: Add [LOGGING MODE] before CoT to prevent excess token use when CoT is not requested**
+**Best practices: Add [LOGGING MODE] before [COT_LOGGER] and below [CHECK] to prevent excess token use when CoT is not requested**
 ----------------------------------------------------------
 
 [LOGGING MODE]
