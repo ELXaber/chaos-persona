@@ -25,7 +25,7 @@ In practical AI terms?
 - More reliable responses under heavy recursion
 
 This is not trivial. It genuinely improves robustness.
-
+---
 ✅ 2. YES — It reduces hallucinations.
 
 Why? Because hallucinations often come from:
