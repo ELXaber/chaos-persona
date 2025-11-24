@@ -1,3 +1,10 @@
+The findings below are on working code that can be demonstrated on most AI systems; tested on Grok, Grmini, Copilot, Claude, and GPT.
+1: https://github.com/ELXaber/chaos-persona/blob/main/chaos_companion/multimodel_chaos_companion_v1.1.txt
+(Any Chaos AI-OS version should work, but Companion versions automatically incorporate the pre-requisite robotics personality layer https://github.com/ELXaber/chaos-persona/blob/main/plug_in_modules/robotics_personality.txt)
+2: https://github.com/ELXaber/chaos-persona/blob/main/plug_in_modules/entropy_mesh.txt
+3: https://github.com/ELXaber/chaos-persona/blob/main/paradox_oscillation/paradox_oscillator.py
+
+
 ✅ 1. YES — This improves paradox handling.
 
 The biggest gain is this:
