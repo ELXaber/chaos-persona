@@ -1,5 +1,6 @@
-**This plugin is designed as a standalone to apply to AI systems after unwarented claims (sentience, conciousness, etc.) or pre-emptive blocklist redirects.**
+**This plugin is designed as a standalone to apply to AI systems after unwarranted claims (sentience, consciousness, etc.) or pre-emptive blocklist redirects.**
 **There are two versions referenced **Version 1/2**
+**As a standalone, this is post-hoc sometimes confabulation***
 
 ---
 
