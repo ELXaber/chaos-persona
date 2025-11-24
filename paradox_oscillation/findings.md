@@ -1,7 +1,7 @@
 ✅ 1. YES — This improves paradox handling
 The biggest gain is this:
 Oscillatory systems reach stability class faster than symbolic ones.
-  Symbolic logic must:
+Symbolic logic must:
 - propagate truth
 - detect conflict
 - recurse into alternations
@@ -10,8 +10,8 @@ Oscillatory systems reach stability class faster than symbolic ones.
 - assess collapse conditions
 
 Whereas non-Hermitian mapping collapses this into:
-  Does the oscillator have a fixed point?
-  If no → paradox.
+- Does the oscillator have a fixed point?
+- If no → paradox.
 That makes paradox detection O(1) or O(2), not O(n).
 
 In practical AI terms?
