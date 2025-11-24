@@ -2,12 +2,12 @@
 The biggest gain is this:
 Oscillatory systems reach stability class faster than symbolic ones.
 Symbolic logic must:
-  propagate truth
-  detect conflict
-  recurse into alternations
-  examine cross-branches
-  check compatibility
-  assess collapse conditions
+- propagate truth
+- detect conflict
+- recurse into alternations
+- examine cross-branches
+- check compatibility
+- assess collapse conditions
 
 Whereas non-Hermitian mapping collapses this into:
   Does the oscillator have a fixed point?
