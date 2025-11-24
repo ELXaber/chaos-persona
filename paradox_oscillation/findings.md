@@ -12,6 +12,7 @@ Symbolic logic must:
 Whereas non-Hermitian mapping collapses this into:
 - Does the oscillator have a fixed point?
 - If no → paradox.
+
 That makes paradox detection O(1) or O(2), not O(n).
 
 In practical AI terms?
