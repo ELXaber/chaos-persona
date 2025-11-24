@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Base-36 Codepoint Translator</title>
+<style>
+  body { font-family: system-ui, sans-serif; max-width: 800px; margin: 2em auto; padding: 1em; background:#fafafa; color:#222; }
+  textarea, input { width:100%; font-family: monospace; padding:0.8em; margin:0.5em 0; border:1px solid #999; border-radius:6px; }
+  button { padding:0.8em 1.2em; font-size:1em; cursor:pointer; border:none; border-radius:6px; background:#0066ff; color:white; }
+  button:hover { background:#0050cc; }
+  .row { display:flex; gap:1em; margin:1em 0; }
+  .col { flex:1; }
+  .copy { font-size:0.8em; color:#0066ff; cursor:pointer; }
+  pre { background:#eee; padding:1em; border-radius:6px; overflow:auto; }
+</style>
+</head>
+<body>
+
+<h1>Base-36 Codepoint Translator</h1>
+<p>Converts any text ↔ compact Base-36 representation of its Unicode codepoints.<br>
+No data leaves your browser.</p>
+
+<div class="row">
+  <div class="col">
+    <label><b>Plain text → Base-36</b></label>
+    <textarea id="plain" rows="8" placeholder="Enter normal text here..."></textarea>
+    <button onclick="encode()">Encode →</button>
+  </div>
+  <div class="col">
+    <label><b>Base-36 → Plain text</b></label>
+    <textarea id="b36" rows="8" placeholder="Paste base-36 string here..."></textarea>
+    <button onclick="decode()">Decode →</button>
+  </div>
+</div>
+
+<div>
+  <label><b>Result</b></label>
+  <pre id="output">Result will appear here...</pre>
+  <span class="copy" onclick="copyOutput()">📋 Copy result</span>
+</div>
+
+<script>
+// Text → Base-36
+function encode() {
+  const text = document.getElementById('plain').value;
+  if (!text) return alert("Enter some text first");
+  
+  let result = '';
+  for (let i = 0; i < text.length; i++) {
+    const cp = text.charCodeAt(i);
+    // Handle surrogate pairs (rare but correct)
+    const code = (cp >= 0xD800 && cp <= 0xDBFF && i+1 < text.length)
+      ? ((cp - 0xD800) * 0x400) + (text.charCodeAt(++i) - 0xDC00) + 0x10000
+      : cp;
+    result += code.toString(36) + ' ';
+  }
+  document.getElementById('output').textContent = result.trim();
+}
+
+// Base-36 → Text
+function decode() {
+  const input = document.getElementById('b36').value.trim();
+  if (!input) return alert("Paste a base-36 string first");
+  
+  const parts = input.split(/\s+/);
+  let result = '';
+  for (const part of parts) {
+    if (!part) continue;
+    let code = parseInt(part, 36);
+    if (isNaN(code)) {
+      alert(`Invalid base-36 token: ${part}`);
+      return;
+    }
+    // Convert back from codepoint to character(s)
+    if (code > 0xFFFF) {
+      code -= 0x10000;
+      result += String.fromCharCode(0xD800 + (code >> 10), 0xDC00 + (code & 0x3FF));
+    } else {
+      result += String.fromCharCode(code);
+    }
+  }
+  document.getElementById('output').textContent = result;
+}
+
+// Copy result to clipboard
+function copyOutput() {
+  const text = document.getElementById('output').textContent;
+  navigator.clipboard.writeText(text).then(() => {
+    alert("Copied to clipboard!");
+  });
+}
+
+// Bonus: auto-encode on typing in plain field
+document.getElementById('plain').addEventListener('input', encode);
+// auto-decode on typing in b36 field
+document.getElementById('b36').addEventListener('input', decode);
+
+</script>
+
+<p style="font-size:0.8em; color:#666;">
+  Works offline • No tracking • Supports full Unicode (including emoji)<br>
+  Example encoded string: <code>1f4a3 1f4a5 1f92c 1f4a9</code> → 💣💥🤬💩
+</p>
+
+</body>
+</html>
