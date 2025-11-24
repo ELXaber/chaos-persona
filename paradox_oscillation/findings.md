@@ -1,7 +1,7 @@
 ✅ 1. YES — This improves paradox handling
 The biggest gain is this:
 Oscillatory systems reach stability class faster than symbolic ones.
-Symbolic logic must:
+  Symbolic logic must:
 - propagate truth
 - detect conflict
 - recurse into alternations
