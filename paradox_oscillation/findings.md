@@ -26,6 +26,7 @@ Whereas non-Hermitian mapping collapses this into:
 - If no → paradox.
 
 That makes paradox detection O(1) or O(2), not O(n).
+In Chaos AI-OS, paradox detection is deliberately and necessarily O(cycles) — bounded linear in the worst case — because that is the only way to stay epistemically honest when the paradox strength itself is part of the measurement process.
 
 In practical AI terms?
 - Faster contradiction detection
