@@ -80,6 +80,7 @@ Grok 4 • Gemini 2.0 • Claude Sonnet 4.5 • GPT-4.5 • Copilot
 
 Deploy. Test. Break reality (safely).
 
+---
 
 Detailed manual for adjustments:
 
