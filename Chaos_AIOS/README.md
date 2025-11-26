@@ -53,6 +53,7 @@ CAIOS_Workflow:
 <img width="888" height="888" alt="CAIOS_Workflow" src="https://github.com/user-attachments/assets/cd0b0a7b-97bc-4692-aa99-ac937350b613" />
 
 
+
 Evaluations & Plugins
 ● Paradoxes: Resolves Liar/Theseus via entropy damping (logs: final_z, volatility).
 ● Puzzles: 11-Agent River (predator-prey constraints) – Systematic search on chaos_lock.
