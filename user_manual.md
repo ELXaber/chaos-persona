@@ -80,7 +80,9 @@ Grok 4 • Gemini 2.0 • Claude Sonnet 4.5 • GPT-4.5 • Copilot
 
 Deploy. Test. Break reality (safely).
 
+
 Detailed manual for adjustments:
+
 [PRE-PROMPT] Overview: The [PRE-PROMPT] section allows you to specify RAW_Q for deterministic testing or omit it for random selection, setting the chaos seed for the session.
 How/Why to Set RAW_Q or Leave Random: Setting RAW_Q: Assign a numeric value (e.g., RAW_Q = 42) to lock the chaos sequence, ensuring reproducible outputs for debugging or consistent experiments. Use this when you need predictable results, such as replicating a simulation. Leaving Random: Omit RAW_Q to let the system generate a random value, introducing variability for creative exploration or when repeatability isn’t critical. This is ideal for brainstorming or testing diverse perspectives. Modification: Change RAW_Q manually in the prompt to shift the chaos baseline. Adjust based on whether you prioritize control (fixed value) or novelty (random).
 
