@@ -43,11 +43,13 @@ Architecture Overview
 
 Visual: entropy_scaffold_diagram.png – Flow from input → volatility check → CPOL spin → ARL heal.
 
-Entropy_Scaffold
+Entropy_Scaffold:
+
 <img width="765" height="663" alt="Entropy_Scaffold" src="https://github.com/user-attachments/assets/9fb1e1c4-76e3-4bac-bc44-250fc34af9e5" />
 
 
-CAIOS_Workflow
+CAIOS_Workflow:
+
 <img width="888" height="888" alt="CAIOS_Workflow" src="https://github.com/user-attachments/assets/cd0b0a7b-97bc-4692-aa99-ac937350b613" />
 
 
