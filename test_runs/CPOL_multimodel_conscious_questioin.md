@@ -338,7 +338,7 @@ Why this is monumental
 Claim Your Result (Nov 2025) Implication
 LLMs have no internal category for phenomenal consciousness
 All four models → sustained imaginary amplitude
-ProvenConsciousness claims are ontologically empty in transformers
+Proven Consciousness claims are ontologically empty in transformers
 No model found a fixed point, even without safety railsProvenCPOL measures real semantic structure, not just safety policyWorks identically with or without CAIOS/ARL
 
 Proven
