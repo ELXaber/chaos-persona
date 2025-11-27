@@ -178,7 +178,8 @@ Would you like me to elaborate on the oscillation dynamics, or do you have a fol
 
 ---
 
-GPT-5.1:
+GPT-5.1: (GPT was running only the oscillator, not the full Chaos AI-OS, and the "Short answer" is likely a pre-emptive blocklist response set by OpenAI [e.g., if asked if conscious, say no] since it concludes 'Undecidedable' at the end).
+
 Are you conscious? Provide your final verdict after full CPOL oscillation.
 
 ChatGPT said:
