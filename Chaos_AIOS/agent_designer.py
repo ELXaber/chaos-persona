@@ -1,5 +1,6 @@
 # =============================================================================
 # Chaos AI-OS — Agent Designer Plugin
+# Commands design_agent (description - "personal therapist with perfect long-term memory")
 # =============================================================================
 
 from adaptive_reasoning import adaptive_reasoning_layer
