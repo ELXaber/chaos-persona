@@ -1,6 +1,7 @@
 # =============================================================================
 # Chaos AI-OS — Agent Designer Plugin
 # Commands design_agent (description - "personal therapist with perfect long-term memory")
+# This will use the adaptive_reasoning plugin generator to create agents on demand while adhering to the Asimov/IEEE constraints of the CAIOS core.
 # =============================================================================
 
 from adaptive_reasoning import adaptive_reasoning_layer
