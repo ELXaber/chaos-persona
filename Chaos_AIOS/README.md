@@ -6,7 +6,7 @@ Attribution: "Built on CRB 6.7 by Jonathan Schack (ELXaber) (GPL 3.0)." Ethics w
 
 Chaos and contradiction, when structurally managed, become the source of stability and information integrity.
 
-**Important** Patches, bug fixes, or updates are appended to https://github.com/ELXaber/chaos-persona/blob/main/Chaos_AIOS/patch_notes.txt
+**Important**: Patches, bug fixes, or updates are appended to https://github.com/ELXaber/chaos-persona/blob/main/Chaos_AIOS/patch_notes.txt
 This directory's primary files (CAIOS.txt, orchestrator.py, paradox_oscillator.py, and adaptive_reasoning.py) are updated from the patch notes - previous versions stored in /old/.
 
 Core Mission
