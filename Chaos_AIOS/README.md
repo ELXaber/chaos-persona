@@ -6,6 +6,8 @@ Attribution: "Built on CRB 6.7 by Jonathan Schack (ELXaber) (GPL 3.0)." Ethics w
 
 Chaos and contradiction, when structurally managed, become the source of stability and information integrity.
 
+**Important** Patches, bug fixes, or updates are appended to https://github.com/ELXaber/chaos-persona/blob/main/Chaos_AIOS/patch_notes.txt
+This directory's primary files (CAIOS.txt, orchestrator.py, paradox_oscillator.py, and adaptive_reasoning.py) are updated from the patch notes - previous versions stored in /old/.
 
 Core Mission
 Chaos AI-OS is a modular, training-free scaffold for AI/robotic systems that enforces epistemic integrity via controlled entropy. It detects/contains paradoxes, debias narratives, and grounds reasoning in first principles—prioritizing human safety (Asimov 1st Law wt 0.9) over confident lies. Unlike classical AI (bounded states forcing TRUE/FALSE on undecidables), it sustains honest oscillation until evidence collapses or undecidability locks.
