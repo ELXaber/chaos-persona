@@ -1,0 +1,57 @@
+#changes to adaptive_reasoning.py
+
+ethics = verify_ethics(crb_config)
+    if ethics['status'] == 'fail':
+        return ethics
+    
+    #NEW-Check CPOL lock status
+    if cpol_status and cpol_status.get('chaos_lock') == True:
+        return {
+            'status': 'blocked',
+            'log': '[CPOL LOCK ACTIVE → Plugin generation suspended. Paradox containment in progress.]'
+        }
+    # === NEW: CPOL MODE CONTROL (post-Grok-X checkmate fix) ===
+    # Puzzle generation must NOT be allowed to be killed by active CPOL
+    # Solving/verification must have full CPOL protection
+    cpol_mode = 'full'  # default = normal chaos_lock behaviour
+    
+    if use_case.startswith('generate_') or 'generator' in use_case.lower():
+        cpol_mode = 'monitor_only'   # measures density but NEVER returns UNDECIDABLE
+        print(f"[ARL → CPOL forced to monitor-only mode for {use_case}")
+    elif use_case in ['solve_sudoku', 'paradox_containment', 'verify_puzzle']:
+        cpol_mode = 'full'
+        print(f"[ARL → CPOL in full active mode for {use_case}")
+    else:
+        context['cpol_mode'] = cpol_mode
+        
+    # Force unlimited symbolic timeout during any generation/verification phase
+    if 'generate_' in use_case or use_case.endswith('_generator') or use_case == 'verify_puzzle':
+        context['symbolic_timeout'] = None
+        context['uniqueness_mode'] = 'exhaustive'
+    
+    # Pass mode down to any tool that respects it (CPOL kernel, solver, etc.)
+    context['cpol_kernel_override'] = cpol_mode
+    # ==========================================================
+	
+	#changes to paradox_oscillator.py - replace existing   def oscillate(self) -> Dict[str, Any]: section
+	
+	    def oscillate(self) -> Dict[str, Any]:
+        """
+        Run the gain/loss loop. 
+        Returns RESOLVED if stable, UNDECIDABLE if paradox persists.
+        """
+        # === RESPECT ARL OVERRIDE ===
+        override_mode = getattr(self, 'cpol_mode', None)
+        if override_mode == 'monitor_only':
+            # Used during puzzle generation — never block, just report
+            return {
+                "status": "MONITORED",
+                "reason": "CPOL in monitor-only mode (generation phase)",
+                "volatility": self._measure_volatility(),
+                "final_z": str(self.z),
+                "contradiction_density": self.contradiction_density
+            }
+        # ==============================
+
+        limit = self.limit_init if self.call_count == 1 else self.limit_run
+        # ... rest of original oscillate() unchanged ...
