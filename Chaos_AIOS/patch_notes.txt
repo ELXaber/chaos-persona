@@ -1,10 +1,12 @@
-#changes to adaptive_reasoning.py
+#######################################################
+#11/29/2025 changes to adaptive_reasoning.py
+#######################################################
 
 ethics = verify_ethics(crb_config)
     if ethics['status'] == 'fail':
         return ethics
     
-    #NEW-Check CPOL lock status
+    #Check CPOL lock status
     if cpol_status and cpol_status.get('chaos_lock') == True:
         return {
             'status': 'blocked',
@@ -31,9 +33,10 @@ ethics = verify_ethics(crb_config)
     
     # Pass mode down to any tool that respects it (CPOL kernel, solver, etc.)
     context['cpol_kernel_override'] = cpol_mode
-    # ==========================================================
-	
-	#changes to paradox_oscillator.py - replace existing   def oscillate(self) -> Dict[str, Any]: section
+
+#######################################################
+#11/29/2025 changes to paradox_oscillator.py - replace existing   def oscillate(self) -> Dict[str, Any]: section
+#######################################################
 	
 	    def oscillate(self) -> Dict[str, Any]:
         """
@@ -51,7 +54,10 @@ ethics = verify_ethics(crb_config)
                 "final_z": str(self.z),
                 "contradiction_density": self.contradiction_density
             }
-        # ==============================
 
         limit = self.limit_init if self.call_count == 1 else self.limit_run
         # ... rest of original oscillate() unchanged ...
+
+#######################################################
+#Nothing New
+#######################################################
