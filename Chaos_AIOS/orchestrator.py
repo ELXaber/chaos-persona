@@ -13,11 +13,10 @@ shared_memory = {
     'audit_trail': [],
     'cpol_instance': None,     # Stores the active Kernel Object
     'cpol_state': {'chaos_lock': False},
-    'session_context': {'RAW_Q': None, 'timestep': 0},  # ✅ Fixed comma
+    'session_context': {'RAW_Q': None, 'timestep': 0},
     'traits_history': []
 }
 
-# ✅ Add proper CRB config
 CRB_CONFIG = {
     'alignment': 0.7,
     'human_safety': 0.8,
@@ -53,12 +52,12 @@ def system_step(user_input, prompt_complexity="medium"):
     cpol_result = cpol.run_cpol_decision(
         prompt_complexity=prompt_complexity,
         contradiction_density=density,
-        kernel=engine  # ✅ Pass persistent kernel
+        kernel=engine
     )
     
     # Update Shared Memory with results
     shared_memory['cpol_state'] = cpol_result
-    vol = cpol_result.get('volatility', 0.0)  # ✅ Safe access
+    vol = cpol_result.get('volatility', 0.0)
     print(f"[CPOL STATUS] {cpol_result['status']} | Volatility: {vol:.4f}")
 
     # --- PHASE 2: ADAPTIVE REASONING (ARL) ---
@@ -75,11 +74,11 @@ def system_step(user_input, prompt_complexity="medium"):
             traits={'flexibility': 0.8},
             existing_layers=shared_memory['layers'],
             shared_memory=shared_memory,
-            crb_config=CRB_CONFIG,  # ✅ Use proper config
+            crb_config=CRB_CONFIG,
             cpol_status=shared_memory['cpol_state'],
             context={
                 'contradiction_density': density,
-                'volatility': vol,  # ✅ Pass volatility
+                'volatility': vol,
                 'threshold': 0.4,
                 'safety_wt': 0.9
             }
@@ -113,4 +112,5 @@ if __name__ == "__main__":
     print("\n[AUDIT] Checking Shared Memory History...")
     kernel = shared_memory['cpol_instance']
     print(f"Kernel History Length: {len(kernel.history)} (Should be > 1)")
+
     print(f"Latest Z-Vector: {kernel.z}")
