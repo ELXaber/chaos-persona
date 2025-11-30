@@ -1,4 +1,4 @@
-Future interface for Chaos AI-OS that allows adjustments of the OS to things like personality matrix (Snarky, funny, romantic, professional, etc.) and lists the available generated agents from the agent_designer through auto discovery.
+Future interface for Chaos AI-OS that allows adjustments of the OS to things like personality matrix (Snarky, funny, romantic, professional, etc.), includes inherent commands like show reasoning, and lists the available generated agents from the agent_designer through auto discovery.
 
 
 - # Available agents — auto-discovered
