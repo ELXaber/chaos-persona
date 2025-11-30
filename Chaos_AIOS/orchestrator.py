@@ -20,7 +20,8 @@ shared_memory = {
     'cpol_instance': None,     # Stores the active Kernel Object
     'cpol_state': {'chaos_lock': False},
     'session_context': {'RAW_Q': None, 'timestep': 0},
-    'traits_history': []
+    'traits_history': [],
+    'scratch_space': {}
 }
 
 CRB_CONFIG = {
@@ -120,4 +121,5 @@ if __name__ == "__main__":
     print(f"Kernel History Length: {len(kernel.history)} (Should be > 1)")
 
     print(f"Latest Z-Vector: {kernel.z}")
+
 
