@@ -59,5 +59,12 @@ ethics = verify_ethics(crb_config)
         # ... rest of original oscillate() unchanged ...
 
 #######################################################
-#Nothing New
+#11/29/2025 Added to orchestrator.py for agent discovery for use with new plugin agent_designer.py
 #######################################################
+
+# Let agents be auto-discovered
+import importlib
+import os
+for file in os.listdir("agents"):
+    if file.endswith(".py") and not file.startswith("_"):
+        importlib.import_module(f"agents.{file[:-3]}")
