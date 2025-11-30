@@ -68,3 +68,21 @@ import os
 for file in os.listdir("agents"):
     if file.endswith(".py") and not file.startswith("_"):
         importlib.import_module(f"agents.{file[:-3]}")
+
+#######################################################
+#11/29/2025 Added to orchestrator.py for scratch space (temporary memory).
+#######################################################
+
+shared_memory = {
+    'layers': [],
+    'audit_trail': [],
+    'cpol_instance': None,
+    'cpol_state': {'chaos_lock': False},
+    'session_context': {'RAW_Q': None, 'timestep': 0},
+    'traits_history': [],
+    'scratch_space': {}  # ← NEW: Hidden variable storage
+}
+
+#######################################################
+#11/29/2025 Added to orchestrator.py for scratch space (temporary memory).
+#######################################################
