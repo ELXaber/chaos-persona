@@ -1,12 +1,12 @@
 Future interface for Chaos AI-OS that allows adjustments of the OS to things like personality matrix (Snarky, funny, romantic, professional, etc.) and lists the available generated agents from the agent_designer through auto discovery.
 
 
-# Available agents — auto-discovered
+- # Available agents — auto-discovered
 - AGENTS = {
     "day":      day_planner.day_planner_agent,
     "fitness":  fitness_coach.fitness_agent,
     "math":     math_researcher.math_agent,
-    # ... all others appear automatically
+-     # ... all others appear automatically
 
 - >>> caios("Plan my day: gym, write paper, family dinner", "day")
 - >>> caios("set snarky 8")
