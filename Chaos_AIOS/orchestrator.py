@@ -6,6 +6,12 @@
 import paradox_oscillator as cpol
 import adaptive_reasoning as arl
 import time
+# Let agents be auto-discovered
+import importlib
+import os
+for file in os.listdir("agents"):
+    if file.endswith(".py") and not file.startswith("_"):
+        importlib.import_module(f"agents.{file[:-3]}")
 
 # 1. Persistent State Container (Matches CAIOS Schema)
 shared_memory = {
@@ -114,3 +120,4 @@ if __name__ == "__main__":
     print(f"Kernel History Length: {len(kernel.history)} (Should be > 1)")
 
     print(f"Latest Z-Vector: {kernel.z}")
+
