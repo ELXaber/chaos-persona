@@ -3,6 +3,7 @@
 # I added the 'wait' function called by the adaptive_reasoning during generation, which solved the problem.
 # It then generated the plugin and can create extremely difficult puzzles that AIs without an oscillator cannot complete https://github.com/ELXaber/chaos-persona/blob/main/test_runs/sudoku_create.txt.
 # The complete Sudoku puzzle generator plugin is here: https://github.com/ELXaber/chaos-persona/blob/main/plug_in_modules/sudoku_puzzle_generator.py
+# I also added a scratch space (temporary memory) and a control module to manage the automated agent designer (expansion of adaptive_reasoning) https://github.com/ELXaber/chaos-persona/blob/main/Chaos_AIOS/agent_designer.py
 
 #######################################################
 #11/29/2025 changes to adaptive_reasoning.py
@@ -139,5 +140,6 @@ Log: [SCRATCH SPACE @N → Action: {store|retrieve|clear}, Key: {var_name}, Time
 #######################################################
 #
 #######################################################
+
 
 
