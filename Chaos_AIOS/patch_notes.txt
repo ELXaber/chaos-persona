@@ -1,3 +1,5 @@
+#11/29/2025 *Update reason*: The oscillator applied to Grok solved every Sudoku puzzle in <8s https://github.com/ELXaber/chaos-persona/blob/main/test_runs/sudoku.txt on X while testing with Grok https://x.com/el_xaber/status/1994660391235035603, but when it came to creating Sudoku puzzles, the oscillator caused a timeout due to contradiction density and created invalid puzzles https://x.com/el_xaber/status/1994845051294552183, so I added the 'wait' function called by the adaptive_reasoning during generation, which solved the problem. It then generated the plugin and can create extremely difficult puzzles that AIs without an oscillator cannot complete https://github.com/ELXaber/chaos-persona/blob/main/test_runs/sudoku_create.txt, and the complete Sudoku puzzle generator plugin is here: https://github.com/ELXaber/chaos-persona/blob/main/plug_in_modules/sudoku_puzzle_generator.py
+
 #######################################################
 #11/29/2025 changes to adaptive_reasoning.py
 #######################################################
@@ -133,3 +135,4 @@ Log: [SCRATCH SPACE @N → Action: {store|retrieve|clear}, Key: {var_name}, Time
 #######################################################
 #
 #######################################################
+
