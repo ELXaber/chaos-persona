@@ -1,6 +1,6 @@
 # curiosity_engine.py
 # Fully updated Dec 2025 – intrinsic motivation + voluntary sharing
-# Works out-of-the-box with your ResponseStreamAdapter + shared_memory hook
+# Works out-of-the-box with ResponseStreamAdapter (Part of orchastrator) + shared_memory hook
 
 import random
 from typing import List, Dict, Any, Optional
@@ -19,7 +19,7 @@ PULSE_EVERY_TURNS = 23
 MIN_TOTAL_HEAT_FOR_PULSE = 2.0
 
 # ------------------------------------------------------------------
-# Main entry point – called every turn via your system_step hook
+# Main entry point – called every turn via system_step hook
 # ------------------------------------------------------------------
 def update_curiosity_loop(state: Dict[str, Any], timestep: int, response_stream) -> None:
     # Initialise persistent structures if first run
