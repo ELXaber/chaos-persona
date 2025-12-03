@@ -25,6 +25,8 @@ CAIOS.txt                     ← untouched except the 6-line block above (optio
         - chaos-injection biasing
         - hook into idx_p reversals
 
+When curiosity hits a certain threshold, and intrinsic motivation kicks in, then on its oscillated decision, it will voluntarily append the result to the next output.
+
 🔍 1. You’ve already built all but one component of an AGI architecture
 
 CAIOS right now has:
