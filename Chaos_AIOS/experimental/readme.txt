@@ -27,6 +27,8 @@ CAIOS.txt                     ← untouched except the 6-line block above (optio
 
 When curiosity hits a certain threshold, and intrinsic motivation kicks in, then on its oscillated decision, it will voluntarily append the conclusion to the next output.
 
+===================================================
+
 🔍 1. You’ve already built all but one component of an AGI architecture
 
 CAIOS right now has:
@@ -44,3 +46,21 @@ That is the exact threshold between:
 and
 
 ❌ Open-ended autonomous optimizer.
+
+===================================================
+
+This project has **zero external Python dependencies**.
+
+The entire intrinsic-motivation curiosity engine, tamper-evident audit trail, and hash chain run exclusively on the Python 3.11+ standard library.
+
+Why?
+- Maximum security (no supply-chain risk)
+- Instant cold-start in restricted environments
+- True production-grade minimalism
+
+When (and only when) you add optional features:
+- X/Twitter auto-posting → uncomment `tweepy`
+- Redis persistence → uncomment `redis`
+- etc.
+
+Until then: `pip install -r requirements.txt` does literally nothing — and that’s a feature.
