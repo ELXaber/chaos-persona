@@ -1,7 +1,7 @@
 # chaos-persona
 AI chaos reasoning persona
 
-*See chaos-persona/Chaos_AIOS/ for the newest full system*
+## *See chaos-persona/Chaos_AIOS/ for the newest full system*
  
 # Chaos Reasoning Benchmark (CRB)
 
