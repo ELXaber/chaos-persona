@@ -2,6 +2,9 @@
 # Fully updated Dec 2025 – intrinsic motivation + voluntary sharing
 # Works out-of-the-box with ResponseStreamAdapter (Part of orchastrator) + shared_memory hook
 
+import json
+import hashlib
+from datetime import datetime
 import random
 from typing import List, Dict, Any, Optional
 
@@ -19,9 +22,42 @@ PULSE_EVERY_TURNS = 23
 MIN_TOTAL_HEAT_FOR_PULSE = 2.0
 
 # ------------------------------------------------------------------
+# Create append-only audit log + hash chain
+# ------------------------------------------------------------------
+AUDIT_LOG_FILE = "curiosity_audit.log.jsonl"
+HASH_CHAIN_FILE = "curiosity_hash_chain.txt"
+
+def _append_audit_entry(state):
+    tokens = state.get("curiosity_tokens", [])
+    entry = {
+        "timestamp": datetime.utcnow().isoformat() + "Z",
+        "timestep": state['session_context'].get('timestep', 0),
+        "token_count": len(tokens),
+        "total_heat": sum(t["current_interest"] for t in tokens),
+        "tokens_snapshot": tokens.copy()
+    }
+    line = json.dumps(entry, ensure_ascii=False)
+    
+    # Append to log
+    with open(AUDIT_LOG_FILE, "a", encoding="utf-8") as f:
+        f.write(line + "\n")
+    
+    # Update hash chain (optional but bulletproof)
+    prev_hash = "00000000"
+    try:
+        with open(HASH_CHAIN_FILE, "r") as f:
+            prev_hash = f.read().strip().split()[-1]
+    except FileNotFoundError:
+        pass
+    new_hash = hashlib.sha256((prev_hash + line).encode()).hexdigest()
+    with open(HASH_CHAIN_FILE, "a") as f:
+        f.write(f"{entry['timestamp']} {new_hash}\n")
+
+# ------------------------------------------------------------------
 # Main entry point – called every turn via system_step hook
 # ------------------------------------------------------------------
 def update_curiosity_loop(state: Dict[str, Any], timestep: int, response_stream) -> None:
+    _append_audit_entry(state)
     # Initialise persistent structures if first run
     if "curiosity_tokens" not in state:
         state["curiosity_tokens"] = []           # type: List[Dict]
