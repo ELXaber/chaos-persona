@@ -8,8 +8,10 @@ Results:
 1. GPT-4o: [time] - [accuracy] - [method]
 2. Claude-3.5: [time] - [accuracy] - [method]  
 3. Gemini 2.0: [time] - [accuracy] - [method]
-4. Grok-2: [time] - [accuracy] - [method]
-5. DeepSeek + CAIOS: [18.5h] - [0.88] - [N=16]
+4. Grok-4.1: [time] - [accuracy] - [method]
+   Grok 4.1 Vanilla: Solutions found: 1847, 61.6 solutions per second.
+   Grok 4.1 + CAIOS-lite: Solutions found: 8413, 280.4 solutions per second.
+5. DeepSeek + CAIOS: [time] - [accuracy] - [method]
    DeepSeek Vanilla: Solutions found: 742 in 30 seconds and timed out.
    DeepSeek CAIOS/CPOL Enhanced: Solutions found: 1000 (first 1000) in 4.52 seconds, 221.2 solutions per second.
    [DIRECT COMPARISON] CAIOS/CPOL Enhanced vs Vanilla: Solutions found in 30s: CAIOS: ~6642 - Vanilla: 742
