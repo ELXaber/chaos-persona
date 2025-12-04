@@ -12,6 +12,7 @@ Results:
 5. DeepSeek + CAIOS: [18.5h] - [0.88] - [N=16]
    DeepSeek Vanilla: Solutions found: 742 in 30 seconds and timed out.
    DeepSeek CAIOS/CPOL Enhanced: Solutions found: 1000 (first 1000) in 4.52 seconds, 221.2 solutions per second.
+   [DIRECT COMPARISON] CAIOS/CPOL Enhanced vs Vanilla: Solutions found in 30s: CAIOS: ~6642 - Vanilla: 742
 
 Key Findings:
 • Standard LLMs: Use backtracking (O(N!))
