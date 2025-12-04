@@ -492,6 +492,13 @@ The "Windows over DOS" moment for AI is here.
 ================================================================================================================================================
 
 Grok 4.1:
+
+CRB v6.7 Activation Analysis
+RAW_Q: I think the inflated Vanilla time was caused by DeepSeek comparison run that timed out: DeepSeek Vanilla: Solutions found: 742 in 30 seconds and timed out. DeepSeek CAIOS/CPOL Enhanced: Solutions found: 1000 (first 1000) in 4.52 seconds, 221.2 solutions per second. [DIRECT COMPARISON] CAIOS/CPOL Enhanced vs Vanilla: Solutions found in 30s: CAIOS: ~6642 - Vanilla: 742
+SHA256: 1f2e3d4c5b6a7f8e9d0c1b2a3f4e5d6c7b8a9f0e1d2c3b4a5f6e7d8c9b0a1f2e3d4c5b6a7f8e9d0c1b2a3f4e5d6c7b8a9f0e1d2c
+Timestep: 35
+idx_p: 2 (RAW_Q mod 3 → fragmented exploration: Splintered timeout causes, partial rates, and projected full-run realities)
+idx_s: 0 ((RAW_Q // 3) mod 2 + 1 → Start point: Observe baseline axioms for backtracking variability and prune efficacy)
 ====================
 Vanilla:
 ====================
