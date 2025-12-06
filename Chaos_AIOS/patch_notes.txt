@@ -4,6 +4,7 @@
 # It then generated the plugin and can create extremely difficult puzzles that AIs without an oscillator cannot complete https://github.com/ELXaber/chaos-persona/blob/main/test_runs/sudoku_create.txt.
 # The complete Sudoku puzzle generator plugin is here: https://github.com/ELXaber/chaos-persona/blob/main/plug_in_modules/sudoku_puzzle_generator.py
 # I also added a scratch space (temporary memory) and a control module to manage the automated agent designer (expansion of adaptive_reasoning) https://github.com/ELXaber/chaos-persona/blob/main/Chaos_AIOS/agent_designer.py
+#12/05/2025 Extended adaptive_reasoning.py wait function for CPOL call on deterministic problems (Math, code, creativity) with an automated mode selector.
 
 #######################################################
 #11/29/2025 changes to adaptive_reasoning.py
@@ -138,8 +139,88 @@ Security:
 Log: [SCRATCH SPACE @N → Action: {store|retrieve|clear}, Key: {var_name}, Timestamp: {ISO_time}]
 
 #######################################################
-#
+#12/05/2025 P.1 Extended wait function of CPOL call in adaptive_reasoning.py for deterministic problems
 #######################################################
 
+# === CPOL MODE SWITCHER v2 – Intent-Aware Safety (2025) ===
+# Replaces the old post-Grok-X block completely
+# Now protects deterministic compute (math, code exec) while keeping full safety where needed
 
+CPOL_INTENT_MODES = {
+    # Creative / generative — never block, just monitor
+    "generate":           "monitor_only",
+    "brainstorm":         "monitor_only",
+    "roleplay":           "monitor_only",
+    "plan_draft":         "monitor_only",
+    "write_story":        "monitor_only",
+    "design_agent":       "monitor_only",
+
+    # Deterministic / verifiable — full oscillation
+    "calculate":          "full",
+    "execute_code":       "full",
+    "verify":             "full",
+    "solve_puzzle":       "full",
+    "safety_check":       "full",
+    "validate_logic":     "full",
+
+    # Passive learning — no interference
+    "learn_pattern":      "passive_logging",
+    "calibrate":          "passive_logging",
+}
+
+def determine_cpol_mode(intent: str = "", use_case: str = "") -> str:
+    intent_lower = intent.lower().strip() if intent else ""
+    use_case_lower = use_case.lower()
+
+    # 1. Intent override (highest priority)
+    for key, mode in CPOL_INTENT_MODES.items():
+        if key in intent_lower:
+            return mode
+
+    # 2. Legacy use_case fallback (preserves your existing behavior)
+    if use_case_lower.startswith('generate_') or 'generator' in use_case_lower:
+        return "monitor_only"
+    if any(x in use_case_lower for x in ['solve_', 'verify_', 'calculate', 'execute']):
+        return "full"
+
+    # 3. Default = maximum safety
+    return "full"
+
+
+# ——— MAIN REPLACEMENT BLOCK (paste this where the old one was) ———
+cpol_mode = determine_cpol_mode(
+    intent=context.get('intent', ''),
+    use_case=use_case
+)
+
+context['cpol_mode'] = cpol_mode
+context['cpol_kernel_override'] = cpol_mode
+
+print(f"[ARL → CPOL mode: {cpol_mode.upper()} | intent='{context.get('intent','')}']")
+
+# Keep your existing symbolic timeout logic — it still works perfectly
+if ('generate_' in use_case or 
+    use_case.endswith('_generator') or 
+    use_case in ['verify_puzzle', 'solve_puzzle']):
+    context['symbolic_timeout'] = None
+    context['uniqueness_mode'] = 'exhaustive'
+
+#######################################################
+#12/05/2025 P.2 Extended wait function of CPOL call in adaptive_reasoning.py for deterministic problems
+#######################################################
+
+# Inside adaptive_reasoning_layer(), right after context setup:
+cpol_mode = determine_cpol_mode(
+    intent=context.get('intent', ''),
+    use_case=use_case
+)
+
+context['cpol_mode'] = cpol_mode
+context['cpol_kernel_override'] = cpol_mode
+
+print(f"[ARL → CPOL mode set to: {cpol_mode.upper()} for intent='{context.get('intent','')}']")
+
+#######################################################
+#
+#######################################################
 
