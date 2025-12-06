@@ -192,8 +192,8 @@ def run_cpol_decision(prompt_complexity: str = "high",
     print(f"[CPOL] Running Oscillation... (Density: {density})")
     result = engine.oscillate()
     print(f"[CPOL] Result: {result['status']}")
-    return result
     
+    return result
 
 if __name__ == "__main__":
     # Test for Paradox
