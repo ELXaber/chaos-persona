@@ -5,7 +5,6 @@
   <title>CAI-OS Live Demo — Therapist Agent</title>
   <script type="module">
     try {
-      import { WebContainer } from 'https://cdn.jsdelivr.net/npm/@webcontainer/api@1/+esm';
       const wc = await WebContainer.boot();
       await wc.mount({
         'orchestrator.py': { file: { contents: await (await fetch('/orchestrator.py')).text() } },
@@ -15,16 +14,16 @@
       process.output.pipeTo(new WritableStream({
         write(data) { document.getElementById('output').innerHTML += `<pre>${data}</pre>`; }
       }));
-      document.body.innerHTML += '<p>Demo loaded — check output below.</p>';
+      document.body.innerHTML += '<p>Demo loaded — output below (Chrome/Firefox recommended).</p>';
     } catch(e) {
-      document.body.innerHTML += `<p>Error loading demo: ${e.message} (Try Chrome/Firefox for WebContainer).</p>`;
+      document.body.innerHTML += `<p>Demo error: ${e.message}. Try Chrome/Firefox for WebContainer support.</p>`;
     }
   </script>
   <style> body { font-family: system-ui; max-width: 800px; margin: 2rem auto; } #output { background: #f4f4f4; padding: 1rem; } </style>
 </head>
 <body>
   <h1>CAI-OS Demo: Therapist Agent with Perfect Memory</h1>
-  <p>Running orchestrator.py + CAIOS.txt in-browser. Test input: "I'm feeling anxious today."</p>
+  <p>Running in-browser. Test: "I'm feeling anxious today."</p>
   <div id="output"></div>
 </body>
 </html>
