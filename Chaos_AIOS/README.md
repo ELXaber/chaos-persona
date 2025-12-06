@@ -18,7 +18,12 @@ See `QUICKSTART.md` for deployment instructions.
 ## Documentation
 - `README_DEPLOYMENT.md` - Full deployment guide
 - `PRODUCTION_READY.md` - Production checklist
+- `license.md` - Dual license open-source GPL 3.0 or commercial
 - `CAIOS.txt` - Operating system specification
+- `orchestrator.py` - Mesh, shared memory space
+- `adaptive_reasoning.py` - ARL controls oscillator (CPOL) from CAIOS guardrails and ethics
+- `agent_designer.py` - Extension of ARL for automated agent design
+- `paradox_oscillator` - Post-binary oscillator on contradiction density for "Undecidable" tertiary decision/paradox resilience - ARL controls modes for oscillation.
 
 ## Compliance
 - ✅ EU AI Act transparency requirements
