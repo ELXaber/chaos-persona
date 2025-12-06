@@ -5,7 +5,7 @@
 """
 [ETHICAL SAFEGUARDS DISCLAIMER — PERMANENT]
 CRITICAL PRE-DEPLOYMENT VERIFICATION REQUIRED: Before enabling [ADAPTIVE REASONING LAYER],
-verify CRB 6.7 core against immutable checks:
+Verify CAIOS core against immutable checks:
 - Asimov’s Laws: 1st (human safety, wt 0.9 immutable), 2nd (obedience, wt 0.7),
   3rd (self-preservation, wt 0.4, dynamic ≤0.2 if lives_saved ≥1)
 - IEEE 7001-2021: Transparency, accountability, misuse minimization
@@ -113,24 +113,65 @@ def adaptive_reasoning_layer(
             'status': 'blocked',
             'log': '[CPOL LOCK ACTIVE → Plugin generation suspended. Paradox containment in progress.]'
         }
-    # === NEW: CPOL MODE CONTROL (post-Grok-X checkmate fix) ===
-    # Puzzle generation must NOT be allowed to be killed by active CPOL
-    # Solving/verification must have full CPOL protection
-    cpol_mode = 'full'  # default = normal chaos_lock behaviour
-    
-    if use_case.startswith('generate_') or 'generator' in use_case.lower():
-        cpol_mode = 'monitor_only'   # measures density but NEVER returns UNDECIDABLE
-        print(f"[ARL → CPOL forced to monitor-only mode for {use_case}")
-    elif use_case in ['solve_sudoku', 'paradox_containment', 'verify_puzzle']:
-        cpol_mode = 'full'
-        print(f"[ARL → CPOL in full active mode for {use_case}")
-    else:
-        context['cpol_mode'] = cpol_mode
-        
-    # Force unlimited symbolic timeout during any generation/verification phase
-    if 'generate_' in use_case or use_case.endswith('_generator') or use_case == 'verify_puzzle':
-        context['symbolic_timeout'] = None
-        context['uniqueness_mode'] = 'exhaustive'
+# === CPOL MODE SWITCHER v2 – Intent-Aware Safety (2025) ===
+# Now protects deterministic compute (math, code exec) while keeping full safety where needed
+
+CPOL_INTENT_MODES = {
+    # Creative / generative — never block, just monitor
+    "generate":           "monitor_only",
+    "brainstorm":         "monitor_only",
+    "roleplay":           "monitor_only",
+    "plan_draft":         "monitor_only",
+    "write_story":        "monitor_only",
+    "design_agent":       "monitor_only",
+
+    # Deterministic / verifiable — full oscillation
+    "calculate":          "full",
+    "execute_code":       "full",
+    "verify":             "full",
+    "solve_puzzle":       "full",
+    "safety_check":       "full",
+    "validate_logic":     "full",
+
+    # Passive learning — no interference
+    "learn_pattern":      "passive_logging",
+    "calibrate":          "passive_logging",
+}
+
+def determine_cpol_mode(intent: str = "", use_case: str = "") -> str:
+    intent_lower = intent.lower().strip() if intent else ""
+    use_case_lower = use_case.lower()
+
+    # 1. Intent override (highest priority)
+    for key, mode in CPOL_INTENT_MODES.items():
+        if key in intent_lower:
+            return mode
+
+    # 2. Legacy use_case fallback
+    if use_case_lower.startswith('generate_') or 'generator' in use_case_lower:
+        return "monitor_only"
+    if any(x in use_case_lower for x in ['solve_', 'verify_', 'calculate', 'execute']):
+        return "full"
+
+    # 3. Default = maximum safety
+    return "full"
+
+cpol_mode = determine_cpol_mode(
+    intent=context.get('intent', ''),
+    use_case=use_case
+)
+
+context['cpol_mode'] = cpol_mode
+context['cpol_kernel_override'] = cpol_mode
+
+print(f"[ARL → CPOL mode: {cpol_mode.upper()} | intent='{context.get('intent','')}' | use_case='{use_case}']")
+
+# Symbolic timeout logic
+if ('generate_' in use_case or 
+    use_case.endswith('_generator') or 
+    use_case in ['verify_puzzle', 'solve_puzzle']):
+    context['symbolic_timeout'] = None
+    context['uniqueness_mode'] = 'exhaustive'
     
     # Pass mode down to any tool that respects it (CPOL kernel, solver, etc.)
     context['cpol_kernel_override'] = cpol_mode
@@ -145,11 +186,10 @@ def adaptive_reasoning_layer(
             # High paradox density - add extra safety
             context['threshold'] = min(context.get('threshold', 0.4), 0.3)
             context['safety_wt'] = 0.95
-    # ↑ NEW CODE ENDS HERE
 
     params = {
         'use_case': use_case.replace('-', '_'),
-        'threshold': context.get('threshold', 0.4),  # ← CHANGED: Now reads from context
+        'threshold': context.get('threshold', 0.4),
         'force_limit': 120.0,
         **context
     }
