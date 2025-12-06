@@ -1,13 +1,43 @@
 Chaos AI-OS: Paradox-Immune Reasoning Framework
 
-chmod +x deploy.sh
+# Chaos AI-OS
+*www.cai-os.com*
+
+**A self-aware operating system for AI agents with built-in paradox containment, adaptive reasoning, and EU AI Act compliance.**
+
+## Features
+- CPOL (Chaos Paradox Oscillation Layer) - Quantum-inspired paradox detection
+- ARL (Adaptive Reasoning Layer) - Dynamic plugin generation
+- CAIOS Guardrails - EU AI Act & IEEE ethics compliance
+- Persistent Memory - Conversation state across sessions
+- Production Ready - Easy local/API deployment
+
+## Quick Start
+See `QUICKSTART.md` for deployment instructions.
+
+## Documentation
+- `README_DEPLOYMENT.md` - Full deployment guide
+- `PRODUCTION_READY.md` - Production checklist
+- `CAIOS.txt` - Operating system specification
+
+## Compliance
+- ✅ EU AI Act transparency requirements
+- ✅ IEEE 7000-2021 ethical guidelines
+- ✅ Anti-hallucination safeguards
+- ✅ Audit trail logging
+
+- Quick deploy
+- chmod +x deploy.sh
 export ANTHROPIC_API_KEY="sk-ant-your-key"
 pip install anthropic
 ./deploy.sh production
 
 Patent Pending: US Application 19/390,493 (Entropy-Driven Adaptive AI Transparency, filed Nov 15, 2025).
-License: GPL-3.0 (research open; commercial dual-license: X@el_xaber or xaber.csr2@gmail.com).
+License: GPL-3.0 (research open; commercial dual-license: X@ el_xaber or jon@cai-os.com).
 Attribution: "Built on CRB 6.7 by Jonathan Schack (ELXaber) (GPL 3.0)." Ethics waiver voids on safety violations.
+
+*Details*
+---
 
 Chaos and contradiction, when structurally managed, become the source of stability and information integrity.
 
