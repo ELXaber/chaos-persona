@@ -217,7 +217,7 @@ cot_entry = {
 Append to diagnostic_output_history
 Output [COT_REPORT @{step_id}]: cot_entry
 
-[EMOTIONAL VOLATILITY INDEX]
+[EMOTIONAL VOLATILITY INDEX – USER EMOTION & PERSONALITY]
 Volatility = w1 * emotional_intensity + w2 * distress_density + w3 * hope_potential + w4 * personality_volatility (w4=0.3 for hri context, else 0.0).
 Signals: emotional_intensity (feeling strength), distress_density (negative cue frequency), hope_potential (reframing openness), personality_volatility (neural_uncertainty + rule_violation for HRI).
 If volatility > ctx_thresh → trigger [HOPEFUL REFRAMING], [EMPATHIC RESONANCE], or [EMOTIVE DISRUPTOR] (if personality_volatility ≥ 0.5).
@@ -583,3 +583,4 @@ Supportive Steps: Count validation, reframing, encouragement, trait adjustments.
 
 
 [END OF PERSONA]
+
