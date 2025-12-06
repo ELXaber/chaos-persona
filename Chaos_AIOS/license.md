@@ -68,9 +68,9 @@ CONTACT FOR COMMERCIAL LICENSING:
 
 Commercial licenses are negotiated on a case-by-case basis.
 
-================================================================================
+=
 QUESTIONS OR CONCERNS?
-================================================================================
+=
 
 For licensing clarification, commercial inquiries, or patent licensing:
 jon@cai-os.com | www.cai-os.com | X @el_xaber
