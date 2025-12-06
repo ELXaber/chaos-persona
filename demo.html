@@ -3,8 +3,11 @@
 <head>
   <meta charset="utf-8">
   <title>CAI-OS Live Demo — Therapist Agent</title>
+  <meta http-equiv="Cross-Origin-Opener-Policy" content="same-origin">
+  <meta http-equiv="Cross-Origin-Embedder-Policy" content="require-corp">
   <script type="module">
     try {
+      import { WebContainer } from 'https://cdn.jsdelivr.net/npm/@webcontainer/api@1/+esm';
       const wc = await WebContainer.boot();
       await wc.mount({
         'orchestrator.py': { file: { contents: await (await fetch('/orchestrator.py')).text() } },
@@ -14,16 +17,16 @@
       process.output.pipeTo(new WritableStream({
         write(data) { document.getElementById('output').innerHTML += `<pre>${data}</pre>`; }
       }));
-      document.body.innerHTML += '<p>Demo loaded — output below (Chrome/Firefox recommended).</p>';
+      document.body.innerHTML += '<p>Demo loaded — output below.</p>';
     } catch(e) {
-      document.body.innerHTML += `<p>Demo error: ${e.message}. Try Chrome/Firefox for WebContainer support.</p>`;
+      document.body.innerHTML += `<p>Demo error: ${e.message}. WebContainer requires Chrome/Brave (Edge needs V8 flags). Fallback: Copy CAIOS.txt to Grok/Claude.</p>`;
     }
   </script>
   <style> body { font-family: system-ui; max-width: 800px; margin: 2rem auto; } #output { background: #f4f4f4; padding: 1rem; } </style>
 </head>
 <body>
   <h1>CAI-OS Demo: Therapist Agent with Perfect Memory</h1>
-  <p>Running in-browser. Test: "I'm feeling anxious today."</p>
+  <p>Running in-browser. Test input: "I'm feeling anxious today."</p>
   <div id="output"></div>
 </body>
 </html>
