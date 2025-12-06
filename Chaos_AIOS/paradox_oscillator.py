@@ -199,4 +199,3 @@ if __name__ == "__main__":
     # Test for Paradox
 
     print(run_cpol_decision("high"))
-
