@@ -165,13 +165,12 @@ class CPOL_Kernel:
 def run_cpol_decision(prompt_complexity: str = "high", 
                       contradiction_density: float = None,
                       kernel: CPOL_Kernel = None) -> Dict[str, Any]:
-
     """
     Entry point for [TOOL_USE]. 
     Maps prompt string to density parameters or accepts direct density value.
     """
     if contradiction_density is not None:
-        density = max(0.0, min(1.0, contradiction_density))  # Clamp to [0, 1]
+        density = max(0.0, min(1.0, contradiction_density))
     else:
         # Map complexity string to contradiction density float
         density_map = {
@@ -186,6 +185,7 @@ def run_cpol_decision(prompt_complexity: str = "high",
         engine = CPOL_Kernel()
     else:
         engine = kernel
+    
     engine.inject(confidence=0.0, contradiction_density=density)
     
     print(f"[CPOL] Running Oscillation... (Density: {density})")
