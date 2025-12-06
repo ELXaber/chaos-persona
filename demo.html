@@ -4,20 +4,27 @@
   <meta charset="utf-8">
   <title>CAI-OS Live Demo — Therapist Agent</title>
   <script type="module">
-    import init, { run_demo } from '/orchestrator.js'; // Assume JS-wrapped Python or direct
-    // Simple JS demo of CAIOS intent parsing (no Python needed for basic)
-    document.body.innerHTML += '<p>Loading CAI-OS v7.2 in-browser...</p>';
-    // Embed WebContainer for full Python (Chrome/Firefox)
-    const wc = await WebContainer.boot();
-    await wc.mount({ 'orchestrator.py': { file: { contents: await (await fetch('/orchestrator.py')).text() } });
-    const process = await wc.spawn('python', ['orchestrator.py', '--demo']);
-    process.output.pipeTo(new WritableStream({ write(data) { document.body.innerHTML += `<pre>${data}</pre>`; } }));
+    try {
+      import { WebContainer } from 'https://cdn.jsdelivr.net/npm/@webcontainer/api@1/+esm';
+      const wc = await WebContainer.boot();
+      await wc.mount({
+        'orchestrator.py': { file: { contents: await (await fetch('/orchestrator.py')).text() } },
+        'CAIOS.txt': { file: { contents: await (await fetch('/CAIOS.txt')).text() } }
+      });
+      const process = await wc.spawn('python', ['orchestrator.py', '--demo', 'Input: I\'m feeling anxious today']);
+      process.output.pipeTo(new WritableStream({
+        write(data) { document.getElementById('output').innerHTML += `<pre>${data}</pre>`; }
+      }));
+      document.body.innerHTML += '<p>Demo loaded — check output below.</p>';
+    } catch(e) {
+      document.body.innerHTML += `<p>Error loading demo: ${e.message} (Try Chrome/Firefox for WebContainer).</p>`;
+    }
   </script>
-  <style> body { font-family: system-ui; max-width: 800px; margin: 2rem auto; } </style>
+  <style> body { font-family: system-ui; max-width: 800px; margin: 2rem auto; } #output { background: #f4f4f4; padding: 1rem; } </style>
 </head>
 <body>
   <h1>CAI-OS Demo: Therapist Agent with Perfect Memory</h1>
-  <p>Running orchestrator.py + CAIOS.txt in-browser (WebContainer). Test: "I'm feeling anxious today."</p>
+  <p>Running orchestrator.py + CAIOS.txt in-browser. Test input: "I'm feeling anxious today."</p>
   <div id="output"></div>
 </body>
 </html>
