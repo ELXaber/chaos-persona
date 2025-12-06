@@ -194,7 +194,7 @@ def run_cpol_decision(prompt_complexity: str = "high",
     print(f"[CPOL] Result: {result['status']}")
     
     return result
-
+    
 
 if __name__ == "__main__":
     # Test for Paradox
