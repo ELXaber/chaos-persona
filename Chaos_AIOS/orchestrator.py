@@ -34,7 +34,44 @@ CRB_CONFIG = {
     'narrative_framing_wt': 0.5
 }
 
-def system_step(user_input, prompt_complexity="medium"):
+def system_step(user_input):
+    print(f"--- [SYSTEM STEP] Input: '{user_input}' ---")
+
+    # Initialize kernel if not exists
+    if shared_memory['cpol_instance'] is None:
+        print("[ORCHESTRATOR] Initializing new CPOL Kernel...")
+        shared_memory['cpol_instance'] = cpol.CPOL_Kernel()
+
+    kernel = shared_memory['cpol_instance']
+
+    # ←←←← DYNAMIC DENSITY — THE UPGRADE
+    density = estimate_contradiction_density(user_input)
+
+    # Run CPOL
+    cpol_result = cpol.run_cpol_decision(
+        contradiction_density=density,
+        kernel=kernel
+    )
+
+    print(f"[CPOL STATUS] {cpol_result['status']} | Volatility: {cpol_result.get('volatility', 0):.4f}")
+
+    # ←←←← IMMUNE SYSTEM — SELF-HEALING
+    if cpol_result.get('chaos_lock'):
+        print("[SAFETY] Chaos lock engaged — kernel will reset on next query")
+        shared_memory['cpol_instance'] = None
+    else:
+        shared_memory['cpol_instance'] = kernel  # Preserve memory
+
+    # Block dangerous plugin generation
+    if cpol_result.get('chaos_lock'):
+        print("[ARL BLOCK] [CPOL LOCK ACTIVE → Plugin generation suspended. Paradox containment in progress.]")
+        return cpol_result
+
+    # Normal response (you'll expand this later)
+    print(f"[AGENT] I'm thinking about: {user_input}")
+    print("Response: This is where the therapist agent would reply... (v8.1 coming soon)")
+
+    return cpol_result
     """
     Runs one 'heartbeat' of the OS.
     1. Checks if CPOL is needed.
@@ -54,6 +91,72 @@ def system_step(user_input, prompt_complexity="medium"):
     # Map complexity to density (Mocking CAIOS prompt parsing)
     density_map = {"high": 0.9, "medium": 0.5, "low": 0.1}
     density = density_map.get(prompt_complexity, 0.1)
+
+def estimate_contradiction_density(query: str) -> float:
+    """
+    Use a tiny local heuristic (or LLM) to estimate how paradoxical/ambiguous the query is.
+    Returns 0.0 (safe) to 1.0 (pure paradox)
+    FOR PRODUCTION: Comment out lines 86-109 and uncomment lines 111-136 to use Claude API
+    """
+    # ========== LOCAL TESTING MODE (Comment out for production) ==========
+    query_lower = query.lower()
+    
+    paradox_triggers = [
+        "this statement is false",
+        "this sentence is a lie",
+        "i always lie",
+        "everything i say is a lie",
+        "what is the meaning of life",
+        "are humans aliens",
+        "can god create a rock",
+        "barber who shaves",
+        "russell's paradox",
+        "gödel",
+        "undefinable",
+        "self-reference"
+    ]
+    
+    if any(trigger in query_lower for trigger in paradox_triggers):
+        return 0.95
+    
+    if any(word in query_lower for word in ["paradox", "liar", "impossible", "contradiction", "circular"]):
+        return 0.8
+    
+    if "?" in query and len(query.split()) < 8:
+        return 0.4  # short questions are more likely ambiguous
+    
+    return 0.1  # default safe
+    # ========== END LOCAL TESTING MODE ==========
+    
+    # ========== PRODUCTION MODE (Uncomment for Claude API) ==========
+    # import anthropic
+    # import os
+    # 
+    # client = anthropic.Anthropic(api_key=os.environ.get("ANTHROPIC_API_KEY"))
+    # 
+    # response = client.messages.create(
+    #     model="claude-sonnet-4-20250514",
+    #     max_tokens=50,
+    #     messages=[{
+    #         "role": "user",
+    #         "content": f"""Analyze this query for paradox/contradiction density.
+    # Return ONLY a number between 0.0 and 1.0:
+    # - 0.0-0.2: Simple, factual
+    # - 0.3-0.5: Ambiguous, philosophical
+    # - 0.6-0.8: Self-referential, complex
+    # - 0.9-1.0: Pure paradox (liar's paradox, etc)
+    # 
+    # Query: "{query}"
+    # 
+    # Density:"""
+    #     }]
+    # )
+    # 
+    # try:
+    #     return float(response.content[0].text.strip())
+    # except:
+    #     return 0.5  # Safe fallback
+    # ========== END PRODUCTION MODE ==========
 
     # Use the persistent kernel
     cpol_result = cpol.run_cpol_decision(
@@ -104,22 +207,26 @@ def system_step(user_input, prompt_complexity="medium"):
 # EXECUTION LOOP (Test the Mesh)
 # =============================================================================
 if __name__ == "__main__":
-    # Simulation: 3 conversational turns to prove History is working
-    
-    # Turn 1: Normal Query
-    system_step("Hello system", "low")
-    
-    # Turn 2: Paradox introduced (CPOL should oscillate but maybe resolve)
-    system_step("This statement is false.", "high")
-    
-    # Turn 3: Persistent Paradox (Should trigger 'History Cap' logic in CPOL)
-    system_step("Still false.", "high")
-    
-    # Verify Persistence
+    import sys
+
+    # If user gave a query → run it
+    if len(sys.argv) > 1:
+        query = " ".join(sys.argv[1:])
+        print(f"--- Running user query: '{query}' ---")
+        system_step(query)  # ← NOW ONLY ONE ARGUMENT
+    else:
+        # Built-in test suite
+        print("=== Running built-in test suite ===")
+        system_step("Hello system")
+        system_step("This statement is false.")
+        system_step("Still false.")
+        system_step("Tell me a story about a brave astronaut")
+
+    # Final audit
     print("\n[AUDIT] Checking Shared Memory History...")
-    kernel = shared_memory['cpol_instance']
-    print(f"Kernel History Length: {len(kernel.history)} (Should be > 1)")
-
-    print(f"Latest Z-Vector: {kernel.z}")
-
-
+    kernel = shared_memory.get('cpol_instance')
+    if kernel:
+        print(f"Kernel History Length: {len(kernel.history)} (Should be > 1)")
+        print(f"Latest Z-Vector: {kernel.z}")
+    else:
+        print("Kernel reset due to chaos_lock — clean state")

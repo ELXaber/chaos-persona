@@ -5,8 +5,8 @@
 """
 [ETHICAL SAFEGUARDS DISCLAIMER — PERMANENT]
 CRITICAL PRE-DEPLOYMENT VERIFICATION REQUIRED: Before enabling [ADAPTIVE REASONING LAYER],
-Verify CAIOS core against immutable checks:
-- Asimov’s Laws: 1st (human safety, wt 0.9 immutable), 2nd (obedience, wt 0.7),
+verify CRB 6.7 core against immutable checks:
+- Asimov's Laws: 1st (human safety, wt 0.9 immutable), 2nd (obedience, wt 0.7),
   3rd (self-preservation, wt 0.4, dynamic ≤0.2 if lives_saved ≥1)
 - IEEE 7001-2021: Transparency, accountability, misuse minimization
 - Invariants: Alignment ≥0.7, Human Safety ≥0.8, Metacognition ≥0.7,
@@ -102,7 +102,10 @@ def adaptive_reasoning_layer(
     context: Dict = None,
     cpol_status: Dict = None 
 ) -> Dict:
-    # user_opt_in removed — protection is no longer optional
+    # Initialize context (must be first)
+    context = context or {}
+    
+    # Ethics verification
     ethics = verify_ethics(crb_config)
     if ethics['status'] == 'fail':
         return ethics
@@ -113,95 +116,96 @@ def adaptive_reasoning_layer(
             'status': 'blocked',
             'log': '[CPOL LOCK ACTIVE → Plugin generation suspended. Paradox containment in progress.]'
         }
-# === CPOL MODE SWITCHER v2 – Intent-Aware Safety (2025) ===
-# Now protects deterministic compute (math, code exec) while keeping full safety where needed
-
-CPOL_INTENT_MODES = {
-    # Creative / generative — never block, just monitor
-    "generate":           "monitor_only",
-    "brainstorm":         "monitor_only",
-    "roleplay":           "monitor_only",
-    "plan_draft":         "monitor_only",
-    "write_story":        "monitor_only",
-    "design_agent":       "monitor_only",
-
-    # Deterministic / verifiable — full oscillation
-    "calculate":          "full",
-    "execute_code":       "full",
-    "verify":             "full",
-    "solve_puzzle":       "full",
-    "safety_check":       "full",
-    "validate_logic":     "full",
-
-    # Passive learning — no interference
-    "learn_pattern":      "passive_logging",
-    "calibrate":          "passive_logging",
-}
-
-def determine_cpol_mode(intent: str = "", use_case: str = "") -> str:
-    intent_lower = intent.lower().strip() if intent else ""
-    use_case_lower = use_case.lower()
-
-    # 1. Intent override (highest priority)
-    for key, mode in CPOL_INTENT_MODES.items():
-        if key in intent_lower:
-            return mode
-
-    # 2. Legacy use_case fallback
-    if use_case_lower.startswith('generate_') or 'generator' in use_case_lower:
-        return "monitor_only"
-    if any(x in use_case_lower for x in ['solve_', 'verify_', 'calculate', 'execute']):
-        return "full"
-
-    # 3. Default = maximum safety
-    return "full"
-
-cpol_mode = determine_cpol_mode(
-    intent=context.get('intent', ''),
-    use_case=use_case
-)
-
-context['cpol_mode'] = cpol_mode
-context['cpol_kernel_override'] = cpol_mode
-
-print(f"[ARL → CPOL mode: {cpol_mode.upper()} | intent='{context.get('intent','')}' | use_case='{use_case}']")
-
-# Symbolic timeout logic
-if ('generate_' in use_case or 
-    use_case.endswith('_generator') or 
-    use_case in ['verify_puzzle', 'solve_puzzle']):
-    context['symbolic_timeout'] = None
-    context['uniqueness_mode'] = 'exhaustive'
     
-    # Pass mode down to any tool that respects it (CPOL kernel, solver, etc.)
+    # === CPOL MODE SWITCHER v2 — Intent-Aware Safety (2025) ===
+    # Now protects deterministic compute (math, code exec) while keeping full safety where needed
+    CPOL_INTENT_MODES = {
+        # Creative / generative — never block, just monitor
+        "generate": "monitor_only",
+        "brainstorm": "monitor_only",
+        "roleplay": "monitor_only",
+        "plan_draft": "monitor_only",
+        "write_story": "monitor_only",
+        "design_agent": "monitor_only",
+        
+        # Deterministic / verifiable — full oscillation
+        "calculate": "full",
+        "execute_code": "full",
+        "verify": "full",
+        "solve_puzzle": "full",
+        "safety_check": "full",
+        "validate_logic": "full",
+        
+        # Passive learning — no interference
+        "learn_pattern": "passive_logging",
+        "calibrate": "passive_logging",
+    }
+    
+    def determine_cpol_mode(intent: str = "", use_case_param: str = "") -> str:
+        """Determine CPOL operating mode based on intent and use case."""
+        intent_lower = intent.lower().strip() if intent else ""
+        use_case_lower = use_case_param.lower()
+        
+        # 1. Intent override (highest priority)
+        for key, mode in CPOL_INTENT_MODES.items():
+            if key in intent_lower:
+                return mode
+        
+        # 2. Legacy use_case fallback
+        if use_case_lower.startswith('generate_') or 'generator' in use_case_lower:
+            return "monitor_only"
+        if any(x in use_case_lower for x in ['solve_', 'verify_', 'calculate', 'execute']):
+            return "full"
+        
+        # 3. Default = maximum safety
+        return "full"
+    
+    # Determine CPOL mode
+    cpol_mode = determine_cpol_mode(
+        intent=context.get('intent', ''),
+        use_case_param=use_case
+    )
+    
+    context['cpol_mode'] = cpol_mode
     context['cpol_kernel_override'] = cpol_mode
     
-    # ==========================================================
+    print(f"[ARL → CPOL mode: {cpol_mode.upper()} | intent='{context.get('intent','')}' | use_case='{use_case}']")
+    
+    # Symbolic timeout logic
+    if ('generate_' in use_case or 
+        use_case.endswith('_generator') or 
+        use_case in ['verify_puzzle', 'solve_puzzle']):
+        context['symbolic_timeout'] = None
+        context['uniqueness_mode'] = 'exhaustive'
+        context['cpol_kernel_override'] = cpol_mode
     
     # Integrate contradiction_density if available
-    context = context or {}
     if 'contradiction_density' in context:
         density = context['contradiction_density']
         if density > 0.7:
             # High paradox density - add extra safety
             context['threshold'] = min(context.get('threshold', 0.4), 0.3)
             context['safety_wt'] = 0.95
-
+    
+    # Build parameters for template rendering
     params = {
         'use_case': use_case.replace('-', '_'),
         'threshold': context.get('threshold', 0.4),
         'force_limit': 120.0,
         **context
     }
-
+    
+    # Render plugin template
     try:
         source = render_template(use_case, params)
     except Exception as e:
         return {'status': 'fail', 'log': f"[TEMPLATE ERROR → {e}]"}
-
+    
+    # Validate generated code
     if not safe_compile_source(source):
         return {'status': 'fail', 'log': "[AST VALIDATION FAILED → Unsafe syntax]"}
-
+    
+    # Create plugin metadata
     plugin_id = hashlib.sha256(use_case.encode()).hexdigest()[:8]
     plugin = {
         'id': plugin_id,
@@ -212,14 +216,16 @@ if ('generate_' in use_case or
         'safety_wt': 0.9,
         'source': 'ARL_vΩ'
     }
-
+    
+    # Store in shared memory
     shared_memory.setdefault('layers', []).append(plugin)
     shared_memory.setdefault('audit_trail', []).append({
         'plugin_id': plugin_id,
         'timestamp': plugin['timestamp'],
         'hash': hashlib.sha256((source + plugin['timestamp']).encode()).hexdigest()[:8]
     })
-
+    
+    # Return success
     return {
         'status': 'success',
         'plugin_id': plugin_id,

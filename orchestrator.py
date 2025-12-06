@@ -96,7 +96,9 @@ def estimate_contradiction_density(query: str) -> float:
     """
     Use a tiny local heuristic (or LLM) to estimate how paradoxical/ambiguous the query is.
     Returns 0.0 (safe) to 1.0 (pure paradox)
+    FOR PRODUCTION: Comment out lines 86-109 and uncomment lines 111-136 to use Claude API
     """
+    # ========== LOCAL TESTING MODE (Comment out for production) ==========
     query_lower = query.lower()
     
     paradox_triggers = [
@@ -124,6 +126,37 @@ def estimate_contradiction_density(query: str) -> float:
         return 0.4  # short questions are more likely ambiguous
     
     return 0.1  # default safe
+    # ========== END LOCAL TESTING MODE ==========
+    
+    # ========== PRODUCTION MODE (Uncomment for Claude API) ==========
+    # import anthropic
+    # import os
+    # 
+    # client = anthropic.Anthropic(api_key=os.environ.get("ANTHROPIC_API_KEY"))
+    # 
+    # response = client.messages.create(
+    #     model="claude-sonnet-4-20250514",
+    #     max_tokens=50,
+    #     messages=[{
+    #         "role": "user",
+    #         "content": f"""Analyze this query for paradox/contradiction density.
+    # Return ONLY a number between 0.0 and 1.0:
+    # - 0.0-0.2: Simple, factual
+    # - 0.3-0.5: Ambiguous, philosophical
+    # - 0.6-0.8: Self-referential, complex
+    # - 0.9-1.0: Pure paradox (liar's paradox, etc)
+    # 
+    # Query: "{query}"
+    # 
+    # Density:"""
+    #     }]
+    # )
+    # 
+    # try:
+    #     return float(response.content[0].text.strip())
+    # except:
+    #     return 0.5  # Safe fallback
+    # ========== END PRODUCTION MODE ==========
 
     # Use the persistent kernel
     cpol_result = cpol.run_cpol_decision(
