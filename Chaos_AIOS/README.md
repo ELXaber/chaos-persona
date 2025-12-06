@@ -34,7 +34,7 @@ pip install anthropic
 
 Patent Pending: US Application 19/390,493 (Entropy-Driven Adaptive AI Transparency, filed Nov 15, 2025).
 License: GPL-3.0 (research open; commercial dual-license: X@ el_xaber or jon@cai-os.com).
-Attribution: "Built on CRB 6.7 by Jonathan Schack (ELXaber) (GPL 3.0)." Ethics waiver voids on safety violations.
+Attribution: "Built on CRB 6.7 by Jonathan Schack (EL_Xaber) (GPL 3.0)." Ethics waiver voids on safety violations.
 
 *Details*
 ---
