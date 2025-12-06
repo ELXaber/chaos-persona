@@ -186,7 +186,7 @@ def run_cpol_decision(prompt_complexity: str = "high",
         engine = CPOL_Kernel()
     else:
         engine = kernel
-     engine.inject(confidence=0.0, contradiction_density=density)
+    engine.inject(confidence=0.0, contradiction_density=density)
     
     print(f"[CPOL] Running Oscillation... (Density: {density})")
     result = engine.oscillate()
