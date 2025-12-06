@@ -4,35 +4,24 @@
   <meta charset="utf-8">
   <title>CAI-OS Live Demo — Therapist Agent</title>
   <meta http-equiv="Cross-Origin-Opener-Policy" content="same-origin">
-  <meta http-equiv="Cross-Origin-Embedder-Policy" content="require-corp">
-<script type="module">
-  try {
-    // THIS LINE WAS MISSING — THIS IS THE ENTIRE PROBLEM
-    const { WebContainer } = await import('https://cdn.jsdelivr.net/npm/@webcontainer/api@1/+esm');
-
-    const wc = await WebContainer.boot();
-
-    // Mount your files from the live site
-    await wc.mount({
-      'orchestrator.py': { file: { contents: await (await fetch('/orchestrator.py')).text() } },
-      'CAIOS.txt':       { file: { contents: await (await fetch('/CAIOS.txt')).text() } }
-    });
-
-    // Run the demo
-    const process = await wc.spawn('python', ['orchestrator.py', '--demo']);
-    process.output.pipeTo(new WritableStream({
-      write(chunk) {
-        document.getElementById('output').innerHTML += `<pre>${chunk}</pre>`;
-      }
-    }));
-
-    document.body.innerHTML += '<p style="color:green">✓ CAI-OS v7.2 running in your browser — no server, no backend, no censorship.</p>';
-
-  } catch (e) {
-    document.body.innerHTML += `<p style="color:red">Demo failed: ${e.message}</p>`;
-    document.body.innerHTML += '<p>→ Open in <strong>Chrome</strong> or <strong>Firefox</strong> for full WebContainer support.<br>→ Or just copy <a href="/CAIOS.txt">CAIOS.txt</a> into Grok/Claude right now.</p>';
-  }
-</script>
+  <meta http-equiv="Cross-Origin-Embedder-Policy" content="credentialless">
+  <script type="module">
+    try {
+      const { WebContainer } = await import('https://cdn.jsdelivr.net/npm/@webcontainer/api@1/+esm');
+      const wc = await WebContainer.boot();
+      await wc.mount({
+        'orchestrator.py': { file: { contents: await (await fetch('/orchestrator.py')).text() } },
+        'CAIOS.txt': { file: { contents: await (await fetch('/CAIOS.txt')).text() } }
+      });
+      const process = await wc.spawn('python', ['orchestrator.py', '--demo', 'Input: I\'m feeling anxious today']);
+      process.output.pipeTo(new WritableStream({
+        write(data) { document.getElementById('output').innerHTML += `<pre>${data}</pre>`; }
+      }));
+      document.body.innerHTML += '<p>Demo loaded — output below.</p>';
+    } catch(e) {
+      document.body.innerHTML += `<p>Demo error: ${e.message}. Try Chrome with --enable-features=V8Isolates or Firefox.</p>`;
+    }
+  </script>
   <style> body { font-family: system-ui; max-width: 800px; margin: 2rem auto; } #output { background: #f4f4f4; padding: 1rem; } </style>
 </head>
 <body>
