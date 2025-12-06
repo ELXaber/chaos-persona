@@ -1,10 +1,9 @@
 {
-  "builds": [
-    { "src": "**/*.html", "use": "@vercel/static" },
-    { "src": "test_suite.py", "use": "@vercel/python" }
-  ],
+  "framework": "static",
   "routes": [
     { "src": "/(.*)", "dest": "/index.html" }
   ],
-  "framework": "static"
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/index.html" }
+  ]
 }
