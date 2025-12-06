@@ -5,9 +5,9 @@ Patent Pending: US Patent Application No. 19/390,493
 "Entropy-Driven Adaptive AI Transparency"
 Filed: November 15, 2025
 
-================================================================================
+===================
 DUAL LICENSE NOTICE
-================================================================================
+===================
 
 This software is available under two licensing options:
 
