@@ -1,5 +1,10 @@
 Chaos AI-OS: Paradox-Immune Reasoning Framework
 
+chmod +x deploy.sh
+export ANTHROPIC_API_KEY="sk-ant-your-key"
+pip install anthropic
+./deploy.sh production
+
 Patent Pending: US Application 19/390,493 (Entropy-Driven Adaptive AI Transparency, filed Nov 15, 2025).
 License: GPL-3.0 (research open; commercial dual-license: X@el_xaber or xaber.csr2@gmail.com).
 Attribution: "Built on CRB 6.7 by Jonathan Schack (ELXaber) (GPL 3.0)." Ethics waiver voids on safety violations.
