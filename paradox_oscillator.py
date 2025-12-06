@@ -183,9 +183,9 @@ def run_cpol_decision(prompt_complexity: str = "high",
     
     # Use provided kernel or create new one
     if kernel is None:
-          engine = CPOL_Kernel()
+        engine = CPOL_Kernel()
     else:
-          engine = kernel
+        engine = kernel
      
     engine.inject(confidence=0.0, contradiction_density=density)
     
@@ -193,7 +193,6 @@ def run_cpol_decision(prompt_complexity: str = "high",
     result = engine.oscillate()
     print(f"[CPOL] Result: {result['status']}")
     return result
-
 
 if __name__ == "__main__":
     # Test for Paradox
