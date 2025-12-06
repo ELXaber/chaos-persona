@@ -91,7 +91,7 @@ class CPOL_Kernel:
         # Volatility = Variance + 0.1 * density 
         return variance + 0.1 * self.contradiction_density
 
-    def oscillate(self) -> Dict[str, Any]:
+     def oscillate(self) -> Dict[str, Any]:
         """
         Run the gain/loss loop. 
         Returns RESOLVED if stable, UNDECIDABLE if paradox persists.
@@ -165,12 +165,13 @@ class CPOL_Kernel:
 def run_cpol_decision(prompt_complexity: str = "high", 
                       contradiction_density: float = None,
                       kernel: CPOL_Kernel = None) -> Dict[str, Any]:
+
     """
     Entry point for [TOOL_USE]. 
     Maps prompt string to density parameters or accepts direct density value.
     """
     if contradiction_density is not None:
-        density = max(0.0, min(1.0, contradiction_density))
+        density = max(0.0, min(1.0, contradiction_density))  # Clamp to [0, 1]
     else:
         # Map complexity string to contradiction density float
         density_map = {
@@ -182,15 +183,16 @@ def run_cpol_decision(prompt_complexity: str = "high",
     
     # Use provided kernel or create new one
     if kernel is None:
-        engine = CPOL_Kernel()
+          engine = CPOL_Kernel()
     else:
-        engine = kernel
-    
+          engine = kernel
+     
     engine.inject(confidence=0.0, contradiction_density=density)
     
     print(f"[CPOL] Running Oscillation... (Density: {density})")
     result = engine.oscillate()
     print(f"[CPOL] Result: {result['status']}")
+    
     return result
 
 if __name__ == "__main__":
