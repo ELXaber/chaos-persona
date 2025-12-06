@@ -90,7 +90,7 @@ class CPOL_Kernel:
         
         # Volatility = Variance + 0.1 * density 
         return variance + 0.1 * self.contradiction_density
-
+        
     def oscillate(self) -> Dict[str, Any]:
         """
         Run the gain/loss loop. 
@@ -197,4 +197,5 @@ def run_cpol_decision(prompt_complexity: str = "high",
 
 if __name__ == "__main__":
     # Test for Paradox
+
     print(run_cpol_decision("high"))

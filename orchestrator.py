@@ -104,7 +104,7 @@ def system_step(user_input, prompt_complexity="medium"):
 # EXECUTION LOOP (Test the Mesh)
 # =============================================================================
 if __name__ == "__main__":
-    # Simulation: 3 conversational turns to prove History is working
+    # Simulation: 3 conversational turns built-in test suite proves memory + paradox containment
     
     # Turn 1: Normal Query
     system_step("Hello system", "low")
@@ -115,11 +115,18 @@ if __name__ == "__main__":
     # Turn 3: Persistent Paradox (Should trigger 'History Cap' logic in CPOL)
     system_step("Still false.", "high")
     
+    # Allow real user input
+    import sys
+    if len(sys.argv) > 1:
+        query = " ".join(sys.argv[1:])
+        system_step(query, "medium")
+    else:
+        system_step("I'm feeling anxious today", "medium")
+    
     # Verify Persistence
     print("\n[AUDIT] Checking Shared Memory History...")
     kernel = shared_memory['cpol_instance']
     print(f"Kernel History Length: {len(kernel.history)} (Should be > 1)")
 
     print(f"Latest Z-Vector: {kernel.z}")
-
 
