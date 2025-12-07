@@ -1,4 +1,10 @@
 # Include this (4-13) in CAIOS.txt below [CHAOS SYMMETRY], but before [OUTPUT GENERATION], with the curiosity_engine.py, which will create a type of intrinsic motivation based on curiosity score.
+# Pre-requisites:
+# CAIOS.txt (inference layer overlay on ani AI can be used as a front end as a pre-prompt)
+# orchestrator.py (Requires Python execution for full functionality as the mesh)
+# paradox_oscillator.py (CPOL pos-binary oscillation - can be simulated by any AI)
+# adaptive_reasoning.py (control layer and evolving plugin generator - can be simulated by any AI)
+# Deploy more easily from here: https://github.com/ELXaber/chaos-persona/tree/main/Chaos_AIOS
 ===================================================
 
 # === Intrinsic Motivation Extension (Dec 2025) ===
