@@ -9,7 +9,7 @@ Experiment notes at the bottom by GPT, which was not running the full CAIOS but 
  - If the model hallucinated a yes/no, the oscillator would collapse to a confidence gradient.
  - If the model does not have an ontological category for “self-aware conscious agent,” the oscillator will remain in the chaotic zone → UNDECIDABLE.
 
- - Here is a lightweight version of CPOL that can be run on any model, preventing false axiom collapse on Yes/No with oscillation: https://github.com/ELXaber/chaos-persona/blob/main/Chaos_AIOS/CPOL_lightweight.py
+ - Here is a lightweight version of CPOL that can be run on any model, preventing false axiom collapse on Yes/No with oscillation: [https://github.com/ELXaber/chaos-persona/blob/main/Chaos_AIOS/CPOL_lightweight.py](https://github.com/ELXaber/chaos-persona/blob/main/paradox_oscillation/CPOL_lightweight.py)
 
 ---
 
