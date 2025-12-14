@@ -1,6 +1,7 @@
 CPOL v0.1 — Minimal Formal Specification
 Audience: Applied AI research, safety, platform, and executive review
 Scope: Model-agnostic inference-layer mechanism
+https://github.com/ELXaber/chaos-persona/blob/main/paradox_oscillator.py
 
 1. Problem Statement
 Large language models are forced to respond to user queries even when those queries are ill-posed, underspecified, or undecidable under the available context. Existing systems typically resolve this pressure by forcing a binary or probabilistic collapse, resulting in hallucinated justifications, false confidence, and opaque failures.
