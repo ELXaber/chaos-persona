@@ -28,17 +28,18 @@ Under the EU AI Act, these behaviors are not merely technical flaws — they are
 CAIOS does not claim to make models smarter, conscious, or more general.
 Instead, it introduces control-plane guarantees that current systems lack:
 
-When not to answer is treated as a first-class outcome
-Why a refusal occurred is explicitly reasoned and logged
-Malformed or ambiguous queries are rejected before generation
+- When not to answer is treated as a first-class outcome
+- Why a refusal occurred is explicitly reasoned and logged
+- Malformed or ambiguous queries are rejected before generation
+
 This aligns AI behavior with existing expectations in regulated industries (aviation, finance, medical devices).
 
 ## Key Components and Compliance Roles.
 CPOL — Collapse Prevention Oscillation Layer
-Regulatory Role: Hallucination prevention, epistemic safety
-Prevents false binary or probabilistic collapse
-Blocks generation when premises are invalid or undecidable
-Eliminates fabricated justifications under pressure
+- Regulatory Role: Hallucination prevention, epistemic safety
+- Prevents false binary or probabilistic collapse
+- Blocks generation when premises are invalid or undecidable
+- Eliminates fabricated justifications under pressure
 
 - Compliance Value:
 Reduces misleading outputs
