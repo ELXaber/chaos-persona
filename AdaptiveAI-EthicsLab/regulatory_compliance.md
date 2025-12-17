@@ -16,11 +16,11 @@ CAIOS operates at inference time and integrates with existing LLMs, safety polic
 Most AI systems today exhibit a critical compliance failure mode:
 They are architecturally forced to produce an answer, even when a question is malformed, unsafe, or undecidable.
 
-- This leads to:
-Confident hallucinations
-Inconsistent refusals
-Opaque policy enforcement
-Inability to explain why an output was produced or blocked
+This leads to:
+- Confident hallucinations
+- Inconsistent refusals
+- Opaque policy enforcement
+- Inability to explain why an output was produced or blocked
 
 Under the EU AI Act, these behaviors are not merely technical flaws — they are compliance liabilities.
 
