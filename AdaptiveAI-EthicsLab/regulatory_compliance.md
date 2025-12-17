@@ -93,13 +93,13 @@ Risk Mitigation: Prevention of misleading or fabricated outputs
 Robustness: Stable handling of ambiguity and malformed inputs
 CAIOS is designed to complement — not replace — organizational governance, human oversight, or policy frameworks.
 
-- What CAIOS Does Not Claim
+What CAIOS Does Not Claim
 For clarity and risk containment, CAIOS does not:
-Claim detection of consciousness or sentience
-Replace safety policies or legal review
-Eliminate the need for human oversight
-Depend on anthropomorphic assumptions
-Rely on prompt tuning or preference shaping
+- Claim detection of consciousness or sentience
+- Replace safety policies or legal review
+- Eliminate the need for human oversight
+- Depend on anthropomorphic assumptions
+- Rely on prompt tuning or preference shaping
 
 Deployment Model
 Model-agnostic
