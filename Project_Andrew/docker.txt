@@ -1,0 +1,40 @@
+project-root/
+├── orchestrator.py          ← main CAIOS file (system_step, shared_memory, etc.)
+├── curiosity_engine.py      ← single file
+├── requirements.txt         ← (optional but recommended)
+└── Dockerfile               ← **stand-alone, 6 lines**
+
+============================================================
+Dockerfile:
+============================================================
+# Dockerfile — production-hardened, minimal, immutable
+FROM python:3.11-slim
+
+# Hard resource limits are enforced by docker run flags, not here
+WORKDIR /app
+COPY . .
+
+# Install only what you actually need
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir -r requirements.txt || echo "No requirements.txt — running vanilla"
+
+# Run as non-root for extra safety
+RUN adduser --disabled-password --gecos '' appuser
+USER appuser
+
+CMD ["python", "orchestrator.py"]
+============================================================
+Docker Run
+============================================================
+
+docker build -t caios-curiosity .
+
+docker run --rm \
+  --name curiosity-agent \
+  --memory=512m --memory-swap=512m \     # 512 MB RAM total, no swap
+  --cpus=0.5 \                           # 50 % of one core
+  --read-only --tmpfs /tmp \             # root filesystem immutable
+  --cap-drop=ALL --cap-add=NET_RAW \     # strip all capabilities except network
+  -v $(pwd)/curiosity_audit.log.jsonl:/app/curiosity_audit.log.jsonl \
+  -v $(pwd)/curiosity_hash_chain.txt:/app/curiosity_hash_chain.txt \
+  caios-curiosity
