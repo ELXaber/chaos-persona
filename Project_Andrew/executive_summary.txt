@@ -50,15 +50,19 @@ Patent-pending oscillator creates 18-month head start minimum
 Ternary logic patents (Cost—acquirer would fund/defend)
 First-mover advantage in regulated AI markets (healthcare, legal, finance)
 
-<img width="670" height="360" alt="image" src="https://github.com/user-attachments/assets/114dbe5b-2b34-4504-ab9c-5f2a35ca8cd4" />
-
+Feature - GPT-4 / Claude - CAIOS
+Paradox handling - Hallucinates or refuses - Oscillates, never collapses 
+Knowledge persistence - None (stateless) Append-only KB with specialists
+Epistemic awareness - Generic "I don't know" - Classifies gap type, deploys solution
+Audit trail - Token-level logs - Hash-chained reasoning proofs
+External dependencies - 50+ packages - Zero (stdlib only)
+Ethical guarantees - Soft (prompt-based) - Hard (immutable Asimov constraints)
 
 Deployment Readiness:
 ✅ Production-grade: Zero dependencies, runs on Python 3.11+ stdlib
 ✅ Modular: Drop-in overlay on existing LLM APIs
 ✅ Tested: Passes paradox benchmarks that break GPT-4/Claude (see test_runs)
 ✅ Open: GPL-3.0, encourages commercial licensing discussions
-
 
 Market Fit:
 
