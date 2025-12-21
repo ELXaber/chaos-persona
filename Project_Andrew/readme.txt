@@ -16,13 +16,13 @@
 CAIOS/
 ├── knowledge_base/
 │   ├── discoveries.jsonl     	        # Append-only log of all discoveries
-│   ├── domain_index.json          # Fast lookup by domain
-│   ├── specialist_registry.json   # Active specialists catalog
-│   └── integrity_chain.txt  	        # Tamper-evident hash chain
-├── agents/                      		 		    # ARL-generated agent modules
-├── orchestrator.py           		        # Main loop (now KB-aware)
+│   ├── domain_index.json               # Fast lookup by domain
+│   ├── specialist_registry.json        # Active specialists catalog
+│   └── integrity_chain.txt  	          # Tamper-evident hash chain
+├── agents/                      		 	  # ARL-generated agent modules
+├── orchestrator.py           		      # Main loop (now KB-aware)
 ├── agent_designer.py             	    # Creates specialists (checks KB first)
-├── knowledge_base.py              # Core KB API
+├── knowledge_base.py                   # Core KB API
 └── kb_inspect.py               		    # CLI inspection tool
 
 
