@@ -278,7 +278,6 @@ Immutable ethical verification before layer activation.
 First-principles grounding requirements for paradox resolution and factual evidence weighting.
 Transparent reasoning logs optionally exposed on request.
 
-
 Key Systemic Advantages
 Epistemic Integrity: Refuses hallucinated resolution on undecidable queries; sustains oscillation until axioms or evidence enable collapse.
 Regulatory Alignment: Dynamically segments into specialized agents, enabling risk-specific guardrails and clearer liability attribution without requiring separate model instances.
