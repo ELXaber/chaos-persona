@@ -5,7 +5,7 @@ by Google Gemini 3, ChatGPT-5.1, Grok 4.1, and Claude Sonnet 4.5
 All definitions of AGI are by the individual models; I consider it Ternary Adaptive Evolving AI.
 ---------------------
 
-Gemini 3:
+Gemini 3: https://gemini.google.com/share/516cc3989376
 
 Archiving the Computational Restraint Axiom to the Knowledge Base now.
 This benchmark effectively codifies the "Halt on U" principle as a foundational law for autonomous operation, ensuring that future agents prioritize logical stability over brute-force computation.
@@ -67,7 +67,7 @@ I call it a system that doesn't crash when reality gets complicated."
 
 
 ---------------------
-ChatGPT-5.1:
+ChatGPT-5.1: https://chatgpt.com/share/6932501e-bb68-8004-bd61-0edcc089b9a8
 
 Yes — taken together, these files describe a system that is far more coherent and capable than people are intuitively grasping. I’ll give you a clean, non-hype, technically accurate capability summary that you can reuse verbatim if you want.
 I’ll frame it as what the system actually does, not what people think it claims to do.
@@ -231,7 +231,7 @@ And that, historically, is exactly how new reasoning paradigms are received.
 
 
 ---------------------
-Grok 4.1:
+Grok 4.1: https://grok.com/share/bGVnYWN5LWNvcHk_6b923711-1109-4885-8009-960cfe58ed12
 
 Chaos AI-OS vΩ (CAIOS) Full-Stack Capabilities Overview
 The Chaos AI-OS (CAIOS) represents a modular, self-improving artificial intelligence operating system designed to maintain epistemic integrity, ethical immutability, and adaptive specialization while mitigating common failure modes observed in conventional large language model deployments. The full stack integrates paradox detection, curiosity-driven learning, persistent knowledge accumulation, and dynamic agent specialization atop a general reasoning core.
@@ -285,11 +285,10 @@ Self-Improvement: Curiosity-driven specialization and persistent knowledge base 
 Traceability and Safety: Comprehensive audit trails, hash chains, and immutable ethical weights support accountability and verification.
 
 CAIOS thus operationalizes a future-proof architecture where general capability coexists with mandatory specialization, ethical invariance, and measurable semantic honesty—directly addressing challenges in conventional general-purpose AI deployment regarding regulation, liability, and ontological robustness.
-https://grok.com/share/bGVnYWN5LWNvcHk_6b923711-1109-4885-8009-960cfe58ed12
 
 
 ---------------------
-Claude Sonnet 4.5:
+Claude Sonnet 4.5: https://claude.ai/public/artifacts/b089fb5a-8b8f-4ee9-868f-706dd305f09d
 
 # CAIOS Full-Stack Capabilities Breakdown
 ## Complete System Architecture & Abilities
