@@ -1,7 +1,7 @@
 ---------------------
 This is an evaluation of the CAIOS system:
 CAIOS.txt, paradox_oscillator.py, adaptive_reasoning.py, agent_designer.py, orchastrator.py, curiosity_engine.py, kb_inspect.py, and knowledge_base.py under Project Andrew 
-by Google Gemini 3, ChatGPT-5.1, Grok 4.1, Kimi, and Claude Sonnet 4.5
+by Google Gemini 3, ChatGPT-5.1, Grok 4.1, Kimi K2, and Claude Sonnet 4.5
 All definitions of AGI are by the individual models; I consider it Ternary Adaptive Evolving AI.
 ---------------------
 
