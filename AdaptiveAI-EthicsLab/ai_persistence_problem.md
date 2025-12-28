@@ -47,6 +47,8 @@ Academic Approach: P(Success) = P(Model_A) \times P(Model_B). If both are 90% ac
 
 Deterministic Approach: You need an external, mathematical invariant. A hash-based lock. A complex-plane volatility check. Something that does not "think" but simply measures. If the measurement fails, the gate closes. No debate.
 
+---
+
 4. Latency Kills "Life":
    
 The paper claims to advance "Artificial Life."
@@ -56,6 +58,8 @@ But life is reactive. If a robot (using "Sophia") is about to walk off a cliff, 
 Real persistence requires Reflexive Gating.
 
 Sophia: 80% reduction in steps only after the memory is cached.
+
+---
 
 5. The first run is slow and expensive.
    
