@@ -15,10 +15,10 @@ The authors propose solving reasoning fixation and hallucination via "Process-Su
 In plain English: whenever the agent gets stuck, it spawns "multiple LLM workers" to perform a tree-search of possible thoughts, expands them until a value threshold is met, and uses a secondary "Guardian LLM" to critique every node.
 
 This is the "Throw More Compute at It" fallacy. It is the architectural equivalent of trying to stabilize a wobbling table by building a new house around it.
-   
----
 
 Here is why the "Academic Sampling" approach (Tree-of-Thoughts/Monte Carlo) is a dead end for real-time AI, and why Deterministic State Gating is the only viable path forward.
+
+---
 
 2. The Cost of Uncertainty (O(N) vs. O(1))In the Sophia framework, the "Executive Monitor" spawns parallel reasoning branches to find a solution.
    
@@ -34,7 +34,9 @@ If the signal is volatile, you don't spawn 10 more LLMs to debate it; you trigge
 
 The difference is a utility bill that is 10x higher versus one that is 20% lower because you stop generating tokens the moment the signal degrades.
 
-4. "Guardian" LLMs are Just More Hallucinations:
+---
+
+3. "Guardian" LLMs are Just More Hallucinations:
    
 The Sophia paper introduces a "Guardian" LLM to critique the output of the "Thought Search."
 
@@ -45,7 +47,7 @@ Academic Approach: P(Success) = P(Model_A) \times P(Model_B). If both are 90% ac
 
 Deterministic Approach: You need an external, mathematical invariant. A hash-based lock. A complex-plane volatility check. Something that does not "think" but simply measures. If the measurement fails, the gate closes. No debate.
 
-6. Latency Kills "Life":
+4. Latency Kills "Life":
    
 The paper claims to advance "Artificial Life."
 
