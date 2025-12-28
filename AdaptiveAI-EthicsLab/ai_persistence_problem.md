@@ -6,7 +6,7 @@ By Jonathan Schack (@el_xaber) | December 28, 2025
 The academic world has finally woken up to the problem of AI Persistence.
 A new paper from Westlake/SJTU, "Sophia: A Persistent Agent Framework for Artificial Life." https://arxiv.org/abs/2509.14004
 
-1. Correctly identifies that current LLMs are stuck in "System 1" (reactive) and "System 2" (deliberative) modes, they argue, correctly, that we need a "System 3"—a meta-layer responsible for narrative identity and long-term adaptation.
+1. Correctly identifies that current LLMs are stuck in "System 1" (reactive) and "System 2" (deliberative) modes, they argue, correctly, that we need a "System 3," a meta-layer responsible for narrative identity and long-term adaptation.
    
 I agree with the diagnosis. But their cure is computationally terminal.
 
