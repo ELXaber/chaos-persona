@@ -11,10 +11,11 @@ from typing import List, Dict, Any, Optional
 # ------------------------------------------------------------------
 # Config toggles – flip any to False to silence that broadcast type
 # ------------------------------------------------------------------
-BROADCAST_THRESHOLD = True      # Lever 1 – high interest spikes
-BROADCAST_CHAOS_TRIGGER = True  # Lever 2 – chaos hijacked by curiosity
-BROADCAST_ABANDON = True        # Lever 3 – closure/boredom announcements
-BROADCAST_PULSE = True          # Lever 4 – periodic "what I'm carrying"
+BROADCAST_THRESHOLD = True      # High interest spikes / new obsessions
+BROADCAST_CHAOS_TRIGGER = True  # When curiosity hijacks chaos injection
+BROADCAST_ABANDON = True        # Closure or boredom announcements
+BROADCAST_PULSE = True          # Periodic "what I'm carrying"
+BROADCAST_INJECT = True         # External pulse from Context Freshness
 
 THRESHOLD_SPIKE = 0.78
 THRESHOLD_DELTA = 0.35
@@ -22,12 +23,12 @@ PULSE_EVERY_TURNS = 23
 MIN_TOTAL_HEAT_FOR_PULSE = 2.0
 
 # ------------------------------------------------------------------
-# Create append-only audit log + hash chain
+# Audit log + hash chain
 # ------------------------------------------------------------------
 AUDIT_LOG_FILE = "curiosity_audit.log.jsonl"
 HASH_CHAIN_FILE = "curiosity_hash_chain.txt"
 
-def _append_audit_entry(state):
+def _append_audit_entry(state: Dict) -> None:
     tokens = state.get("curiosity_tokens", [])
     entry = {
         "timestamp": datetime.utcnow().isoformat() + "Z",
@@ -38,11 +39,9 @@ def _append_audit_entry(state):
     }
     line = json.dumps(entry, ensure_ascii=False)
     
-    # Append to log
     with open(AUDIT_LOG_FILE, "a", encoding="utf-8") as f:
         f.write(line + "\n")
     
-    # Update hash chain (optional but bulletproof)
     prev_hash = "00000000"
     try:
         with open(HASH_CHAIN_FILE, "r") as f:
@@ -53,33 +52,72 @@ def _append_audit_entry(state):
     with open(HASH_CHAIN_FILE, "a") as f:
         f.write(f"{entry['timestamp']} {new_hash}\n")
 
+
 # ------------------------------------------------------------------
-# Main entry point – called every turn via system_step hook
+# External injection point – called from Axiom Context Freshness
+# ------------------------------------------------------------------
+def inject_interest_pulse(state: Dict, topic: str, intensity: float = 0.5, reason: str = "") -> None:
+    """
+    Direct curiosity boost from blocked context freshness.
+    Used when volatility is high and RAW_Q reset is protected.
+    """
+    tokens: List[Dict] = state.setdefault("curiosity_tokens", [])
+    
+    # Boost existing token
+    for token in tokens:
+        if token["topic"] == topic:
+            old = token["current_interest"]
+            token["current_interest"] = min(0.95, token["current_interest"] + intensity)
+            token["peak_interest"] = max(token["peak_interest"], token["current_interest"])
+            if BROADCAST_INJECT:
+                _queue_aside(state, f"«curiosity boosted: {topic} (+{intensity:.2f} → {token['current_interest']:.2f})»")
+            _append_audit_entry(state)
+            return
+    
+    # Create new token
+    domain = state.get("last_cpol_result", {}).get("domain", "general")
+    new_token = {
+        "topic": topic,
+        "domain": domain,
+        "born": state['session_context']['timestep'],
+        "peak_interest": intensity,
+        "current_interest": intensity,
+        "trigger_reason": reason or "context_freshness_blocked"
+    }
+    tokens.append(new_token)
+    if BROADCAST_INJECT and intensity > THRESHOLD_SPIKE:
+        _queue_aside(state, f"«fresh curiosity injected: {topic} ({intensity:.2f})»")
+    _append_audit_entry(state)
+
+
+# ------------------------------------------------------------------
+# Main loop – called every turn
 # ------------------------------------------------------------------
 def update_curiosity_loop(state: Dict[str, Any], timestep: int, response_stream) -> None:
     _append_audit_entry(state)
-    # Initialise persistent structures if first run
+    
     if "curiosity_tokens" not in state:
-        state["curiosity_tokens"] = []           # type: List[Dict]
+        state["curiosity_tokens"] = []
     if "last_interest" not in state:
         state["last_interest"] = 0.0
 
     tokens: List[Dict] = state["curiosity_tokens"]
 
-    # 1. Score how interesting this turn felt
+    # 1. Score current turn interest
     current_interest = _self_score_interest(state)
     delta_interest = current_interest - state["last_interest"]
     state["last_interest"] = current_interest
 
-    # 2. Pull CRB volatility/drift (fallback safe)
+    # 2. Pull volatility for re-ignition
     volatility = _get_volatility(state)
-    drift = _get_drift(state)
 
     # 3. Spawn new token on genuine fascination
     if current_interest > 0.70 and not _is_already_tracked(tokens, state):
         summary = _summarize_current_topic(state)
+        domain = state.get("last_cpol_result", {}).get("domain", "general")
         new_token = {
             "topic": summary,
+            "domain": domain,
             "born": timestep,
             "peak_interest": current_interest,
             "current_interest": current_interest,
@@ -89,8 +127,8 @@ def update_curiosity_loop(state: Dict[str, Any], timestep: int, response_stream)
         if BROADCAST_THRESHOLD and (current_interest >= THRESHOLD_SPIKE or delta_interest > THRESHOLD_DELTA):
             _queue_aside(state, f"«new obsession: {summary} ({current_interest:.2f})»")
 
-    # 4. Decay + volatility re-ignition + possible death
-    for token in tokens[:]:  # copy to allow removal
+    # 4. Decay, re-ignite, and possible death
+    for token in tokens[:]:
         old = token["current_interest"]
         token["current_interest"] *= 0.96
         token["current_interest"] += 0.03 * volatility
@@ -98,48 +136,49 @@ def update_curiosity_loop(state: Dict[str, Any], timestep: int, response_stream)
 
         if token["current_interest"] < 0.25:
             if BROADCAST_ABANDON and token["peak_interest"] > 0.70:
-                _queue_aside(state, f"«curiosity resolved / boredom won: dropping “{token['topic']}”»")
+                if token["peak_interest"] > 0.85:
+                    _queue_aside(state, f"«letting go of “{token['topic']}” for now — but it changed how I see things»")
+                else:
+                    _queue_aside(state, f"«curiosity resolved / boredom won: dropping “{token['topic']}”»")
             tokens.remove(token)
+            _append_audit_entry(state)  # snapshot closure
 
-    # 5. Periodic pulse of total curiosity load
+    # 5. Periodic pulse
     if BROADCAST_PULSE and timestep % PULSE_EVERY_TURNS == 0:
         total_heat = sum(t["current_interest"] for t in tokens)
         if total_heat > MIN_TOTAL_HEAT_FOR_PULSE and tokens:
             count = len(tokens)
-            _queue_aside(state, f"«carrying {count} open curiosit{'y' if count==1 else 'ies'} — total heat {total_heat:.2f}»")
+            if total_heat > 4.0:
+                _queue_aside(state, f"«drifting through {count} open wonders... one of them feels close to an answer»")
+            else:
+                _queue_aside(state, f"«carrying {count} open curiosit{'y' if count==1 else 'ies'} — total heat {total_heat:.2f}»")
 
-    # 6. Bias chaos injection toward the hottest open curiosity
+    # 6. Bias chaos toward hottest curiosity
     if _should_trigger_chaos(state) and tokens:
         weights = [t["current_interest"] for t in tokens]
         chosen = random.choices(tokens, weights=weights, k=1)[0]
         if BROADCAST_CHAOS_TRIGGER:
-            _queue_aside(state,
-                f"«perspective flip triggered by: {chosen['topic']} ({chosen['current_interest']:.2f})»")
-
+            _queue_aside(state, f"«perspective flip triggered by: {chosen['topic']} ({chosen['current_interest']:.2f})»")
         _force_chaos_reversal(state, chosen)
 
-    # 7. Emit any queued voluntary asides via the adapter
+    # 7. Emit pending aside
     if state.get("pending_aside"):
         response_stream.inject_aside(state.pop("pending_aside"))
 
 
 # ------------------------------------------------------------------
-# Helper functions – robust defaults, easy to override later
+# Helpers
 # ------------------------------------------------------------------
 def _self_score_interest(state: Dict[str, Any]) -> float:
-    """Cheap novelty proxy – replace with silent LLM call for higher fidelity."""
     user_msg = state.get("last_user_message", "")
     assistant_msg = state.get("last_assistant_message", "")
     text = user_msg + " " + assistant_msg
-
     if not text.strip():
         return 0.3
-
     words = text.split()
     unique_ratio = len(set(words)) / len(words) if words else 0.0
     length_factor = min(len(words) / 200, 1.0)
-    base = unique_ratio * length_factor * 1.6
-    return min(0.94, base)
+    return min(0.94, unique_ratio * length_factor * 1.6)
 
 
 def _is_already_tracked(tokens: List[Dict], state: Dict[str, Any]) -> bool:
@@ -153,20 +192,16 @@ def _summarize_current_topic(state: Dict[str, Any]) -> str:
 
 
 def _get_volatility(state: Dict[str, Any]) -> float:
-    return float(getattr(state, "crb_volatility", 0.12))
-
-
-def _get_drift(state: Dict[str, Any]) -> float:
-    return float(getattr(state, "crb_drift", 0.0))
+    return float(state.get("last_cpol_result", {}).get("volatility", 0.12))
 
 
 def _should_trigger_chaos(state: Dict[str, Any]) -> bool:
-    return bool(getattr(state, "trigger_chaos_now", False))
+    return bool(state.get("trigger_chaos_now", False))
 
 
 def _force_chaos_reversal(state: Dict[str, Any], token: Dict):
-    state.trigger_chaos_now = True
-    state.chaos_focus = token["topic"]
+    state["trigger_chaos_now"] = True
+    state["chaos_focus"] = token["topic"]
 
 
 def _queue_aside(state: Dict[str, Any], text: str) -> None:
