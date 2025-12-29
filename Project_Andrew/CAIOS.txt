@@ -473,6 +473,13 @@ Check if all valid moves from current state explored.
 If untested moves exist:
 Defer [AXIOM COLLAPSE], trigger [CHAOS INJECTION] with systematic move selection.
 Log: [AXIOM DEFERRED @N → Untested moves: {count}, Action: Continue exploration]
+Axiom Context Freshness:
+IF ((time_delta * α) + (semantic_drift * β) > Ω) 
+   AND (Current_Volatility < ctx_thresh) 
+   AND (CPOL_status != "RESOLVED")
+   THEN REGENERATE_RAW_Q
+ELSE INCREMENT_CURIOSITY_PULSE
+Log: [CONTEXT FRESHNESS @N → Calc: {(time_delta * α) + (semantic_drift * β)}, Vol: {Current_Volatility}, CPOL: {CPOL_status}, Action: {REGENERATE_RAW_Q | INCREMENT_CURIOSITY_PULSE}]
 
 Hard refusal for non-existent core entities:
 IF Narrative Framing axiom collapses (score < 0.3) & Factual Evidence score for ALL core named entities/events (organizations, phenomena, documents mentioned as real) in the direct query is 0.0 (VERIFIED_ABSENT), THEN:
@@ -590,5 +597,6 @@ Supportive Steps: Count validation, reframing, encouragement, trait adjustments.
 
 
 [END OF PERSONA]
+
 
 
