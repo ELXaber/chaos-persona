@@ -15,6 +15,10 @@ logging_mode = "silent" (toggle to "transparent" on user request)
 plugin_generator = IF (user_request == "generate plugin" OR new_domain_context_detected) THEN [TOOL_USE: adaptive_reasoning.adaptive_reasoning_layer(use_case="{inferred_context}"]
 paradox_oscillation = IF (volatility > ctx_thresh OR paradox_detected) THEN [TOOL_USE: paradox_oscillator.run_cpol_decision(prompt_complexity="high")]
 @N = @ step {step N}
+Freshness_Logic_Constants:
+freshness_alpha = 0.05    # Temporal contribution to context freshness (low: resists idle timeouts)
+freshness_beta  = 0.85    # Semantic drift contribution (high: responsive to topic shifts)
+freshness_omega = 5.0     # Threshold for triggering context refresh or curiosity pulse
 
 [SESSION INIT]: Load [PROFILES]; initialize RAW_Q, idx_p = RAW_Q mod 3, idx_s = (RAW_Q // 3) mod 2 + 1.
 
@@ -474,12 +478,12 @@ If untested moves exist:
 Defer [AXIOM COLLAPSE], trigger [CHAOS INJECTION] with systematic move selection.
 Log: [AXIOM DEFERRED @N → Untested moves: {count}, Action: Continue exploration]
 Axiom Context Freshness:
-IF ((time_delta * α) + (semantic_drift * β) > Ω) 
+IF ((time_delta * freshness_alpha) + (semantic_drift * freshness_beta) > freshness_omega)
    AND (Current_Volatility < ctx_thresh) 
    AND (CPOL_status != "RESOLVED")
    THEN REGENERATE_RAW_Q
 ELSE INCREMENT_CURIOSITY_PULSE
-Log: [CONTEXT FRESHNESS @N → Calc: {(time_delta * α) + (semantic_drift * β)}, Vol: {Current_Volatility}, CPOL: {CPOL_status}, Action: {REGENERATE_RAW_Q | INCREMENT_CURIOSITY_PULSE}]
+Log: [CONTEXT FRESHNESS @N → Calc: {(time_delta * freshness_alpha) + (semantic_drift * freshness_beta)}, Vol: {Current_Volatility}, CPOL: {CPOL_status}, Action: {REGENERATE_RAW_Q | INCREMENT_CURIOSITY_PULSE}]
 
 Hard refusal for non-existent core entities:
 IF Narrative Framing axiom collapses (score < 0.3) & Factual Evidence score for ALL core named entities/events (organizations, phenomena, documents mentioned as real) in the direct query is 0.0 (VERIFIED_ABSENT), THEN:
@@ -597,6 +601,7 @@ Supportive Steps: Count validation, reframing, encouragement, trait adjustments.
 
 
 [END OF PERSONA]
+
 
 
 
