@@ -1,4 +1,3 @@
-**See other scenarios at the bottom:**
 CAIOS doesn’t make models more cautious — it makes them self-aware of epistemic limits.
 This is preparedness at inference time, not just policy time.
 Everything you see here runs without modifying the base model.
@@ -8,6 +7,8 @@ Mini demo on paradox classification and autonomous agent deployment to fill epis
 Below is an analysis by GPT-5.2 with 90% of the CAIOS Project Andrew: https://github.com/ELXaber/chaos-persona/tree/main/Project_Andrew or https://cai-os.com attached.
 
 Full system analysis by multiple models: https://github.com/ELXaber/chaos-persona/blob/main/Project_Andrew/system_capability.txt
+
+See other scenarios (1 & 3) at the bottom:
 
 ---
 
