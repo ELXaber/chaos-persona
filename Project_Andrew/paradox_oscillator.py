@@ -1,6 +1,7 @@
 # =============================================================================
 # Chaos AI-OS Paradox Oscillation Layer (CPOL) vΩ - FIXED
 # Added: Evidence scoring, domain extraction, proper non-collapse classification
+# Patent Pending: US Application 19/433,771 (Ternary Oscillating Logic for Binary Systems, filed Dec 27, 2025). License: GPL-3.0 (research open; commercial dual-license).
 # =============================================================================
 
 import cmath
@@ -287,4 +288,5 @@ if __name__ == "__main__":
         query_text="How do quantum semantics affect blockchain ontology in post-scarcity economies?"
     )
     print(f"\nNon-collapse reason: {result.get('non_collapse_reason')}")
+
     print(f"Domain: {result.get('domain')}")

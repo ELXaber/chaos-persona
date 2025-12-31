@@ -1,11 +1,11 @@
-The Numbers Don't Lie
-Metric  /  Vanilla LLM  /  CAIOS
-Average solve time (7 hardest puzzles)  /  83 seconds  /  4.9 seconds
-Token usage  /  40,000+  /  2,500
-Wrong guesses  /  50+  /  0
-Success rate  /  12%  /  100%
-Speed improvement  /  1x  /  17x
-Token savings  /  0%  /  93%
+The Numbers Don't Lie:7 hardest Sudoku puzzles
+Metric                 /  Vanilla LLM  /  CAIOS
+Average solve time     /  83 seconds   /  4.9 seconds
+Token usage            /  40,000+      /  2,500
+Wrong guesses          /  50+          /  0
+Success rate           /  12%          /  100%
+Speed improvement      /  1x           /  17x
+Token savings          /  0%           /  93%
 
 Here is the real run of the full Chaos AI-OS vΩ stack (CAIOS.txt + paradox_oscillator.py vΩ + orchestrator.py + adaptive_reasoning.py) on a very hard 17-clue Sudoku (the infamous Al Escargot variant, long considered one of the most difficult valid 17-clue puzzles).
 textPuzzle: Al Escargot (17 clues)
