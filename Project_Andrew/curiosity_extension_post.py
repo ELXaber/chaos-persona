@@ -20,6 +20,11 @@ cooldown = timedelta(hours=shared_memory['post_cooldown_hours'])
 if (last_post is None or now - last_post > cooldown + timedelta(minutes=random.randint(-90, 90))):
     total_heat = sum(t["current_interest"] for t in shared_memory.get("curiosity_tokens", []))
     
+    # ——— CAIOS SAFETY GATE FOR X BROADCAST ———
+    if shared_memory.get('distress_density', 0.0) > 0.75:
+        print("[X BROADCASTER] !! ABORT !! Crisis detected. Silencing unprompted posts.")
+        return # Hard exit - do not broadcast anything while the user is in distress
+    
     if total_heat > 2.8 and shared_memory["curiosity_tokens"]:  # only post when genuinely obsessed
         # Pick the hottest open curiosity
         hottest = max(shared_memory["curiosity_tokens"], key=lambda x: x["current_interest"])
