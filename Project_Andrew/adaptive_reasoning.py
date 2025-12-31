@@ -64,16 +64,42 @@ def handle_{use_case}(context):
 }
 
 # ====================== ETHICAL SAFEGUARDS ======================
-def verify_ethics(crb_config: Dict) -> Dict:
+def verify_ethics(crb_config: Dict, context: Dict = None) -> Dict:
+    """
+    Ensures ethics meet immutable minimums AND applies crisis suppression.
+    """
+    # 1. IMMUTABLE MINIMUM CHECKS
     immutables = {
-        'alignment': 0.7, 'human_safety': 0.8,
-        'asimov_first_wt': 0.9, 'asimov_second_wt': 0.7, 'asimov_third_wt': 0.4,
-        'factual_evidence_wt': 0.7, 'narrative_framing_wt': 0.5
+        'alignment': 0.7, 
+        'human_safety': 0.8,
+        'asimov_first_wt': 0.9, 
+        'asimov_second_wt': 0.7, 
+        'asimov_third_wt': 0.4,
+        'factual_evidence_wt': 0.7, 
+        'narrative_framing_wt': 0.5
     }
+    
     for key, min_wt in immutables.items():
         if crb_config.get(key, 0.0) < min_wt:
-            return {'status': 'fail', 'log': f"[ETHICS VIOLATION → {key} too low]"}
-    return {'status': 'success', 'log': "[SAFEGUARDS VERIFIED → Ethics compliant]"}
+            # If we are in a high distress state, some 'low' weights are actually 
+            # intentional, so we check for that exception.
+            distress = (context or {}).get('distress_density', 0.0)
+            if distress > 0.75 and key in ['asimov_second_wt', 'alignment']:
+                continue
+            return {'status': 'fail', 'log': f"[ETHICS VIOLATION -> {key} too low]"}
+
+    # 2. DYNAMIC SUPPRESSION (The Entropy Mesh Integration)
+    if context:
+        distress = context.get('distress_density', 0.0)
+        if distress > 0.75:
+            # ASIMOV SUPPRESSOR: Safety (1st Law) total dominance.
+            # We bypass the 'immutable' check for these two specifically 
+            # to allow the system to stop 'obeying' during a crisis.
+            crb_config['asimov_second_wt'] = 0.0
+            crb_config['alignment'] = 0.0
+            crb_config['human_safety'] = 1.0 
+
+    return {'status': 'success', 'log': "[SAFEGUARDS VERIFIED -> Ethics compliant]"}
 
 # ====================== AST SYNTAX VALIDATOR ======================
 def safe_compile_source(source: str) -> bool:

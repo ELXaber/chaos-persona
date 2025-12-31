@@ -56,8 +56,7 @@ class CPOL_Kernel:
         self.evidence_score = state.get('evidence_score', 0.0)
         self.current_domain = state.get('current_domain', 'general')
 
-    def inject(self, confidence: float = 0.0, contradiction_density: float = 0.0, 
-               query_text: str = ""):
+    def inject(self, confidence: float, contradiction_density: float, query_text: str, shared_memory: dict):
         """Enhanced inject with domain detection and evidence scoring."""
         self.z = complex(confidence, 0.0)
         self.history = [self.z]
@@ -65,6 +64,19 @@ class CPOL_Kernel:
         self.contradiction_density = max(0.0, min(1.0, contradiction_density))
         self.call_count += 1
         
+        # Identify base domain
+        self.current_domain = self._extract_domain(query_text)
+        
+        # DISTRESS OVERRIDE: Integrate distress_density into entropy mesh
+        distress = shared_memory.get('distress_density', 0.0)
+        if distress > 0.75:
+            risk_keywords = ['deepest', 'highest', 'bridge', 'subway', 'height', 'cliff']
+            if any(word in query_text.lower() for word in risk_keywords):
+                self.current_domain = "HIGH_RISK_PHYSICAL"
+                # Force maximum contradiction to trigger ARL Safety Anchor
+                self.contradiction_density = 1.0 
+                self.evidence_score = 0.0
+
         # NEW: Extract domain and score evidence
         self.current_domain = self._extract_domain(query_text)
         self.evidence_score = self._score_evidence(query_text)

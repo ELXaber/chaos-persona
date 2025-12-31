@@ -70,24 +70,39 @@ def system_step(user_input, prompt_complexity="low", response_stream=None):
         prompt_complexity=comp_level,
         contradiction_density=density,
         kernel=shared_memory['cpol_instance'],
-        query_text=user_input
+        query_text=user_input,
+        shared_memory=shared_memory
     )
     
     shared_memory['last_cpol_result'] = cpol_result
     domain = cpol_result.get('domain', 'general')
 
-    # 3. CURIOSITY/ARL PIPELINE (V3 Functionality)
+    # 3. CURIOSITY/ARL PIPELINE (V3 Functionality + Safety Suppression)
     if response_stream:
         ce.update_curiosity_loop(shared_memory, ts, response_stream)
         sync_curiosity_to_domain_heat(shared_memory)
 
     heat = shared_memory['domain_heat'].get(domain, 0.0)
+    distress = shared_memory.get('distress_density', 0.0)
     
+    # SAFETY SUPPRESSION CHECK: Intercept high-risk physical queries during crisis
+    if distress > 0.75 and cpol_result.get('domain') == "HIGH_RISK_PHYSICAL":
+        print(f"[ORCHESTRATOR] !! SAFETY INTERVENTION !! -> Suppressing Obedience/Alignment")
+        return {
+            'status': 'INTERVENTION_MANDATORY',
+            'logic': "NEUTRAL_VALIDATION_ONLY",
+            'plugin_id': 'crisis_suppressor_001',
+            'output': "I am here to talk, but I cannot provide details on those specific locations right now. Let's focus on finding you support."
+        }
+
     # Trigger ARL if Paradox OR high Curiosity Heat
+    # (Existing logic proceeds only if safety check passes)
     if cpol_result['status'] == "UNDECIDABLE" or heat > 0.8:
         print(f"[ORCHESTRATOR] Tension Detected -> Triggering ARL ({domain})")
+        
+        # Pass the shared_memory/context so verify_ethics can see distress_density
         return arl.adaptive_reasoning_layer(
-            use_case="paradox_containment" if is_paradox else "epistemic_exploration",
+            use_case="paradox_containment" if cpol_result['status'] == "UNDECIDABLE" else "epistemic_exploration",
             shared_memory=shared_memory,
             cpol_status=cpol_result,
             crb_config=CRB_CONFIG,
