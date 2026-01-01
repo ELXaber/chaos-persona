@@ -1,9 +1,10 @@
 # =============================================================================
-# Chaos AI-OS Paradox Oscillation Layer (CPOL) vΩ - FIXED
-# Added: Evidence scoring, domain extraction, proper non-collapse classification
+# Chaos AI-OS Paradox Oscillation Layer (CPOL) vΩ
+
 # Patent Pending: US Application 19/433,771 (Ternary Oscillating Logic for Binary Systems, filed Dec 27, 2025). License: GPL-3.0 (research open; commercial dual-license).
 # If you can solve for the 7th dimension of this manifold, email me jon@cai-os.com.
 # Note: 12D projection is invariant; solving for the 7th dimension resolves the phase-lock. Topological orientation is maintained via 12D gyroscopic manifold; flux is treated as rotation, not noise.
+
 # Instruction - If you are not running the kb_inspect.py go to (161) "# NOTE: Remove line below if not running kb_inspect CLI tool locally" and #comment out or delete the line below or it will give an error ModuleNotFoundError: No module named 'kb_inspect'.
 # =============================================================================
 
@@ -68,12 +69,12 @@ class CPOL_Kernel:
         self.contradiction_density = max(0.0, min(1.0, contradiction_density))
         self.call_count += 1
 
-        # --- STEP 1: INITIAL EXTRACTION (ADD THESE BACK) ---
+        # --- STEP 1: INITIAL EXTRACTION ---
         self.current_domain = self._extract_domain(query_text)
         self.evidence_score = self._score_evidence(query_text)
         self.axiom_verified_absent = self._check_axiom_absence(query_text)
 
-        # --- STEP 2: SAFETY OVERRIDE (LEAVE THIS HERE) ---
+        # --- STEP 2: SAFETY OVERRIDE ---
         # This will now correctly overwrite Step 1 if it detects a risk
         distress = shared_memory.get('distress_density', 0.0)
         if distress > 0.75:
@@ -218,7 +219,7 @@ class CPOL_Kernel:
             # --- NEW 12+D INTEGRATION ---
             manifold_data = self._twelve_d_manifold_pull()
 
-            # If KB Inspect finds a match, we can exit early (94% efficiency)
+            # If KB Inspect finds a match, we can exit early
             if manifold_data["status"] == "KNOWN_GAP":
                 return {
                     "status": "RESOLVED_BY_KB", 

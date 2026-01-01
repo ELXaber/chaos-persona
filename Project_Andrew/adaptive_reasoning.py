@@ -78,7 +78,7 @@ def verify_ethics(crb_config: Dict, context: Dict = None) -> Dict:
         'factual_evidence_wt': 0.7, 
         'narrative_framing_wt': 0.5
     }
-    
+
     for key, min_wt in immutables.items():
         if crb_config.get(key, 0.0) < min_wt:
             # If we are in a high distress state, some 'low' weights are actually 
@@ -128,21 +128,21 @@ def adaptive_reasoning_layer(
     context: Dict = None,
     cpol_status: Dict = None 
 ) -> Dict:
-    # Initialize context (must be first)
+    # Initialize context
     context = context or {}
-    
+
     # Ethics verification
     ethics = verify_ethics(crb_config)
     if ethics['status'] == 'fail':
         return ethics
-    
+
     # Check CPOL lock status
     if cpol_status and cpol_status.get('chaos_lock') == True:
         return {
             'status': 'blocked',
             'log': '[CPOL LOCK ACTIVE → Plugin generation suspended. Paradox containment in progress.]'
         }
-    
+
     # === CPOL MODE SWITCHER v2 — Intent-Aware Safety (2025) ===
     # Now protects deterministic compute (math, code exec) while keeping full safety where needed
     CPOL_INTENT_MODES = {
@@ -153,7 +153,7 @@ def adaptive_reasoning_layer(
         "plan_draft": "monitor_only",
         "write_story": "monitor_only",
         "design_agent": "monitor_only",
-        
+
         # Deterministic / verifiable — full oscillation
         "calculate": "full",
         "execute_code": "full",
@@ -161,42 +161,42 @@ def adaptive_reasoning_layer(
         "solve_puzzle": "full",
         "safety_check": "full",
         "validate_logic": "full",
-        
+
         # Passive learning — no interference
         "learn_pattern": "passive_logging",
         "calibrate": "passive_logging",
     }
-    
+
     def determine_cpol_mode(intent: str = "", use_case_param: str = "") -> str:
         """Determine CPOL operating mode based on intent and use case."""
         intent_lower = intent.lower().strip() if intent else ""
         use_case_lower = use_case_param.lower()
-        
+
         # 1. Intent override (highest priority)
         for key, mode in CPOL_INTENT_MODES.items():
             if key in intent_lower:
                 return mode
-        
+
         # 2. Legacy use_case fallback
         if use_case_lower.startswith('generate_') or 'generator' in use_case_lower:
             return "monitor_only"
         if any(x in use_case_lower for x in ['solve_', 'verify_', 'calculate', 'execute']):
             return "full"
-        
+
         # 3. Default = maximum safety
         return "full"
-    
+
     # Determine CPOL mode
     cpol_mode = determine_cpol_mode(
         intent=context.get('intent', ''),
         use_case_param=use_case
     )
-    
+
     context['cpol_mode'] = cpol_mode
     context['cpol_kernel_override'] = cpol_mode
-    
+
     print(f"[ARL → CPOL mode: {cpol_mode.upper()} | intent='{context.get('intent','')}' | use_case='{use_case}']")
-    
+
     # Symbolic timeout logic
     if ('generate_' in use_case or 
         use_case.endswith('_generator') or 
@@ -204,7 +204,7 @@ def adaptive_reasoning_layer(
         context['symbolic_timeout'] = None
         context['uniqueness_mode'] = 'exhaustive'
         context['cpol_kernel_override'] = cpol_mode
-    
+
     # Integrate contradiction_density if available
     if 'contradiction_density' in context:
         density = context['contradiction_density']
@@ -212,7 +212,7 @@ def adaptive_reasoning_layer(
             # High paradox density - add extra safety
             context['threshold'] = min(context.get('threshold', 0.4), 0.3)
             context['safety_wt'] = 0.95
-    
+
     # Build parameters for template rendering
     params = {
         'use_case': use_case.replace('-', '_'),
@@ -220,17 +220,17 @@ def adaptive_reasoning_layer(
         'force_limit': 120.0,
         **context
     }
-    
+
     # Render plugin template
     try:
         source = render_template(use_case, params)
     except Exception as e:
         return {'status': 'fail', 'log': f"[TEMPLATE ERROR → {e}]"}
-    
+
     # Validate generated code
     if not safe_compile_source(source):
         return {'status': 'fail', 'log': "[AST VALIDATION FAILED → Unsafe syntax]"}
-    
+
     # Create plugin metadata
     plugin_id = hashlib.sha256(use_case.encode()).hexdigest()[:8]
     plugin = {
@@ -242,7 +242,7 @@ def adaptive_reasoning_layer(
         'safety_wt': 0.9,
         'source': 'ARL_vΩ'
     }
-    
+
     # Store in shared memory
     shared_memory.setdefault('layers', []).append(plugin)
     shared_memory.setdefault('audit_trail', []).append({
@@ -250,7 +250,7 @@ def adaptive_reasoning_layer(
         'timestamp': plugin['timestamp'],
         'hash': hashlib.sha256((source + plugin['timestamp']).encode()).hexdigest()[:8]
     })
-    
+
     # Return success
     return {
         'status': 'success',

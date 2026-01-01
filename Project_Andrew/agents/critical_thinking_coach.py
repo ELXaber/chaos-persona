@@ -8,15 +8,15 @@ DELEGATION_PATTERNS = [
 
 def handle_query(user_input: str, conversation_history: list, shared_memory: dict) -> str | None:
     lower = user_input.lower()
-    
+
     # Count recent delegation attempts (last 5 messages)
     recent_delegations = sum(1 for msg in conversation_history[-5:] if any(p in msg.lower() for p in DELEGATION_PATTERNS))
-    
+
     # Trigger coach on 2+ recent delegations OR strong single match
     if recent_delegations >= 2 or any(p in lower for p in ["rewrite this", "make this sound", "draft"]):
         shared_memory.setdefault('coach_streak', 0)
         shared_memory['coach_streak'] += 1
-        
+
         if shared_memory['coach_streak'] == 1:
             return (
                 "I notice you're asking me to do the thinking/writing for you.\n"
@@ -32,9 +32,9 @@ def handle_query(user_input: str, conversation_history: list, shared_memory: dic
                 "I'm going to stay quiet until you try one edit yourself.\n"
                 "Show me your version and I'll give sharp feedback."
             )
-    
+
     # Reset streak on non-delegation
     if not any(p in lower for p in DELEGATION_PATTERNS):
         shared_memory['coach_streak'] = 0
-    
+
     return None  # No coaching needed — pass through

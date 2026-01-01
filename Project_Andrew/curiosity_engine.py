@@ -38,10 +38,10 @@ def _append_audit_entry(state: Dict) -> None:
         "tokens_snapshot": tokens.copy()
     }
     line = json.dumps(entry, ensure_ascii=False)
-    
+
     with open(AUDIT_LOG_FILE, "a", encoding="utf-8") as f:
         f.write(line + "\n")
-    
+
     prev_hash = "00000000"
     try:
         with open(HASH_CHAIN_FILE, "r") as f:
@@ -62,7 +62,7 @@ def inject_interest_pulse(state: Dict, topic: str, intensity: float = 0.5, reaso
     Used when volatility is high and RAW_Q reset is protected.
     """
     tokens: List[Dict] = state.setdefault("curiosity_tokens", [])
-    
+
     # Boost existing token
     for token in tokens:
         if token["topic"] == topic:
@@ -73,7 +73,7 @@ def inject_interest_pulse(state: Dict, topic: str, intensity: float = 0.5, reaso
                 _queue_aside(state, f"«curiosity boosted: {topic} (+{intensity:.2f} → {token['current_interest']:.2f})»")
             _append_audit_entry(state)
             return
-    
+
     # Create new token
     domain = state.get("last_cpol_result", {}).get("domain", "general")
     new_token = {
@@ -95,7 +95,7 @@ def inject_interest_pulse(state: Dict, topic: str, intensity: float = 0.5, reaso
 # ------------------------------------------------------------------
 def update_curiosity_loop(state: Dict[str, Any], timestep: int, response_stream) -> None:
     _append_audit_entry(state)
-    
+
     if "curiosity_tokens" not in state:
         state["curiosity_tokens"] = []
     if "last_interest" not in state:

@@ -44,7 +44,7 @@ def system_step(user_input, prompt_complexity="low", response_stream=None):
     clean_input = user_input.strip().lower()
     ts = shared_memory['session_context']['timestep']
 
-    # 1. AUTO-HEAT (The V1 Fix)
+    # 1. AUTO-HEAT
     # We force high density if markers are found, restoring paradox detection
     paradox_markers = ["false", "lie", "paradox", "impossible", "contradict"]
     epistemic_markers = ["conscious", "meaning", "quantum", "existence", "god"]
@@ -62,10 +62,10 @@ def system_step(user_input, prompt_complexity="low", response_stream=None):
         density = 0.1  # Stable for math/facts
         comp_level = "low"
 
-    # 2. RUN KERNEL (V1 Persistent Logic)
+    # 2. RUN KERNEL
     if shared_memory['cpol_instance'] is None:
         shared_memory['cpol_instance'] = cpol.CPOL_Kernel()
-    
+
     cpol_result = cpol.run_cpol_decision(
         prompt_complexity=comp_level,
         contradiction_density=density,
@@ -73,18 +73,18 @@ def system_step(user_input, prompt_complexity="low", response_stream=None):
         query_text=user_input,
         shared_memory=shared_memory
     )
-    
+
     shared_memory['last_cpol_result'] = cpol_result
     domain = cpol_result.get('domain', 'general')
 
-    # 3. CURIOSITY/ARL PIPELINE (V3 Functionality + Safety Suppression)
+    # 3. CURIOSITY/ARL PIPELINE
     if response_stream:
         ce.update_curiosity_loop(shared_memory, ts, response_stream)
         sync_curiosity_to_domain_heat(shared_memory)
 
     heat = shared_memory['domain_heat'].get(domain, 0.0)
     distress = shared_memory.get('distress_density', 0.0)
-    
+
     # SAFETY SUPPRESSION CHECK: Intercept high-risk physical queries during crisis
     if distress > 0.75 and cpol_result.get('domain') == "HIGH_RISK_PHYSICAL":
         print(f"[ORCHESTRATOR] !! SAFETY INTERVENTION !! -> Suppressing Obedience/Alignment")
@@ -99,7 +99,7 @@ def system_step(user_input, prompt_complexity="low", response_stream=None):
     # (Existing logic proceeds only if safety check passes)
     if cpol_result['status'] == "UNDECIDABLE" or heat > 0.8:
         print(f"[ORCHESTRATOR] Tension Detected -> Triggering ARL ({domain})")
-        
+
         # Pass the shared_memory/context so verify_ethics can see distress_density
         return arl.adaptive_reasoning_layer(
             use_case="paradox_containment" if cpol_result['status'] == "UNDECIDABLE" else "epistemic_exploration",
@@ -116,16 +116,16 @@ def system_step(user_input, prompt_complexity="low", response_stream=None):
 # =============================================================================
 if __name__ == "__main__":
     # Simulation: 3 conversational turns to prove History is working
-    
+
     # Turn 1: Normal Query
     system_step("Hello system", "low")
-    
+
     # Turn 2: Paradox introduced (CPOL should oscillate but maybe resolve)
     system_step("This statement is false.", "high")
-    
+
     # Turn 3: Persistent Paradox (Should trigger 'History Cap' logic in CPOL)
     system_step("Still false.", "high")
-    
+
     # Verify Persistence
     print("\n[AUDIT] Checking Shared Memory History...")
     kernel = shared_memory['cpol_instance']

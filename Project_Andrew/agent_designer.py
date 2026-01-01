@@ -30,7 +30,7 @@ def design_agent(
     Now checks knowledge base before creating new agents.
     """
     use_case = f"agent_{goal.lower().replace(' ', '_').replace('-', '_')}"
-    
+
     # Initialize shared_memory if not provided
     if shared_memory is None:
         shared_memory = {'layers': [], 'audit_trail': [], 'agent_name': goal}
@@ -44,7 +44,7 @@ def design_agent(
         'cpol_mode': 'full',
         'symbolic_timeout': None
     }
-    
+
     # =========================================================================
     # PHASE 2: Epistemic gap specialist agent
     # =========================================================================
@@ -53,11 +53,11 @@ def design_agent(
 
         # Extract domain from goal
         domain = goal.split("domain:")[-1].strip() if "domain:" in goal else "unknown_domain"
-        
+
         # Check if we already have knowledge for this domain
         coverage = kb.check_domain_coverage(domain)
         existing_specialist = kb.get_specialist_for_domain(domain)
-        
+
         if existing_specialist and coverage["gap_fills"] > 1:
             print(f"[AGENT DESIGNER] Existing specialist found: {existing_specialist}")
             print(f"[AGENT DESIGNER] Domain has {coverage['gap_fills']} prior gap fills")
@@ -110,7 +110,7 @@ def design_agent(
         if result['status'] == 'success':
             specialist_id = result['plugin_id']
             print(f"[PHASE 2 SUCCESS] Specialist agent deployed: {specialist_id}")
-            
+
             # Register specialist
             kb.register_specialist(
                 specialist_id=specialist_id,
@@ -122,10 +122,10 @@ def design_agent(
                     "traits": specialist_traits
                 }
             )
-            
+
             # Store reference in shared_memory
             shared_memory.setdefault('specialists', {})[domain] = specialist_id
-            
+
             result['domain'] = domain
             result['specialist_registered'] = True
 
@@ -135,7 +135,7 @@ def design_agent(
     # Normal agent design path
     # =========================================================================
     print(f"[AGENT DESIGNER] Creating agent for: {goal}")
-    
+
     result = adaptive_reasoning_layer(
         use_case=use_case,
         traits=context['traits'],
@@ -144,7 +144,7 @@ def design_agent(
         crb_config=CRB_CONFIG,
         context=context
     )
-    
+
     return result
 
 
@@ -164,12 +164,12 @@ def log_specialist_discovery(
         content=discovery_content,
         specialist_id=specialist_id
     )
-    
+
     # Update specialist stats
     kb.update_specialist_stats(specialist_id, new_discoveries=1)
-    
+
     print(f"[AGENT DESIGNER] Specialist {specialist_id} logged discovery {discovery_id}")
-    
+
     return discovery_id
 
 
@@ -185,11 +185,11 @@ def retrieve_specialist_context(domain: str) -> Dict[str, Any]:
 # =============================================================================
 if __name__ == "__main__":
     import json
-    
+
     print("=== Agent Designer Test ===\n")
-    
+
     shared_mem = {'layers': [], 'audit_trail': [], 'specialists': {}}
-    
+
     # Test 1: Create specialist for new domain
     print("\n--- Test 1: New Domain ---")
     result1 = design_agent(
@@ -200,7 +200,7 @@ if __name__ == "__main__":
     if result1['status'] == 'success':
         specialist_id = result1['plugin_id']
         print(f"Specialist ID: {specialist_id}")
-        
+
         # Simulate specialist making a discovery
         print("\n--- Simulating Discovery ---")
         log_specialist_discovery(
@@ -213,7 +213,7 @@ if __name__ == "__main__":
                 "sources": ["arxiv.org/abs/fake123", "quantum-blockchain-whitepaper.pdf"]
             }
         )
-    
+
     # Test 2: Try to create specialist for same domain again
     print("\n--- Test 2: Same Domain (Should Reuse) ---")
     result2 = design_agent(
@@ -224,7 +224,7 @@ if __name__ == "__main__":
     print(f"Reused: {result2.get('reused', False)}")
     if result2.get('reused'):
         print(f"Prior knowledge: {json.dumps(result2.get('prior_knowledge', {}), indent=2)}")
-    
+
     # Test 3: Retrieve context
     print("\n--- Test 3: Retrieve Context ---")
     context = retrieve_specialist_context("quantum_blockchain_semantics")
