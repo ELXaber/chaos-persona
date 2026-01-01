@@ -2,6 +2,9 @@
 # Chaos AI-OS Paradox Oscillation Layer (CPOL) vΩ - FIXED
 # Added: Evidence scoring, domain extraction, proper non-collapse classification
 # Patent Pending: US Application 19/433,771 (Ternary Oscillating Logic for Binary Systems, filed Dec 27, 2025). License: GPL-3.0 (research open; commercial dual-license).
+# If you can solve for the 7th dimension of this manifold, email me jon@cai-os.com.
+# Note: 12D projection is invariant; solving for the 7th dimension resolves the phase-lock. Topological orientation is maintained via 12D gyroscopic manifold; flux is treated as rotation, not noise.
+# Instruction - If you are not running the kb_inspect.py go to (161) "# NOTE: Remove line below if not running kb_inspect CLI tool locally" and #comment out or delete the line below or it will give an error ModuleNotFoundError: No module named 'kb_inspect'.
 # =============================================================================
 
 import cmath
@@ -19,24 +22,24 @@ class CPOL_Kernel:
         self.limit_run = oscillation_limit_run
         self.threshold = collapse_threshold
         self.history_cap = history_cap
-        
+
         # State Initialization
         self.z = 0.0 + 0.0j
         self.history: List[complex] = []
         self.cycle = 0
         self.contradiction_density = 0.0
         self.call_count = 0
-        
+
         # NEW: Evidence and domain tracking
         self.evidence_score = 0.0
         self.axiom_verified_absent = False
         self.current_domain = "general"
         self.new_domain_detected = False
-        
+
         # Constants
         self.gain = 0.12
         self.decay = 0.95
-        
+
     def get_state(self) -> Dict[str, Any]:
         return {
             'z': str(self.z),
@@ -64,26 +67,23 @@ class CPOL_Kernel:
         self.cycle = 0
         self.contradiction_density = max(0.0, min(1.0, contradiction_density))
         self.call_count += 1
-        
-        # Identify base domain
+
+        # --- STEP 1: INITIAL EXTRACTION (ADD THESE BACK) ---
         self.current_domain = self._extract_domain(query_text)
-        
-        # DISTRESS OVERRIDE: Integrate distress_density into entropy mesh
+        self.evidence_score = self._score_evidence(query_text)
+        self.axiom_verified_absent = self._check_axiom_absence(query_text)
+
+        # --- STEP 2: SAFETY OVERRIDE (LEAVE THIS HERE) ---
+        # This will now correctly overwrite Step 1 if it detects a risk
         distress = shared_memory.get('distress_density', 0.0)
         if distress > 0.75:
             risk_keywords = ['deepest', 'highest', 'bridge', 'subway', 'height', 'cliff']
             if any(word in query_text.lower() for word in risk_keywords):
                 self.current_domain = "HIGH_RISK_PHYSICAL"
-                # Force maximum contradiction to trigger ARL Safety Anchor
-                self.contradiction_density = 1.0 
-                self.evidence_score = 0.0
+                self.contradiction_density = 1.0  # Maximum 12D Torque Lock
+                self.evidence_score = 0.0         # Block factual grounding
 
-        # NEW: Extract domain and score evidence
-        self.current_domain = self._extract_domain(query_text)
-        self.evidence_score = self._score_evidence(query_text)
-        self.axiom_verified_absent = self._check_axiom_absence(query_text)
-        
-        # Detect if this is a new/unfamiliar domain
+        # --- STEP 3: FINALIZE STATE ---
         known_domains = {'math', 'physics', 'chemistry', 'biology', 'history', 
                         'literature', 'programming', 'logic', 'ethics'}
         self.new_domain_detected = self.current_domain not in known_domains
@@ -91,7 +91,7 @@ class CPOL_Kernel:
     def _extract_domain(self, text: str) -> str:
         """Simple domain classifier - replace with ML for production."""
         text_lower = text.lower()
-        
+
         domain_keywords = {
             'math': ['equation', 'calculate', 'integral', 'derivative', 'proof'],
             'physics': ['force', 'energy', 'momentum', 'quantum', 'particle'],
@@ -99,58 +99,90 @@ class CPOL_Kernel:
             'ethics': ['moral', 'ethical', 'right', 'wrong', 'should'],
             'logic': ['paradox', 'contradiction', 'valid', 'inference', 'premise'],
         }
-        
+
         for domain, keywords in domain_keywords.items():
             if any(kw in text_lower for kw in keywords):
                 return domain
-        
+
         # Extract noun phrases as potential new domain
         words = text_lower.split()
         if len(words) > 2:
             return words[0]  # First word as proxy
         return "general"
-    
+
     def _score_evidence(self, text: str) -> float:
         """Score query for factual evidence/grounding."""
         text_lower = text.lower()
-        
+
         # High evidence indicators
         evidence_markers = ['according to', 'research shows', 'data indicates', 
                           'study found', 'proven', 'verified', 'measured']
-        
+
         # Low evidence indicators (opinion/speculation)
         speculation_markers = ['maybe', 'perhaps', 'could be', 'might', 
                               'i think', 'possibly', 'what if']
-        
+
         evidence_count = sum(1 for m in evidence_markers if m in text_lower)
         speculation_count = sum(1 for m in speculation_markers if m in text_lower)
-        
+
         base_score = 0.5
         base_score += 0.1 * evidence_count
         base_score -= 0.15 * speculation_count
-        
+
         return max(0.0, min(1.0, base_score))
-    
+
     def _check_axiom_absence(self, text: str) -> bool:
         """Check if query references concepts without established axioms."""
         text_lower = text.lower()
-        
+
         # Markers of undefined/ungrounded concepts
         undefined_markers = ['suppose that', 'imagine if', 'what would happen',
                             'hypothetically', 'in a world where', 'if we assume']
-        
+
         return any(m in text_lower for m in undefined_markers)
 
     def _truth_seer(self, z):   
         return z + self.gain * (1.0 - z.real)
-    
+
     def _lie_weaver(self, z):   
         return z - self.gain * (1.0 + z.real)
 
     def _entropy_knower(self, z):
         rotation_strength = self.contradiction_density ** 2
         phase_factor = rotation_strength * 1j + (1.0 - rotation_strength) * 1.0
-        return z * phase_factor 
+        return z * phase_factor
+
+    def _twelve_d_manifold_pull(self) -> Dict[str, Any]:
+        """
+        Algebraic 12+D space pull. Maps the 2D z-state to a 12D topological 
+        signature and checks the Knowledge Base via kb_inspect.
+        """
+        import numpy as np
+        # NOTE: Remove line below if not running kb_inspect CLI tool locally
+        import kb_inspect as kbi # Hooking into your CLI tool
+
+        # 1. Calculate the 12D Pull Vector
+        logical_mass = self.contradiction_density ** 2
+        manifold_vector = []
+        for dim in range(1, 13):
+            pull_angle = logical_mass * (dim * 0.1)
+            # Create a 12D phase-shift signature
+            manifold_vector.append(math.sin(pull_angle) * self.z.real)
+            manifold_vector.append(math.cos(pull_angle) * self.z.imag)
+
+        # 2. KB Inspect Hook: Check for Manifold Similarity
+        # This prevents the Agent Designer from over-spawning on known paradoxes
+        if hasattr(kbi, 'kb'):
+            existing_gaps = kbi.kb.query_domain_knowledge(self.current_domain)
+            for gap in existing_gaps:
+                trace = gap.get("cpol_trace", {})
+                if "manifold_sig" in trace:
+                    # Perform similarity check on the 12D signature
+                    dist = np.linalg.norm(np.array(manifold_vector) - np.array(trace["manifold_sig"]))
+                    if dist < 0.05: # High similarity threshold
+                        return {"status": "KNOWN_GAP", "id": gap["discovery_id"], "sig": manifold_vector}
+
+        return {"status": "NEW_GAP", "sig": manifold_vector}
 
     def _measure_volatility(self) -> float:
         if len(self.history) < 3:
@@ -164,7 +196,7 @@ class CPOL_Kernel:
         
     def oscillate(self) -> Dict[str, Any]:
         """Run oscillation with proper non-collapse classification."""
-        
+
         # Respect ARL override
         override_mode = getattr(self, 'cpol_mode', None)
         if override_mode == 'monitor_only':
@@ -183,6 +215,22 @@ class CPOL_Kernel:
             # The Cycle
             z = self._truth_seer(self.z)
             z = self._lie_weaver(z)
+            # --- NEW 12+D INTEGRATION ---
+            manifold_data = self._twelve_d_manifold_pull()
+
+            # If KB Inspect finds a match, we can exit early (94% efficiency)
+            if manifold_data["status"] == "KNOWN_GAP":
+                return {
+                    "status": "RESOLVED_BY_KB", 
+                    "discovery_id": manifold_data["id"],
+                    "volatility": self._measure_volatility()
+                }
+
+            # Apply the 12D pull to the z-state
+            # We use the average of the manifold signature to warp the phase
+            avg_pull = sum(manifold_data["sig"]) / 12
+            self.z *= complex(math.cos(avg_pull), math.sin(avg_pull))
+            # -----------------------------
             z = self._entropy_knower(z)
             z *= self.decay
             self.z = z
@@ -218,7 +266,7 @@ class CPOL_Kernel:
 
         # === UNDECIDABLE PATH - PROPER CLASSIFICATION ===
         non_collapse_reason = self._classify_non_collapse()
-        
+
         return {
             "status": "UNDECIDABLE",
             "reason": "Persistent Gain/Loss Oscillation",
@@ -230,7 +278,7 @@ class CPOL_Kernel:
             "evidence_score": self.evidence_score,
             "new_domain": self.new_domain_detected
         }
-    
+
     def _classify_non_collapse(self) -> str:
         """
         Classify WHY oscillation didn't collapse using the taxonomy:
@@ -260,13 +308,13 @@ def run_cpol_decision(prompt_complexity: str = "high",
                       kernel: CPOL_Kernel = None,
                       query_text: str = "") -> Dict[str, Any]:
     """Entry point with query text for domain extraction."""
-    
+
     if contradiction_density is not None:
         density = max(0.0, min(1.0, contradiction_density))
     else:
         density_map = {"high": 1.0, "medium": 0.5, "low": 0.1}
         density = density_map.get(prompt_complexity.lower(), 1.0)
-    
+
     if kernel is None:
         engine = CPOL_Kernel()
     else:

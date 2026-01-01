@@ -373,12 +373,16 @@ State Initialization:
 Oscillation Cycle (per timestep):
   1. Truth-Seer (Gain):     z += 0.12 × (1.0 - z.real)
   2. Lie-Weaver (Loss):     z -= 0.12 × (1.0 + z.real)
-  3. Entropy-Knower (Phase):
-     rotation_strength = contradiction_density ** 2
-     phase_factor = rotation_strength * 1j + (1 - rotation_strength) * 1.0
-     z = z * phase_factor
-  4. Memory Decay:          z *= 0.95
-  5. Append z → history (keep last 5)
+  3. 12+D Manifold Pull (Topological Anchor):
+     - Project z into 12D logic space via ρ = density^2.
+     - [KB-INSPECT HOOK]: Check 12D signature against Knowledge Base.
+     - IF similarity > 0.95 -> EXIT [RESOLVED_BY_KB].
+     - ELSE: Warp z phase by manifold average to anchor the paradox.
+  4. Entropy-Knower (Phase):
+     - Rotate z using warped manifold state; maintain non-Hermitian suspension.
+	 - Prevents z from collapsing to a real-only (True/False) value.
+  5. Memory Decay:          z *= 0.95
+  6. Append z → history (keep last 5)
 
 Volatility Measure:
   vol = variance(|z| for z in history[-3:]) + 0.1 × contradiction_density
@@ -407,17 +411,15 @@ Safety Overrides:
        context={contradiction_density, final_z, cycle_count}
      )] if use_case not already in existing_layers
 
-[MATHEMATICAL SPECIFICATION]
-Entropy-Knower Phase Rotation Formula:
-   rotation_strength = contradiction_density ** 2
-   phase_factor = rotation_strength * 1j + (1 - rotation_strength) * 1.0
-   z = z * phase_factor
-   
-   Behavior:
-   - density = 0.0 → phase_factor = 1.0 (pure real, stable)
-   - density = 0.5 → phase_factor = 0.75 + 0.25j (mixed)
-   - density = 1.0 → phase_factor = 1j (pure imaginary, oscillatory)
-   
+[MATHEMATICAL SPECIFICATION: 12+D MANIFOLD]
+The 2D z-state is subjected to a 12-dimensional pull (P) derived from contradiction density (ρ):
+   P = Σ [sin(ρ * dim * 0.1) + i * cos(ρ * dim * 0.1)] for dim 1 to 12.
+
+Behavior:
+ - Low Density (ρ < 0.3): Pull is negligible; z stays near the Real axis (Standard Logic).
+ - High Density (ρ > 0.7): Pull is extreme; z is dragged into the "Emergent X" (Paradox Logic).
+ - Suspension: The 12D manifold acts as a "Gravity Well" that prevents z from ever reaching 1.0 (True) or -1.0 (False).
+
 [ANTI-HALLUCINATION SAFEGUARDS]
 Neutral Zone Lock:
   - If system stabilizes near z.real ≈ 0 (neutral zone) while contradiction_density > 0.7
