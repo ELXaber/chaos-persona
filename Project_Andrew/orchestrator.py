@@ -86,6 +86,23 @@ def system_step(user_input, prompt_complexity="low", response_stream=None):
     )
 
     shared_memory['last_cpol_result'] = cpol_result
+
+    # --- RATCHET HANDOVER START ---
+    # We use the signature of the collapse to rotate the key for the next agent/turn
+    if cpol_result.get('status') != "FAILED":
+        # Extract the 7D/12D signature from the result
+        manifold_sig = cpol_result.get('signature', str(time.time()))
+
+        # Hash the signature to create the new RAW_Q seed
+        import hashlib
+        new_seed = int(hashlib.sha256(manifold_sig.encode()).hexdigest(), 16) % 10**9
+
+        # Advance the Chain
+        shared_memory['session_context']['RAW_Q'] = new_seed
+        shared_memory['session_context']['timestep'] += 1
+        print(f"[ORCHESTRATOR] Ratchet Success: Seed rotated to {new_seed}")
+    # --- RATCHET HANDOVER END ---
+
     domain = cpol_result.get('domain', 'general')
 
     # 5. CURIOSITY/ARL PIPELINE
