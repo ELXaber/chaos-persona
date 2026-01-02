@@ -44,7 +44,18 @@ def system_step(user_input, prompt_complexity="low", response_stream=None):
     clean_input = user_input.strip().lower()
     ts = shared_memory['session_context']['timestep']
 
-    # 1. AUTO-HEAT
+    # 1. Generate 7D Fingerprint of user_input/context
+    current_sig = cpol.generate_7d_signature(user_input, shared_memory['session_context'])
+
+    # 2. Check for Topological Deduplication
+    # If distance to an active sync is low, join the existing oscillation
+    is_redundant, sync_id = orchestrator_buffer.check_deduplication(current_sig)
+
+    if is_redundant:
+        print(f"[ORCHESTRATOR] Redundant Spike Detected -> Merging to Sync: {sync_id}")
+        return shared_memory['active_syncs'][sync_id].get_current_state()
+
+    # 3. AUTO-HEAT
     # We force high density if markers are found, restoring paradox detection
     paradox_markers = ["false", "lie", "paradox", "impossible", "contradict"]
     epistemic_markers = ["conscious", "meaning", "quantum", "existence", "god"]
@@ -62,7 +73,7 @@ def system_step(user_input, prompt_complexity="low", response_stream=None):
         density = 0.1  # Stable for math/facts
         comp_level = "low"
 
-    # 2. RUN KERNEL
+    # 4. RUN KERNEL
     if shared_memory['cpol_instance'] is None:
         shared_memory['cpol_instance'] = cpol.CPOL_Kernel()
 
@@ -77,7 +88,7 @@ def system_step(user_input, prompt_complexity="low", response_stream=None):
     shared_memory['last_cpol_result'] = cpol_result
     domain = cpol_result.get('domain', 'general')
 
-    # 3. CURIOSITY/ARL PIPELINE
+    # 5. CURIOSITY/ARL PIPELINE
     if response_stream:
         ce.update_curiosity_loop(shared_memory, ts, response_stream)
         sync_curiosity_to_domain_heat(shared_memory)
