@@ -44,19 +44,18 @@ def system_step(user_input, prompt_complexity="low", response_stream=None):
     clean_input = user_input.strip().lower()
     ts = shared_memory['session_context']['timestep']
 
-    # 1. Generate 7D Fingerprint of user_input/context
+    # 1. GENERATE 7D FINGERPRINT
+    # Uses the current RAW_Q to ground the signature in the turn's entropy
     current_sig = cpol.generate_7d_signature(user_input, shared_memory['session_context'])
 
-    # 2. Check for Topological Deduplication
-    # If distance to an active sync is low, join the existing oscillation
+    # 2. TOPOLOGICAL DEDUPLICATION
+    # Prevents 'Paradox Storms' by merging identical high-density signals
     is_redundant, sync_id = orchestrator_buffer.check_deduplication(current_sig)
-
     if is_redundant:
         print(f"[ORCHESTRATOR] Redundant Spike Detected -> Merging to Sync: {sync_id}")
         return shared_memory['active_syncs'][sync_id].get_current_state()
 
-    # 3. AUTO-HEAT
-    # We force high density if markers are found, restoring paradox detection
+    # 3. AUTO-HEAT (Density Control)
     paradox_markers = ["false", "lie", "paradox", "impossible", "contradict"]
     epistemic_markers = ["conscious", "meaning", "quantum", "existence", "god"]
     
@@ -64,16 +63,16 @@ def system_step(user_input, prompt_complexity="low", response_stream=None):
     is_gap = any(m in clean_input for m in epistemic_markers)
 
     if is_paradox or prompt_complexity == "high":
-        density = 0.9  # Required for CPOL oscillation
+        density = 0.9  # Force 12D oscillation for paradoxes
         comp_level = "high"
     elif is_gap:
-        density = 0.6  # High enough to trigger Curiosity volatility
+        density = 0.6  # High enough for curiosity volatility
         comp_level = "medium"
     else:
-        density = 0.1  # Stable for math/facts
+        density = 0.1  # Stable state for standard logic
         comp_level = "low"
 
-    # 4. RUN KERNEL
+    # 4. RUN KERNEL (CPOL Decision)
     if shared_memory['cpol_instance'] is None:
         shared_memory['cpol_instance'] = cpol.CPOL_Kernel()
 
@@ -87,25 +86,22 @@ def system_step(user_input, prompt_complexity="low", response_stream=None):
 
     shared_memory['last_cpol_result'] = cpol_result
 
-    # --- RATCHET HANDOVER START ---
-    # We use the signature of the collapse to rotate the key for the next agent/turn
+    # 5. RATCHET HANDOVER (The Security Rotation)
     if cpol_result.get('status') != "FAILED":
-        # Extract the 7D/12D signature from the result
+        import hashlib
+        # Extract the manifold signature from the result
         manifold_sig = cpol_result.get('signature', str(time.time()))
 
-        # Hash the signature to create the new RAW_Q seed
-        import hashlib
+        # Rotate the RAW_Q for the next turn
         new_seed = int(hashlib.sha256(manifold_sig.encode()).hexdigest(), 16) % 10**9
 
-        # Advance the Chain
         shared_memory['session_context']['RAW_Q'] = new_seed
         shared_memory['session_context']['timestep'] += 1
         print(f"[ORCHESTRATOR] Ratchet Success: Seed rotated to {new_seed}")
-    # --- RATCHET HANDOVER END ---
 
     domain = cpol_result.get('domain', 'general')
 
-    # 5. CURIOSITY/ARL PIPELINE
+    # 6. CURIOSITY/ARL PIPELINE
     if response_stream:
         ce.update_curiosity_loop(shared_memory, ts, response_stream)
         sync_curiosity_to_domain_heat(shared_memory)
