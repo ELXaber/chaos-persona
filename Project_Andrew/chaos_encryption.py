@@ -30,7 +30,7 @@ class CPOLQuantumManifold:
         my_sig = self.state[:7]
         # Calculate the 'Logical Distance' (Phase Lag)
         diff = np.linalg.norm(partner_sig - my_sig)
-        
+
         # If we are desynced, 'nudge' the torque to close the gap
         # This is the 'Elastic Torque' that handles network jitter
         if diff > 0.001:
@@ -55,14 +55,14 @@ print(f"[*] RAW_Q Seed: {raw_q} | Initializing 12D Manifold...")
 # Simulate 10 cycles with intentional 'Network Jitter'
 for i in range(10):
     sig_a = alice.oscillate()
-    
+
     # Simulate Bob being slightly 'off' due to jitter
     if i == 5: 
         print("[!] Jitter detected: Bob's packet delayed.")
         bob.torque -= 0.05 # Bob slows down temporarily
-        
+
     sig_b = bob.oscillate()
-    
+
     # 7D Phase Correction: Alice and Bob exchange signatures to sync
     alice.sync_phase(sig_b)
     bob.sync_phase(sig_a)
