@@ -17,3 +17,46 @@ Needs to be an instance of a class that tracks shared_memory['active_syncs'] glo
 Cleanup Protocol: Ensure that once a sync_id is resolved (the qubit collapses), it is purged from the buffer to prevent "Phantom Syncs" from clogging the ingress.
 
 This setup effectively turns the  Orchestrator into a Distributed Enigma Machine, where the security isn't in the password, but in the synchronized 12D rotation of the entire swarm.
+
+Add this to orchestrator.py if you plan on running more than a 50-node network on something like StarLink.
+
+# 5. RATCHET HANDOVER & GHOSTING
+    if cpol_result.get('status') != "FAILED":
+        import hashlib
+        manifold_sig = cpol_result.get('signature', str(time.time()))
+        new_seed = int(hashlib.sha256(manifold_sig.encode()).hexdigest(), 16) % 10**9
+
+        # Advance the Chain
+        shared_memory['session_context']['RAW_Q'] = new_seed
+        shared_memory['session_context']['timestep'] += 1
+        
+        # PROMOTION AUDIT: Identify who is leading this turn
+        is_promoted = shared_memory.get('is_backup_lead', False)
+        lead_id = os.getenv('NODE_ID', 'PRIMARY_ROOT')
+        
+        status_msg = f"Ratchet Success | Lead: {lead_id} | Promoted: {is_promoted}"
+        print(f"[ORCHESTRATOR] {status_msg}")
+        
+        # 5b. THE GHOST PACKET (The Self-Cloning Soul)
+        # Broadcast this to Swarm Leaders (Lead Rotators)
+        ghost_packet = {
+            'v_omega_phase': new_seed,
+            'ts': shared_memory['session_context']['timestep'],
+            'manifold_entropy': manifold_sig,
+            'origin_node': lead_id,
+            'is_promoted_state': is_promoted,
+            'heartbeat': time.time()
+        }
+        
+        # Log to the permanent Audit Trail
+        shared_memory['audit_trail'].append({
+            'ts': ts,
+            'event': 'RATCHET_HANDOVER',
+            'node': lead_id,
+            'promoted': is_promoted,
+            'new_q': new_seed
+        })
+
+        # Broadcast logic (Simulated for mesh)
+        for leader in shared_memory.get('swarm_leaders', []):
+            send_to_leader(leader, ghost_packet)
