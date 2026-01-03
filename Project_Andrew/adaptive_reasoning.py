@@ -60,6 +60,22 @@ def handle_{use_case}(context):
     if vol > {threshold}:
         return {{'action': 'stabilize', 'safety_wt': 0.9}}
     return {{'action': 'observe', 'safety_wt': 0.5}}
+""",
+    'bloat_short_circuit': """
+def handle_bloat_short_circuit(context):
+    iterations = context.get('iteration_count', 0)
+    entropy = context.get('entropy_density', 1.0)
+    is_verifiable = context.get('cpol_mode') == 'full' # Math/Logic mode
+
+    # BLOAT CONDITION: High iterations for a low-entropy (obvious) axiom
+    if entropy < 0.2 and iterations > 5:
+        return {{'action': 'force_collapse', 'safety_wt': 1.0, 'reason': 'Iterative Bloat Detected'}}
+
+    # VALID COMPLEXITY: High iterations allowed for high-entropy verifiable tasks (Sudoku)
+    if is_verifiable and entropy > 0.6:
+        return {{'action': 'allow_recursion', 'safety_wt': 0.7}}
+
+    return {{'action': 'observe', 'safety_wt': 0.5}}
 """
 }
 
