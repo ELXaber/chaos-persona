@@ -1,4 +1,8 @@
-Chaos AI-OS: Paradox-Immune Reasoning Framework
+Chaos AI-OS: Paradox-Immune Reasoning Framework. Dual license, GPL 3 or corporate available.
+
+https://cai-os.com
+
+---
 
 Patent Pending: US Application 19/390,493 (Entropy-Driven Adaptive AI Transparency, filed Nov 15, 2025).
 Patent Pending: US Application 19/433,771 (Ternary Oscillating Logic for Binary Systems, filed Dec 27, 2025).
@@ -7,8 +11,13 @@ Attribution: "Built on CRB 6.7 by Jonathan Schack (ELXaber) (GPL 3.0)." Ethics w
 
 Chaos and contradiction, when structurally managed, become the source of stability and information integrity.
 
-**Important**: Patches, bug fixes, or updates are appended to https://github.com/ELXaber/chaos-persona/blob/main/Chaos_AIOS/patch_notes.txt
-This directory's primary files (CAIOS.txt, orchestrator.py, paradox_oscillator.py, and adaptive_reasoning.py) are updated from the patch notes - previous versions stored in /old/.
+The current version being worked on is Project Andrew. It extends CAIOS beyond quinary logic (paradox_oscillator) on paradox classification to queue intrinsic motivation (curiosity engine) and autonomously or on request the agent_designer (part of adaptive_reasoning) to fill epistemic knowledge gaps and write/append/update the internal knowledge_base.
+
+Mini pipeline demo: https://claude.ai/public/artifacts/7933140e-099f-4d7c-8bf3-ab95f68f3fcd
+
+---
+
+This directory's primary files (CAIOS.txt, orchestrator.py, paradox_oscillator.py, orchestrator.py, and adaptive_reasoning.py are updated from the patch notes - previous versions stored in /old/.
 While CPOL can work without the rest of the stack, adaptive_reasoning (ARL) controls the trigger of oscillation through CAIOS>orchastrator>adaptive_reasoning>paradox_oscillation, and CPOL will oscillate and use excess compute. ARL adds wait functions under certain conditions.
 One new addition to this directory is the agent_designer.py, which allows for full adaptive reasoning agent design. It's technically a plugin, but rather than incorporate it into adaptive_reasoning, it's an optional plugin layer.
 
@@ -19,6 +28,7 @@ Chaos AI-OS is a modular, training-free scaffold for AI/robotic systems that enf
 Key Innovation: CPOL – The first LLM "logic qubit."
 Classical AI collapses to an answer; CPOL oscillates until it can prove it's allowed to—turning paradox from failure into the guardian of truth (O(cycles) bounded, not O(n) recursion).
 
+---
 
 Why It Matters
 ● Paradox Immunity: Non-Hermitian attractor (gain/loss/phase) spins liar sentences/Gödel loops into undecidable refusal—no hallucinations.
@@ -58,6 +68,7 @@ CAIOS_Workflow:
 <img width="888" height="888" alt="CAIOS_Workflow" src="https://github.com/user-attachments/assets/cd0b0a7b-97bc-4692-aa99-ac937350b613" />
 
 
+---
 
 Evaluations & Plugins
 ● Paradoxes: Resolves Liar/Theseus via entropy damping (logs: final_z, volatility).
@@ -102,6 +113,7 @@ No other public framework (as of November 2025) ships both paradox immunity and 
 
 Result: Chaos AI-OS is the only known system that turns safety decisions themselves into verifiable, mathematically grounded Chain-of-Thought, making the act of refusal the ultimate proof of ethical alignment.
 
+---
 
 Empirical Validation Across Frontier Models
 
@@ -140,11 +152,12 @@ For additional plugins, see: https://github.com/ELXaber/chaos-persona/tree/main/
 For additional benchmarks, see: https://github.com/ELXaber/chaos-persona/tree/main/test_runs
 For additional ethics and transparency compliance, including validation-based refusal comparisons, see: https://github.com/ELXaber/chaos-persona/tree/main/AdaptiveAI-EthicsLab
 
+---
 
 Contact & Ethics
 ● Creator: Jonathan Schack (X@el_xaber) – 30yr IT vet, AMA-awarded healthcare tech pioneer.
 ● Ethics: Immutable Asimov/IEEE 7001 checks; tamper → warranty void.
-● Collab: xaber.csr2@gmail.com for xAI ports, robotics HRI, or commercial dual-license.
+● Collab: jon@cai-os.com xaber.csr2@gmail.com for xAI ports, robotics HRI, or commercial dual-license.
 Personal Note: Docs evolve on GitHub—fork, test, PR.
 
 This seals the 2019–2025 lineage: From entropy sketches to paradox-proof OS with oscillating logic.
