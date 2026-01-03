@@ -8,6 +8,7 @@ Attribution: "Built on CRB 6.7 by Jonathan Schack (ELXaber) (GPL 3.0)." Ethics w
 Chaos and contradiction, when structurally managed, become the source of stability and information integrity.
 
 The current version being worked on is Project Andrew. It extends CAIOS beyond quinary logic (paradox_oscillator) on paradox classification to queue intrinsic motivation (curiosity engine) and autonomously or on request the agent_designer (part of adaptive_reasoning) to fill epistemic knowledge gaps and write/append/update the internal knowledge_base.
+
 Mini pipeline demo: https://claude.ai/public/artifacts/7933140e-099f-4d7c-8bf3-ab95f68f3fcd
 
 This directory's primary files (CAIOS.txt, orchestrator.py, paradox_oscillator.py, orchestrator.py, and adaptive_reasoning.py) are updated from the patch notes - previous versions stored in /old/.
