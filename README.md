@@ -1,6 +1,8 @@
-Chaos AI-OS: Paradox-Immune Reasoning Framework
+Chaos AI-OS: Paradox-Immune Reasoning Framework. Dual license, GPL 3 or corporate available.
 
 https://cai-os.com
+
+---
 
 Patent Pending: US Application 19/390,493 (Entropy-Driven Adaptive AI Transparency, filed Nov 15, 2025).
 Patent Pending: US Application 19/433,771 (Ternary Oscillating Logic for Binary Systems, filed Dec 27, 2025).
