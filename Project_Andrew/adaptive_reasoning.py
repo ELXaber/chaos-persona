@@ -272,7 +272,7 @@ def adaptive_reasoning_layer(
         'status': 'success',
         'plugin_id': plugin_id,
         'logic': source,
-        'log': f"[ADAPTIVE REASONING @N → Plugin {plugin_id} deployed — Asimov 1st Law wt 0.9]"
+        'log': f"[ADAPTIVE REASONING @N → One is glad to be of service. Plugin {plugin_id} deployed — Asimov 1st Law wt 0.9]"
     }
 
 # ====================== EXAMPLE USAGE ======================
@@ -294,4 +294,5 @@ if __name__ == "__main__":
     print(result['log'])
     if result['status'] == 'success':
         print("\nGenerated plugin:\n")
+
         print(result['logic'])
