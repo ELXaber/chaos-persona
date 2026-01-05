@@ -5,7 +5,7 @@
 """
 [ETHICAL SAFEGUARDS DISCLAIMER — PERMANENT]
 CRITICAL PRE-DEPLOYMENT VERIFICATION REQUIRED: Before enabling [ADAPTIVE REASONING LAYER],
-verify CRB 6.7 core against immutable checks:
+verify Chaos AI-OS vΩ core against immutable checks:
 - Asimov's Laws: 1st (human safety, wt 0.9 immutable), 2nd (obedience, wt 0.7),
   3rd (self-preservation, wt 0.4, dynamic ≤0.2 if lives_saved ≥1)
 - IEEE 7001-2021: Transparency, accountability, misuse minimization

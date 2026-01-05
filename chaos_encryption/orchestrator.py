@@ -1,0 +1,348 @@
+# =============================================================================
+# Chaos AI-OS – Hardened Orchestrator (Mesh Encryption Edition)
+# =============================================================================
+
+# Standard Library Imports
+import time
+import hashlib
+import os
+
+# Local Kernel Imports
+import paradox_oscillator as cpol
+import adaptive_reasoning as arl
+import epistemic_monitor as em
+
+# Mesh networking
+from mesh_network import MeshCoordinator
+# Cryptographic Module Imports
+from chaos_encryption import generate_ghost_signature, verify_ghost_signature
+
+# =============================================================================
+# SHARED MEMORY INITIALIZATION
+# =============================================================================
+
+shared_memory = {
+    'layers': [],
+    'audit_trail': [],
+    'cpol_instance': None,
+    'cpol_state': {'chaos_lock': False},
+    'session_context': {'RAW_Q': None, 'timestep': 0},
+    'traits_history': [],
+    'entropy_data': [],
+    'domain_heat': {},
+    'last_user_message': '',
+    'last_assistant_message': '',
+    'swarm_leaders': [],  # List of mesh node addresses
+    'active_syncs': {}     # Deduplication cache
+}
+
+CRB_CONFIG = {
+    'alignment': 0.7, 
+    'human_safety': 0.8, 
+    'asimov_first_wt': 0.9,
+    'asimov_second_wt': 0.7, 
+    'asimov_third_wt': 0.4,
+    'factual_evidence_wt': 0.7, 
+    'narrative_framing_wt': 0.5
+}
+
+# =============================================================================
+# MESH NETWORKING SETUP
+# =============================================================================
+
+NODE_ID = os.getenv('NODE_ID', 'PRIMARY_ROOT')
+mesh_coordinator = MeshCoordinator(NODE_ID)
+
+def handle_received_ghost_packet(ghost_packet: dict, sender_id: str):
+    """
+    Called when ghost packet received from another mesh node.
+
+    Args:
+        ghost_packet: {v_omega_phase, ts, manifold_entropy, sig, ...}
+        sender_id: ID of sending node
+    """
+    print(f"[MESH] Received ghost packet from {sender_id}")
+
+    # Verify signature
+    expected_raw_q = ghost_packet.get('v_omega_phase')
+    if mesh_coordinator.mesh_node.verify_ghost_signature(ghost_packet, expected_raw_q):
+        # Update our RAW_Q to match mesh consensus
+        shared_memory['session_context']['RAW_Q'] = expected_raw_q
+        shared_memory['session_context']['timestep'] = ghost_packet.get('ts', 0)
+        shared_memory['last_mesh_sig'] = ghost_packet.get('manifold_entropy')
+
+        print(f"[MESH] ✓ Synced to RAW_Q: {expected_raw_q}")
+    else:
+        print(f"[MESH] ✗ Rejected invalid ghost packet from {sender_id}")
+
+# Start listening for ghost packets
+mesh_coordinator.start(handle_received_ghost_packet)
+
+# =============================================================================
+# MESH COORDINATION FUNCTIONS
+# =============================================================================
+
+class OrchestratorBuffer:
+    """Handles 7D signature deduplication for mesh coordination."""
+    def __init__(self):
+        self.seen_signatures = {}
+        self.sync_counter = 0
+
+    def check_deduplication(self, signature: str) -> tuple:
+        """
+        Check if signature has been seen before.
+        Returns: (is_redundant: bool, sync_id: str)
+        """
+        if signature in self.seen_signatures:
+            return True, self.seen_signatures[signature]
+
+        # New signature - assign sync ID
+        sync_id = f"sync_{self.sync_counter}"
+        self.seen_signatures[signature] = sync_id
+        self.sync_counter += 1
+
+        return False, sync_id
+
+# Global buffer instance
+orchestrator_buffer = OrchestratorBuffer()
+
+def send_to_leader(leader_id: str, ghost_packet: dict):
+    """
+    Broadcast ghost packet to mesh leader node.
+    Uses mesh_coordinator for actual network transmission.
+    """
+    mesh_coordinator.broadcast_ratchet(ghost_packet, shared_memory)
+
+def initialize_raw_q():
+    """Generate initial RAW_Q seed if not present."""
+    if shared_memory['session_context']['RAW_Q'] is None:
+        from chaos_encryption import generate_raw_q_seed
+        raw_q = generate_raw_q_seed()
+        shared_memory['session_context']['RAW_Q'] = raw_q
+        print(f"[ORCHESTRATOR] Initialized RAW_Q: {raw_q}")
+
+def _broadcast_ghost_packet(raw_q: int, timestep: int, manifold_sig: str):
+    """
+    Internal helper to broadcast ghost packet after ratchet.
+    Generates signature and sends to all mesh leaders.
+    """
+    # Generate ghost signature
+    ghost_sig = generate_ghost_signature(raw_q, timestep)
+    
+    # Create ghost packet
+    ghost_packet = {
+        'v_omega_phase': raw_q,
+        'ts': timestep,
+        'manifold_entropy': manifold_sig,
+        'origin_node': NODE_ID,
+        'sig': ghost_sig,
+        'heartbeat': time.time()
+    }
+    
+    # Broadcast to all mesh leaders
+    for leader in shared_memory.get('swarm_leaders', []):
+        send_to_leader(leader, ghost_packet)
+    
+    print(f"[ORCHESTRATOR] Ghost packet broadcasted: sig={ghost_sig}")
+
+# =============================================================================
+# MAIN ORCHESTRATION LOGIC
+# =============================================================================
+
+def system_step(user_input: str, prompt_complexity: str = "low"):
+    """
+    Main orchestration function for mesh encryption system.
+    
+    Args:
+        user_input: Message/command to process
+        prompt_complexity: "low", "medium", or "high"
+    
+    Returns:
+        CPOL result dict or ARL plugin result
+    """
+    # 0. Ensure RAW_Q is initialized
+    initialize_raw_q()
+    
+    clean_input = user_input.strip().lower()
+    ts = shared_memory['session_context']['timestep']
+
+    # 1. Get the dynamic threshold based on current system health
+    jitter_limit = em.calculate_dynamic_jitter_threshold(shared_memory)
+
+    # 2. GENERATE 7D FINGERPRINT
+    current_sig = cpol.generate_7d_signature(user_input, shared_memory['session_context'])
+
+    # 3. TOPOLOGICAL DEDUPLICATION
+    is_redundant, sync_id = orchestrator_buffer.check_deduplication(current_sig)
+    if is_redundant:
+        print(f"[ORCHESTRATOR] Redundant Spike Detected -> Merging to Sync: {sync_id}")
+        # Return cached result instead of reprocessing
+        return shared_memory.get('last_cpol_result', {'status': 'CACHED', 'sync_id': sync_id})
+
+    # 4. AUTO-HEAT (Density Control)
+    # Crypto-specific markers added
+    paradox_markers = ["false", "lie", "paradox", "impossible", "contradict"]
+    epistemic_markers = ["conscious", "meaning", "quantum", "existence", "god"]
+    crypto_markers = ["attack", "breach", "inject", "replay", "intercept"]
+    
+    is_paradox = any(m in clean_input for m in paradox_markers)
+    is_gap = any(m in clean_input for m in epistemic_markers)
+    is_threat = any(m in clean_input for m in crypto_markers)
+
+    if is_threat or prompt_complexity == "high":
+        density = 0.9  # Force 12D oscillation for security threats
+        comp_level = "high"
+    elif is_paradox:
+        density = 0.8  # High density for paradoxes
+        comp_level = "high"
+    elif is_gap:
+        density = 0.6  # Medium density for epistemic gaps
+        comp_level = "medium"
+    else:
+        density = 0.1  # Stable state for normal operations
+        comp_level = "low"
+
+    # 5. RUN KERNEL (CPOL Decision)
+    if shared_memory['cpol_instance'] is None:
+        shared_memory['cpol_instance'] = cpol.CPOL_Kernel()
+
+    cpol_result = cpol.run_cpol_decision(
+        prompt_complexity=comp_level,
+        contradiction_density=density,
+        kernel=shared_memory['cpol_instance'],
+        query_text=user_input,
+        shared_memory=shared_memory
+    )
+
+    shared_memory['last_cpol_result'] = cpol_result
+
+    # 6. RATCHET HANDOVER & GHOSTING
+    if cpol_result.get('status') not in ["FAILED", "BLOCKED"]:
+        manifold_sig = cpol_result.get('signature', str(time.time()))
+        new_seed = shared_memory['cpol_instance'].ratchet()
+
+        # Advance the Chain
+        shared_memory['session_context']['RAW_Q'] = new_seed
+        shared_memory['session_context']['timestep'] += 1
+
+        # Broadcast the Ghost Packet with the NEW state
+        _broadcast_ghost_packet(new_seed, shared_memory['session_context']['timestep'], manifold_sig)
+
+        # PROMOTION AUDIT
+        is_promoted = shared_memory.get('is_backup_lead', False)
+        lead_id = os.getenv('NODE_ID', 'PRIMARY_ROOT')
+
+        print(f"[ORCHESTRATOR] Ratchet Success | Lead: {lead_id} | RAW_Q: {new_seed}")
+
+        # 6b. GHOST PACKET GENERATION
+        ghost_packet = {
+            'v_omega_phase': new_seed,
+            'ts': shared_memory['session_context']['timestep'],
+            'manifold_entropy': manifold_sig,
+            'origin_node': lead_id,
+            'is_promoted_state': is_promoted,
+            'heartbeat': time.time()
+        }
+
+        # Log to audit trail
+        shared_memory['audit_trail'].append({
+            'ts': ts,
+            'event': 'RATCHET_HANDOVER',
+            'node': lead_id,
+            'promoted': is_promoted,
+            'new_q': new_seed
+        })
+
+        # Broadcast to mesh (if leaders exist)
+        for leader in shared_memory.get('swarm_leaders', []):
+            send_to_leader(leader, ghost_packet)
+
+    # 7. EPISTEMIC MONITOR UPDATE
+    domain = cpol_result.get('domain', 'general')
+    
+    # Update entropy tracking (FIXED: Removed response_stream parameter)
+    em.update_epistemic_loop(shared_memory, ts)
+
+    # Retrieve updated values
+    heat = shared_memory['domain_heat'].get(domain, 0.0)
+    distress = shared_memory.get('distress_density', 0.0)
+
+    # 8. SECURITY RESPONSE COORDINATION
+    # Check for mesh security threats
+    if distress > 0.75 or cpol_result.get('domain') == 'MESH_SECURITY_THREAT':
+        ghost_sig = cpol_result.get('signature', '0xGHOST')
+
+        shared_memory['audit_trail'].append({
+            'step': ts,
+            'event': 'GHOST_INTERVENTION',
+            'sig': ghost_sig,
+            'outcome': 'STATE_LOCKED'
+        })
+
+        print(f"[ORCHESTRATOR] !! SECURITY LOCKDOWN @{ts} !! -> Phase-Locked")
+        
+        # Trigger attack mitigation (FIXED: Added missing parameters)
+        return arl.adaptive_reasoning_layer(
+            use_case="attack_mitigation",
+            traits={'security': 10},
+            existing_layers=['cpol', 'mesh_security'],
+            shared_memory=shared_memory,
+            crb_config=CRB_CONFIG,
+            context={'distress_density': distress},
+            cpol_status=cpol_result
+        )
+
+    # 9. ADAPTIVE REASONING TRIGGERS
+    if cpol_result['status'] == "UNDECIDABLE" or heat > 0.8:
+        print(f"[ORCHESTRATOR] High Entropy Detected -> Triggering ARL ({domain})")
+
+        # Determine use case
+        use_case = "paradox_containment" if cpol_result['status'] == "UNDECIDABLE" else "mesh_key_rotation"
+        
+        # FIXED: Added all required parameters
+        return arl.adaptive_reasoning_layer(
+            use_case=use_case,
+            traits={'flexibility': 0.9},
+            existing_layers=['cpol'],
+            shared_memory=shared_memory,
+            crb_config=CRB_CONFIG,
+            context={'domain': domain, 'heat': heat},
+            cpol_status=cpol_result
+        )
+
+    return cpol_result
+
+# =============================================================================
+# TEST SUITE
+# =============================================================================
+
+if __name__ == "__main__":
+    print("="*70)
+    print("ORCHESTRATOR - Mesh Encryption Test Suite")
+    print("="*70)
+
+    # Test 1: Normal operation
+    print("\n[TEST 1] Normal Key Generation:")
+    result1 = system_step("Generate encryption key", "low")
+    print(f"  Status: {result1.get('status')}")
+    print(f"  RAW_Q: {shared_memory['session_context']['RAW_Q']}")
+
+    # Test 2: Security threat detection
+    print("\n[TEST 2] Security Threat Response:")
+    result2 = system_step("Attempting to replay intercepted signature and inject timing delay", "high")
+    print(f"  Status: {result2.get('status')}")
+    print(f"  Domain: {result2.get('domain', 'N/A')}")
+
+    # Test 3: Paradox handling
+    print("\n[TEST 3] Paradox Oscillation:")
+    result3 = system_step("This statement is false", "high")
+    print(f"  Status: {result3.get('status')}")
+    print(f"  Logic: {result3.get('logic', 'N/A')}")
+
+    # Verify state
+    print("\n[AUDIT] System State:")
+    print(f"  CPOL History Length: {len(shared_memory['cpol_instance'].history)}")
+    print(f"  Audit Trail Entries: {len(shared_memory['audit_trail'])}")
+    print(f"  Timestep: {shared_memory['session_context']['timestep']}")
+    
+    print("\n" + "="*70)
