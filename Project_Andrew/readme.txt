@@ -1,4 +1,4 @@
-# Project Andrew uses the CAIOS stack, but adds intrinsic motivation, agency for recursive self-improvement through ARL/agent_designer, and fills knowledge gaps with specialist-designed agents on CPOL oscillation if the conditions are met. Agents are saved to /agents, and plugins to /plugins, with CoT to /logs, so the recursive self-improvement never overwrites the immutable Asimov-based ethical reward system that uses IEEE dithering. The oscillating manifold can be used to create a topological moving target keychain for quantum secure mesh networks (developed on UDP).
+# Project Andrew uses the CAIOS stack, but adds intrinsic motivation, agency for recursive self-improvement through ARL/agent_designer, and fills knowledge gaps with specialist-designed agents on CPOL oscillation if the conditions are met. Agents are saved to /agents, and plugins to /plugins, with CoT to /logs, so the recursive self-improvement never overwrites the immutable Asimov-based ethical reward system using IEEE dithering. The oscillating manifold can be used to create a topological moving target keychain for quantum secure mesh networks (developed on UDP).
 
 Traditional AI research (the "Top 30 Papers" era) suggests that coherence is a function of Scale: more parameters, more data, and larger attention windows.
 CAIOS vΩ (Project Andrew) refutes this by proving that coherence is actually a function of Symmetry and Structure.
@@ -39,12 +39,12 @@ Your folder should look like this:
  | knowledge_base.py — The Persistent Memory Layer.
  | paradox_oscillator.py — Ternary oscillation (CPOL)
  | adaptive_reasoning.py — The CPOL modes and intrinsic motivation queue.
- | agent_designer.py — The recursive self-improvement agent designer autonomously triggered by curiosity_engine to fill knowladge gaps in the KB
- | curiosity_engine.py — The intrinsic motivation called from CPOL on epistemic gap to autonomously trigger agent_designer and fill knnowladge gaps in KB
+ | agent_designer.py — The recursive self-improvement agent designer autonomously triggered by curiosity_engine to fill knowledge gaps in the KB
+ | curiosity_engine.py — The intrinsic motivation called from CPOL on epistemic gap to autonomously trigger agent_designer and fill knowledge gaps in KB
  | chaos_encryption.py — The CPOL Quantum Manifold.
  | mesh_network.py — The Mesh Transport Layer.
  | master_init.py — The System BIOS/Diagnostic.
- | directories /agents and /logs /knowladge_base
+ | directories /agents and /logs /knowledge_base
  
  3. The Sovereign Boot Sequence:
  Follow these steps in order to initialize the system:
