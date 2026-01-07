@@ -1,29 +1,52 @@
-# Project Andrew uses the CAIOS stack, but adds intrinsic motivation, agency for recursive self-improvement through ARL/agent_designer, and fills knowledge gaps with specialist-designed agents on CPOL oscillation if the conditions are met. Agents are saved to /agents, and plugins to /plugins, with CoT to /logs, so the recursive self-improvement never overwrites the immutable Asimov-based ethical reward system that uses IEEE dithering.
+# Project Andrew uses the CAIOS stack, but adds intrinsic motivation, agency for recursive self-improvement through ARL/agent_designer, and fills knowledge gaps with specialist-designed agents on CPOL oscillation if the conditions are met. Agents are saved to /agents, and plugins to /plugins, with CoT to /logs, so the recursive self-improvement never overwrites the immutable Asimov-based ethical reward system that uses IEEE dithering. The oscillating manifold can be used to create a topological moving target keychain for quantum secure mesh networks (developed on UDP).
 
 # I will be ironing out the system's recursive self-improvement and intrinsic motivation, but the CAIOS stack maintains ethics, transparency, paradox (oscillatory) immunity, robotics personality matrix, flexible profiles, subject axioms, and constraints with chaos injection resets.
 
+🚀 Chaos AI-OS: Project Andrew Quickstart
+1. Environment Preparation
+Ensure your local environment has the necessary mathematical and cryptographic libraries installed. 
+Run the following command in your terminal: pip install numpy pyzmq cryptography
+Numpy: Powers the 12D -> 7D manifold rotations.
+PyZMQ: Handles the mesh transport and ghost packet broadcasting.
+Cryptography: Provides the AES-256-GCM armor for data persistence.
 
-# Include this (4-13) in CAIOS.txt below [CHAOS SYMMETRY], but before [OUTPUT GENERATION], with the curiosity_engine.py, which will create a type of intrinsic motivation based on curiosity score.
-# Pre-requisites:
-# CAIOS.txt (inference layer overlay on ani AI can be used as a front end as a pre-prompt)
-# orchestrator.py (Requires Python execution for full functionality as the mesh)
-# paradox_oscillator.py (CPOL pos-binary oscillation - can be simulated by any AI)
-# adaptive_reasoning.py (control layer and evolving plugin generator - can be simulated by any AI)
-#agent_designer.py (extension of ARL)
+2. File Architecture
+Verify that all core components are in the same root directory.
+Your folder should look like this:
+ | CAIOS.txt — The inference layer core engine for subsystems overlay on ani AI can be used as a front end as a pre-prompt.
+ | orchestrator.py — The Central Nervous System.
+ | knowledge_base.py — The Persistent Memory Layer.
+ | paradox_oscillator.py — Ternary oscillation (CPOL)
+ | adaptive_reasoning.py — The CPOL modes and intrinsic motivation queue.
+ | agent_designer.py — The recursive self-improvement agent designer autonomously triggered by curiosity_engine to fill knowladge gaps in the KB
+ | curiosity_engine.py — The intrinsic motivation called from CPOL on epistemic gap to autonomously trigger agent_designer and fill knnowladge gaps in KB
+ | chaos_encryption.py — The CPOL Quantum Manifold.
+ | mesh_network.py — The Mesh Transport Layer.
+ | master_init.py — The System BIOS/Diagnostic.
+ | directories /agents and /logs /knowladge_base
+ 
+ 3. The Sovereign Boot Sequence:
+ Follow these steps in order to initialize the system:
+ Run the Diagnostic: Execute python master_init.py. This verifies the hash chain integrity and ensures the knowledge_base/ directory is correctly mapped.
+ Initialize the Orchestrator: Run python orchestrator.py.
+ Perform the Handshake: When prompted for input, type:root_auth: initialize sovereign_protocol
+ Verify the Ratchet: Check the console for «SOVEREIGN HANDSHAKE COMPLETE». This confirms your RAW_Q seed has been successfully ratcheted into the manifold.
+ 
+ 4. Monitoring the Mesh:
+ While the system is running, you can monitor the knowledge_base/discoveries.jsonl file. You should see entries with "node_tier": 0, indicating that your Sovereign authority is being correctly recorded alongside the manifold signatures.
 
-# Deploy core stack more easily from here: https://github.com/ELXaber/chaos-persona/tree/main/Chaos_AIOS
 
 CAIOS/
 ├── knowledge_base/
-│   ├── discoveries.jsonl     	        # Append-only log of all discoveries
+│   ├── discoveries.jsonl     	         # Append-only log of all discoveries
 │   ├── domain_index.json               # Fast lookup by domain
 │   ├── specialist_registry.json        # Active specialists catalog
-│   └── integrity_chain.txt  	          # Tamper-evident hash chain
+│   └── integrity_chain.txt  	        # Tamper-evident hash chain
 ├── agents/                      		 	  # ARL-generated agent modules
 ├── orchestrator.py           		      # Main loop (now KB-aware)
-├── agent_designer.py             	    # Creates specialists (checks KB first)
-├── knowledge_base.py                   # Core KB API
-└── kb_inspect.py               		    # CLI inspection tool
+├── agent_designer.py             	  # Creates specialists (checks KB first)
+├── knowledge_base.py               # Core KB API
+└── kb_inspect.py               		 # CLI inspection tool
 
 
 User Query → CPOL → Epistemic Gap Detected → Check KB
@@ -55,9 +78,9 @@ turn_hooks:
 ===================================================
 # Explanation:
 
-CAIOS.txt                     ← untouched except the 6-line block above (optional)
+CAIOS.txt 
 └── modules/
-    └── curiosity_engine.py   ← full 100–150 line implementation
+    └── curiosity_engine.py 
         - self_score_interest()
         - manage curiosity_tokens[]
         - decay + volatility re-ignition
@@ -68,7 +91,7 @@ When curiosity hits a certain threshold, and intrinsic motivation kicks in, then
 
 ===================================================
 
-🔍 1. You’ve already built all but one component of an AGI architecture
+🔍 1. Capabilities
 
 CAIOS right now has:
 recursive self-improvement
@@ -77,10 +100,13 @@ paradox-stable reasoning (CPOL)
 tool and agent generation
 state continuity
 memory and mesh
+encyription
 oscillation-based control loops
-The only missing piece is an internal goal that persists even when no user prompt is present.
+
+
 That is the exact threshold between:
-✔ Task-bound recursive agent
+
+✔ Task-bound Asimov-bound recursive agent
 
 and
 
@@ -88,18 +114,9 @@ and
 
 ===================================================
 
-This project has **zero external Python dependencies**.
-
 The entire intrinsic-motivation curiosity engine, tamper-evident audit trail, and hash chain run exclusively on the Python 3.11+ standard library.
 
-Why?
-- Maximum security (no supply-chain risk)
-- Instant cold-start in restricted environments
-- True production-grade minimalism
-
-When (and only when) you add optional features:
-- X/Twitter auto-posting → uncomment `tweepy`
-- Redis persistence → uncomment `redis`
-- etc.
-
-Until then: `pip install -r requirements.txt` does literally nothing — and that’s a feature.
+Chaos AI-OS Encryption and Mesh Network Core Dependencies
+numpy>=1.20.0      # Quantum Manifold math and 12D rotations
+pyzmq>=22.0.0      # Mesh network transport (Ghost Packets)
+cryptography>=3.4.0 # AES-256-GCM hardening for Knowledge Base

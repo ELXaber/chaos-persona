@@ -56,8 +56,15 @@ def cmd_show_domain(domain: str):
     discoveries = kb.query_domain_knowledge(domain)
 
     for i, disc in enumerate(discoveries, 1):
-        print(f"\n{i}. [{disc['type']}] {disc['timestamp'][:19]}")
+        # Determine the Sovereign Label based on node_tier
+        tier_label = "SOVEREIGN ROOT" if disc.get('node_tier') == 0 else f"Tier {disc.get('node_tier', 1)}"
+
+        print(f"\n{i}. [{disc['type']}] {disc['timestamp'][:19]} | {tier_label}")
         print(f"   ID: {disc['discovery_id']}")
+
+        # Show the Manifold Signature if present
+        if 'manifold_sig' in disc:
+            print(f"   Manifold Sig: {disc['manifold_sig'][:15]}...")
 
         content = disc.get('content', {})
         if 'summary' in content:
@@ -71,6 +78,9 @@ def cmd_show_domain(domain: str):
         if 'confidence' in content:
             print(f"   Confidence: {content['confidence']:.2f}")
 
+        if 'manifold_sig' in disc:
+            sig = disc['manifold_sig']
+            print(f"   Manifold Sig: {sig}")
 
 def cmd_list_specialists():
     """List all registered specialists."""
@@ -94,8 +104,9 @@ def cmd_list_specialists():
         disc_count = info.get('discovery_count', 0)
         status = info.get('status', 'unknown')
         deployed = info.get('deployed_at', 'Unknown')[:19]
+        tier = "ROOT" if info.get('node_tier') == 0 else "EDGE"
 
-        print(f"{spec_id:<20} {domain:<25} {disc_count:<15} {status:<10} {deployed:<20}")
+        print(f"{spec_id:<20} {domain:<25} {tier:<10} {status:<10} {deployed:<20}")
 
     print(f"{'='*90}")
     print(f"Total specialists: {len(registry)}")
@@ -125,8 +136,11 @@ def cmd_show_specialist(specialist_id: str):
 
     info = registry[specialist_id]
 
+    # Determine authority for THIS specialist
+    tier_label = "SOVEREIGN ROOT (Tier 0)" if info.get('node_tier') == 0 else f"EDGE (Tier {info.get('node_tier', 1)})"
+
     print(f"\n{'='*70}")
-    print(f"Specialist: {specialist_id}")
+    print(f"Specialist: {specialist_id} | {tier_label}")
     print(f"{'='*70}")
     print(f"Domain: {info['domain']}")
     print(f"Status: {info.get('status', 'unknown')}")
@@ -136,7 +150,7 @@ def cmd_show_specialist(specialist_id: str):
     print(f"\nCapabilities: {', '.join(info.get('capabilities', []))}")
 
     print(f"\n{'Deployment Context':-^70}")
-    context = info.get('context', {})
+    context = info.get('deployment_context', {}) # Note: use 'deployment_context' per KB file
     print(json.dumps(context, indent=2))
 
 
@@ -169,6 +183,24 @@ def cmd_stats():
     if kb.HASH_CHAIN.exists():
         with open(kb.HASH_CHAIN, "r") as f:
             hash_count = sum(1 for _ in f)
+
+    # Sovereign vs Edge distribution audit
+    sovereign_count = 0
+    edge_count = 0
+    if kb.DISCOVERIES_LOG.exists():
+        with open(kb.DISCOVERIES_LOG, "r") as f:
+            for line in f:
+                try:
+                    entry = json.loads(line.strip())
+                    if entry.get('node_tier') == 0:
+                        sovereign_count += 1
+                    else:
+                        edge_count += 1
+                except: continue
+
+    print(f"Sovereign Truths (Tier 0): {sovereign_count}")
+    print(f"Edge Discoveries (Tier 1+):  {edge_count}")
+    # ------------------------------------------------
 
     print(f"\nTotal domains: {domain_count}")
     print(f"Total discoveries: {discovery_count}")

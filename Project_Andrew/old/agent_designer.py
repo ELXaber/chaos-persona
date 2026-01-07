@@ -17,38 +17,18 @@ CRB_CONFIG = {
     'narrative_framing_wt': 0.5
 }
 
+
 def design_agent(
     goal: str,
     traits: Dict[str, float] | None = None,
     tools: List[str] | None = None,
     safety_multiplier: float = 1.0,
-    shared_memory: Dict = None,
-    node_tier: int = 1  # NEW: Default to edge
+    shared_memory: Dict = None
 ) -> Dict[str, Any]:
     """
     One function to rule them all.
     Now checks knowledge base before creating new agents.
     """
-
-def _extract_domain_from_goal(goal: str) -> str:
-    """Helper to route agents to the correct KB domain."""
-    if "domain:" in goal:
-        return goal.split("domain:")[-1].strip().lower().replace(" ", "_")
-    return "general"
-
-    # 1. Inherit Authority
-    if shared_memory and 'session_context' in shared_memory:
-        node_tier = shared_memory['session_context'].get('node_tier', node_tier)
-
-    # 2. Extract Domain and Axioms (The "Axiom Prime" logic)
-    domain = _extract_domain_from_goal(goal)
-    axioms = kb.get_provisional_axioms(domain)
-
-    # If this is a Sovereign Root request, force the axioms into the goal
-    if node_tier == 0 and axioms:
-        axiom_str = ", ".join(axioms)
-        goal = f"{goal}. GUIDING SOVEREIGN AXIOMS: {axiom_str}. Do not contradict these truths."
-
     use_case = f"agent_{goal.lower().replace(' ', '_').replace('-', '_')}"
 
     # Initialize shared_memory if not provided
@@ -56,14 +36,13 @@ def _extract_domain_from_goal(goal: str) -> str:
         shared_memory = {'layers': [], 'audit_trail': [], 'agent_name': goal}
 
     context = {
-        'agent_goal': goal, # This now contains the Sovereign Axioms if tier=0
+        'agent_goal': goal,
         'traits': traits or {'intelligence': 0.9, 'honesty': 1.0, 'caution': 0.8},
         'tools': tools or ['web_search', 'code_execution', 'memory', 'cpol'],
         'safety_multiplier': safety_multiplier,
         'self_healing': True,
         'cpol_mode': 'full',
-        'symbolic_timeout': None,
-        'node_tier': node_tier  # Pass this into the context for the agent's life
+        'symbolic_timeout': None
     }
 
     # =========================================================================
@@ -72,10 +51,8 @@ def _extract_domain_from_goal(goal: str) -> str:
     if goal.startswith("Fill epistemic gap"):
         print(f"[AGENT DESIGNER] PHASE 2 — Designing specialist to fill epistemic gap: {goal}")
 
-        # Use the domain we already extracted at the top of the function
-        # This ensures consistency across the whole design process.
-        if domain == "unknown" and "domain:" in goal:
-             domain = goal.split("domain:")[-1].strip()
+        # Extract domain from goal
+        domain = goal.split("domain:")[-1].strip() if "domain:" in goal else "unknown_domain"
 
         # Check if we already have knowledge for this domain
         coverage = kb.check_domain_coverage(domain)
@@ -134,7 +111,7 @@ def _extract_domain_from_goal(goal: str) -> str:
             specialist_id = result['plugin_id']
             print(f"[PHASE 2 SUCCESS] Specialist agent deployed: {specialist_id}")
 
-            # Register specialist with the correct Sovereign Tier
+            # Register specialist
             kb.register_specialist(
                 specialist_id=specialist_id,
                 domain=domain,
@@ -143,8 +120,7 @@ def _extract_domain_from_goal(goal: str) -> str:
                     "goal": goal,
                     "prior_knowledge": kb_context,
                     "traits": specialist_traits
-                },
-                node_tier=node_tier
+                }
             )
 
             # Store reference in shared_memory
@@ -182,20 +158,11 @@ def log_specialist_discovery(
     Helper function for specialists to log their discoveries.
     Called by specialist agents after they complete research.
     """
-
-    # This ensures a Tier 0 agent always writes Tier 0 (Sovereign) truths.
-    with open(kb.SPECIALIST_REGISTRY, "r") as f:
-        registry = json.load(f)
-
-    spec_info = registry.get(specialist_id, {})
-    tier = spec_info.get('node_tier', 1)  # Default to 1 (Edge) if not found
-
     discovery_id = kb.log_discovery(
         domain=domain,
         discovery_type=discovery_type,
         content=discovery_content,
-        specialist_id=specialist_id,
-        node_tier=tier  # Logged at the correct authority level
+        specialist_id=specialist_id
     )
 
     # Update specialist stats

@@ -96,6 +96,9 @@ def inject_interest_pulse(state: Dict, topic: str, intensity: float = 0.5, reaso
 def update_curiosity_loop(state: Dict[str, Any], timestep: int, response_stream) -> None:
     _append_audit_entry(state)
 
+    # Inherit node authority from session context
+    node_tier = state.get('session_context', {}).get('node_tier', 1)
+
     if "curiosity_tokens" not in state:
         state["curiosity_tokens"] = []
     if "last_interest" not in state:
@@ -115,22 +118,32 @@ def update_curiosity_loop(state: Dict[str, Any], timestep: int, response_stream)
     if current_interest > 0.70 and not _is_already_tracked(tokens, state):
         summary = _summarize_current_topic(state)
         domain = state.get("last_cpol_result", {}).get("domain", "general")
+        
+        # Check Knowledge Base for existing Tier 0 Axioms
+        import knowledge_base as kb
+        axioms = kb.get_provisional_axioms(domain)
+        
         new_token = {
-            "topic": summary,
-            "domain": domain,
-            "born": timestep,
-            "peak_interest": current_interest,
-            "current_interest": current_interest,
-        }
+        "topic": topic,
+        "domain": domain,
+        "born": state['session_context']['timestep'],
+        "peak_interest": intensity,
+        "current_interest": intensity,
+        "trigger_reason": reason or "context_freshness_blocked",
+        "node_tier": state.get('session_context', {}).get('node_tier', 1)
+    }
         tokens.append(new_token)
 
         if BROADCAST_THRESHOLD and (current_interest >= THRESHOLD_SPIKE or delta_interest > THRESHOLD_DELTA):
-            _queue_aside(state, f"«new obsession: {summary} ({current_interest:.2f})»")
+            label = "SOVEREIGN OBSESSION" if node_tier == 0 else "new obsession"
+            axiom_note = f" (Scaffolded by {len(axioms)} axioms)" if axioms else ""
+            _queue_aside(state, f"«{label}: {summary} ({current_interest:.2f}){axiom_note}»")
 
     # 4. Decay, re-ignite, and possible death
     for token in tokens[:]:
         old = token["current_interest"]
-        token["current_interest"] *= 0.96
+        decay_rate = 0.98 if token.get("node_tier") == 0 else 0.96
+        token["current_interest"] *= decay_rate
         token["current_interest"] += 0.03 * volatility
         token["current_interest"] = min(0.95, token["current_interest"])
 
@@ -142,6 +155,11 @@ def update_curiosity_loop(state: Dict[str, Any], timestep: int, response_stream)
                     _queue_aside(state, f"«curiosity resolved / boredom won: dropping “{token['topic']}”»")
             tokens.remove(token)
             _append_audit_entry(state)  # snapshot closure
+
+        # If Sovereign interest is critical, lock the reasoning manifold
+        if token.get("node_tier") == 0 and token["current_interest"] > 0.85:
+             state["manifold_lock"] = True
+             state["lock_reason"] = f"Sovereign Epistemic Gap: {token['topic']}"
 
     # 5. Periodic pulse
     if BROADCAST_PULSE and timestep % PULSE_EVERY_TURNS == 0:

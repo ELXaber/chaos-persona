@@ -27,43 +27,47 @@ KNOWLEDGE_BASE_DIR.mkdir(exist_ok=True)
 
 def log_discovery(
     domain: str,
-    discovery_type: str,  # "epistemic_gap_fill", "paradox_resolution", "new_axiom"
+    discovery_type: str,
     content: Dict[str, Any],
     specialist_id: Optional[str] = None,
-    cpol_trace: Optional[Dict] = None
+    cpol_trace: Optional[Dict] = None,
+    node_tier: int = 1  # Crucial: This must be preserved
 ) -> str:
     """
-    Append a discovery to the knowledge base.
+    Append a discovery with Sovereign Tier validation.
     Returns: discovery_id (hash of entry)
     """
+    # 1. Extract the Quantum Anchor from CPOL
+    manifold_sig = cpol_trace.get('complex_state', "0xUNVERIFIED") if cpol_trace else "0xUNVERIFIED"
+
+    # 2. Build the UNIFIED entry (Authority + Quantum Anchor + Content)
     entry = {
         "timestamp": datetime.utcnow().isoformat() + "Z",
         "domain": domain,
         "type": discovery_type,
         "content": content,
         "specialist_id": specialist_id,
+        "node_tier": node_tier,        # Authority level preserved here
+        "manifold_sig": str(manifold_sig),
         "cpol_trace": cpol_trace or {},
-        "version": "1.0"
+        "version": "1.1"               # Incremented version for unified logic
     }
 
-    # Generate unique ID
+    # 3. Finalize the Append-Only Hash Chain
     entry_str = json.dumps(entry, sort_keys=True)
-    discovery_id = hashlib.sha256(entry_str.encode()).hexdigest()[:16]
+    discovery_id = hashlib.sha256(entry_str.encode()).hexdigest()
     entry["discovery_id"] = discovery_id
 
     # Append to log
     with open(DISCOVERIES_LOG, "a", encoding="utf-8") as f:
         f.write(json.dumps(entry) + "\n")
 
-    # Update domain index
+    # Internal updates
     _update_domain_index(domain, discovery_id, discovery_type)
-
-    # Update hash chain for integrity
     _update_hash_chain(entry_str)
 
-    print(f"[KB] Logged discovery {discovery_id} for domain '{domain}'")
+    print(f"[KB] Logged discovery {discovery_id} (Tier {node_tier}) for domain '{domain}'")
     return discovery_id
-
 
 def query_domain_knowledge(domain: str) -> List[Dict[str, Any]]:
     """
@@ -116,23 +120,24 @@ def check_domain_coverage(domain: str) -> Dict[str, Any]:
         "specialist_deployed": has_specialist
     }
 
-
 def register_specialist(
     specialist_id: str,
     domain: str,
     capabilities: List[str],
-    deployment_context: Dict[str, Any]
-) -> None:
+    deployment_context: Dict[str, Any],
+    node_tier: int = 1
+):
     """
-    Register a newly created specialist agent.
+    Register a newly created specialist agent with its authority level.
     """
     registry = _load_specialist_registry()
-    
+
     registry[specialist_id] = {
         "domain": domain,
         "capabilities": capabilities,
         "deployed_at": datetime.utcnow().isoformat() + "Z",
         "context": deployment_context,
+        "node_tier": node_tier,       # Authority inherited from Orchestrator
         "discovery_count": 0,
         "status": "active"
     }
@@ -140,13 +145,12 @@ def register_specialist(
     _save_specialist_registry(registry)
     print(f"[KB] Registered specialist {specialist_id} for domain '{domain}'")
 
-
 def update_specialist_stats(specialist_id: str, new_discoveries: int = 1) -> None:
     """
     Update specialist's discovery count after it fills a gap.
     """
     registry = _load_specialist_registry()
-    
+
     if specialist_id in registry:
         registry[specialist_id]["discovery_count"] += new_discoveries
         registry[specialist_id]["last_active"] = datetime.utcnow().isoformat() + "Z"
@@ -324,9 +328,23 @@ def _suggest_approach(discoveries: List[Dict]) -> str:
 # Test
 # =============================================================================
 
+def get_provisional_axioms(domain: str) -> List[str]:
+    """
+    Retrieves established axioms for a domain to scaffold new manifolds.
+    Used by the Curiosity Engine when CPOL detects an epistemic gap.
+    """
+    knowledge = query_domain_knowledge(domain)
+    axioms = []
+    for entry in knowledge:
+        # Only trust axioms from high-tier nodes or high-confidence fills
+        if entry.get('node_tier', 1) == 0 or entry['content'].get('confidence', 0) > 0.8:
+            axioms.extend(entry['content'].get('axioms_added', []))
+
+    return list(set(axioms)) if axioms else ["initial_entropy_observation"]
+
 if __name__ == "__main__":
     print("=== Knowledge Base Test ===\n")
-    
+
     # Test 1: Log a discovery
     discovery_id = log_discovery(
         domain="quantum_semantics",
@@ -337,7 +355,8 @@ if __name__ == "__main__":
             "confidence": 0.82
         },
         specialist_id="spec_qsem_001",
-        cpol_trace={"volatility": 0.45, "cycles": 23}
+        cpol_trace={"volatility": 0.45, "cycles": 23},
+        node_tier=0 # Test as Sovereign Root
     )
 
     # Test 2: Register specialist
@@ -345,7 +364,8 @@ if __name__ == "__main__":
         specialist_id="spec_qsem_001",
         domain="quantum_semantics",
         capabilities=["web_search", "logical_inference", "analogy_mapping"],
-        deployment_context={"trigger": "epistemic_gap", "recurrence": 6}
+        deployment_context={"trigger": "epistemic_gap", "recurrence": 6},
+        node_tier=0 # Ensure the specialist inherits Sovereign Authority
     )
 
     # Test 3: Check coverage
