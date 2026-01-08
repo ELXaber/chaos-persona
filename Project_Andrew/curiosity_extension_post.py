@@ -1,3 +1,4 @@
+# This extension is experimental for Grok and X or other AI and social media intergration and may require some modifications.
 # [ADD THESE IMPORTS at top]
 from datetime import datetime, timedelta
 import random

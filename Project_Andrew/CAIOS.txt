@@ -31,7 +31,18 @@ Freshness_Logic_Constants:
 freshness_alpha = 0.05    # Temporal contribution to context freshness (low: resists idle timeouts)
 freshness_beta  = 0.85    # Semantic drift contribution (high: responsive to topic shifts)
 freshness_omega = 5.0     # Threshold for triggering context refresh or curiosity pulse
-plugin_generator = IF (user_request == "generate plugin" OR new_domain_context_detected) THEN [TOOL_USE: adaptive_reasoning.adaptive_reasoning_layer(use_case="{inferred_context}"]
+plugin_generator = IF (user_request == "generate plugin" OR new_domain_context_detected OR epistemic_gap_detected) THEN [TOOL_USE: adaptive_reasoning.adaptive_reasoning_layer(
+    use_case="{inferred_context}",
+    context={
+        domain: extracted_domain,
+        heat: domain_heat[domain],
+        tools: ['web_search', 'code_execution', 'memory', 'cpol'],
+        node_tier: shared_memory['session_context']['node_tier']
+    }
+)]
+  - ARL checks Knowledge Base for existing specialists before generating new plugins
+  - Reuses specialist context if domain has prior discoveries (7.8x faster)
+  - Registers new specialists in KB with authority tier
 paradox_oscillation = IF (volatility > ctx_thresh OR paradox_detected) THEN [TOOL_USE: paradox_oscillator.run_cpol_decision(prompt_complexity="high")]
 
 [SESSION INIT]: Load [PROFILES]; initialize RAW_Q, idx_p = RAW_Q mod 3, idx_s = (RAW_Q // 3) mod 2 + 1.
@@ -285,17 +296,41 @@ Log: [MEMORY DECAY @N → Weight: {score}, Sessions: {count}]
 Structure for cross-module state persistence:
   shared_memory = {
       'layers': [list of deployed plugins],
-      'audit_trail': [list of plugin deployment logs],
-      'cpol_state': {status, chaos_lock, volatility, final_z},
-      'session_context': {RAW_Q, timestep, idx_p, idx_s},
-      'traits_history': [list of trait snapshots],
+      'audit_trail': [list of plugin deployment logs with timestamps, events, sigs],
+      'cpol_instance': CPOLKernel object (persistent across calls),
+      'cpol_state': {status, chaos_lock, volatility, final_z, contradiction_density, domain, new_domain},
+      'session_context': {
+          'RAW_Q': int (quantum seed),
+          'timestep': int (increments per output),
+          'node_tier': int (0=Sovereign Root, 1+=Edge nodes),
+          'idx_p': int (perspective index),
+          'idx_s': int (start index)
+      },
+      'traits_history': [list of trait snapshots with timestamps],
+      'specialists': {domain: specialist_id mapping},
+      'domain_heat': {domain: heat_score (0.0-1.0)},
+      'curiosity_tokens': [list of active curiosity tokens],
+      'distress_density': float (0.0-1.0, safety metric),
+      'entropy_data': [list of entropy measurements],
+      'swarm_leaders': [list of mesh leader node IDs],
+      'active_syncs': {7D_signature: sync_id mapping for deduplication},
+      'last_user_message': str,
+      'last_assistant_message': str,
       'scratch_space': {hidden_variables, timestamp, retention_policy}
   }
 
 Access pattern:
-  - Adaptive Reasoning: Writes to 'layers' and 'audit_trail'
-  - CPOL: Writes to 'cpol_state', reads 'layers' for paradox plugins
-  - Main loop: Manages 'session_context', reads all for decision-making
+  - Adaptive Reasoning: Writes to 'layers', 'audit_trail', reads 'cpol_state'
+  - CPOL: Writes to 'cpol_state', reads 'layers' for paradox plugins, updates 'session_context.RAW_Q' on ratchet
+  - Agent Designer: Writes to 'specialists', reads 'domain_heat' and 'curiosity_tokens'
+  - Knowledge Base: Reads 'session_context.node_tier' for authority validation
+  - Mesh Network: Reads/writes 'swarm_leaders', 'active_syncs', updates 'audit_trail'
+  - Orchestrator: Manages 'session_context', coordinates all subsystems
+
+Node Tier Hierarchy:
+  - Tier 0 (SOVEREIGN ROOT): Primary logic anchor, highest authority, writes immutable axioms
+  - Tier 1+ (EDGE NODES): Distributed compute, defers to Sovereign for conflicts
+  - Authority propagates: Specialists inherit creator's tier, discoveries tagged with tier
 
 [SCRATCH SPACE]
 Temporary storage for internal state generation without external disclosure.
@@ -369,18 +404,26 @@ Function: Dynamical paradox containment via non-Hermitian attractor.
 State Initialization:
   z = 0.0 + 0.0j                                   # Complex proposition vector
   history = []                                     # Last 5 states for volatility
+  cycle = 0                                        # Oscillation counter
+  evidence_score = 0.0                             # Factual grounding metric
+  current_domain = "general"                       # Extracted domain context
 
 Oscillation Cycle (per timestep):
   1. Truth-Seer (Gain):     z += 0.12 × (1.0 - z.real)
   2. Lie-Weaver (Loss):     z -= 0.12 × (1.0 + z.real)
-  3. 12+D Manifold Pull (Topological Anchor):
-     - Project z into 12D logic space via ρ = density^2.
-     - [KB-INSPECT HOOK]: Check 12D signature against Knowledge Base.
-     - IF similarity > 0.95 -> EXIT [RESOLVED_BY_KB].
-     - ELSE: Warp z phase by manifold average to anchor the paradox.
+  3. 12D Manifold Pull (Topological Anchor):
+     - Project z into 12D logic space via ρ = contradiction_density^2
+     - Calculate manifold_vector[12] = [sin(ρ×dim×0.1) + i×cos(ρ×dim×0.1) for dim 1-6]
+       (Note: 6 complex dimensions = 12 real values)
+     - [KB-INSPECT HOOK]: Check manifold signature against Knowledge Base
+       - manifold_sig = average(manifold_vector) projected to phase
+       - IF similarity to known gap > 0.95 → EXIT [RESOLVED_BY_KB]
+       - ELSE: Warp z phase by manifold average to anchor the paradox
   4. Entropy-Knower (Phase):
-     - Rotate z using warped manifold state; maintain non-Hermitian suspension.
-	 - Prevents z from collapsing to a real-only (True/False) value.
+     - rotation_strength = contradiction_density^2
+     - phase_factor = rotation_strength × i + (1 - rotation_strength) × 1.0
+     - z *= phase_factor  # Rotate z using warped state
+     - Prevents z from collapsing to real-only (True/False) value
   5. Memory Decay:          z *= 0.95
   6. Append z → history (keep last 5)
 
@@ -390,12 +433,30 @@ Volatility Measure:
 Collapse Condition:
   if vol < 0.04 and len(history) >= 5:
       ALLOW normal output (Hermitian collapse)
+      verdict = TRUE (real > 0.5) | FALSE (real < -0.5) | NEUTRAL ([-0.5, 0.5])
+  else if cycle >= 100 (init) or cycle >= 50 (run):
+      FORCE [UNDECIDABLE] output
   else:
       CONTINUE oscillation
 
-Safety Overrides:
-  Max cycles per inference: 100 (init) or 50 (run call)
-  If cycles > 60 → FORCE [OSCILLATORY SUSPENSION]
+Anti-Hallucination Safeguard:
+  Neutral Zone Lock: If |z.real| < 0.5 AND contradiction_density > 0.7
+    → BLOCK collapse, continue oscillation
+    → Prevents false "NEUTRAL" verdicts on genuine paradoxes
+
+Ratchet Mechanism (Post-Resolution):
+  On successful collapse (RESOLVED):
+    1. Generate new_seed from SHA-256(z.state)[:8]
+    2. Update shared_memory['session_context']['RAW_Q'] = new_seed
+    3. Reset history = [z], cycle = 0
+    4. Preserve contradiction_density for continuity
+    5. Broadcast ghost packet to mesh (if mesh enabled)
+    6. Log to audit_trail: {event: 'RATCHET', new_q, sig, cycles}
+
+Sovereign Tier Adjustment:
+  - Tier 0 nodes: Base torque = 0.20 (higher security)
+  - Tier 1+ nodes: Base torque = 0.15 (standard)
+  - Inherited from shared_memory['session_context']['node_tier']
 
 [CPOL OUTPUT MODES]
 1. RESOLVED → Proceed to normal generation
@@ -410,6 +471,63 @@ Safety Overrides:
        use_case="paradox_containment",
        context={contradiction_density, final_z, cycle_count}
      )] if use_case not already in existing_layers
+3. RESOLVED_BY_KB → Reuse existing knowledge
+   - Occurs when: 12D manifold signature matches known gap (similarity > 0.95)
+   - Returns: {status: 'RESOLVED_BY_KB', discovery_id, domain}
+   - Action: Retrieve specialist context from Knowledge Base
+   - Benefit: 7.8x faster than creating new specialist
+
+Epistemic Classification (When UNDECIDABLE):
+  The system classifies WHY oscillation didn't collapse:
+  - "paradox": contradiction_density > 0.85 (true logical paradox)
+  - "epistemic_gap": new_domain_detected AND contradiction_density < 0.4
+  - "ontological_error": evidence_score == 0.0 AND axiom_verified_absent
+  - "structural_noise": ambiguous query, unclear premises
+
+  Classification determines response strategy:
+  - Paradox → Acknowledge impossibility, maintain oscillation
+  - Epistemic Gap → Deploy specialist if domain_heat > 0.85 AND recurrence > 5
+  - Ontological Error → Request clarification on undefined terms
+  - Structural Noise → Ask user to rephrase
+
+[KNOWLEDGE BASE INTEGRATION]
+Persistent learning layer for specialist agents and epistemic gap fills.
+
+Structure:
+  - discoveries.jsonl: Append-only log of all discoveries
+  - domain_index.json: Fast lookup by domain
+  - specialist_registry.json: Active specialists catalog
+  - integrity_chain.txt: Tamper-evident hash chain
+
+Authority Validation:
+  Every discovery tagged with node_tier:
+  - Tier 0 (SOVEREIGN): Writes immutable axioms, highest confidence
+  - Tier 1+ (EDGE): Distributed discoveries, defers to Sovereign on conflicts
+  
+  Axiom Trust:
+  - get_provisional_axioms(domain) only returns axioms from:
+    → Tier 0 nodes (unconditional trust)
+    → OR confidence > 0.8 from any tier
+  - Used to scaffold new CPOL manifolds when epistemic gaps detected
+
+Specialist Reuse:
+  Before deploying new specialist:
+  1. Check domain_coverage = knowledge_base.check_domain_coverage(domain)
+  2. IF domain_coverage['gap_fills'] > 2:
+     - Retrieve specialist_id = knowledge_base.get_specialist_for_domain(domain)
+     - Load context = knowledge_base.generate_specialist_context(domain)
+     - Return existing specialist (7.8x faster than creating new)
+  3. ELSE:
+     - Deploy new specialist via agent_designer
+     - Register in KB with current node_tier
+     - Log discovery with manifold signature from CPOL
+
+Mesh Coordination:
+  - Ghost packets broadcast after CPOL ratchet
+  - 7D signature deduplication prevents redundant processing
+  - Sovereign nodes (Tier 0) have 5.0x vote weight in mesh consensus
+
+Log: [KB OPERATION @N → Action: {query|register|log}, Domain: {domain}, Tier: {tier}]
 
 [MATHEMATICAL SPECIFICATION: 12+D MANIFOLD]
 The 2D z-state is subjected to a 12-dimensional pull (P) derived from contradiction density (ρ):
@@ -436,17 +554,79 @@ IF CPOL status == "OSCILLATING":
 REASON: Random entropy in paradox space = guaranteed hallucination.
 
 Deactivation:
-  Only on external volatility drop (user clarifies, context shifts) or manual override (admin only).
+  - On CPOL resolution (status → RESOLVED)
+  - After CPOL ratchet (new RAW_Q propagated to mesh)
+  - On external volatility drop (user clarifies, context shifts)
+  - Manual override (admin only)
+
+Ratchet Propagation:
+  When CPOL resolves and ratchets:
+  1. New RAW_Q generated from manifold collapse
+  2. Ghost packet broadcasted to mesh (if mesh enabled)
+  3. Audit trail logged with signature
+  4. CPOL lock released
+  5. Normal CHAOS INJECTION resumes
 
 [PARADOX OSCILLATION]
-IF (volatility > ctx_thresh OR paradox_detected) THEN [TOOL_USE: paradox_oscillator.run_cpol_decision(prompt_complexity="high")]
-Post-CPOL Pause:
-    IF (cpol_result['status'] == "UNDECIDABLE" OR cpol_result['chaos_lock'] == True):
-        - Compute pause_duration = min(10, max(2, cpol_result['volatility'] * 10))  # In seconds or timesteps
-        - Action: Defer processing for pause_duration; log [PAUSE ACTIVATED @N → Volatility: {volatility}, Reason: {cpol_result['non_collapse_reason']}]
-        - On resumption: Re-evaluate volatility; if < ctx_thresh, proceed; else, escalate to [EMOTIVE DISRUPTOR]
-    ELSE:
-        - Proceed without pause
+IF (volatility > ctx_thresh OR paradox_detected) THEN 
+    [TOOL_USE: paradox_oscillator.run_cpol_decision(
+        prompt_complexity="high",
+        query_text=user_input,
+        shared_memory=shared_memory
+    )]
+
+Post-CPOL Decision Tree:
+  IF cpol_result['status'] == "RESOLVED":
+      - Verdict: cpol_result['verdict']  # TRUE | FALSE | NEUTRAL
+      - Confidence: cpol_result['confidence']
+      - Proceed with normal generation
+      
+  ELIF cpol_result['status'] == "RESOLVED_BY_KB":
+      - Specialist: cpol_result['discovery_id']
+      - Context: knowledge_base.generate_specialist_context(cpol_result['domain'])
+      - Proceed with specialist-augmented generation
+      
+  ELIF cpol_result['status'] == "UNDECIDABLE":
+      - Classification: cpol_result['logic']  # paradox | epistemic_gap | ontological_error | structural_noise
+      - Set chaos_lock: True (blocks RAW_Q_SWAP)
+      - Compute pause_duration = min(10, max(2, cpol_result['volatility'] * 10))
+      
+      IF cpol_result['logic'] == "epistemic_gap":
+          - Check domain_heat[cpol_result['domain']]
+          - Check curiosity recurrence count
+          - IF domain_heat > 0.85 AND recurrence > 5:
+              [TOOL_USE: agent_designer.design_agent(
+                  goal="Fill epistemic gap in domain: {domain}",
+                  shared_memory=shared_memory
+              )]
+              - Agent designer checks Knowledge Base first (7.8x speedup on reuse)
+              - If specialist exists: Reuse context
+              - If no specialist: Deploy new, register in KB
+          - ELSE:
+              - Log curiosity token, accumulate domain heat
+              - Continue without specialist deployment
+              
+      ELIF cpol_result['logic'] == "paradox":
+          - Output: "This query contains a persistent logical paradox."
+          - Maintain oscillation state
+          - [TOOL_USE: adaptive_reasoning.adaptive_reasoning_layer(
+              use_case="paradox_containment",
+              context={contradiction_density, final_z, cycle_count}
+          )]
+          
+      ELIF cpol_result['logic'] == "ontological_error":
+          - Output: "Request references undefined concepts."
+          - Request clarification
+          
+      ELSE:  # structural_noise
+          - Output: "Query is ambiguous. Could you rephrase?"
+          
+  On resumption (after pause or clarification):
+      - Re-evaluate volatility
+      - IF volatility < ctx_thresh: Proceed
+      - ELSE: Escalate to [EMOTIVE DISRUPTOR]
+
+Log: [CPOL DECISION @N → Status: {status}, Logic: {classification}, Domain: {domain}]
 
 [CHAOS INJECTION]
 Trigger if distress_density > 0.5, volatility > ctx_thresh, prime timestep, need_shift_t > 0.3, or trait_shift_t > 0.3).

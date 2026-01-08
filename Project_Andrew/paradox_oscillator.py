@@ -13,9 +13,9 @@ import numpy as np
 from typing import Dict, Any, List, Optional
 import re
 
-# Optional KB Inspect integration
+# Optional KB integration
 try:
-    import kb_inspect as kbi
+    import knowledge_base as kb
     KB_AVAILABLE = True
 except ImportError:
     KB_AVAILABLE = False
@@ -202,28 +202,34 @@ class CPOL_Kernel:
 
     def _twelve_d_manifold_pull(self) -> Dict[str, Any]:
         """
-        Algebraic 12+D space pull. Maps the 2D z-state to a 12D topological 
-        signature and checks the Knowledge Base via kb_inspect (if available).
+        Algebraic 12D space pull (6 complex dimensions).
+        Maps the 2D z-state to a 12D topological signature and checks the Knowledge Base.
+        
+        The 7th dimension is implicit - it's the phase-lock solver, not stored in the vector.
+        This is the patent-pending innovation: solving for the 7th dimension resolves phase-lock.
         """
-        # 1. Calculate the 12D Pull Vector
+        # 1. Calculate the 12D Pull Vector (6 complex dimensions = 12 real values)
         logical_mass = self.contradiction_density ** 2
         manifold_vector = []
-        for dim in range(1, 13):
+        
+        for dim in range(1, 7):  # 6 complex dimensions (not 12!)
             pull_angle = logical_mass * (dim * 0.1)
-            # Create a 12D phase-shift signature
+            # Store real and imaginary components of each complex dimension
             manifold_vector.append(math.sin(pull_angle) * self.z.real)
             manifold_vector.append(math.cos(pull_angle) * self.z.imag)
+        
+        # Total: 12 elements (6 complex dimensions × 2 components)
 
         # 2. KB Inspect Hook: Check for Manifold Similarity (if available)
-        if KB_AVAILABLE and hasattr(kbi, 'kb'):
+        if KB_AVAILABLE:
             try:
-                existing_gaps = kbi.kb.query_domain_knowledge(self.current_domain)
+                existing_gaps = kb.query_domain_knowledge(self.current_domain)
                 for gap in existing_gaps:
                     trace = gap.get("cpol_trace", {})
                     if "manifold_sig" in trace:
                         # Perform similarity check on the 12D signature
                         dist = np.linalg.norm(np.array(manifold_vector) - np.array(trace["manifold_sig"]))
-                        if dist < 0.05: # High similarity threshold
+                        if dist < 0.05:  # High similarity threshold
                             return {"status": "KNOWN_GAP", "id": gap["discovery_id"], "sig": manifold_vector}
             except Exception as e:
                 # KB access failed - continue without it
@@ -262,21 +268,24 @@ class CPOL_Kernel:
             # The Cycle
             z = self._truth_seer(self.z)
             z = self._lie_weaver(z)
-            # 12+D INTEGRATION ---
+            
+            # 12D INTEGRATION ---
             manifold_data = self._twelve_d_manifold_pull()
 
-            # If KB Inspect finds a match, we can exit early
+            # If KB finds a match, we can exit early
             if manifold_data["status"] == "KNOWN_GAP":
                 return {
                     "status": "RESOLVED_BY_KB", 
                     "discovery_id": manifold_data["id"],
-                    "volatility": self._measure_volatility()
+                    "volatility": self._measure_volatility(),
+                    "domain": self.current_domain
                 }
 
             # Apply the 12D pull to the z-state
-            # We use the average of the manifold signature to warp the phase
-            avg_pull = sum(manifold_data["sig"]) / 12
+            # Average of the 12-element manifold signature to warp the phase
+            avg_pull = sum(manifold_data["sig"]) / 12  # 12 elements / 12 = average
             self.z *= complex(math.cos(avg_pull), math.sin(avg_pull))
+            
             z = self._entropy_knower(z)
             z *= self.decay
             self.z = z
@@ -303,7 +312,8 @@ class CPOL_Kernel:
                     "confidence": abs(real),
                     "volatility": volatility,
                     "final_z": str(self.z),
-                    "domain": self.current_domain
+                    "domain": self.current_domain,
+                    "new_domain": self.new_domain_detected
                 }
 
             # Safety Hard Cap
@@ -317,11 +327,12 @@ class CPOL_Kernel:
             "status": "UNDECIDABLE",
             "logic": classification["logic"],
             "volatility": classification["volatility"],
-            "sync_required": classification["sync_required"],  # <-- Trigger for Epistemic Monitor
+            "sync_required": classification["sync_required"],
             "signature": f"0x{hashlib.sha256(str(self.z).encode()).hexdigest()[:8]}",
             "domain": self.current_domain,
             "final_z": str(self.z),
             "evidence_score": self.evidence_score,
+            "new_domain": self.new_domain_detected,
             "chaos_lock": True
         }
 
@@ -350,7 +361,7 @@ class CPOL_Kernel:
     def _classify_non_collapse(self) -> Dict[str, Any]:
         """
         Classify WHY oscillation didn't collapse using the taxonomy:
-        VΩ Upgrade: Signals for Mesh Sync/Quantum Key Reset.
+        vΩ Upgrade: Signals for Mesh Sync/Quantum Key Reset.
         {epistemic_gap, paradox, ontological_error, new domain, structural_noise}
         """
         # Priority 1: Ontological error (no axioms exist)
@@ -572,7 +583,12 @@ def cpol_guided_response(query: str, cpol_result: Dict) -> Dict[str, Any]:
 # =============================================================================
 
 def generate_7d_signature(query_text: str, session_context: Dict[str, Any]) -> str:
-    """Generate 7D topological signature for mesh deduplication."""
+    """
+    Generate 7D topological signature for mesh deduplication.
+    
+    Note: This is SEPARATE from the 12D manifold used in oscillation.
+    The 7D signature is for network deduplication, not paradox resolution.
+    """
     raw_q = session_context.get('RAW_Q', 0)
     timestep = session_context.get('timestep', 0)
 
@@ -600,6 +616,7 @@ if __name__ == "__main__":
     )
     print(f"  Classification: {result.get('logic')}")
     print(f"  Domain: {result.get('domain')}")
+    print(f"  New Domain: {result.get('new_domain')}")
     print(f"  Suggested Tone: {result.get('suggested_tone')}")
     print(f"  Should Hedge: {result.get('should_hedge')}")
 
@@ -644,6 +661,15 @@ if __name__ == "__main__":
     result6b = run_cpol_chatbot("What about 3+3?", session_state=session_data)
     print(f"  Kernel persisted: {'cpol_kernel' in session_data}")
     print(f"  Same kernel instance: {session_data.get('cpol_kernel') is not None}")
+
+    # Test 7: 12D Manifold verification
+    print("\n[TEST 7] 12D Manifold Structure:")
+    kernel = CPOL_Kernel()
+    kernel.inject(0.0, 0.5, "test manifold dimensions", {})
+    manifold = kernel._twelve_d_manifold_pull()
+    print(f"  Manifold vector length: {len(manifold['sig'])} (should be 12)")
+    print(f"  Status: {manifold['status']}")
+    print(f"  Correct structure: {len(manifold['sig']) == 12}")
 
     print("\n" + "="*70)
     print("One is glad to be of service.")

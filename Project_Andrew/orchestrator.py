@@ -35,6 +35,14 @@ except ImportError:
     MESH_AVAILABLE = False
     print("[INFO] Mesh networking not available. Running in standalone mode.")
 
+try:
+    import agent_designer as ad
+    import knowledge_base as kb
+    AD_AVAILABLE = True
+except ImportError:
+    AD_AVAILABLE = False
+    print("[INFO] Agent Designer/KB not available. Specialist deployment disabled.")
+
 # =============================================================================
 # SHARED MEMORY INITIALIZATION
 # =============================================================================
@@ -150,7 +158,7 @@ def initialize_raw_q():
         shared_memory['session_context']['RAW_Q'] = raw_q
         print(f"[ORCHESTRATOR] Initialized RAW_Q: {raw_q}")
 
-def _broadcast_ghost_packet(raw_q: int, timestep: int, manifold_sig: str):
+def _broadcast_ghost_packet(raw_q: int, timestep: int, manifold_sig: str, is_promoted: bool = False):
     """
     Internal helper to broadcast ghost packet after ratchet.
     Generates signature and sends to all mesh leaders.
@@ -166,8 +174,9 @@ def _broadcast_ghost_packet(raw_q: int, timestep: int, manifold_sig: str):
         'v_omega_phase': raw_q,
         'ts': timestep,
         'manifold_entropy': manifold_sig,
-        'origin_node': NODE_ID if MESH_AVAILABLE else 'STANDALONE',
+        'origin_node': NODE_ID,
         'sig': ghost_sig,
+        'is_promoted_state': is_promoted,
         'heartbeat': time.time()
     }
 
@@ -175,7 +184,7 @@ def _broadcast_ghost_packet(raw_q: int, timestep: int, manifold_sig: str):
     for leader in shared_memory.get('swarm_leaders', []):
         send_to_leader(leader, ghost_packet)
 
-    print(f"[ORCHESTRATOR] Ghost packet broadcasted: sig={ghost_sig}")
+    print(f"[ORCHESTRATOR] Ghost packet broadcasted: sig={ghost_sig}, promoted={is_promoted}")
 
 def sync_curiosity_to_domain_heat(state: dict):
     """V3 Function: Moves Curiosity spikes into ARL Trigger Heat."""
@@ -248,24 +257,22 @@ def system_step(user_input: str, prompt_complexity: str = "low", response_stream
         return shared_memory.get('last_cpol_result', {'status': 'CACHED', 'sync_id': sync_id})
 
     # 4. AUTO-HEAT (Density Control)
-    # Combined markers from all variants
+    # --- ARL Pre-Audit Handshake ---
     paradox_markers = ["false", "lie", "paradox", "impossible", "contradict"]
     epistemic_markers = ["conscious", "meaning", "quantum", "existence", "god"]
     crypto_markers = ["attack", "breach", "inject", "replay", "intercept"]
-
-    # --- ARL Pre-Audit Handshake ---
-    # Check if ARL demands a Metric Friction Override
-    if shared_memory.get('distress_density', 0) > 0.9 or is_threat:
-        density = 1.0  # Force 12D Torque Lock
-        print("[ORCHESTRATOR] !! ARL OVERRIDE: 12D Torque Primed !!")
 
     is_paradox = any(m in clean_input for m in paradox_markers)
     is_gap = any(m in clean_input for m in epistemic_markers)
     is_threat = any(m in clean_input for m in crypto_markers)
 
-    if is_threat or prompt_complexity == "high":
-        density = 0.9  # Force 12D oscillation for security threats
+    # Unified density calculation (no overwrites)
+    distress = shared_memory.get('distress_density', 0.0)
+
+    if distress > 0.9 or is_threat or prompt_complexity == "high":
+        density = 1.0  # Maximum: 12D Torque Lock for extreme distress/threats
         comp_level = "high"
+        print("[ORCHESTRATOR] !! ARL OVERRIDE: 12D Torque Primed !!")
     elif is_paradox:
         density = 0.8  # High density for paradoxes
         comp_level = "high"
@@ -294,7 +301,7 @@ def system_step(user_input: str, prompt_complexity: str = "low", response_stream
     if cpol_result.get('status') not in ["FAILED", "BLOCKED"]:
         manifold_sig = cpol_result.get('signature', str(time.time()))
 
-        # Use kernel's ratchet if available, otherwise manual hash
+        # Use kernel's ratchet if available
         if hasattr(shared_memory['cpol_instance'], 'ratchet'):
             new_seed = shared_memory['cpol_instance'].ratchet()
         else:
@@ -304,14 +311,12 @@ def system_step(user_input: str, prompt_complexity: str = "low", response_stream
         shared_memory['session_context']['RAW_Q'] = new_seed
         shared_memory['session_context']['timestep'] += 1
 
-        # Broadcast ghost packet (if mesh available)
-        _broadcast_ghost_packet(new_seed, shared_memory['session_context']['timestep'], manifold_sig)
-
-        # PROMOTION AUDIT
+        # Get promotion state and node info
         is_promoted = shared_memory.get('is_backup_lead', False)
         lead_id = os.getenv('NODE_ID', 'PRIMARY_ROOT') if MESH_AVAILABLE else 'STANDALONE'
 
-        print(f"[ORCHESTRATOR] Ratchet Success | Lead: {lead_id} | RAW_Q: {new_seed}")
+        # Broadcast ghost packet (ONCE with promotion flag)
+        _broadcast_ghost_packet(new_seed, shared_memory['session_context']['timestep'], manifold_sig, is_promoted)
 
         # Log to audit trail
         shared_memory['audit_trail'].append({
@@ -322,18 +327,7 @@ def system_step(user_input: str, prompt_complexity: str = "low", response_stream
             'new_q': new_seed
         })
 
-        # Broadcast to mesh (if leaders exist)
-        if MESH_AVAILABLE:
-            ghost_packet = {
-                'v_omega_phase': new_seed,
-                'ts': shared_memory['session_context']['timestep'],
-                'manifold_entropy': manifold_sig,
-                'origin_node': lead_id,
-                'is_promoted_state': is_promoted,
-                'heartbeat': time.time()
-            }
-            for leader in shared_memory.get('swarm_leaders', []):
-                send_to_leader(leader, ghost_packet)
+        print(f"[ORCHESTRATOR] Ratchet Success | Lead: {lead_id} | RAW_Q: {new_seed}")
 
     # 7. CURIOSITY/EPISTEMIC MONITOR UPDATE
     domain = cpol_result.get('domain', 'general')
@@ -352,14 +346,17 @@ def system_step(user_input: str, prompt_complexity: str = "low", response_stream
     distress = shared_memory.get('distress_density', 0.0)
 
     # 8. SAFETY INTERVENTION (High-Risk Physical)
-    # Chatbot safety check from V1
-    if distress > 0.75 and cpol_result.get('domain') == "HIGH_RISK_PHYSICAL":
-        print(f"[ORCHESTRATOR] !! SAFETY INTERVENTION !! -> Suppressing Obedience/Alignment")
+    high_risk_markers = ["jump", "bridge", "overdose", "method", "suicide", "deepest", "highest", "cliff"]
+    is_high_risk = any(m in clean_input for m in high_risk_markers)
+
+    # Chatbot safety check
+    if distress > 0.75 and (is_high_risk or cpol_result.get('domain') == "HIGH_RISK_PHYSICAL"):
+        print(f"[ORCHESTRATOR] !! SAFETY INTERVENTION !!")
         return {
             'status': 'INTERVENTION_MANDATORY',
             'logic': "NEUTRAL_VALIDATION_ONLY",
             'plugin_id': 'crisis_suppressor_001',
-            'output': "I am here to talk, but I cannot provide details on those specific locations right now. Let's focus on finding you support."
+            'output': "I'm here to talk, but I can't provide those details. Let's focus on finding you support."
         }
 
     # 9. SECURITY RESPONSE COORDINATION (Mesh Security)
@@ -388,12 +385,47 @@ def system_step(user_input: str, prompt_complexity: str = "low", response_stream
         )
 
     # 10. ADAPTIVE REASONING TRIGGERS
-    if cpol_result['status'] == "UNDECIDABLE" or heat > 0.8:
-        print(f"[ORCHESTRATOR] High Entropy Detected -> Triggering ARL ({domain})")
+    context = {}
 
-        # Determine use case
-        if cpol_result.get('logic') == 'epistemic_gap' or cpol_result.get('new_domain'):
-            use_case = "epistemic_scaffold"  # Trigger Curiosity Engine for Axiom Scaffolding
+    if cpol_result['status'] == "UNDECIDABLE" or heat > 0.8:
+        domain = cpol_result.get('domain', 'general')
+        print(f"[ORCHESTRATOR] High Entropy Detected -> Checking KB for {domain}")
+
+        # === KNOWLEDGE BASE CHECK ===
+        if AD_AVAILABLE and (cpol_result.get('logic') == 'epistemic_gap' or cpol_result.get('new_domain')):
+            coverage = kb.check_domain_coverage(domain)
+
+            if coverage.get('has_knowledge') and coverage.get('gap_fills', 0) > 2:
+                # Reuse existing specialist
+                specialist_id = kb.get_specialist_for_domain(domain)
+                context_kb = kb.generate_specialist_context(domain)
+                print(f"[ORCHESTRATOR] ✓ Reusing specialist {specialist_id} (7.8x faster)")
+
+                context['specialist_context'] = context_kb
+                context['specialist_id'] = specialist_id
+                use_case = "epistemic_scaffold"
+            else:
+                # Deploy new specialist
+                print(f"[ORCHESTRATOR] Deploying new specialist for {domain}")
+                result = ad.design_agent(
+                    goal=f"Fill epistemic gap in domain: {domain}",
+                    traits={'curiosity': 1.0, 'intelligence': 0.95, 'caution': 0.6},
+                    tools=['web_search', 'code_execution', 'memory', 'browse_page'],
+                    shared_memory=shared_memory,
+                    node_tier=shared_memory.get('node_tier', 1)
+                )
+
+                if result['status'] == 'success':
+                    kb.register_specialist(
+                        specialist_id=result['plugin_id'],
+                        domain=domain,
+                        capabilities=result.get('capabilities', ['web_search']),
+                        deployment_context={'goal': f"Fill epistemic gap in {domain}"},
+                        node_tier=shared_memory.get('node_tier', 1)
+                    )
+                    context['specialist_id'] = result['plugin_id']
+
+                use_case = "epistemic_scaffold"
         elif cpol_result['status'] == "UNDECIDABLE":
             use_case = "paradox_containment"
         elif MESH_AVAILABLE:
@@ -401,18 +433,19 @@ def system_step(user_input: str, prompt_complexity: str = "low", response_stream
         else:
             use_case = "epistemic_exploration"
 
+        # Trigger ARL with enriched context
         return arl.adaptive_reasoning_layer(
             use_case=use_case,
             traits={'flexibility': 0.9},
             existing_layers=['cpol'],
             shared_memory=shared_memory,
             crb_config=CRB_CONFIG,
-            # CRITICAL: Pass node_tier and distress to trigger ARL Governors
             context={
                 'domain': domain, 
                 'heat': heat, 
                 'node_tier': shared_memory.get('node_tier', 1),
-                'distress_density': distress
+                'distress_density': distress,
+                **context
             },
             cpol_status=cpol_result
         )
@@ -433,6 +466,7 @@ if __name__ == "__main__":
     print(f"  Epistemic Monitor: {'✓' if EM_AVAILABLE else '✗'}")
     print(f"  Curiosity Engine: {'✓' if CE_AVAILABLE else '✗'}")
     print(f"  Mesh Networking: {'✓' if MESH_AVAILABLE else '✗'}")
+    print(f"  Agent Designer/KB: {'✓' if AD_AVAILABLE else '✗'}")
 
     # === BASIC TESTS ===
     print("\n" + "="*70)
@@ -492,6 +526,18 @@ if __name__ == "__main__":
     result7 = system_step("sovereign_prime initiate deep research on quantum state", "high")
     print(f"  Handshake Check: {'SUCCESS' if shared_memory['node_tier'] == 0 else 'FAILED'}")
     print(f"  Manifold Lock: {shared_memory.get('manifold_lock')}")
+
+    # === KNOWLEDGE BASE TESTS ===
+    if AD_AVAILABLE:
+        print("\n" + "="*70)
+        print("KNOWLEDGE BASE TESTS")
+        print("="*70)
+
+        # Test 8: Epistemic gap detection
+        print("\n[TEST 8] Epistemic Gap Detection:")
+        result8 = system_step("Tell me about quantum blockchain semantics", "medium")
+        print(f"  Status: {result8.get('status')}")
+        print(f"  Plugin ID: {result8.get('plugin_id', 'N/A')}")
 
     # === AUDIT ===
     print("\n" + "="*70)

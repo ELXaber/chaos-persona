@@ -74,21 +74,31 @@ def inject_interest_pulse(state: Dict, topic: str, intensity: float = 0.5, reaso
             _append_audit_entry(state)
             return
 
-    # Create new token
+    # Spawn new token on genuine fascination
+    if current_interest > 0.70 and not _is_already_tracked(tokens, state):
+        summary = _summarize_current_topic(state)
+        domain = state.get("last_cpol_result", {}).get("domain", "general")
+
+    # Check Knowledge Base for existing Tier 0 Axioms
+    import knowledge_base as kb
+    axioms = kb.get_provisional_axioms(domain)
+
+     # Create new token
     domain = state.get("last_cpol_result", {}).get("domain", "general")
     new_token = {
-        "topic": topic,
+        "topic": summary,
         "domain": domain,
         "born": state['session_context']['timestep'],
-        "peak_interest": intensity,
-        "current_interest": intensity,
-        "trigger_reason": reason or "context_freshness_blocked"
+        "peak_interest": current_interest,
+        "current_interest": current_interest,
+        "trigger_reason": reason or "context_freshness_blocked",
+        "axioms_referenced": axioms if axioms != ["initial_entropy_observation"] else []
     }
     tokens.append(new_token)
-    if BROADCAST_INJECT and intensity > THRESHOLD_SPIKE:
-        _queue_aside(state, f"«fresh curiosity injected: {topic} ({intensity:.2f})»")
-    _append_audit_entry(state)
-
+    if BROADCAST_THRESHOLD and (current_interest >= THRESHOLD_SPIKE or delta_interest > THRESHOLD_DELTA):
+        label = "SOVEREIGN OBSESSION" if node_tier == 0 else "new obsession"
+        axiom_note = f" (Scaffolded by {len(axioms)} axioms)" if axioms else ""
+        _queue_aside(state, f"«{label}: {summary} ({current_interest:.2f}){axiom_note}»")
 
 # ------------------------------------------------------------------
 # Main loop – called every turn

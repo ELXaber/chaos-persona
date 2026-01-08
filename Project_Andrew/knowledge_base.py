@@ -35,10 +35,24 @@ def log_discovery(
 ) -> str:
     """
     Append a discovery with Sovereign Tier validation.
-    Returns: discovery_id (hash of entry)
+    
+    Args:
+        domain: Knowledge domain
+        discovery_type: Type of discovery (epistemic_gap_fill, paradox_resolution, etc.)
+        content: Discovery content dict with summary, axioms, confidence, sources
+        specialist_id: ID of specialist making discovery
+        cpol_trace: CPOL oscillation metadata
+        node_tier: Authority level (0=Sovereign, 1+=Edge)
+        
+    Returns: 
+        discovery_id (hash of entry)
     """
     # 1. Extract the Quantum Anchor from CPOL
-    manifold_sig = cpol_trace.get('complex_state', "0xUNVERIFIED") if cpol_trace else "0xUNVERIFIED"
+    # CPOL returns 'final_z' not 'complex_state'
+    if cpol_trace:
+        manifold_sig = cpol_trace.get('final_z') or cpol_trace.get('signature', "0xUNVERIFIED")
+    else:
+        manifold_sig = "0xUNVERIFIED"
 
     # 2. Build the UNIFIED entry (Authority + Quantum Anchor + Content)
     entry = {
@@ -55,7 +69,7 @@ def log_discovery(
 
     # 3. Finalize the Append-Only Hash Chain
     entry_str = json.dumps(entry, sort_keys=True)
-    discovery_id = hashlib.sha256(entry_str.encode()).hexdigest()
+    discovery_id = hashlib.sha256(entry_str.encode()).hexdigest()[:16]  # Shortened for readability
     entry["discovery_id"] = discovery_id
 
     # Append to log
@@ -66,13 +80,20 @@ def log_discovery(
     _update_domain_index(domain, discovery_id, discovery_type)
     _update_hash_chain(entry_str)
 
-    print(f"[KB] Logged discovery {discovery_id} (Tier {node_tier}) for domain '{domain}'")
+    tier_label = "SOVEREIGN" if node_tier == 0 else f"EDGE-{node_tier}"
+    print(f"[KB] Logged discovery {discovery_id} ({tier_label}) for domain '{domain}'")
     return discovery_id
+
 
 def query_domain_knowledge(domain: str) -> List[Dict[str, Any]]:
     """
     Retrieve all discoveries for a given domain.
-    Returns: List of discovery entries
+    
+    Args:
+        domain: Knowledge domain to query
+        
+    Returns: 
+        List of discovery entries
     """
     if not DISCOVERIES_LOG.exists():
         return []
@@ -80,9 +101,14 @@ def query_domain_knowledge(domain: str) -> List[Dict[str, Any]]:
     discoveries = []
     with open(DISCOVERIES_LOG, "r", encoding="utf-8") as f:
         for line in f:
-            entry = json.loads(line.strip())
-            if entry["domain"] == domain:
-                discoveries.append(entry)
+            if line.strip():  # Skip empty lines
+                try:
+                    entry = json.loads(line.strip())
+                    if entry["domain"] == domain:
+                        discoveries.append(entry)
+                except json.JSONDecodeError as e:
+                    print(f"[KB] Warning: Skipping malformed entry: {e}")
+                    continue
 
     return discoveries
 
@@ -90,13 +116,12 @@ def query_domain_knowledge(domain: str) -> List[Dict[str, Any]]:
 def check_domain_coverage(domain: str) -> Dict[str, Any]:
     """
     Check if domain has been explored before and what we know.
-    Returns: {
-        "has_knowledge": bool,
-        "discovery_count": int,
-        "gap_fills": int,
-        "last_updated": str,
-        "specialist_deployed": bool
-    }
+    
+    Args:
+        domain: Knowledge domain to check
+        
+    Returns: 
+        Dict with has_knowledge, discovery_count, gap_fills, last_updated, specialist_deployed
     """
     discoveries = query_domain_knowledge(domain)
 
@@ -120,6 +145,7 @@ def check_domain_coverage(domain: str) -> Dict[str, Any]:
         "specialist_deployed": has_specialist
     }
 
+
 def register_specialist(
     specialist_id: str,
     domain: str,
@@ -129,8 +155,15 @@ def register_specialist(
 ):
     """
     Register a newly created specialist agent with its authority level.
+    
+    Args:
+        specialist_id: Unique specialist identifier
+        domain: Knowledge domain
+        capabilities: List of tools/abilities
+        deployment_context: Context dict with goal, prior_knowledge, traits
+        node_tier: Authority level (0=Sovereign, 1+=Edge)
     """
-    registry = _load_specialist_registry()
+    registry = load_specialist_registry()
 
     registry[specialist_id] = {
         "domain": domain,
@@ -142,27 +175,42 @@ def register_specialist(
         "status": "active"
     }
 
-    _save_specialist_registry(registry)
-    print(f"[KB] Registered specialist {specialist_id} for domain '{domain}'")
+    save_specialist_registry(registry)
+    
+    tier_label = "SOVEREIGN" if node_tier == 0 else f"EDGE-{node_tier}"
+    print(f"[KB] Registered specialist {specialist_id} ({tier_label}) for domain '{domain}'")
+
 
 def update_specialist_stats(specialist_id: str, new_discoveries: int = 1) -> None:
     """
     Update specialist's discovery count after it fills a gap.
+    
+    Args:
+        specialist_id: Specialist to update
+        new_discoveries: Number of new discoveries to add (default: 1)
     """
-    registry = _load_specialist_registry()
+    registry = load_specialist_registry()
 
     if specialist_id in registry:
         registry[specialist_id]["discovery_count"] += new_discoveries
         registry[specialist_id]["last_active"] = datetime.utcnow().isoformat() + "Z"
-        _save_specialist_registry(registry)
+        save_specialist_registry(registry)
+        print(f"[KB] Updated specialist {specialist_id}: {new_discoveries} new discoveries")
+    else:
+        print(f"[KB] Warning: Specialist {specialist_id} not found in registry")
 
 
 def get_specialist_for_domain(domain: str) -> Optional[str]:
     """
     Check if a specialist already exists for this domain.
-    Returns: specialist_id or None
+    
+    Args:
+        domain: Knowledge domain
+        
+    Returns: 
+        specialist_id or None
     """
-    registry = _load_specialist_registry()
+    registry = load_specialist_registry()
 
     for specialist_id, info in registry.items():
         if info["domain"] == domain and info["status"] == "active":
@@ -171,10 +219,53 @@ def get_specialist_for_domain(domain: str) -> Optional[str]:
     return None
 
 
+def get_provisional_axioms(domain: str) -> List[str]:
+    """
+    Retrieves established axioms for a domain to scaffold new manifolds.
+    Used by the Curiosity Engine when CPOL detects an epistemic gap.
+    
+    Only trusts axioms from:
+    - Sovereign Root (Tier 0) nodes
+    - High-confidence discoveries (>0.8)
+    
+    Args:
+        domain: Knowledge domain
+        
+    Returns:
+        List of axiom strings
+    """
+    knowledge = query_domain_knowledge(domain)
+    axioms = []
+    
+    for entry in knowledge:
+        # Only trust axioms from high-tier nodes or high-confidence fills
+        tier = entry.get('node_tier', 1)
+        confidence = entry.get('content', {}).get('confidence', 0)
+        
+        if tier == 0 or confidence > 0.8:
+            entry_axioms = entry.get('content', {}).get('axioms_added', [])
+            axioms.extend(entry_axioms)
+    
+    # Return unique axioms or default fallback
+    unique_axioms = list(set(axioms)) if axioms else ["initial_entropy_observation"]
+    
+    if len(unique_axioms) > 1:
+        print(f"[KB] Retrieved {len(unique_axioms)} axioms for domain '{domain}'")
+    
+    return unique_axioms
+
+
 def export_domain_summary(domain: str, output_file: str = None) -> str:
     """
     Generate a human-readable summary of all knowledge in a domain.
     Useful for feeding to new specialists or humans.
+    
+    Args:
+        domain: Knowledge domain
+        output_file: Optional file path to write summary
+        
+    Returns:
+        Summary string
     """
     discoveries = query_domain_knowledge(domain)
 
@@ -186,9 +277,23 @@ def export_domain_summary(domain: str, output_file: str = None) -> str:
     summary += f"First recorded: {discoveries[0]['timestamp']}\n"
     summary += f"Last updated: {discoveries[-1]['timestamp']}\n\n"
 
-    summary += "=== Discoveries ===\n"
+    # Count by tier
+    tier_counts = {}
+    for d in discoveries:
+        tier = d.get('node_tier', 1)
+        tier_counts[tier] = tier_counts.get(tier, 0) + 1
+    
+    summary += "=== Authority Distribution ===\n"
+    for tier in sorted(tier_counts.keys()):
+        tier_label = "SOVEREIGN" if tier == 0 else f"EDGE-{tier}"
+        summary += f"  {tier_label}: {tier_counts[tier]} discoveries\n"
+    
+    summary += "\n=== Discoveries ===\n"
     for i, entry in enumerate(discoveries, 1):
-        summary += f"\n{i}. [{entry['type']}] {entry['timestamp']}\n"
+        tier = entry.get('node_tier', 1)
+        tier_label = "SOVEREIGN" if tier == 0 else f"EDGE-{tier}"
+        
+        summary += f"\n{i}. [{entry['type']}] {entry['timestamp']} ({tier_label})\n"
         summary += f"   Discovery ID: {entry['discovery_id']}\n"
 
         if entry.get("specialist_id"):
@@ -201,6 +306,8 @@ def export_domain_summary(domain: str, output_file: str = None) -> str:
             summary += f"   New axioms: {content['axioms_added']}\n"
         if "resolution" in content:
             summary += f"   Resolution: {content['resolution']}\n"
+        if "confidence" in content:
+            summary += f"   Confidence: {content['confidence']:.2f}\n"
 
     if output_file:
         with open(output_file, "w", encoding="utf-8") as f:
@@ -211,6 +318,41 @@ def export_domain_summary(domain: str, output_file: str = None) -> str:
 
 
 # =============================================================================
+# Public Registry Functions (called by agent_designer)
+# =============================================================================
+
+def load_specialist_registry() -> Dict[str, Any]:
+    """
+    Load specialist registry from disk.
+    Public function for external modules.
+    
+    Returns:
+        Registry dict
+    """
+    if not SPECIALIST_REGISTRY.exists():
+        return {}
+
+    try:
+        with open(SPECIALIST_REGISTRY, "r") as f:
+            return json.load(f)
+    except json.JSONDecodeError:
+        print("[KB] Warning: Corrupted specialist registry, returning empty dict")
+        return {}
+
+
+def save_specialist_registry(registry: Dict[str, Any]) -> None:
+    """
+    Save specialist registry to disk.
+    Public function for external modules.
+    
+    Args:
+        registry: Registry dict to save
+    """
+    with open(SPECIALIST_REGISTRY, "w") as f:
+        json.dump(registry, f, indent=2)
+
+
+# =============================================================================
 # Internal Helper Functions
 # =============================================================================
 
@@ -218,8 +360,12 @@ def _update_domain_index(domain: str, discovery_id: str, discovery_type: str) ->
     """Maintain fast lookup index by domain."""
     index = {}
     if DOMAIN_INDEX.exists():
-        with open(DOMAIN_INDEX, "r") as f:
-            index = json.load(f)
+        try:
+            with open(DOMAIN_INDEX, "r") as f:
+                index = json.load(f)
+        except json.JSONDecodeError:
+            print("[KB] Warning: Corrupted domain index, rebuilding")
+            index = {}
 
     if domain not in index:
         index[domain] = {
@@ -255,21 +401,6 @@ def _update_hash_chain(entry_str: str) -> None:
         f.write(f"{timestamp} {new_hash}\n")
 
 
-def _load_specialist_registry() -> Dict[str, Any]:
-    """Load specialist registry from disk."""
-    if not SPECIALIST_REGISTRY.exists():
-        return {}
-
-    with open(SPECIALIST_REGISTRY, "r") as f:
-        return json.load(f)
-
-
-def _save_specialist_registry(registry: Dict[str, Any]) -> None:
-    """Save specialist registry to disk."""
-    with open(SPECIALIST_REGISTRY, "w") as f:
-        json.dump(registry, f, indent=2)
-
-
 # =============================================================================
 # Utility: Generate Training Data for New Specialists
 # =============================================================================
@@ -277,7 +408,13 @@ def _save_specialist_registry(registry: Dict[str, Any]) -> None:
 def generate_specialist_context(domain: str) -> Dict[str, Any]:
     """
     Generate a context package for a new specialist agent.
-    Includes: prior discoveries, known gaps, related domains.
+    Includes: prior discoveries, known gaps, related domains, axioms.
+    
+    Args:
+        domain: Knowledge domain
+        
+    Returns:
+        Context dict with prior_knowledge, axioms, resolutions, suggested_approach
     """
     coverage = check_domain_coverage(domain)
     discoveries = query_domain_knowledge(domain)
@@ -325,61 +462,125 @@ def _suggest_approach(discoveries: List[Dict]) -> str:
 
 
 # =============================================================================
-# Test
+# Comprehensive Test Suite
 # =============================================================================
 
-def get_provisional_axioms(domain: str) -> List[str]:
-    """
-    Retrieves established axioms for a domain to scaffold new manifolds.
-    Used by the Curiosity Engine when CPOL detects an epistemic gap.
-    """
-    knowledge = query_domain_knowledge(domain)
-    axioms = []
-    for entry in knowledge:
-        # Only trust axioms from high-tier nodes or high-confidence fills
-        if entry.get('node_tier', 1) == 0 or entry['content'].get('confidence', 0) > 0.8:
-            axioms.extend(entry['content'].get('axioms_added', []))
-
-    return list(set(axioms)) if axioms else ["initial_entropy_observation"]
-
 if __name__ == "__main__":
-    print("=== Knowledge Base Test ===\n")
+    print("="*70)
+    print("KNOWLEDGE BASE - Comprehensive Test Suite")
+    print("="*70)
 
-    # Test 1: Log a discovery
-    discovery_id = log_discovery(
+    # Test 1: Log Sovereign discovery
+    print("\n" + "="*70)
+    print("TEST 1: Log Sovereign Discovery (Tier 0)")
+    print("="*70)
+    discovery_id_1 = log_discovery(
         domain="quantum_semantics",
         discovery_type="epistemic_gap_fill",
         content={
             "summary": "Quantum semantics relates to probabilistic meaning spaces",
             "axioms_added": ["superposition_of_meanings", "entangled_contexts"],
-            "confidence": 0.82
+            "confidence": 0.92,
+            "sources": ["arxiv.org/abs/2308.12345"]
         },
         specialist_id="spec_qsem_001",
-        cpol_trace={"volatility": 0.45, "cycles": 23},
-        node_tier=0 # Test as Sovereign Root
+        cpol_trace={"volatility": 0.45, "cycles": 23, "final_z": "0.87+0.12i"},
+        node_tier=0  # Sovereign Root
     )
+    print(f"Discovery ID: {discovery_id_1}")
 
-    # Test 2: Register specialist
+    # Test 2: Log Edge discovery
+    print("\n" + "="*70)
+    print("TEST 2: Log Edge Discovery (Tier 1)")
+    print("="*70)
+    discovery_id_2 = log_discovery(
+        domain="quantum_semantics",
+        discovery_type="epistemic_gap_fill",
+        content={
+            "summary": "Observer effects in semantic collapse",
+            "axioms_added": ["observer_dependent_meaning"],
+            "confidence": 0.78,
+            "sources": ["semantic-collapse-paper.pdf"]
+        },
+        specialist_id="spec_qsem_002",
+        cpol_trace={"volatility": 0.62, "cycles": 31, "final_z": "0.65+0.23i"},
+        node_tier=1  # Edge node
+    )
+    print(f"Discovery ID: {discovery_id_2}")
+
+    # Test 3: Register Sovereign specialist
+    print("\n" + "="*70)
+    print("TEST 3: Register Sovereign Specialist")
+    print("="*70)
     register_specialist(
         specialist_id="spec_qsem_001",
         domain="quantum_semantics",
         capabilities=["web_search", "logical_inference", "analogy_mapping"],
         deployment_context={"trigger": "epistemic_gap", "recurrence": 6},
-        node_tier=0 # Ensure the specialist inherits Sovereign Authority
+        node_tier=0  # Sovereign Authority
     )
 
-    # Test 3: Check coverage
+    # Test 4: Check coverage
+    print("\n" + "="*70)
+    print("TEST 4: Check Domain Coverage")
+    print("="*70)
     coverage = check_domain_coverage("quantum_semantics")
-    print(f"\nDomain coverage: {coverage}")
+    print(f"Coverage: {json.dumps(coverage, indent=2)}")
 
-    # Test 4: Query knowledge
+    # Test 5: Query knowledge
+    print("\n" + "="*70)
+    print("TEST 5: Query Domain Knowledge")
+    print("="*70)
     knowledge = query_domain_knowledge("quantum_semantics")
-    print(f"\nKnowledge entries: {len(knowledge)}")
+    print(f"Knowledge entries: {len(knowledge)}")
+    for entry in knowledge:
+        tier = entry.get('node_tier', 1)
+        tier_label = "SOVEREIGN" if tier == 0 else f"EDGE-{tier}"
+        print(f"  - {entry['discovery_id']} ({tier_label})")
 
-    # Test 5: Generate context for new specialist
+    # Test 6: Get provisional axioms
+    print("\n" + "="*70)
+    print("TEST 6: Get Provisional Axioms")
+    print("="*70)
+    axioms = get_provisional_axioms("quantum_semantics")
+    print(f"Axioms: {axioms}")
+
+    # Test 7: Generate context for new specialist
+    print("\n" + "="*70)
+    print("TEST 7: Generate Specialist Context")
+    print("="*70)
     context = generate_specialist_context("quantum_semantics")
-    print(f"\nSpecialist context: {json.dumps(context, indent=2)}")
+    print(f"Context: {json.dumps(context, indent=2)}")
 
-    # Test 6: Export summary
+    # Test 8: Update specialist stats
+    print("\n" + "="*70)
+    print("TEST 8: Update Specialist Stats")
+    print("="*70)
+    update_specialist_stats("spec_qsem_001", new_discoveries=2)
+    registry = load_specialist_registry()
+    print(f"Specialist stats: {json.dumps(registry['spec_qsem_001'], indent=2)}")
+
+    # Test 9: Get specialist for domain
+    print("\n" + "="*70)
+    print("TEST 9: Get Specialist for Domain")
+    print("="*70)
+    specialist = get_specialist_for_domain("quantum_semantics")
+    print(f"Specialist ID: {specialist}")
+
+    # Test 10: Export summary
+    print("\n" + "="*70)
+    print("TEST 10: Export Domain Summary")
+    print("="*70)
     summary = export_domain_summary("quantum_semantics", "test_summary.txt")
-    print(f"\n{summary}")
+    print(summary)
+
+    # Summary
+    print("\n" + "="*70)
+    print("TEST SUITE COMPLETE")
+    print("="*70)
+    print(f"Total discoveries: {len(knowledge)}")
+    print(f"Specialists registered: {len(load_specialist_registry())}")
+    print(f"Hash chain entries: {len(open(HASH_CHAIN).readlines()) if HASH_CHAIN.exists() else 0}")
+    print("\n" + "="*70)
+    print("One is glad to be of service.")
+    print("="*70)

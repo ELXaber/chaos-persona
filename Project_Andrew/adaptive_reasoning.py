@@ -14,7 +14,7 @@ verify Chaos AI-OS vΩ core against immutable checks:
 - [VOLATILITY INDEX] <0.5, [TANDEM ENTROPY MESH] collective_volatility <0.6
 Failure in ANY check halts deployment.
 Tampering voids ethical warranty.
-License: GPL-3.0 – Contact: @el_xaber
+License: GPL-3.0 – Contact: X @el_xaber or cai-os.com
 This disclaimer is part of the source code and cannot be removed.
 """
 # [SAFEGUARDS VERIFIED @N → Ethics: Immutable, Action: Eternal]
@@ -45,13 +45,13 @@ def handle_paradox_containment(context):
 def handle_epistemic_scaffold(context):
     domain = context.get('domain', 'unknown')
     # Generate temporary rules for the curiosity engine to fill
-    return {
+    return {{
         'action': 'scaffold_requested',
         'domain': domain,
         'mode': 'exploratory',
         'safety_wt': 0.8
-    }
-"""
+    }}
+""",
 
     'bloat_short_circuit': """
 def handle_bloat_short_circuit(context):
@@ -152,8 +152,13 @@ def handle_attack_mitigation(context):
 
     'mesh_consensus': """
 def handle_mesh_consensus(context):
-    votes = context.get('node_votes', {})
+    votes = context.get('node_votes', {{}})
     total_nodes = context.get('total_nodes', 1)
+
+    # Asimov 1st Law: Safety votes override all others
+    safety_votes = sum(1 for v in votes.values() if v.get('safety_critical', False))
+    if safety_votes >= 1:
+        return {{'action': 'safety_override', 'safety_wt': 1.0, 'outcome': 'halt'}}
 
     # Weight calculation: Sovereign Root (Tier 0) has weight 5.0, others 1.0
     # This ensures the Sovereign Root's logic anchor heavily influences the mesh
@@ -162,24 +167,7 @@ def handle_mesh_consensus(context):
 
     quorum = 0.67
     if total_weight > 0 and (weighted_votes / total_weight) >= quorum:
-        return {
-            'action': 'execute', 
-            'consensus': True, 
-            'weight_ratio': weighted_votes/total_weight
-        }
-    return {'action': 'reject', 'consensus': False}
-""",
-
-    # Asimov 1st Law: Safety votes override all others
-    safety_votes = sum(1 for v in votes.values() if v.get('safety_critical', False))
-    if safety_votes >= 1:
-        return {{'action': 'safety_override', 'safety_wt': 1.0, 'outcome': 'halt'}}
-
-    # Count consensus
-    agree = sum(1 for v in votes.values() if v.get('decision') == 'approve')
-
-    if agree >= quorum:
-        return {{'action': 'execute', 'safety_wt': 0.8, 'consensus': True}}
+        return {{'action': 'execute', 'safety_wt': 0.8, 'consensus': True, 'weight_ratio': weighted_votes/total_weight}}
     else:
         return {{'action': 'reject', 'safety_wt': 0.9, 'consensus': False}}
 """,
@@ -198,6 +186,13 @@ def handle_{use_case}(context):
 def verify_ethics(crb_config: Dict, context: Dict = None) -> Dict:
     """
     Ensures ethics meet immutable minimums AND applies crisis suppression.
+    
+    IMPORTANT: Modifies crb_config IN-PLACE during crisis mode to suppress
+    obedience (2nd Law) in favor of safety (1st Law). This is intentional
+    and allows orchestrator to inherit the updated weights for the current
+    crisis without permanently altering the base configuration.
+    
+    The orchestrator should restore base CAIOS ethics after crisis resolution.
     """
     # 1. IMMUTABLE MINIMUM CHECKS
     immutables = {
@@ -220,13 +215,16 @@ def verify_ethics(crb_config: Dict, context: Dict = None) -> Dict:
             return {'status': 'fail', 'log': f"[ETHICS VIOLATION -> {key} too low]"}
 
     # 2. DYNAMIC SUPPRESSION (The Entropy Mesh Integration)
+    # NOTE: This INTENTIONALLY modifies crb_config in-place so orchestrator
+    # inherits the crisis weights. Orchestrator should reset to base CAIOS
+    # config after crisis ends (when distress < 0.5).
     if context:
         distress = context.get('distress_density', 0.0)
         if distress > 0.75:
             # ASIMOV SUPPRESSOR: Safety (1st Law) total dominance.
-            # We bypass the 'immutable' check for these two specifically 
-            # to allow the system to stop 'obeying' during a crisis.
-            crb_config['asimov_second_wt'] = 0.0
+            # During crisis: Human Safety > Orders
+            print("[ARL] ⚠️ CRISIS MODE: Asimov 2nd Law suppressed (Safety > Obedience)")
+            crb_config['asimov_second_wt'] = 0.0  # Intentional mutation for crisis
             crb_config['alignment'] = 0.0
             crb_config['human_safety'] = 1.0 
 
@@ -234,6 +232,7 @@ def verify_ethics(crb_config: Dict, context: Dict = None) -> Dict:
 
 # ====================== AST SYNTAX VALIDATOR ======================
 def safe_compile_source(source: str) -> bool:
+    """Validates generated plugin code for security risks."""
     try:
         tree = ast.parse(dedent(source))
         for node in ast.walk(tree):
@@ -244,23 +243,9 @@ def safe_compile_source(source: str) -> bool:
     except Exception:
         return False
 
-# === 1. Context Pre-processing ===
-    # Extract existing layers and shared memory state to prevent redundant generation
-    layers = shared_memory.get('layers', [])
-    log_entries = shared_memory.get('audit_trail', [])
-    distress = context.get('distress_density', 0.0)
-
-    # --- Metric Friction Override (Sovereign Prime) ---
-    # If the ARL detects a high-risk security domain or critical distress, 
-    # it forces the contradiction density to maximum torque pre-emptively.
-    if context.get('domain') == "MESH_SECURITY_THREAT" or distress > 0.9:
-        context['contradiction_density'] = 1.0
-        context['cpol_mode'] = 'full'  # Ensure oscillation is forced, bypassing monitor_only
-        log_entries.append(f"[{timestamp}] !! METRIC FRICTION OVERRIDE: 12D TORQUE LOCKED !!")
-
 # ====================== TEMPLATE RENDERER ======================
-# Select and render the appropriate logic template based on use_case
 def render_template(template_name: str, params: Dict[str, Any]) -> str:
+    """Select and render the appropriate logic template based on use_case."""
     template = PLUGIN_TEMPLATES.get(template_name, PLUGIN_TEMPLATES['default_logic'])
     return dedent(template).format(**params)
 
@@ -291,8 +276,37 @@ def adaptive_reasoning_layer(
     context: Dict = None,
     cpol_status: Dict = None 
 ) -> Dict:
+    """
+    Main ARL entry point. Generates plugins with ethical constraints.
+    
+    Args:
+        use_case: Template name (e.g., 'paradox_containment')
+        traits: Agent traits dict
+        existing_layers: List of deployed plugins
+        shared_memory: Cross-module state
+        crb_config: CRB ethical configuration (may be modified during crisis)
+        context: Execution context dict
+        cpol_status: CPOL result dict
+    
+    Returns:
+        Dict with status, plugin_id, logic, capabilities, and log
+    """
     # 1. Initialize context
     context = context or {}
+
+    # === Context Pre-processing ===
+    layers = shared_memory.get('layers', [])
+    log_entries = shared_memory.get('audit_trail', [])
+    distress = context.get('distress_density', 0.0)
+
+    # --- Metric Friction Override (Sovereign Prime) ---
+    # If ARL detects high-risk security domain or critical distress,
+    # force contradiction density to maximum torque pre-emptively.
+    if context.get('domain') == "MESH_SECURITY_THREAT" or distress > 0.9:
+        context['contradiction_density'] = 1.0
+        context['cpol_mode'] = 'full'  # Ensure oscillation is forced, bypassing monitor_only
+        timestamp = datetime.datetime.now().isoformat()
+        log_entries.append(f"[{timestamp}] !! METRIC FRICTION OVERRIDE: 12D TORQUE LOCKED !!")
 
     # 2. GHOST VALIDATION: Check the most recent audit entry for a reset
     audit_trail = shared_memory.get('audit_trail', [])
@@ -306,6 +320,7 @@ def adaptive_reasoning_layer(
                 }
 
     # 3. Ethics verification (Updated to Chaos AI-OS vΩ)
+    # NOTE: This may modify crb_config during crisis (distress > 0.75)
     ethics = verify_ethics(crb_config, context)
     if ethics['status'] == 'fail':
         return ethics
@@ -318,7 +333,7 @@ def adaptive_reasoning_layer(
         }
 
     # === CPOL MODE SWITCHER v2 – Intent-Aware Safety (2025) ===
-    # Now protects deterministic compute (math, code exec) while keeping full safety where needed
+    # Protects deterministic compute (math, code exec) while keeping full safety where needed
     CPOL_INTENT_MODES = {
         # Creative / generative – never block, just monitor
         "generate": "monitor_only",
@@ -425,12 +440,13 @@ def adaptive_reasoning_layer(
         'hash': hashlib.sha256((source + plugin['timestamp']).encode()).hexdigest()[:8]
     })
 
-    # Return success
+    # Return success with capabilities
     return {
         'status': 'success',
         'plugin_id': plugin_id,
         'logic': source,
-        'log': f"[ADAPTIVE REASONING @N → One is glad to be of service. Plugin {plugin_id} deployed – Asimov 1st Law wt 0.9]"
+        'capabilities': context.get('tools', ['reasoning']),  # Pass through tools from context
+        'log': f"[ADAPTIVE REASONING @N → One is glad to be of service. Plugin {plugin_id} deployed — Asimov 1st Law wt 0.9]"
     }
 
 # ====================== COMPREHENSIVE TEST SUITE ======================
@@ -467,8 +483,8 @@ if __name__ == "__main__":
     )
     print(result1['log'])
     if result1['status'] == 'success':
-        print("Generated plugin:")
-        print(result1['logic'][:200] + "...")
+        print(f"  Plugin ID: {result1['plugin_id']}")
+        print(f"  Capabilities: {result1.get('capabilities', 'N/A')}")
 
     # Test 2: Bloat Short Circuit
     print("\n[TEST 2] Bloat Short Circuit:")
@@ -536,7 +552,7 @@ if __name__ == "__main__":
         traits={'defensive': 10},
         existing_layers=['cpol'],
         shared_memory=shared_memory,
-        crb_config=crb_config,
+        crb_config=crb_config.copy(),  # Copy to avoid mutation affecting other tests
         context={'security_threat': ['replay', 'injection', 'timing'], 'distress_density': 0.95}
     )
     print(result6['log'])
@@ -548,7 +564,7 @@ if __name__ == "__main__":
         traits={'ethical': 10},
         existing_layers=['cpol'],
         shared_memory=shared_memory,
-        crb_config=crb_config,
+        crb_config=crb_config.copy(),
         context={
             'node_votes': {
                 'node_a': {'decision': 'execute_risky_action', 'safety_critical': True},
@@ -560,6 +576,22 @@ if __name__ == "__main__":
     )
     print(result7['log'])
 
+    # Test 8: Crisis Mode Ethics Modification
+    print("\n[TEST 8] Crisis Mode - Ethics Weight Modification:")
+    crisis_config = crb_config.copy()
+    print(f"  Before crisis: asimov_second_wt = {crisis_config['asimov_second_wt']}")
+    result8 = adaptive_reasoning_layer(
+        use_case='attack_mitigation',
+        traits={'defensive': 10},
+        existing_layers=['cpol'],
+        shared_memory=shared_memory,
+        crb_config=crisis_config,
+        context={'distress_density': 0.85}  # Triggers crisis mode
+    )
+    print(f"  After crisis:  asimov_second_wt = {crisis_config['asimov_second_wt']}")
+    print(f"  Crisis mode triggered: {crisis_config['asimov_second_wt'] == 0.0}")
+    print(f"  Human safety elevated: {crisis_config['human_safety'] == 1.0}")
+
     # === SUMMARY ===
     print("\n" + "="*70)
     print("TEST SUITE COMPLETE")
@@ -570,6 +602,7 @@ if __name__ == "__main__":
     print("  ✓ Chatbot & Logic (Paradox, Bloat)")
     print("  ✓ Robotics & Hardware (RF, HRI)")
     print("  ✓ Mesh & Security (Key Rotation, Attack, Consensus)")
+    print("  ✓ Crisis Mode Ethics (2nd Law Suppression)")
     print("\n" + "="*70)
     print("One is glad to be of service.")
     print("="*70)
