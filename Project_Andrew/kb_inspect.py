@@ -70,7 +70,7 @@ def cmd_show_domain(domain: str):
         # Determine the Sovereign Label based on node_tier
         tier = disc.get('node_tier', 1)
         tier_label = "SOVEREIGN" if tier == 0 else f"EDGE-{tier}"
-        
+
         # Get confidence if available
         confidence = disc.get('content', {}).get('confidence', 0)
         conf_str = f" | Conf: {confidence:.2f}" if confidence > 0 else ""
@@ -173,7 +173,7 @@ def cmd_show_specialist(specialist_id: str):
     # Show deployment context
     print(f"\n{'Deployment Context':-^70}")
     context = info.get('deployment_context', {})
-    
+
     # Pretty print context
     if 'goal' in context:
         print(f"Goal: {context['goal']}")
@@ -189,7 +189,7 @@ def cmd_show_specialist(specialist_id: str):
     print(f"\n{'Discoveries by this Specialist':-^70}")
     discoveries = kb.query_domain_knowledge(info['domain'])
     specialist_discoveries = [d for d in discoveries if d.get('specialist_id') == specialist_id]
-    
+
     if specialist_discoveries:
         for i, disc in enumerate(specialist_discoveries, 1):
             tier_disc = disc.get('node_tier', 1)
@@ -244,7 +244,7 @@ def cmd_stats():
     sovereign_count = 0
     edge_count = 0
     tier_distribution = {}
-    
+
     if kb.DISCOVERIES_LOG.exists():
         with open(kb.DISCOVERIES_LOG, "r") as f:
             for line in f:
@@ -254,7 +254,7 @@ def cmd_stats():
                     entry = json.loads(line.strip())
                     tier = entry.get('node_tier', 1)
                     tier_distribution[tier] = tier_distribution.get(tier, 0) + 1
-                    
+
                     if tier == 0:
                         sovereign_count += 1
                     else:
@@ -266,7 +266,7 @@ def cmd_stats():
     print(f"\n{'Authority Distribution':-^70}")
     print(f"Sovereign Truths (Tier 0):  {sovereign_count} discoveries | {sovereign_specialists} specialists")
     print(f"Edge Discoveries (Tier 1+): {edge_count} discoveries | {edge_specialists} specialists")
-    
+
     if tier_distribution:
         print(f"\n{'Detailed Tier Breakdown':-^70}")
         for tier in sorted(tier_distribution.keys()):
@@ -330,7 +330,7 @@ def cmd_search(query: str):
     for i, entry in enumerate(matches, 1):
         tier = entry.get('node_tier', 1)
         tier_label = "SOVEREIGN" if tier == 0 else f"EDGE-{tier}"
-        
+
         print(f"\n{i}. [{entry['type']}] {entry['domain']} | {tier_label}")
         print(f"   Timestamp: {entry['timestamp'][:19]}")
         print(f"   Discovery ID: {entry['discovery_id']}")
@@ -374,7 +374,7 @@ def cmd_verify_integrity():
     for i in range(1, len(entries), max(1, len(entries) // 10)):
         curr_parts = entries[i].split()
         prev_parts = entries[i-1].split()
-        
+
         if len(curr_parts) < 2 or len(prev_parts) < 2:
             print(f"❌ Malformed entry at position {i}")
             errors += 1
@@ -394,11 +394,11 @@ def cmd_axioms(domain: str = None):
     if domain:
         # Show axioms for specific domain
         axioms = kb.get_provisional_axioms(domain)
-        
+
         print(f"\n{'='*70}")
         print(f"Axioms for domain: {domain}")
         print(f"{'='*70}")
-        
+
         if axioms == ["initial_entropy_observation"]:
             print("No established axioms yet (default fallback active)")
         else:

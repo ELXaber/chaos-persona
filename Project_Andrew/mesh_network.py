@@ -54,7 +54,7 @@ class MeshNode:
     def __init__(self, node_id: str, broadcast_port: int = DEFAULT_BROADCAST_PORT, node_tier: int = 1):
         """
         Initialize mesh node.
-        
+
         Args:
             node_id: Unique node identifier
             broadcast_port: Port for ZeroMQ publisher
@@ -62,7 +62,7 @@ class MeshNode:
         """
         if not ZMQ_AVAILABLE:
             raise ImportError("pyzmq required for mesh networking. Install: pip install pyzmq")
-        
+
         self.node_id = node_id
         self.broadcast_port = broadcast_port
         self.node_tier = node_tier
@@ -76,7 +76,7 @@ class MeshNode:
 
         # Subscriber socket (receives ghost packets from other nodes)
         self.subscriber = self.context.socket(zmq.SUB)
-        self.subscriber.setsockopt_string(zmq.SUBSCRIBE, "")  # Subscribe to all
+        self.subscriber.setsockopt_string(zmq.SUBSCRIBE, "")
 
         # Node registry (discovered peers)
         self.peers = {}  # {node_id: {address, last_seen, raw_q, tier}}
@@ -110,7 +110,7 @@ class MeshNode:
         # Add node metadata
         ghost_packet['sender'] = self.node_id
         ghost_packet['sender_tier'] = self.node_tier
-        
+
         # Generate signature using chaos_encryption
         if CRYPTO_AVAILABLE:
             raw_q = shared_memory['session_context'].get('RAW_Q', 0)
@@ -239,7 +239,7 @@ class MeshNode:
     def get_peer_tier(self, peer_id: str) -> int:
         """
         Get authority tier of a peer node.
-        
+
         Args:
             peer_id: Node identifier
             
@@ -265,7 +265,7 @@ class MeshCoordinator:
     def __init__(self, node_id: str, node_tier: int = 1):
         """
         Initialize mesh coordinator.
-        
+
         Args:
             node_id: Unique node identifier
             node_tier: Authority level (0=Sovereign, 1+=Edge)
@@ -274,7 +274,7 @@ class MeshCoordinator:
             print("[MESH] ZeroMQ not available - mesh networking disabled")
             self.mesh_node = None
             return
-            
+
         self.node_id = node_id
         self.node_tier = node_tier
         self.mesh_node = MeshNode(node_id, node_tier=node_tier)
@@ -296,7 +296,7 @@ class MeshCoordinator:
         if not self.mesh_node:
             print("[MESH] Mesh networking disabled - skipping broadcast")
             return
-            
+
         self.mesh_node.broadcast_ghost_packet(ghost_packet, shared_memory)
 
     def start(self, packet_handler: Callable):
@@ -309,7 +309,7 @@ class MeshCoordinator:
         if not self.mesh_node:
             print("[MESH] Mesh networking disabled - cannot start listener")
             return
-            
+
         self.mesh_node.start_listening(packet_handler)
 
     def stop(self):
@@ -348,7 +348,7 @@ class UDPMeshNode:
         self.socket.settimeout(1.0)  # 1 second timeout for non-blocking
 
         self.running = Event()
-        
+
         tier_label = "SOVEREIGN" if node_tier == 0 else f"EDGE-{node_tier}"
         print(f"[UDP-MESH] Node {node_id} ({tier_label}) listening on port {bind_port}")
 
@@ -363,13 +363,13 @@ class UDPMeshNode:
         """
         # Add tier metadata
         ghost_packet['sender_tier'] = self.node_tier
-        
+
         # Generate signature if shared_memory provided
         if shared_memory and CRYPTO_AVAILABLE:
             raw_q = shared_memory['session_context'].get('RAW_Q', 0)
             timestamp = ghost_packet.get('ts', 0)
             ghost_packet['sig'] = ce.generate_ghost_signature(raw_q, timestamp)
-        
+
         message = json.dumps(ghost_packet).encode('utf-8')
 
         for address in peer_addresses:
@@ -429,7 +429,7 @@ if __name__ == "__main__":
         """Called when ghost packet received."""
         tier = packet.get('sender_tier', 1)
         tier_label = "SOVEREIGN" if tier == 0 else f"EDGE-{tier}"
-        
+
         print(f"\n[RECEIVED] Ghost packet from {sender_id} ({tier_label}):")
         print(f"  RAW_Q: {packet.get('v_omega_phase')}")
         print(f"  Signature: {packet.get('sig')}")
@@ -499,7 +499,7 @@ if __name__ == "__main__":
     # Create test packet with valid signature
     test_raw_q = 12345678
     test_ts = 42
-    
+
     if CRYPTO_AVAILABLE:
         valid_sig = ce.generate_ghost_signature(test_raw_q, test_ts)
     else:
@@ -513,7 +513,7 @@ if __name__ == "__main__":
 
     print(f"\nTest packet: {valid_packet}")
     is_valid = coordinator.mesh_node.verify_ghost_signature(valid_packet, test_raw_q)
-    
+
     if is_valid:
         print("✓ [SUCCESS] Valid signature accepted")
     else:
@@ -522,9 +522,9 @@ if __name__ == "__main__":
     # Test invalid signature
     invalid_packet = valid_packet.copy()
     invalid_packet['sig'] = "deadbeef"
-    
+
     is_invalid = coordinator.mesh_node.verify_ghost_signature(invalid_packet, test_raw_q)
-    
+
     if not is_invalid:
         print("✓ [SUCCESS] Invalid signature rejected")
     else:

@@ -20,7 +20,6 @@ HASH_CHAIN = KNOWLEDGE_BASE_DIR / "integrity_chain.txt"
 # Ensure directory exists
 KNOWLEDGE_BASE_DIR.mkdir(exist_ok=True)
 
-
 # =============================================================================
 # Core Functions
 # =============================================================================
@@ -31,11 +30,11 @@ def log_discovery(
     content: Dict[str, Any],
     specialist_id: Optional[str] = None,
     cpol_trace: Optional[Dict] = None,
-    node_tier: int = 1  # Crucial: This must be preserved
+    node_tier: int = 1  # Crucial
 ) -> str:
     """
     Append a discovery with Sovereign Tier validation.
-    
+
     Args:
         domain: Knowledge domain
         discovery_type: Type of discovery (epistemic_gap_fill, paradox_resolution, etc.)
@@ -43,7 +42,7 @@ def log_discovery(
         specialist_id: ID of specialist making discovery
         cpol_trace: CPOL oscillation metadata
         node_tier: Authority level (0=Sovereign, 1+=Edge)
-        
+
     Returns: 
         discovery_id (hash of entry)
     """
@@ -88,10 +87,10 @@ def log_discovery(
 def query_domain_knowledge(domain: str) -> List[Dict[str, Any]]:
     """
     Retrieve all discoveries for a given domain.
-    
+
     Args:
         domain: Knowledge domain to query
-        
+
     Returns: 
         List of discovery entries
     """
@@ -116,10 +115,10 @@ def query_domain_knowledge(domain: str) -> List[Dict[str, Any]]:
 def check_domain_coverage(domain: str) -> Dict[str, Any]:
     """
     Check if domain has been explored before and what we know.
-    
+
     Args:
         domain: Knowledge domain to check
-        
+
     Returns: 
         Dict with has_knowledge, discovery_count, gap_fills, last_updated, specialist_deployed
     """
@@ -176,7 +175,7 @@ def register_specialist(
     }
 
     save_specialist_registry(registry)
-    
+
     tier_label = "SOVEREIGN" if node_tier == 0 else f"EDGE-{node_tier}"
     print(f"[KB] Registered specialist {specialist_id} ({tier_label}) for domain '{domain}'")
 
@@ -184,7 +183,7 @@ def register_specialist(
 def update_specialist_stats(specialist_id: str, new_discoveries: int = 1) -> None:
     """
     Update specialist's discovery count after it fills a gap.
-    
+
     Args:
         specialist_id: Specialist to update
         new_discoveries: Number of new discoveries to add (default: 1)
@@ -203,10 +202,10 @@ def update_specialist_stats(specialist_id: str, new_discoveries: int = 1) -> Non
 def get_specialist_for_domain(domain: str) -> Optional[str]:
     """
     Check if a specialist already exists for this domain.
-    
+
     Args:
         domain: Knowledge domain
-        
+
     Returns: 
         specialist_id or None
     """
@@ -223,35 +222,35 @@ def get_provisional_axioms(domain: str) -> List[str]:
     """
     Retrieves established axioms for a domain to scaffold new manifolds.
     Used by the Curiosity Engine when CPOL detects an epistemic gap.
-    
+
     Only trusts axioms from:
     - Sovereign Root (Tier 0) nodes
     - High-confidence discoveries (>0.8)
-    
+
     Args:
         domain: Knowledge domain
-        
+
     Returns:
         List of axiom strings
     """
     knowledge = query_domain_knowledge(domain)
     axioms = []
-    
+
     for entry in knowledge:
         # Only trust axioms from high-tier nodes or high-confidence fills
         tier = entry.get('node_tier', 1)
         confidence = entry.get('content', {}).get('confidence', 0)
-        
+
         if tier == 0 or confidence > 0.8:
             entry_axioms = entry.get('content', {}).get('axioms_added', [])
             axioms.extend(entry_axioms)
-    
+
     # Return unique axioms or default fallback
     unique_axioms = list(set(axioms)) if axioms else ["initial_entropy_observation"]
-    
+
     if len(unique_axioms) > 1:
         print(f"[KB] Retrieved {len(unique_axioms)} axioms for domain '{domain}'")
-    
+
     return unique_axioms
 
 
@@ -259,11 +258,11 @@ def export_domain_summary(domain: str, output_file: str = None) -> str:
     """
     Generate a human-readable summary of all knowledge in a domain.
     Useful for feeding to new specialists or humans.
-    
+
     Args:
         domain: Knowledge domain
         output_file: Optional file path to write summary
-        
+
     Returns:
         Summary string
     """
@@ -282,17 +281,17 @@ def export_domain_summary(domain: str, output_file: str = None) -> str:
     for d in discoveries:
         tier = d.get('node_tier', 1)
         tier_counts[tier] = tier_counts.get(tier, 0) + 1
-    
+
     summary += "=== Authority Distribution ===\n"
     for tier in sorted(tier_counts.keys()):
         tier_label = "SOVEREIGN" if tier == 0 else f"EDGE-{tier}"
         summary += f"  {tier_label}: {tier_counts[tier]} discoveries\n"
-    
+
     summary += "\n=== Discoveries ===\n"
     for i, entry in enumerate(discoveries, 1):
         tier = entry.get('node_tier', 1)
         tier_label = "SOVEREIGN" if tier == 0 else f"EDGE-{tier}"
-        
+
         summary += f"\n{i}. [{entry['type']}] {entry['timestamp']} ({tier_label})\n"
         summary += f"   Discovery ID: {entry['discovery_id']}\n"
 
@@ -325,7 +324,7 @@ def load_specialist_registry() -> Dict[str, Any]:
     """
     Load specialist registry from disk.
     Public function for external modules.
-    
+
     Returns:
         Registry dict
     """
@@ -344,7 +343,7 @@ def save_specialist_registry(registry: Dict[str, Any]) -> None:
     """
     Save specialist registry to disk.
     Public function for external modules.
-    
+
     Args:
         registry: Registry dict to save
     """
@@ -409,10 +408,10 @@ def generate_specialist_context(domain: str) -> Dict[str, Any]:
     """
     Generate a context package for a new specialist agent.
     Includes: prior discoveries, known gaps, related domains, axioms.
-    
+
     Args:
         domain: Knowledge domain
-        
+
     Returns:
         Context dict with prior_knowledge, axioms, resolutions, suggested_approach
     """

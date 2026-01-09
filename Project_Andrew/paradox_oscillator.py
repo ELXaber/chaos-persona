@@ -204,21 +204,20 @@ class CPOL_Kernel:
         """
         Algebraic 12D space pull (6 complex dimensions).
         Maps the 2D z-state to a 12D topological signature and checks the Knowledge Base.
-        
+
         The 7th dimension is implicit - it's the phase-lock solver, not stored in the vector.
         This is the patent-pending innovation: solving for the 7th dimension resolves phase-lock.
         """
         # 1. Calculate the 12D Pull Vector (6 complex dimensions = 12 real values)
         logical_mass = self.contradiction_density ** 2
         manifold_vector = []
-        
-        for dim in range(1, 7):  # 6 complex dimensions (not 12!)
+
+        # Total: 12 elements (6 complex dimensions × 2 components)
+        for dim in range(1, 7): 
             pull_angle = logical_mass * (dim * 0.1)
             # Store real and imaginary components of each complex dimension
             manifold_vector.append(math.sin(pull_angle) * self.z.real)
             manifold_vector.append(math.cos(pull_angle) * self.z.imag)
-        
-        # Total: 12 elements (6 complex dimensions × 2 components)
 
         # 2. KB Inspect Hook: Check for Manifold Similarity (if available)
         if KB_AVAILABLE:
@@ -268,7 +267,7 @@ class CPOL_Kernel:
             # The Cycle
             z = self._truth_seer(self.z)
             z = self._lie_weaver(z)
-            
+
             # 12D INTEGRATION ---
             manifold_data = self._twelve_d_manifold_pull()
 
@@ -285,7 +284,7 @@ class CPOL_Kernel:
             # Average of the 12-element manifold signature to warp the phase
             avg_pull = sum(manifold_data["sig"]) / 12  # 12 elements / 12 = average
             self.z *= complex(math.cos(avg_pull), math.sin(avg_pull))
-            
+
             z = self._entropy_knower(z)
             z *= self.decay
             self.z = z
@@ -585,7 +584,7 @@ def cpol_guided_response(query: str, cpol_result: Dict) -> Dict[str, Any]:
 def generate_7d_signature(query_text: str, session_context: Dict[str, Any]) -> str:
     """
     Generate 7D topological signature for mesh deduplication.
-    
+
     Note: This is SEPARATE from the 12D manifold used in oscillation.
     The 7D signature is for network deduplication, not paradox resolution.
     """

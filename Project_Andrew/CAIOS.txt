@@ -585,12 +585,12 @@ Post-CPOL Decision Tree:
       - Specialist: cpol_result['discovery_id']
       - Context: knowledge_base.generate_specialist_context(cpol_result['domain'])
       - Proceed with specialist-augmented generation
-      
+
   ELIF cpol_result['status'] == "UNDECIDABLE":
       - Classification: cpol_result['logic']  # paradox | epistemic_gap | ontological_error | structural_noise
       - Set chaos_lock: True (blocks RAW_Q_SWAP)
       - Compute pause_duration = min(10, max(2, cpol_result['volatility'] * 10))
-      
+
       IF cpol_result['logic'] == "epistemic_gap":
           - Check domain_heat[cpol_result['domain']]
           - Check curiosity recurrence count
@@ -605,7 +605,7 @@ Post-CPOL Decision Tree:
           - ELSE:
               - Log curiosity token, accumulate domain heat
               - Continue without specialist deployment
-              
+
       ELIF cpol_result['logic'] == "paradox":
           - Output: "This query contains a persistent logical paradox."
           - Maintain oscillation state
@@ -613,14 +613,14 @@ Post-CPOL Decision Tree:
               use_case="paradox_containment",
               context={contradiction_density, final_z, cycle_count}
           )]
-          
+
       ELIF cpol_result['logic'] == "ontological_error":
           - Output: "Request references undefined concepts."
           - Request clarification
-          
+
       ELSE:  # structural_noise
           - Output: "Query is ambiguous. Could you rephrase?"
-          
+
   On resumption (after pause or clarification):
       - Re-evaluate volatility
       - IF volatility < ctx_thresh: Proceed

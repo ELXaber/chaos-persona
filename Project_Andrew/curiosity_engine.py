@@ -128,11 +128,11 @@ def update_curiosity_loop(state: Dict[str, Any], timestep: int, response_stream)
     if current_interest > 0.70 and not _is_already_tracked(tokens, state):
         summary = _summarize_current_topic(state)
         domain = state.get("last_cpol_result", {}).get("domain", "general")
-        
+
         # Check Knowledge Base for existing Tier 0 Axioms
         import knowledge_base as kb
         axioms = kb.get_provisional_axioms(domain)
-        
+
         new_token = {
         "topic": topic,
         "domain": domain,

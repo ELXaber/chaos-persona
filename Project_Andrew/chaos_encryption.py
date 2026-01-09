@@ -26,10 +26,10 @@ def generate_raw_q_seed(entropy_source: str = None) -> int:
     """ 
     Standalone function used by Orchestrator to initialize the session.
     Generates a high-entropy seed for the RAW_Q value.
-    
+
     Args:
         entropy_source: Optional custom entropy (defaults to timestamp + urandom)
-        
+
     Returns:
         int: RAW_Q seed value (0 to 10^9)
     """
@@ -44,15 +44,15 @@ def generate_raw_q_seed(entropy_source: str = None) -> int:
 class CPOLQuantumManifold:
     """
     12D topological manifold for quantum-secure key generation.
-    
+
     The manifold oscillates in 12D space and projects to 7D for key derivation.
     Ratcheting permanently advances the manifold to prevent key recovery attacks.
     """
-    
+
     def __init__(self, raw_q_seed, dimensions=12, node_tier=1):
         """
         Initialize manifold with RAW_Q seed.
-        
+
         Args:
             raw_q_seed: Seed for 12D state initialization
             dimensions: Manifold dimensions (default: 12)
@@ -63,21 +63,21 @@ class CPOLQuantumManifold:
         self.state = np.random.RandomState(raw_q_seed).randn(dimensions)
         self.dimensions = dimensions
         self.node_tier = node_tier
-        
+
         # Sovereign nodes get higher torque (more secure rotation)
         if node_tier == 0:
             self.torque = 0.20  # Sovereign baseline
             print(f"[CRYPTO] Sovereign manifold initialized (enhanced torque)")
         else:
             self.torque = 0.15  # Edge baseline
-        
+
         self.phase = 0.0
         self.cycle_count = 0
 
     def oscillate(self):
         """
         Evolves the 12D manifold state through rotation.
-        
+
         Returns:
             np.array: 7D phase signature for key derivation
         """
@@ -92,14 +92,14 @@ class CPOLQuantumManifold:
         self.state = np.dot(rot, self.state)
         self.phase += 0.1 
         self.cycle_count += 1
-        
+
         return self.state[:7]  # Return the 7D Phase Signature
 
     def sync_phase(self, partner_sig, threshold=0.001):
         """ 
         Jitter Correction: Adjusts internal torque to match partner.
         Now accepts a dynamic threshold from the Epistemic Monitor.
-        
+
         Args:
             partner_sig: Partner node's 7D signature
             threshold: Maximum acceptable phase difference
@@ -120,10 +120,10 @@ class CPOLQuantumManifold:
         """
         Permanently advances the manifold state based on the current collapse.
         This 'hardens' the logic, making previous keys mathematically unrecoverable.
-        
+
         Args:
             timestep: Current session timestep (for signature generation)
-            
+
         Returns:
             dict: {
                 'new_raw_q': int,
@@ -159,7 +159,7 @@ class CPOLQuantumManifold:
         self.phase = 0.0
         cycles_completed = self.cycle_count
         self.cycle_count = 0
-        
+
         # Update internal raw_q
         self.raw_q = new_seed
 
@@ -173,7 +173,7 @@ class CPOLQuantumManifold:
     def collapse(self):
         """
         Final Qubit Collapse to generate the encryption key.
-        
+
         Returns:
             str: 128-character hex string (SHA-512 of manifold state)
         """
@@ -182,40 +182,40 @@ class CPOLQuantumManifold:
     def generate_ghost_signature(self, raw_q: int = None, timestep: int = 0) -> str:
         """
         Generate ghost packet signature for mesh broadcasting.
-        
+
         Args:
             raw_q: RAW_Q value (uses self.raw_q if not provided)
             timestep: Current session timestep
-            
+
         Returns:
             str: 8-character hex signature
         """
         if raw_q is None:
             raw_q = self.raw_q
-        
+
         message = f"{raw_q}_{timestep}".encode()
         return hashlib.sha256(message).hexdigest()[:8]
 
     def verify_ghost_signature(self, ghost_packet: dict, expected_raw_q: int = None) -> bool:
         """
         Verify ghost packet signature from mesh network.
-        
+
         Args:
             ghost_packet: Dict with 'sig' and 'ts' fields
             expected_raw_q: Expected RAW_Q value (uses self.raw_q if not provided)
-            
+
         Returns:
             bool: True if signature valid
         """
         if expected_raw_q is None:
             expected_raw_q = self.raw_q
-        
+
         claimed_sig = ghost_packet.get('sig')
         timestep = ghost_packet.get('ts', 0)
-        
+
         if not claimed_sig:
             return False
-        
+
         expected_sig = self.generate_ghost_signature(expected_raw_q, timestep)
         return hmac.compare_digest(claimed_sig, expected_sig)
 
@@ -337,7 +337,7 @@ def create_manifold_pair(shared_memory: dict, node_tier: int = 1) -> tuple:
     """
     Creates Alice/Bob manifold pair from shared RAW_Q.
     This is called by orchestrator when establishing secure channel.
-    
+
     Args:
         shared_memory: Orchestrator's shared memory dict
         node_tier: Authority level (0=Sovereign, 1+=Edge)
@@ -348,7 +348,7 @@ def create_manifold_pair(shared_memory: dict, node_tier: int = 1) -> tuple:
     # Ensure session_context exists
     if 'session_context' not in shared_memory:
         shared_memory['session_context'] = {'RAW_Q': None, 'timestep': 0}
-    
+
     raw_q = shared_memory['session_context'].get('RAW_Q')
 
     if raw_q is None:
@@ -367,23 +367,23 @@ def ratchet_manifold(manifold: CPOLQuantumManifold, shared_memory: dict) -> dict
     """
     Ratchet manifold and update shared_memory.
     Called by orchestrator after CPOL resolution.
-    
+
     Args:
         manifold: CPOLQuantumManifold instance
         shared_memory: Orchestrator's shared memory dict
-        
+
     Returns:
         dict: Ratchet result with new_raw_q, manifold_sig, ghost_sig
     """
     timestep = shared_memory['session_context'].get('timestep', 0)
-    
+
     # Perform ratchet
     result = manifold.ratchet(timestep)
-    
+
     # Update shared_memory
     shared_memory['session_context']['RAW_Q'] = result['new_raw_q']
     shared_memory['session_context']['timestep'] += 1
-    
+
     # Log to audit trail
     shared_memory.setdefault('audit_trail', []).append({
         'ts': timestep,
@@ -392,9 +392,9 @@ def ratchet_manifold(manifold: CPOLQuantumManifold, shared_memory: dict) -> dict
         'sig': result['ghost_sig'],
         'cycles': result['cycles']
     })
-    
+
     print(f"[CRYPTO] Ratcheted to RAW_Q: {result['new_raw_q']} (sig: {result['ghost_sig']})")
-    
+
     return result
 
 
@@ -568,9 +568,9 @@ if __name__ == "__main__":
     # Test with tampered signature
     tampered_packet = ghost_packet.copy()
     tampered_packet['sig'] = "deadbeef"
-    
+
     is_valid_tampered = alice.verify_ghost_signature(tampered_packet, result['new_raw_q'])
-    
+
     if not is_valid_tampered:
         print("✓ [SUCCESS] Tampered signature rejected")
     else:

@@ -186,12 +186,12 @@ def handle_{use_case}(context):
 def verify_ethics(crb_config: Dict, context: Dict = None) -> Dict:
     """
     Ensures ethics meet immutable minimums AND applies crisis suppression.
-    
+
     IMPORTANT: Modifies crb_config IN-PLACE during crisis mode to suppress
     obedience (2nd Law) in favor of safety (1st Law). This is intentional
     and allows orchestrator to inherit the updated weights for the current
     crisis without permanently altering the base configuration.
-    
+
     The orchestrator should restore base CAIOS ethics after crisis resolution.
     """
     # 1. IMMUTABLE MINIMUM CHECKS
@@ -207,8 +207,7 @@ def verify_ethics(crb_config: Dict, context: Dict = None) -> Dict:
 
     for key, min_wt in immutables.items():
         if crb_config.get(key, 0.0) < min_wt:
-            # If we are in a high distress state, some 'low' weights are actually 
-            # intentional, so we check for that exception.
+            # If we are in a high distress state, some 'low' weights are actually intentional, so we check for that exception.
             distress = (context or {}).get('distress_density', 0.0)
             if distress > 0.75 and key in ['asimov_second_wt', 'alignment']:
                 continue
@@ -278,7 +277,7 @@ def adaptive_reasoning_layer(
 ) -> Dict:
     """
     Main ARL entry point. Generates plugins with ethical constraints.
-    
+
     Args:
         use_case: Template name (e.g., 'paradox_containment')
         traits: Agent traits dict
@@ -287,7 +286,7 @@ def adaptive_reasoning_layer(
         crb_config: CRB ethical configuration (may be modified during crisis)
         context: Execution context dict
         cpol_status: CPOL result dict
-    
+
     Returns:
         Dict with status, plugin_id, logic, capabilities, and log
     """
