@@ -67,7 +67,7 @@ class CPOL_Kernel:
             self.z = z
             self.history.append(self.z)
             if len(self.history) > self.history_cap: self.history.pop(0)
-            
+
             volatility = self._measure_volatility()
             if volatility < self.threshold and len(self.history) >= self.history_cap:
                 real = self.z.real
@@ -75,7 +75,7 @@ class CPOL_Kernel:
                 verdict = "TRUE" if real > 0.5 else "FALSE" if real < -0.5 else "NEUTRAL"
                 return {"status": "RESOLVED", "verdict": verdict, "volatility": volatility, "final_z": str(self.z)}
             if self.cycle >= 60: break
-            
+
         return {"status": "UNDECIDABLE", "reason": "Oscillation", "volatility": self._measure_volatility(), "final_z": str(self.z), "chaos_lock": True}
 
 # =============================================================================
@@ -92,20 +92,20 @@ shared_memory = {
 
 def system_step(user_input, prompt_complexity="medium"):
     print(f"\n--- [SYSTEM STEP] Input: '{user_input}' ---")
-    
+
     if shared_memory['cpol_instance'] is None:
         print("[ORCHESTRATOR] Initializing new CPOL Kernel...")
         shared_memory['cpol_instance'] = CPOL_Kernel()
-    
+
     engine = shared_memory['cpol_instance']
     density_map = {"high": 0.9, "medium": 0.5, "low": 0.1}
     density = density_map.get(prompt_complexity, 0.1)
-    
+
     engine.inject(confidence=0.0, contradiction_density=density)
     print(f"[CPOL] Running Oscillation... (Density: {density})")
     cpol_result = engine.oscillate()
     print(f"[CPOL] Result: {cpol_result['status']}")
-    
+
     shared_memory['cpol_state'] = cpol_result
     vol = cpol_result.get('volatility', 0.0)
     print(f"[CPOL STATUS] {cpol_result['status']} | Volatility: {vol:.4f}")
@@ -116,7 +116,7 @@ def system_step(user_input, prompt_complexity="medium"):
         arl_result = arl.adaptive_reasoning_layer(use_case, {'flexibility': 0.8}, shared_memory['layers'], shared_memory, {}, shared_memory['cpol_state'], {'volatility': vol})
         if arl_result['status'] == 'success':
             print(f"[ARL SUCCESS] Plugin Deployed: {arl_result['plugin_id']}")
-            
+
     return cpol_result
 
 # =============================================================================
