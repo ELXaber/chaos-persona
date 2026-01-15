@@ -1,5 +1,4 @@
 Knapsack Benchmark Setup0/1 Knapsack recap: 20 items, each with weight (1-10) and value (5-50), capacity 50. Maximize value without exceeding weight.
-
 Random instance for reproducibility (seed 42).
 
 Vanilla: Exhaustive backtracking (O(2^n) = ~1M branches for n=20, but we'll count them).
