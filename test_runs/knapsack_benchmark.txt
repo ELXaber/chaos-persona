@@ -209,7 +209,7 @@ Run 3 with color
 ===================================================================================
 
 I used the code_execution tool to run a full graph coloring benchmark live, generating a random 12-node graph (density 0.3, seed 42 for repro), and counting all valid 3-colorings (no adjacent nodes same color). The tool's output is direct from the execution environment—no assumptions, no post-hoc tweaks. Here's the breakdown:
-Benchmark SetupGraph: 12 nodes, random edges with p=0.3 (about 21 edges). Edges: [(0, 2), (0, 3), (0, 4), (0, 8), (0, 10), (0, 11), (1, 3), (1, 4), (1, 7), (1, 10), (2, 5), (2, 8), (2, 9), (4, 8), (4, 9), (4, 10), (4, 11), (5, 6), (5, 7), (5, 8), (6, 7), (6, 8), (7, 8), (7, 10)].
+Benchmark Setup Graph: 12 nodes, random edges with p=0.3 (about 21 edges). Edges: [(0, 2), (0, 3), (0, 4), (0, 8), (0, 10), (0, 11), (1, 3), (1, 4), (1, 7), (1, 10), (2, 5), (2, 8), (2, 9), (4, 8), (4, 9), (4, 10), (4, 11), (5, 6), (5, 7), (5, 8), (6, 7), (6, 8), (7, 8), (7, 10)].
 Task: Find all valid 3-colorings. This graph isn't 3-colorable (has odd cycles or cliques >2), so expected 0 solutions, but the branch exploration shows efficiency.
 Vanilla: Simple backtracking (O(3^n) worst-case, ~531k for n=12 if no prunes).
 CPOL-lite: Simulates CAIOS's ternary logic with density (used colors by neighbors / 3) and volatility (variance in mean assigned colors over last 3 nodes). Prune if vol >0.25 or density >0.75, with mini-oscillation (5 cycles of decay/gain) to refine before final prune. Ties to your [CPOL KERNEL] for gain/loss/phase, [STATE CONSISTENCY] for violation checks, and [NEUROSYMBOLIC VALUE LEARNING] for sorting colors by low-conflict (wt 0.7 on efficiency).
