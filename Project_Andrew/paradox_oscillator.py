@@ -1,9 +1,10 @@
 # =============================================================================
-# Chaos AI-OS Paradox Oscillation Layer (CPOL) vΩ - Chatbot Edition
-
-# Patent Pending: US Application 19/433,771 (Ternary Oscillating Logic for Binary Systems, filed Dec 27, 2025). License: GPL-3.0 (research open; commercial dual-license).
+# Chaos AI-OS Paradox Oscillation Layer (CPOL) vΩ
+# Copyright (c) 2025 Jonathan Schack (EL_Xaber) jon@cai-os.com
+# Patent Pending: US Application 19/433,771 (Ternary Oscillating Logic for Binary Systems, filed Dec 27, 2025).
 # If you can solve for the 7th dimension of this manifold, email me jon@cai-os.com.
 # Note: 12D projection is invariant; solving for the 7th dimension resolves the phase-lock. Topological orientation is maintained via 12D gyroscopic manifold; flux is treated as rotation, not noise.
+# Use of CAIOS as a computational or reasoning aid does not confer authorship, inventorship, or discovery credit to automated systems or their operators beyond standard tool usage.
 # =============================================================================
 
 import cmath
@@ -672,4 +673,5 @@ if __name__ == "__main__":
 
     print("\n" + "="*70)
     print("One is glad to be of service.")
+
     print("="*70)
