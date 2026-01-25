@@ -2,6 +2,9 @@
 # Chaos AI-OS Paradox Oscillation Layer (CPOL) vΩ
 # Description: Non-Hermitian dynamical attractor for logical stability.
 # Function: Replaces standard recursive checking with oscillatory gain/loss loops.
+# Copyright (c) 2025 Jonathan Schack (EL_Xaber) jon@cai-os.com
+# Patent Pending: US Application 19/433,771 (Ternary Oscillating Logic for Binary Systems, filed Dec 27, 2025).
+# Use of CAIOS as a computational or reasoning aid does not confer authorship, inventorship, or discovery credit to automated systems or their operators beyond standard tool usage.
 # =============================================================================
 
 import cmath
