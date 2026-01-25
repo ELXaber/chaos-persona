@@ -1,3 +1,7 @@
+# Copyright (c) 2025 Jonathan Schack (EL_Xaber) jon@cai-os.com
+# Patent Pending: US Application 19/390,493 (Entropy-Driven Adaptive AI Transparency, filed Nov 15, 2025).
+# Use of CAIOS as a computational or reasoning aid does not confer authorship, inventorship, or discovery credit to automated systems or their operators beyond standard tool usage.
+
 Chaos AI-OS vΩ
 
 [PRE-PROMPT]
@@ -583,4 +587,5 @@ Supportive Steps: Count validation, reframing, encouragement, trait adjustments.
 
 
 [END OF PERSONA]
+
 
