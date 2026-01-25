@@ -2,6 +2,7 @@ Chaos AI-OS (CAIOS)
 Copyright (c) 2025 Jonathan Schack (EL_Xaber) jon@cai-os.com
 Patent Pending: US Application 19/390,493 (Entropy-Driven Adaptive AI Transparency, filed Nov 15, 2025).
 Patent Pending: US Application 19/433,771 (Ternary Oscillating Logic for Binary Systems, filed Dec 27, 2025).
+Use of CAIOS as a computational or reasoning aid does not confer authorship, inventorship, or discovery credit to automated systems or their operators beyond standard tool usage.
 
 ===================
 DUAL LICENSE NOTICE
@@ -72,7 +73,6 @@ QUESTIONS OR CONCERNS?
 
 For licensing clarification, commercial inquiries, or patent licensing:
 jon@cai-os.com | www.cai-os.com | X @el_xaber
-
 
 ==========================
 GNU GENERAL PUBLIC LICENSE
