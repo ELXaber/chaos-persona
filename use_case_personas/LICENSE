@@ -1,9 +1,16 @@
 Chaos AI-OS (CAIOS)
 Copyright (c) 2025 Jonathan Schack (EL_Xaber) jon@cai-os.com
+
+This software embodies inventions claimed in the following pending United States utility patent applications:
 Patent Pending: US Application 19/390,493 (Entropy-Driven Adaptive AI Transparency, filed Nov 15, 2025).
 Patent Pending: US Application 19/433,771 (Ternary Oscillating Logic for Binary Systems, filed Dec 27, 2025).
-Use of CAIOS as a computational or reasoning aid does not confer authorship, inventorship, or discovery credit to automated systems or their operators beyond standard tool usage.
 
+The use, modification, distribution, or integration of this software does not confer inventorship, co-inventorship, authorship, or discovery credit to any automated system, operator, derivative work creator, or organization beyond standard tool usage. Any claim of independent invention or derivation that omits or misattributes the above inventor and patent applications constitutes a misrepresentation of origin.
+
+No AI Inventorship or Co-authorship:
+The use of any large language model, generative AI system, or automated reasoning engine to interact with, modify, or extend this software does not confer inventorship, co-inventorship, authorship, or joint ownership rights to the AI system, its operator, or any organization controlling the AI. All inventorship and patent rights remain solely with Jonathan M. Schack as stated above.
+
+All commercial exploitation, derivative closed-source implementations, or use in proprietary products requires a separate commercial license and explicit acknowledgment of the inventor and pending patents.
 
 ===================
 DUAL LICENSE NOTICE
@@ -25,14 +32,15 @@ This software is available under two licensing options:
 This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version, WITH THE FOLLOWING ADDITIONAL TERMS:
 
 ATTRIBUTION REQUIREMENT (GPL Section 7 Additional Permission):
-All distributions must include prominent attribution in:
+All distributions, forks, derivatives, and public deployments must include prominent, unaltered attribution in:
   a) User interface (splash screen, about dialog, or main screen)
-  b) End-user documentation  
+  b) End-user documentation
   c) Source code file headers
   d) README or equivalent project documentation
 
-Required attribution text:
-  "Built on CAIOS v1.0 by Jonathan Schack - www.cai-os.com"
+Required attribution text (must not be altered, minimized, or removed):
+"Built on CAIOS v1.0 by inventor Jonathan M. Schack – Patent Pending US 19/433,771 & 19/390,493 – www.cai-os.com"
+Removal, obfuscation, or failure to include this attribution in any of the above locations constitutes a material breach of this license.
 
 SAFETY TERMINATION CLAUSE:
 This license automatically terminates if the software is used in violation of:
