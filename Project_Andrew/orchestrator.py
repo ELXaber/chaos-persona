@@ -453,6 +453,50 @@ def system_step(user_input: str, prompt_complexity: str = "low", response_stream
     return cpol_result
 
 # =============================================================================
+# PRODUCTION / API KEY / EXTERNAL SERVICE CONFIGURATION
+# =============================================================================
+
+#Example 1:
+
+# PASTE YOUR API KEY BLOCK HERE
+#if os.getenv("OPENAI_API_KEY"):
+#    openai.api_key = os.getenv("OPENAI_API_KEY")
+# ... or whatever your original block contains ...
+# e.g. Anthropic, Grok, Pinecone, Redis, etc.
+
+#Example 2:
+
+    # ========== PRODUCTION MODE (Uncomment for Claude API) ==========
+    # import anthropic
+    # import os
+    # 
+    # client = anthropic.Anthropic(api_key=os.environ.get("ANTHROPIC_API_KEY"))
+    # 
+    # response = client.messages.create(
+    #     model="claude-sonnet-4-20250514",
+    #     max_tokens=50,
+    #     messages=[{
+    #         "role": "user",
+    #         "content": f"""Analyze this query for paradox/contradiction density.
+    # Return ONLY a number between 0.0 and 1.0:
+    # - 0.0-0.2: Simple, factual
+    # - 0.3-0.5: Ambiguous, philosophical
+    # - 0.6-0.8: Self-referential, complex
+    # - 0.9-1.0: Pure paradox (liar's paradox, etc)
+    # 
+    # Query: "{query}"
+    # 
+    # Density:"""
+    #     }]
+    # )
+    # 
+    # try:
+    #     return float(response.content[0].text.strip())
+    # except:
+    #     return 0.5  # Safe fallback
+    # ========== END PRODUCTION MODE ==========
+
+# =============================================================================
 # COMPREHENSIVE TEST SUITE
 # =============================================================================
 
@@ -551,4 +595,5 @@ if __name__ == "__main__":
 
     print("\n" + "="*70)
     print("One is glad to be of service.")
+
     print("="*70)
