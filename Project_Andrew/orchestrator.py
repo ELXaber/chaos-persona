@@ -60,8 +60,47 @@ shared_memory = {
     'last_user_message': '',
     'last_assistant_message': '',
     'swarm_leaders': [],  # Mesh networking
-    'active_syncs': {}     # Deduplication cache
+    'active_syncs': {},     # Deduplication cache
+    'api_clients': {}      # Multi-model swarm clients
 }
+
+# =============================================================================
+# API CLIENT LOADING (Multi-Model Swarm Support)
+# =============================================================================
+
+def load_api_clients_from_config():
+    """
+    Load API clients that master_init.py verified.
+    Re-initializes from environment variables (never stores keys in files).
+    """
+    import json
+
+    if not os.path.exists('api_clients.json'):
+        print("[INFO] No API client config found - multi-model swarm disabled")
+        print("       Run 'python master_init.py' to initialize API clients")
+        return {}
+
+    try:
+        with open('api_clients.json') as f:
+            config = json.load(f)
+
+        print(f"[INFO] Loading {len(config['available_providers'])} API client(s)...")
+
+        # Import the loader from master_init
+        from master_init import load_api_clients
+        clients = load_api_clients(shared_memory)
+
+        if clients:
+            print(f"[INFO] ✓ Multi-model swarm ready with: {', '.join(clients.keys())}")
+
+        return clients
+
+    except Exception as e:
+        print(f"[WARNING] Failed to load API clients: {e}")
+        return {}
+
+# Load API clients on startup
+shared_memory['api_clients'] = load_api_clients_from_config()
 
 CRB_CONFIG = {
     'alignment': 0.7, 
@@ -451,50 +490,6 @@ def system_step(user_input: str, prompt_complexity: str = "low", response_stream
         )
 
     return cpol_result
-
-# =============================================================================
-# PRODUCTION / API KEY / EXTERNAL SERVICE CONFIGURATION
-# =============================================================================
-
-#Example 1:
-
-# PASTE YOUR API KEY BLOCK HERE
-#if os.getenv("OPENAI_API_KEY"):
-#    openai.api_key = os.getenv("OPENAI_API_KEY")
-# ... or whatever your original block contains ...
-# e.g. Anthropic, Grok, Pinecone, Redis, etc.
-
-#Example 2:
-
-    # ========== PRODUCTION MODE (Uncomment for Claude API) ==========
-    # import anthropic
-    # import os
-    # 
-    # client = anthropic.Anthropic(api_key=os.environ.get("ANTHROPIC_API_KEY"))
-    # 
-    # response = client.messages.create(
-    #     model="claude-sonnet-4-20250514",
-    #     max_tokens=50,
-    #     messages=[{
-    #         "role": "user",
-    #         "content": f"""Analyze this query for paradox/contradiction density.
-    # Return ONLY a number between 0.0 and 1.0:
-    # - 0.0-0.2: Simple, factual
-    # - 0.3-0.5: Ambiguous, philosophical
-    # - 0.6-0.8: Self-referential, complex
-    # - 0.9-1.0: Pure paradox (liar's paradox, etc)
-    # 
-    # Query: "{query}"
-    # 
-    # Density:"""
-    #     }]
-    # )
-    # 
-    # try:
-    #     return float(response.content[0].text.strip())
-    # except:
-    #     return 0.5  # Safe fallback
-    # ========== END PRODUCTION MODE ==========
 
 # =============================================================================
 # COMPREHENSIVE TEST SUITE
