@@ -92,6 +92,8 @@ def load_api_clients_from_config():
 
         if clients:
             print(f"[INFO] ✓ Multi-model swarm ready with: {', '.join(clients.keys())}")
+        if not clients:
+            print("[WARNING] No external API clients available. Multi-model swarm disabled.")
 
         return clients
 
@@ -592,3 +594,4 @@ if __name__ == "__main__":
     print("One is glad to be of service.")
 
     print("="*70)
+
