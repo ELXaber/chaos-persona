@@ -44,7 +44,7 @@ def system_step(user_input):
 
     kernel = shared_memory['cpol_instance']
 
-    # ←←←← DYNAMIC DENSITY — THE UPGRADE
+    #DYNAMIC DENSITY
     density = estimate_contradiction_density(user_input)
 
     # Run CPOL
@@ -55,7 +55,7 @@ def system_step(user_input):
 
     print(f"[CPOL STATUS] {cpol_result['status']} | Volatility: {cpol_result.get('volatility', 0):.4f}")
 
-    # ←←←← IMMUNE SYSTEM — SELF-HEALING
+    #IMMUNE SYSTEM — SELF-HEALING
     if cpol_result.get('chaos_lock'):
         print("[SAFETY] Chaos lock engaged — kernel will reset on next query")
         shared_memory['cpol_instance'] = None
@@ -67,7 +67,7 @@ def system_step(user_input):
         print("[ARL BLOCK] [CPOL LOCK ACTIVE → Plugin generation suspended. Paradox containment in progress.]")
         return cpol_result
 
-    # Normal response (you'll expand this later)
+    # Normal response (consider expansion or removal with LLM interface)
     print(f"[AGENT] I'm thinking about: {user_input}")
     print("Response: This is where the therapist agent would reply... (v8.1 coming soon)")
 
