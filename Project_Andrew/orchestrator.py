@@ -246,8 +246,6 @@ def sync_curiosity_to_domain_heat(state: dict):
 # =============================================================================
 
 def system_step(user_input: str, prompt_complexity: str = "low", response_stream=None, api_clients=None):
-    if api_clients is None:
-        api_clients = shared_memory.get('api_clients', {})
     """
     Main orchestration function for unified system.
 
@@ -255,10 +253,15 @@ def system_step(user_input: str, prompt_complexity: str = "low", response_stream
         user_input: Message/command to process
         prompt_complexity: "low", "medium", or "high"
         response_stream: Optional response stream for curiosity engine
+        api_clients: Optional override (useful for testing or multi-process)
 
-    Returns:
+        Returns:
         CPOL result dict or ARL plugin result
     """
+    # Allow caller to override clients (for testing/swarm)
+    if api_clients is None:
+        api_clients = shared_memory.get('api_clients', {})
+
     # 0. Ensure RAW_Q is initialized
     initialize_raw_q()
 
@@ -596,6 +599,7 @@ if __name__ == "__main__":
     print("One is glad to be of service.")
 
     print("="*70)
+
 
 
 
