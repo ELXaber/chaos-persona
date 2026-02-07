@@ -240,4 +240,30 @@ The entire intrinsic-motivation curiosity engine, tamper-evident audit trail, an
 
 ===================================================
 
+You only need to initialize/load CAIOS.txt when you actually start sending queries to an LLM.
+That happens outside of master_init.py, in one of these places:
+
+1. Manual testing
+Copy-paste CAIOS.txt as the system prompt in the OpenAI/Anthropic/xAI/Gemini playground or in your test script.
+
+2. Production chat interface
+In your web app, CLI tool, or API wrapper, always include the content of CAIOS.txt as the very first system message.
+Example (Python + OpenAI client):
+
+from openai import OpenAI
+
+client = shared_memory['api_clients']['openai']  # from master_init
+
+def chat_with_caios(user_message: str):
+    response = client.chat.completions.create(
+        model="gpt-4o" or "grok-beta" etc.,
+        messages=[
+            {"role": "system", "content": open("CAIOS.txt", "r", encoding="utf-8").read()},
+            {"role": "user", "content": user_message}
+        ]
+    )
+    return response.choices[0].message.content
+
+===================================================
+
 "One is glad to be of service."
