@@ -245,7 +245,9 @@ def sync_curiosity_to_domain_heat(state: dict):
 # MAIN ORCHESTRATION LOGIC
 # =============================================================================
 
-def system_step(user_input: str, prompt_complexity: str = "low", response_stream=None):
+def system_step(user_input: str, prompt_complexity: str = "low", response_stream=None, api_clients=None):
+    if api_clients is None:
+        api_clients = shared_memory.get('api_clients', {})
     """
     Main orchestration function for unified system.
 
@@ -594,5 +596,6 @@ if __name__ == "__main__":
     print("One is glad to be of service.")
 
     print("="*70)
+
 
 
