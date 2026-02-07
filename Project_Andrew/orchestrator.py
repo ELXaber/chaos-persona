@@ -255,7 +255,7 @@ def system_step(user_input: str, prompt_complexity: str = "low", response_stream
         response_stream: Optional response stream for curiosity engine
         api_clients: Optional override (useful for testing or multi-process)
 
-        Returns:
+    Returns:
         CPOL result dict or ARL plugin result
     """
     # Allow caller to override clients (for testing/swarm)
@@ -599,6 +599,7 @@ if __name__ == "__main__":
     print("One is glad to be of service.")
 
     print("="*70)
+
 
 
 
