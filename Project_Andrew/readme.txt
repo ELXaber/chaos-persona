@@ -22,7 +22,7 @@ It validates the video: https://x.com/el_xaber/status/2008268523659837839
 People can see the 200+ prompt scroll; this section explains why their eyes aren't deceiving them.
 "One is glad to be of service."
 
-🚀 Chaos AI-OS: Project Andrew Quickstart
+Chaos AI-OS: Project Andrew Quickstart
 
 1. Environment Preparation
 ===========================
@@ -65,7 +65,7 @@ CAIOS/
 
 3. The Sovereign Boot Sequence
 ===============================
-Follow these steps in order to initialize the system:
+Follow these steps to initialize the system:
 
 Step 1: Set API Keys (Optional - for Multi-Model Swarm)
 --------------------------------------------------------
@@ -183,7 +183,7 @@ User Query → CPOL → Epistemic Gap Detected → Check KB
 ===================================================
 
 Intrinsic Motivation Extension (Curiosity Engine)
-==================================================
+===================================================
 
 The curiosity engine tracks what topics the AI finds interesting over time:
 
@@ -197,8 +197,7 @@ turn_hooks:
     - module: curiosity_engine
       function: update_curiosity_loop
 
-When curiosity hits a threshold and intrinsic motivation kicks in, 
-the AI will voluntarily research and report on topics it finds interesting.
+When curiosity hits a threshold and intrinsic motivation kicks in, the AI will voluntarily research and report on topics it finds interesting.
 
 ===================================================
 
@@ -237,8 +236,7 @@ Optional (Multi-Model Swarm):
 - google-generativeai # Gemini models
 - (xAI uses OpenAI-compatible API)
 
-The entire intrinsic-motivation curiosity engine, tamper-evident audit trail, 
-and hash chain run exclusively on the Python 3.11+ standard library.
+The entire intrinsic-motivation curiosity engine, tamper-evident audit trail, and hash chain run exclusively on the Python 3.11+ standard library.
 
 ===================================================
 
