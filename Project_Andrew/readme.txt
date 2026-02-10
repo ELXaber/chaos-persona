@@ -75,6 +75,9 @@ export ANTHROPIC_API_KEY="sk-ant-..."
 export XAI_API_KEY="xai-..."
 export GOOGLE_API_KEY="..."
 
+API Key Handling & Security
+CAIOS never stores raw API keys on disk. Keys are read only from environment variables (e.g., OPENAI_API_KEY) during initialization in master_init.py. Only non-sensitive metadata (provider names and initialization status) is written to api_clients.json. All client objects remain in memory during runtime. No credentials are persisted, logged, or exposed by the framework.
+
 Step 2: Run the Diagnostic
 ---------------------------
 python master_init.py
