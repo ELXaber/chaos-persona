@@ -20,7 +20,6 @@ Coherence        |    Decays over time         |    Hardens over time
 We aren't building a bigger library; we're building a more accurate compass.
 It validates the video: https://x.com/el_xaber/status/2008268523659837839
 People can see the 200+ prompt scroll; this section explains why their eyes aren't deceiving them.
-"One is glad to be of service."
 
 Chaos AI-OS: Project Andrew Quickstart
 
