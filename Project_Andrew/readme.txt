@@ -75,8 +75,14 @@ export ANTHROPIC_API_KEY="sk-ant-..."
 export XAI_API_KEY="xai-..."
 export GOOGLE_API_KEY="..."
 
-API Key Handling & Security
+API Key Handling & Security:
 CAIOS never stores raw API keys on disk. Keys are read only from environment variables (e.g., OPENAI_API_KEY) during initialization in master_init.py. Only non-sensitive metadata (provider names and initialization status) is written to api_clients.json. All client objects remain in memory during runtime. No credentials are persisted, logged, or exposed by the framework.
+
+Multi-Key & Swarm Behavior:
+Loading multiple API keys in master_init.py enables multi-model inference within a single process (e.g., routing queries to Grok, Claude, GPT, Gemini).
+Chaos encryption (manifold ratcheting, ghost signatures) works locally without any network.
+Full encrypted mesh networking (peer discovery, ghost packet broadcast, sovereign/edge coordination) requires the mesh layer to be explicitly started and is network-based (TCP via ZeroMQ, no UDP required).
+Distributed swarm operation across multiple machines is supported, but must be activated in code or a separate swarm runner.
 
 Step 2: Run the Diagnostic
 ---------------------------
