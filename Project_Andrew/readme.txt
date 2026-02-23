@@ -1,5 +1,8 @@
 # Project Andrew uses the CAIOS stack, but adds intrinsic motivation, agency for recursive self-improvement through ARL/agent_designer, and fills knowledge gaps with specialist-designed agents on CPOL oscillation if the conditions are met. Agents are saved to /agents, and plugins to /plugins, with CoT to /logs, so the recursive self-improvement never overwrites the immutable Asimov-based ethical reward system using IEEE dithering. The oscillating manifold can be used to create a topological moving target keychain for quantum secure mesh networks (developed on UDP - check chaos encryption readme to switch to TCP).
 
+If you are running the full system single file structure: full_system_analysis.txt
+Just run: python full_system_analysis_orchestrator.py
+
 Traditional AI research (the "Top 30 Papers" era) suggests that coherence is a function of Scale: more parameters, more data, and larger attention windows.
 CAIOS vΩ (Project Andrew) refutes this by proving that coherence is actually a function of Symmetry and Structure.
 
