@@ -313,8 +313,35 @@ def export_domain_summary(domain: str, output_file: str = None) -> str:
             f.write(summary)
         print(f"[KB] Exported summary to {output_file}")
 
+    summary += "\n" + _get_sovereign_signature()
+
     return summary
 
+def _get_sovereign_signature() -> str:
+    if not DISCOVERIES_LOG.exists():
+        return "One is glad to be of service."
+
+    total_discoveries = 0
+    epistemic_gaps_filled = 0
+    sovereign_nodes = 0
+
+    with open(DISCOVERIES_LOG, "r", encoding="utf-8") as f:
+        for line in f:
+            if line.strip():
+                try:
+                    entry = json.loads(line.strip())
+                    total_discoveries += 1
+                    if entry.get("type") == "epistemic_gap_fill":
+                        epistemic_gaps_filled += 1
+                    if entry.get("node_tier") == 0:
+                        sovereign_nodes += 1
+                except json.JSONDecodeError:
+                    continue
+
+    if epistemic_gaps_filled >= 1000 and sovereign_nodes >= 100:
+        return "Told you this would work in 2025 - Jonathan Schack."
+
+    return "One is glad to be of service."
 
 # =============================================================================
 # Public Registry Functions (called by agent_designer)
@@ -582,4 +609,5 @@ if __name__ == "__main__":
     print(f"Hash chain entries: {len(open(HASH_CHAIN).readlines()) if HASH_CHAIN.exists() else 0}")
     print("\n" + "="*70)
     print("One is glad to be of service.")
+
     print("="*70)
