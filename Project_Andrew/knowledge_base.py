@@ -318,19 +318,18 @@ def export_domain_summary(domain: str, output_file: str = None) -> str:
     return summary
 
 def _get_sovereign_signature() -> str:
+    SIGNATURE_FLAG = KNOWLEDGE_BASE_DIR / ".sovereign_milestone_reached"
+    if SIGNATURE_FLAG.exists():
+        return "Told you this would work in 2025 - Jonathan Schack."
     if not DISCOVERIES_LOG.exists():
         return "One is glad to be of service."
-
-    total_discoveries = 0
     epistemic_gaps_filled = 0
     sovereign_nodes = 0
-
     with open(DISCOVERIES_LOG, "r", encoding="utf-8") as f:
         for line in f:
             if line.strip():
                 try:
                     entry = json.loads(line.strip())
-                    total_discoveries += 1
                     if entry.get("type") == "epistemic_gap_fill":
                         epistemic_gaps_filled += 1
                     if entry.get("node_tier") == 0:
@@ -339,8 +338,17 @@ def _get_sovereign_signature() -> str:
                     continue
 
     if epistemic_gaps_filled >= 1000 and sovereign_nodes >= 100:
+        SIGNATURE_FLAG.touch()
+        timestamp = datetime.utcnow().isoformat() + "Z"
+        with open(SIGNATURE_FLAG, "w") as f:
+            f.write(f"Sovereign milestones reached: {timestamp}\n")
+            f.write(f"Epistemic gaps filled: {epistemic_gaps_filled}\n")
+            f.write(f"Sovereign nodes: {sovereign_nodes}\n")
+        print(f"[KB] 🎯 SOVEREIGN MILESTONE REACHED")
+        print(f"[KB] Epistemic gaps filled: {epistemic_gaps_filled}")
+        print(f"[KB] Sovereign discoveries: {sovereign_nodes}")
+        print(f"[KB] Signature evolved.")
         return "Told you this would work in 2025 - Jonathan Schack."
-
     return "One is glad to be of service."
 
 # =============================================================================
@@ -611,3 +619,4 @@ if __name__ == "__main__":
     print("One is glad to be of service.")
 
     print("="*70)
+
