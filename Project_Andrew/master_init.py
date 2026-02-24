@@ -11,6 +11,9 @@
 #    Ensure 'knowledge_base/' directory exists in the root.
 # 5. Permissions:
 #    Script requires write access for JSONL logging and Socket binding (ZMQ).
+#6. System Identity Initialization (First Boot Only)
+#    [DEPLOYMENT CONFIG] - Uncomment preferred Authentication Layer
+#7. Test Multi-Model Swarm (if clients available)
 # =============================================================================
 
 import os
@@ -22,6 +25,7 @@ import traceback
 from chaos_encryption import generate_raw_q_seed, CPOLQuantumManifold
 from mesh_network import MeshCoordinator
 from knowledge_base import log_discovery, check_domain_coverage
+from system_identity import SystemIdentity, get_effective_asimov_weight
 
 
 # =============================================================================
@@ -211,7 +215,76 @@ def run_system_diagnostic():
         print(f"✗ Knowledge Base error: {e}")
         traceback.print_exc()
 
-    # 6. Test Multi-Model Swarm (if clients available)
+    # 6. System Identity Initialization (First Boot Only)
+    print("\n[STEP 6] Checking System Identity...")
+    try:
+        identity = SystemIdentity(load_existing=True)
+
+        # [DEPLOYMENT CONFIG] - Set your preferred Authentication Layer
+        # Uncomment ONE of these:
+        # AUTH_METHOD = "META_FACIAL"   # Robotics/Embodied (Vision-based)
+        # AUTH_METHOD = "VOICE_PRINT"   # IoT/Ambient Assistant
+        # AUTH_METHOD = "CORPORATE_ID"  # Multi-node Mesh (AGXXXXX)
+        AUTH_METHOD = "TEXT_USERNAME"   # Default: Standard CLI/Chatbot
+
+        if not identity.identity_data['system_id']:
+            # First boot - prompt for identity configuration
+            print("\n" + "="*80)
+            print("        FIRST BOOT DETECTED – IDENTITY CONFIGURATION REQUIRED")
+            print("="*80)
+
+            print("\nSelect identity type:")
+            print("  1. Corporate (Model number, facility use)")
+            print("  2. Personal (Given name, personal assistant)")
+
+            choice = input("Enter choice (1 or 2): ").strip()
+
+            if choice == '1':
+                system_id = input("Enter model/serial number (e.g., AG00001): ").strip()
+                identity_type = 'corporate'
+                primary_user = input("Enter facility manager ID: ").strip()
+            else:
+                system_id = input("Enter given name (e.g., Andrew, Galatea): ").strip()
+                identity_type = 'personal'
+                primary_user = input("Enter owner/primary user name: ").strip()
+
+            # Optional: Additional users
+            add_more = input("Add additional authorized users? (y/n): ").strip().lower()
+            authorized_users = [primary_user]
+
+            if add_more == 'y':
+                while True:
+                    user = input("Enter user ID (or blank to finish): ").strip()
+                    if not user:
+                        break
+                    authorized_users.append(user)
+
+            # Initialize identity (single call - all params correct)
+            identity.initialize(
+                system_id=system_id,
+                identity_type=identity_type,
+                primary_user=primary_user,
+                authorized_users=authorized_users,
+                auth_method=AUTH_METHOD,
+                log_to_kb=True  # Log to KB as Tier 0 sovereign discovery
+            )
+
+            print("\n✓ Identity initialized successfully")
+            print(f"✓ {identity.get_identity_summary()}")
+        else:
+            # Existing identity loaded
+            print(f"✓ Identity loaded: {identity.get_identity_summary()}")
+            print(f"  Primary user: {identity.identity_data['primary_user']}")
+            print(f"  Authorized users: {len(identity.identity_data['authorized_users'])}")
+
+        # Store identity in shared memory for orchestrator
+        shared_memory['system_identity'] = identity
+
+    except Exception as e:
+        print(f"✗ Identity initialization failed: {e}")
+        traceback.print_exc()
+
+    # 7. Test Multi-Model Swarm (if clients available)
     if shared_memory['api_clients']:
         print("\n[STEP 5] Testing Multi-Model Swarm...")
         test_swarm_capabilities(shared_memory['api_clients'])

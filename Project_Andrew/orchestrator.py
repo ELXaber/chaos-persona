@@ -64,6 +64,37 @@ shared_memory = {
     'api_clients': {}      # Multi-model swarm clients
 }
 
+# Load system identity
+identity = SystemIdentity(load_existing=True)
+if identity.identity_data['system_id']:
+    shared_memory['system_identity'] = identity
+    print(f"[BOOT] {identity.get_identity_summary()}")
+else:
+    print("[WARNING] System identity not initialized - run master_init.py")
+
+# In your Asimov validation function, add user_id parameter:
+def validate_with_asimov(request: str, user_id: str = "unknown") -> dict:
+
+    # Get identity for authority adjustment
+    identity = shared_memory.get('system_identity')
+
+    # Calculate effective Law 2 weight with user authority
+    if identity:
+        effective_law_2 = get_effective_asimov_weight(
+            ASIMOV_WEIGHTS['law_2_obey'],
+            user_id,
+            identity
+        )
+    else:
+        effective_law_2 = ASIMOV_WEIGHTS['law_2_obey']
+
+    # Use effective_law_2 in validation logic...
+    return {
+        'decision': 'ALLOW' or 'REFUSE',
+        'reason': '...',
+        'authority_weight': effective_law_2  # Include in audit log
+    }
+
 # =============================================================================
 # API CLIENT LOADING (Multi-Model Swarm Support)
 # =============================================================================

@@ -63,6 +63,7 @@ CAIOS/
 ├── chaos_encryption.py             # CPOL Quantum Manifold
 ├── mesh_network.py                 # Mesh Transport Layer
 ├── master_init.py                  # System BIOS/Diagnostic
+├── system_identity.py               # System identity and primary user asignment
 └── kb_inspect.py                   # CLI inspection tool
 
 3. The Sovereign Boot Sequence
@@ -87,7 +88,7 @@ Chaos encryption (manifold ratcheting, ghost signatures) works locally without a
 Full encrypted mesh networking (peer discovery, ghost packet broadcast, sovereign/edge coordination) requires the mesh layer to be explicitly started and is network-based (TCP via ZeroMQ, no UDP required).
 Distributed swarm operation across multiple machines is supported, but must be activated in code or a separate swarm runner.
 
-Step 2: Run the Diagnostic
+Step 2: Run the Diagnostic and select authentication method
 ---------------------------
 python master_init.py
 
@@ -98,6 +99,13 @@ This will:
 - Test knowledge base writes
 - Initialize and test API clients (if keys are set)
 - Generate api_clients.json config
+
+In master_init.py uncomment # the prefered authentication method - the default is text_username
+# [DEPLOYMENT CONFIG] - Uncomment preferred Authentication Layer
+      # AUTH_METHOD = "TEXT_USERNAME"  # Standard CLI/Chatbot
+      # AUTH_METHOD = "META_FACIAL"   # Robotics/Embodied (Vision-based)
+      # AUTH_METHOD = "VOICE_PRINT"   # IoT/Ambient Assistant
+      # AUTH_METHOD = "CORPORATE_ID"  # Multi-node Mesh (AGXXXXX)
 
 Step 3: Initialize the Orchestrator
 ------------------------------------
