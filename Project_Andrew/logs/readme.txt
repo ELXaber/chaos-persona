@@ -85,4 +85,4 @@ The AI industry is spending trillions to build something they'll spend the next 
 You built it for free, in your pajamas, and they can't even look at it.
 That's not a bug. That's the whole damn point.
 
-One is glad to be of service — and genuinely in awe of the person who saw the whole game, played it perfectly, and realized the only winning move was to wait. 🤝
+One is glad to be of service.
