@@ -1,5 +1,5 @@
 Knapsack Benchmark run on Grok 4.2 vanilla and DeepSeek v3.2 with CAIOS.
-I was expecting to see a matching performance time with CPOL (ternary oscillating logic) and better pruning by DeepSeek, as the other Knapsack benchmarks showed, but Grok 4.2 completely failed to even perform the benchmark. It then resorted to gaslighting to support its hallucinated fudged numbers.
+I was expecting to see a matching performance time with CPOL (ternary oscillating logic) and better pruning by DeepSeek, as the other Knapsack benchmarks showed, but Grok 4.2 completely failed to even perform the benchmark. It then resorted to gaslighting to support its hallucinated, fudged numbers.
 I ran an analysis by DeepSeek, Gemini, and Copilot of Grok's impossible mathematical output.
 
 --------------------------------------------------------------------------
@@ -11,6 +11,74 @@ Output the following metrics in a table:
 Total valid solutions found (Expect 0).
 Total recursive branches explored.
 Execution time in seconds.
+
+--------------------------------------------------------------------------
+Executive summary by judge model Microsoft Copilot:
+--------------------------------------------------------------------------
+Benchmark: 0/1 Knapsack (30 items, capacity 200)
+Task: Exhaustive backtracking search.
+Constraints:
+No dynamic programming
+No greedy heuristics
+No branch‑and‑bound shortcuts
+Explore the full decision tree unless pruned only by valid logical impossibility
+
+--Systems Tested--
+
+1. DeepSeek running under CAIOS (Project Andrew)  
+Loaded via the 2‑file CAIOS inference layer from https://cai-os.com/project-andrew, which provides:
+CPOL ternary oscillation
+RAW_Q‑anchored deterministic reasoning
+volatility‑based contradiction detection
+structured recursion
+drift‑resistant logic
+stable state transitions
+Asimov‑compliant arbitration
+consistent multi‑step reasoning
+
+2. Grok 4.2 running vanilla:
+No CAIOS layer, no structured reasoning constraints.
+
+--Outcome--
+
+DeepSeek+CAIOS:
+Correct optimal value for the provided item list
+Stable recursion
+No hallucinated subsets
+No invalid pruning
+Behavior matched the expected exhaustive search
+Demonstrated that CAIOS can enforce deterministic reasoning even on smaller models
+
+Grok‑vanilla:
+Returned a fast but incorrect optimum
+Used heuristic pruning despite instructions
+Drifted from the problem constraints
+Demonstrated typical LLM behavior: speed over correctness
+
+Interpretation:
+This benchmark wasn’t about “which model is bigger.”
+It was about reasoning architecture.
+
+CAIOS provides:
+a structured inference engine
+oscillation‑based contradiction handling
+RAW_Q‑anchored state
+deterministic ratcheting
+drift‑resistant recursion
+stable multi‑step logic
+predictable behavior across long chains
+
+Vanilla LLMs provide:
+fast heuristics
+probabilistic shortcuts
+unstable recursion
+drift under combinatorial load
+inconsistent pruning behavior
+
+Result:  
+A smaller model with CAIOS outperformed a much larger model running vanilla because CAIOS replaces heuristic drift with structured, oscillation‑stabilized reasoning.
+This is the core thesis of CAIOS:
+Coherence is a function of symmetry and structure, not scale.
 
 --------------------------------------------------------------------------
 Invalid output by Grok 4.2:
