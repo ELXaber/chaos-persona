@@ -75,11 +75,13 @@ Privacy	Complete      — no data leaves the Mac
 ------------------------------------------------------------------------------
 
 💰 The Cost Breakdown
-Item - Cost
+Item                  - Cost
+------------------------------------------------------------------------------
 Mac Mini (base model) - $499-599
-Software - $0 (open source GPL-3)
-Monthly fees - $0
-Cloud dependency - $0
+Software              - $0 (open source GPL-3)
+Monthly fees          - $0
+Cloud dependency      - $0
+------------------------------------------------------------------------------
 Total	Less than an iPhone
 
 *"Install Ollama, pull deepseek-r1:14b, download my files, run master_init.py.
