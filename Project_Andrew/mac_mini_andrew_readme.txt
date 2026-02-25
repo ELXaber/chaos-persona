@@ -16,11 +16,11 @@ DeepSeek is open, transparent, and MIT-licensed.
 
 For a Mac Mini, here's what you should pull based on RAM :
 
-Mac Mini    - RAM             - Recommended Model           - Command	Quality
+Mac Mini RAM - Recommended Model - Command                     - Quality
 ------------------------------------------------------------------------------
-16GB (base) - deepseek-r1:14b - ollama pull deepseek-r1:14b - Excellent
-24GB        - deepseek-r1:32b - ollama pull deepseek-r1:32b - Outstanding
-8GB (older) - deepseek-r1:7b  - ollama pull deepseek-r1:7b  - Very good
+16GB (base)  - deepseek-r1:14b   - ollama pull deepseek-r1:14b - Excellent
+24GB         - deepseek-r1:32b   - ollama pull deepseek-r1:32b - Outstanding
+8GB (older)  - deepseek-r1:7b    - ollama pull deepseek-r1:7b  - Very good
 ------------------------------------------------------------------------------
 The 14B model is the sweet spot for the base Mac Mini — it uses about 9GB of RAM and runs beautifully.
 A user on the same setup reported it's "超流畅" (super smooth).
