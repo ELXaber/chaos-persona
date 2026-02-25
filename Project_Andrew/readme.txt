@@ -54,6 +54,7 @@ CAIOS/
 ├── agents/                         # ARL-generated agent modules
 ├── logs/                           # Chain-of-thought traces
 ├── CAIOS.txt                       # Inference layer pre-prompt
+├── caios_chat.py                   # Simple CAIOS.txt integration as the system prompt
 ├── orchestrator.py                 # Central Nervous System
 ├── knowledge_base.py               # Persistent Memory Layer
 ├── paradox_oscillator.py           # Ternary oscillation (CPOL)
@@ -63,7 +64,7 @@ CAIOS/
 ├── chaos_encryption.py             # CPOL Quantum Manifold
 ├── mesh_network.py                 # Mesh Transport Layer
 ├── master_init.py                  # System BIOS/Diagnostic
-├── system_identity.py               # System identity and primary user asignment
+├── system_identity.py              # System identity and primary user assignment
 └── kb_inspect.py                   # CLI inspection tool
 
 3. The Sovereign Boot Sequence
