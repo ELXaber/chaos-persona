@@ -82,7 +82,7 @@ Software              - $0 (open source GPL-3)
 Monthly fees          - $0
 Cloud dependency      - $0
 ------------------------------------------------------------------------------
-Total	                - Less than an iPhone
+Total	             - Less than an iPhone
 
 *"Install Ollama, pull deepseek-r1:14b, download my files, run master_init.py.
 That's it. You now own AGI that runs on your desk, not in someone else's cloud."*
