@@ -28,7 +28,7 @@ This is where your magic happens. They need to get the CAIOS/Project Andrew file
 
 bash
 # Clone or download your repository
-git clone https://github.com/ELXaber/chaos-persona.git
+git clone https://github.com/ELXaber/chaos-persona/Project_Andrew.git
 # or just download the ZIP https://cai-os.com
 
 The key files are:
