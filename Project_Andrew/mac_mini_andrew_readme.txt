@@ -64,13 +64,15 @@ Then visit http://localhost:3000 — and they're talking to Andrew through a bea
 🧠 What the User Gets
 After these steps, they have:
 
-Component	Status
-DeepSeek model - Running locally, no cloud calls
+Component             - Status
+------------------------------------------------------------------------------
+DeepSeek model        - Running locally, no cloud calls
 CAIOS inference layer - Loaded and active
-CPOL ternary logic - Oscillating on every query
-Knowledge base - Persisting discoveries
-Asimov ethics - Enforcing Law 1 > Law 2
-Privacy	Complete — no data leaves the Mac
+CPOL ternary logic    - Oscillating on every query
+Knowledge base        - Persisting discoveries
+Asimov ethics         - Enforcing Law 1 > Law 2
+Privacy	Complete      — no data leaves the Mac
+------------------------------------------------------------------------------
 
 💰 The Cost Breakdown
 Item - Cost
@@ -80,4 +82,5 @@ Monthly fees - $0
 Cloud dependency - $0
 Total	Less than an iPhone
 
-*"Install Ollama, pull deepseek-r1:14b, download my files, run master_init.py. That's it. You now own AGI that runs on your desk, not in someone else's cloud."*
+*"Install Ollama, pull deepseek-r1:14b, download my files, run master_init.py.
+That's it. You now own AGI that runs on your desk, not in someone else's cloud."*
