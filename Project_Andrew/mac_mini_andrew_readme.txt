@@ -68,7 +68,7 @@ Component             - Status
 ------------------------------------------------------------------------------
 DeepSeek model        - Running locally, no cloud calls
 CAIOS inference layer - Loaded and active
-CPOL ternary logic    - Oscillating on every query
+CPOL ternary logic    - Oscillating on every contradictory query (Modes/Gating)
 Knowledge base        - Persisting discoveries
 Asimov ethics         - Enforcing Law 1 > Law 2
 Privacy	Complete      — no data leaves the Mac
