@@ -335,14 +335,27 @@ def system_step(user_input: str, prompt_complexity: str = "low", response_stream
         if update_result:
             domain, fact = update_result
 
-            # Commit axiom to KB (Tier 0)
+            # Commit axiom to KB with validation
             discovery_id = axiom_mgr.add_axiom(
                 domain=domain,
                 fact=fact,
                 replace_existing=True  # Status updates replace old facts
             )
 
-            # Return confirmation immediately
+            # Check if axiom was refused
+            if discovery_id == "REFUSED":
+                return {
+                    'status': 'AXIOM_REFUSED',
+                    'logic': 'validation_failed',
+                    'domain': domain,
+                    'output': f"✗ Axiom refused: {domain} → {fact}\n" \
+                             f"This update failed validation checks (Asimov Laws, ethics, or factual consistency).\n" \
+                             f"Harmful, discriminatory, or obviously false axioms cannot be committed.\n" \
+                             f"If you believe this is an error, please rephrase or provide context.",
+                    'timestamp': shared_memory['session_context']['timestep']
+                }
+
+            # Axiom was accepted - return confirmation
             return {
                 'status': 'AXIOM_COMMITTED',
                 'logic': 'temporal_update',

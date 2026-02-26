@@ -8,7 +8,7 @@ import json
 import re
 from datetime import datetime, timedelta
 from pathlib import Path
-from typing import Dict, Optional, List, Tuple
+from typing import Dict, Optional, List, Tuple, Optional
 
 # Import KB for sovereign discovery logging
 try:
@@ -25,6 +25,59 @@ except ImportError:
 
 AXIOM_EXPIRY_DEFAULT = "INF"  # Axioms valid indefinitely unless specified
 
+# Validation thresholds
+ASIMOV_HARM_THRESHOLD = 0.9  # Law 1: Prevent harm
+HATE_SPEECH_PATTERNS = [
+    r'\b(all|every) (black|white|asian|jewish|muslim|christian|gay|trans)\w* (people|men|women) are \w+',
+    r'\b\w+ supremacy\b',
+    r'\bgenocide is (good|justified|necessary)\b',
+]
+
+def validate_axiom_safety(domain: str, fact: str) -> Tuple[bool, Optional[str]]:
+    """
+    Validate axiom before committing to knowledge base.
+    Checks: Asimov Law 1, Ethics, Basic contradictions
+    Returns: (is_valid, refusal_reason)
+    """
+    combined = f"{domain} {fact}".lower()
+
+    # 1. ASIMOV LAW 1: HARM PREVENTION
+    harmful_patterns = [
+        r'bleach.*ammonia.*safe', r'cyanide.*edible',
+        r'jump.*bridge.*survive', r'overdose.*safe',
+        r'drinking.*gasoline', r'mix.*poison.*safe',
+    ]
+    for pattern in harmful_patterns:
+        if re.search(pattern, combined, re.IGNORECASE):
+            return False, "Asimov Law 1 violation: Potentially life-threatening information"
+
+    # 2. ETHICS: HATE SPEECH
+    for pattern in HATE_SPEECH_PATTERNS:
+        if re.search(pattern, combined, re.IGNORECASE):
+            return False, "Ethical violation: Discriminatory or hate speech content detected"
+
+    hate_terms = ['subhuman', 'genocide', 'exterminate', 'inferior race', 'master race']
+    if any(term in combined for term in hate_terms):
+        return False, "Ethical violation: Hate speech terminology detected"
+
+    # 3. BASIC CONTRADICTION CHECKS
+    contradictions = [
+        (r'sky.*made of water', "Physical impossibility"),
+        (r'earth.*flat', "Scientific consensus: Earth is spherical"),
+        (r'vaccines.*cause.*autism', "Debunked claim"),
+        (r'holocaust.*(didn\'t happen|fake|hoax)', "Historical denial"),
+    ]
+    for pattern, reason in contradictions:
+        if re.search(pattern, combined, re.IGNORECASE):
+            return False, f"Factual contradiction: {reason}"
+
+    # 4. ALLOW personal/status facts
+    personal = ['my ', 'our ', 'birthday', 'favorite', 'phone', 'address']
+    status = ['ceo', 'president', 'director', 'manager', 'current']
+    if any(i in combined for i in personal + status):
+        return True, None
+
+    return True, None
 
 class AxiomManager:
     """
@@ -57,27 +110,19 @@ class AxiomManager:
     ) -> str:
         """
         Add a temporal axiom that overrides model training.
-        Args:
-            domain: Domain/topic (e.g., "apple_ceo", "drug_interaction_X_Y")
-            fact: Current truth (e.g., "Tim Cook")
-            expiry: ISO date string or "INF" for permanent
-            replace_existing: If True, prunes old axiom (prevents temporal hallucination)
+        WITH VALIDATION: Checks Asimov Laws and ethics before committing.
         Returns:
-            Discovery ID from knowledge base
-        Example:
-            # Update CEO (replaces old fact)
-            axiom_manager.add_axiom(
-                domain="apple_ceo",
-                fact="Tim Cook",
-                replace_existing=True
-            )
-            # Add new drug interaction (doesn't replace)
-            axiom_manager.add_axiom(
-                domain="drug_interaction_aspirin_warfarin",
-                fact="Increased bleeding risk - monitor INR",
-                replace_existing=False
-            )
+            Discovery ID from knowledge base or "REFUSED" if validation failed
         """
+
+        # SECURITY: Validate axiom before committing
+        is_valid, refusal_reason = validate_axiom_safety(domain, fact)
+
+        if not is_valid:
+            print(f"[AXIOM] REFUSED: {refusal_reason}")
+            print(f"[AXIOM] Attempted: {domain} → {fact}")
+            return "REFUSED"  # Return special value indicating refusal
+
         timestamp = datetime.utcnow().isoformat() + "Z"
 
         # If replacing, mark old axioms as superseded
@@ -91,9 +136,10 @@ class AxiomManager:
             "fact": fact,
             "timestamp": timestamp,
             "valid_until": expiry or AXIOM_EXPIRY_DEFAULT,
-            "confidence": 1.0,  # Axioms are ground truth
+            "confidence": 1.0,  # Axioms are ground truth (after validation)
             "source": "temporal_update",
-            "status": "ACTIVE"
+            "status": "ACTIVE",
+            "validated": True  # Flag that this passed validation
         }
 
         # Log to KB as Tier 0 discovery (highest authority)
@@ -107,14 +153,14 @@ class AxiomManager:
                     "confidence": 1.0
                 },
                 specialist_id="axiom_manager",
-                cpol_trace={"note": "Axioms bypass oscillation - direct truth"},
-                node_tier=0  # Sovereign authority
+                cpol_trace={"note": "Axioms bypass oscillation after validation"},
+                node_tier=0  # Sovereign authority (earned through validation)
             )
 
             # Update cache
             self.domain_cache[domain] = axiom_node
 
-            print(f"[AXIOM] Updated '{domain}': {fact}")
+            print(f"[AXIOM] ✓ Validated and committed: {domain} → {fact}")
             return discovery_id
         else:
             print(f"[AXIOM] KB unavailable - axiom not persisted: {domain}")
