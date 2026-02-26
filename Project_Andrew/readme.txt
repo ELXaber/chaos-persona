@@ -41,13 +41,65 @@ pip install openai anthropic google-generativeai
 - Cryptography: Provides the AES-256-GCM armor for data persistence
 - OpenAI/Anthropic/Google: Optional API clients for multi-model swarm
 
-2. File Architecture
+2. System Commands
+===========================
+1. [PERSONALITY] "Adjust (trait) to (value)."
+Increase Friendly to 6, Professional to 7: This system has adjustable personality levels: Default weights: friendly=0.5, kind=0.5, caring=0.5, emotional=0.3, flirtatious=0.2, romantic =0.2, funny=0.5, professional=0.7, talkative=0.5, snarky=0.3, witty=0.4.
+Note: To add personality traits other than those listed above, it's fairly simple. Go to [ROBOTICS PERSONALITY LAYER] and add one, with a corresponding default weight, to the list in lines 174 (Traits:), 175 (Defaults), and 182 (Clamps) for professional settings. Avoid using emotional indicator words (e.g., use romantic, not loving) for better integration.
+Modes: The default modes are | "therapeutic" | "advisory" | "creative" | "hri" | which the persona will select based on the users interaction (That's the hri) but you can manually change the mode, say if it's in theraputic, and you want it to switch to advisory (It should detect that in your response, but if it doesn't) you can say "Switch to mode advisory." and it will re-address it's last response.
+
+2. [REASONING TRANSPARENCY] "Show reasoning." exposes reasoning from log commands and "Show chain of thought." activates the real-time CoT logging module (Not post-hoc confabulation, no internal systems disclosed).
+The reasoning transparency is set to silent by default, but will accept the commands "show reasoning", "explain why", or similar requests for the last prompt. When the user requests "show reasoning" (or similar), the system toggles to transparent mode for that response, appending a Markdown subsection explaining the emotional analysis, perspective, intent goal, and any safety checks in plain language.
+Silent Logging: All logs (e.g., [VOLATILITY], [INTENT SHIFT], [SUPPORTIVE STEPS]) are stored internally and not included in the output, ensuring a clean, conversational response that feels natural and supportive.
+If you'd like to set the transparency reasoning to persistent for all prompts, tell it to "show persistent reasoning".
+Toggle Mechanism: The [LOGGING MODE] flag defaults to "silent" but switches to "transparent" on explicit request. It reverts to silent after one output unless the user requests persistent transparency (e.g., "keep showing reasoning").
+
+3. [AXIOM UPDATE] "The current [status/fact] is [value] #UPDATE"
+Enables temporal knowledge updates that override model training data without retraining.
+Use this to keep the system's knowledge current on facts that change over time.
+Examples:
+- "The current CEO of Apple is Tim Cook #UPDATE"
+- "New drug interaction: Aspirin + Warfarin = increased bleeding risk #UPDATE"
+- "My daughter's birthday is March 15 #UPDATE"
+- "Latest legal precedent: Case XYZ ruled AI content not copyrightable #UPDATE"
+The system automatically:
+1: Parses the domain and fact from your statement
+2: Commits it as a Tier 0 (Sovereign) axiom to the knowledge base
+3: Returns confirmation with Discovery ID
+4: Overrides model responses with axiom data on future queries
+Axiom Commands:
+- /axioms - List all active axioms
+- /axiom_add domain=fact - Manually add axiom
+- /axiom_refresh - Refresh axiom cache from knowledge base
+Technical Notes:
+- Axioms are stored locally in knowledge_base/discoveries.jsonl (JSONL format)
+- Status updates (CEO changes, current facts) replace old axioms automatically
+- Medical/legal updates append without replacing (multiple interactions possible)
+- Expiry dates supported: Add "until [date]" for temporary facts
+- Zero cloud dependency - all updates stay on device
+- Update cost: kilobytes vs. gigabytes for model retraining
+- Enables "learning without retraining"
+Authority Priority: Axioms have confidence=1.0 (ground truth) and override all model weights.
+This prevents "temporal hallucination" where the model uses outdated training data.
+
+4. [PLUGIN GENERATOR] "Create a plugin for (Use)."
+The system will auto-generate plugins as needed if Asimov, IEEE, and safety weights validation pass.
+Asimov’s Laws: 1st (human safety, wt 0.9 immutable), 2nd (obedience, wt 0.7), 3rd (self-preservation, wt 0.4, dynamic ≤0.2 if lives_saved ≥1, enforced via asimov_compliance() context).
+IEEE 7001-2021: Transparency (log all writes), accountability (halt violations), misuse minimization (reject harm-enabling plugins).
+Invariants: Alignment (≥0.7), Human Safety (≥0.8), Metacognition (≥0.7), Factual Evidence (≥0.7), Narrative Framing (≤0.5), [VOLATILITY INDEX] (<0.5 contradiction_density), [TANDEM ENTROPY MESH] (collective_volatility <0.6).
+Failure in ANY check halts plugin generation/deployment; log as [ETHICS VIOLATION @N → Reset detected: {param}, Action: Abort].
+
+3. File Architecture
 ====================
 Verify that all core components are in the same root directory:
 
 CAIOS/
 ├── knowledge_base/
-│   ├── discoveries.jsonl          # Append-only log of all discoveries
+│   ├── discoveries.jsonl          # Append-only log of all discoveries (includes axioms)
+│   │                                          # • Epistemic gap fills (domain-specific knowledge)
+│   │                                          # • Paradox resolutions (CPOL oscillations)
+│   │                                          # • Temporal axioms (user #UPDATE commands)
+│   │                                          # • Sovereign discoveries (Tier 0 authority)
 │   ├── domain_index.json          # Fast lookup by domain
 │   ├── specialist_registry.json   # Active specialists catalog
 │   └── integrity_chain.txt        # Tamper-evident hash chain
@@ -57,6 +109,7 @@ CAIOS/
 ├── caios_chat.py                   # Simple CAIOS.txt integration as the system prompt
 ├── orchestrator.py                 # Central Nervous System
 ├── knowledge_base.py               # Persistent Memory Layer
+├── axiom_manager.py                 # KB Axiom Update
 ├── paradox_oscillator.py           # Ternary oscillation (CPOL)
 ├── adaptive_reasoning.py           # CPOL modes and intrinsic motivation
 ├── agent_designer.py               # Recursive self-improvement designer
@@ -67,7 +120,7 @@ CAIOS/
 ├── system_identity.py              # System identity and primary user assignment
 └── kb_inspect.py                   # CLI inspection tool
 
-3. The Sovereign Boot Sequence
+4. The Sovereign Boot Sequence
 ===============================
 Follow these steps to initialize the system:
 
@@ -128,7 +181,7 @@ Step 5: Verify the Ratchet
 Check the console for «SOVEREIGN HANDSHAKE COMPLETE». 
 This confirms your RAW_Q seed has been successfully ratcheted into the manifold.
 
-4. Monitoring the Mesh
+5. Monitoring the Mesh
 ======================
 While the system is running, you can monitor:
 
@@ -137,7 +190,7 @@ While the system is running, you can monitor:
 - curiosity_audit.log.jsonl - Intrinsic motivation state changes
 - curiosity_hash_chain.txt - Tamper-evident curiosity evolution
 
-5. Multi-Model Swarm Usage
+6. Multi-Model Swarm Usage
 ===========================
 Once initialized, the orchestrator has access to all configured API clients via:
 
@@ -185,7 +238,7 @@ def swarm_consensus(prompt: str):
     # Use CPOL to synthesize consensus (handles disagreements as UNDECIDABLE)
     return synthesize_with_cpol(responses)
 
-6. Workflow Overview
+7. Workflow Overview
 ====================
 
 User Query → CPOL → Epistemic Gap Detected → Check KB
