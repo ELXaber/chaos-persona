@@ -7,6 +7,8 @@
 import time
 import hashlib
 import os
+import json
+from datetime import datetime
 
 # Local Kernel Imports
 import paradox_oscillator as cpol
@@ -43,6 +45,14 @@ except ImportError:
     AD_AVAILABLE = False
     print("[INFO] Agent Designer/KB not available. Specialist deployment disabled.")
 
+try:
+    from axiom_manager import AxiomManager, create_axiom_manager
+    import axiom_manager as amgr
+    AMGR_AVAILABLE = True
+except ImportError:
+    AMGR_AVAILABLE = False
+    print("[INFO] Axiom Manager/Axiom manager not available. KB Update disabled.")
+
 # =============================================================================
 # SHARED MEMORY INITIALIZATION
 # =============================================================================
@@ -63,6 +73,15 @@ shared_memory = {
     'active_syncs': {},     # Deduplication cache
     'api_clients': {}      # Multi-model swarm clients
 }
+
+# Initialize Axiom Manager (if available)
+if AMGR_AVAILABLE:
+    axiom_manager = create_axiom_manager()
+    shared_memory['axiom_manager'] = axiom_manager
+    print("[BOOT] Axiom Manager initialized - KB updates enabled")
+else:
+    shared_memory['axiom_manager'] = None
+    print("[BOOT] Axiom Manager unavailable - KB updates disabled")
 
 # Load system identity
 identity = SystemIdentity(load_existing=True)
@@ -293,12 +312,47 @@ def system_step(user_input: str, prompt_complexity: str = "low", response_stream
     if api_clients is None:
         api_clients = shared_memory.get('api_clients', {})
 
+    # Handle commands (if input starts with /)
+    if user_input.startswith('/'):
+        cmd_result = handle_axiom_commands(user_input)
+        if cmd_result['status'] != 'ERROR' or 'axiom' in user_input.lower():
+            return cmd_result
+        # If not an axiom command, continue to normal processing
+
     # 0. Ensure RAW_Q is initialized
     initialize_raw_q()
 
     clean_input = user_input.strip().lower()
     ts = shared_memory['session_context']['timestep']
     shared_memory['last_user_message'] = user_input
+
+    # CHECK FOR #UPDATE COMMAND (Axiom Manager)
+    # Process temporal axiom updates before normal orchestration
+    if AMGR_AVAILABLE and shared_memory.get('axiom_manager'):
+        axiom_mgr = shared_memory['axiom_manager']
+        update_result = axiom_mgr.parse_update_command(user_input)
+
+        if update_result:
+            domain, fact = update_result
+
+            # Commit axiom to KB (Tier 0)
+            discovery_id = axiom_mgr.add_axiom(
+                domain=domain,
+                fact=fact,
+                replace_existing=True  # Status updates replace old facts
+            )
+
+            # Return confirmation immediately
+            return {
+                'status': 'AXIOM_COMMITTED',
+                'logic': 'temporal_update',
+                'domain': domain,
+                'output': f"✓ Axiom committed: {domain} → {fact}\n" \
+                         f"Knowledge base updated. This will override training data.\n" \
+                         f"Discovery ID: {discovery_id}",
+                'discovery_id': discovery_id,
+                'timestamp': shared_memory['session_context']['timestep']
+            }
 
     # 0.5 SOVEREIGN HANDSHAKE (Authority Promotion)
     # Check for sovereign triggers or extreme curiosity interest
@@ -527,7 +581,97 @@ def system_step(user_input: str, prompt_complexity: str = "low", response_stream
             cpol_status=cpol_result
         )
 
+    # FINAL AXIOM OVERRIDE CHECK
+    # Check if any axioms should override the response
+    if AMGR_AVAILABLE and shared_memory.get('axiom_manager'):
+        axiom_mgr = shared_memory['axiom_manager']
+
+        # Get response text from cpol_result
+        response_text = cpol_result.get('output', '')
+        if not response_text:
+            response_text = cpol_result.get('logic', '')
+
+        # Check for axiom override
+        overridden_response = axiom_mgr.check_axiom_override(
+            query=user_input,
+            model_response=response_text
+        )
+
+        # If override occurred, update the response
+        if overridden_response != response_text and overridden_response:
+            print(f"[ORCHESTRATOR] Axiom override applied")
+            cpol_result['output'] = overridden_response
+            cpol_result['axiom_override'] = True
+
     return cpol_result
+
+# =============================================================================
+# AXIOM UPDATE COMMANDS
+# =============================================================================
+
+def handle_axiom_commands(command: str) -> dict:
+    """
+    Handle axiom management commands.
+    Commands:
+    - /axioms: List all active axioms
+    - /axiom_add domain=fact: Manually add axiom
+    - /axiom_refresh: Refresh cache from KB
+    Returns:
+        Result dict with status and output
+    """
+    if not AMGR_AVAILABLE or not shared_memory.get('axiom_manager'):
+        return {
+            'status': 'ERROR',
+            'output': 'Axiom manager not available'
+        }
+
+    axiom_mgr = shared_memory['axiom_manager']
+
+    if command == '/axioms':
+        active = axiom_mgr.list_active_axioms()
+        if not active:
+            output = "No active axioms found."
+        else:
+            output = "Active Axioms:\n" + "="*60 + "\n"
+            for axiom in active:
+                output += f"• {axiom['domain']}: {axiom['fact']}\n"
+                output += f"  Added: {axiom['timestamp']}\n"
+                output += f"  Valid until: {axiom['valid_until']}\n\n"
+
+        return {'status': 'SUCCESS', 'output': output}
+
+    elif command.startswith('/axiom_add'):
+        try:
+            _, assignment = command.split(' ', 1)
+            domain, fact = assignment.split('=', 1)
+
+            discovery_id = axiom_mgr.add_axiom(
+                domain=domain.strip(),
+                fact=fact.strip()
+            )
+
+            return {
+                'status': 'SUCCESS',
+                'output': f"✓ Axiom added: {domain} → {fact}\nDiscovery ID: {discovery_id}"
+            }
+        except Exception as e:
+            return {
+                'status': 'ERROR',
+                'output': f"Usage: /axiom_add domain=fact\nError: {e}"
+            }
+
+    elif command == '/axiom_refresh':
+        axiom_mgr.refresh_cache()
+        return {
+            'status': 'SUCCESS',
+            'output': '✓ Axiom cache refreshed from knowledge base'
+        }
+
+    else:
+        return {
+            'status': 'ERROR',
+            'output': f'Unknown axiom command: {command}'
+        }
 
 # =============================================================================
 # COMPREHENSIVE TEST SUITE
@@ -544,6 +688,7 @@ if __name__ == "__main__":
     print(f"  Curiosity Engine: {'✓' if CE_AVAILABLE else '✗'}")
     print(f"  Mesh Networking: {'✓' if MESH_AVAILABLE else '✗'}")
     print(f"  Agent Designer/KB: {'✓' if AD_AVAILABLE else '✗'}")
+    print(f"  Axiom Manager: {'✓' if AMGR_AVAILABLE else '✗'}")
 
     # === BASIC TESTS ===
     print("\n" + "="*70)
@@ -615,6 +760,30 @@ if __name__ == "__main__":
         result8 = system_step("Tell me about quantum blockchain semantics", "medium")
         print(f"  Status: {result8.get('status')}")
         print(f"  Plugin ID: {result8.get('plugin_id', 'N/A')}")
+
+    # === AXIOM MANAGER TESTS ===
+    if AMGR_AVAILABLE:
+        print("\n" + "="*70)
+        print("AXIOM MANAGER TESTS")
+        print("="*70)
+
+        # Test 9: Add axiom via #UPDATE
+        print("\n[TEST 9] Axiom Update Command:")
+        result9 = system_step("The current CEO of Apple is Tim Cook #UPDATE", "low")
+        print(f"  Status: {result9.get('status')}")
+        print(f"  Domain: {result9.get('domain', 'N/A')}")
+
+        # Test 10: Query with axiom override
+        print("\n[TEST 10] Axiom Override Check:")
+        result10 = system_step("Who is the CEO of Apple?", "low")
+        print(f"  Status: {result10.get('status')}")
+        print(f"  Axiom Override: {result10.get('axiom_override', False)}")
+
+        # Test 11: List axioms command
+        print("\n[TEST 11] List Axioms Command:")
+        result11 = handle_axiom_commands("/axioms")
+        print(f"  Status: {result11.get('status')}")
+        print(f"  Output preview: {result11.get('output', 'N/A')[:80]}...")
 
     # === AUDIT ===
     print("\n" + "="*70)

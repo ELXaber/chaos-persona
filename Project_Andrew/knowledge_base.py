@@ -34,7 +34,6 @@ def log_discovery(
 ) -> str:
     """
     Append a discovery with Sovereign Tier validation.
-
     Args:
         domain: Knowledge domain
         discovery_type: Type of discovery (epistemic_gap_fill, paradox_resolution, etc.)
@@ -42,7 +41,6 @@ def log_discovery(
         specialist_id: ID of specialist making discovery
         cpol_trace: CPOL oscillation metadata
         node_tier: Authority level (0=Sovereign, 1+=Edge)
-
     Returns: 
         discovery_id (hash of entry)
     """
@@ -87,10 +85,8 @@ def log_discovery(
 def query_domain_knowledge(domain: str) -> List[Dict[str, Any]]:
     """
     Retrieve all discoveries for a given domain.
-
     Args:
         domain: Knowledge domain to query
-
     Returns: 
         List of discovery entries
     """
@@ -111,14 +107,44 @@ def query_domain_knowledge(domain: str) -> List[Dict[str, Any]]:
 
     return discoveries
 
+def search_domain(domain_prefix: str) -> List[Dict[str, Any]]:
+    """
+    Search for domains that start with a given prefix.
+    This is a wrapper around query_domain_knowledge that supports prefix matching.
+    Used by axiom_manager to find axiom domains like "axiom_apple_ceo".
+    Args:
+        domain_prefix: Domain prefix to search for (e.g., "axiom_", "axiom_apple_ceo")
+    Returns:
+        List of discovery dicts matching the prefix
+    Example:
+        # Find all axioms
+        results = search_domain("axiom_")
+        # Find specific axiom domain
+        results = search_domain("axiom_apple_ceo")
+    """
+    if not DISCOVERIES_LOG.exists():
+        return []
+
+    discoveries = []
+    with open(DISCOVERIES_LOG, "r", encoding="utf-8") as f:
+        for line in f:
+            if line.strip():
+                try:
+                    entry = json.loads(line.strip())
+                    # Check if domain starts with prefix
+                    if entry["domain"].startswith(domain_prefix):
+                        discoveries.append(entry)
+                except json.JSONDecodeError as e:
+                    print(f"[KB] Warning: Skipping malformed entry: {e}")
+                    continue
+
+    return discoveries
 
 def check_domain_coverage(domain: str) -> Dict[str, Any]:
     """
     Check if domain has been explored before and what we know.
-
     Args:
         domain: Knowledge domain to check
-
     Returns: 
         Dict with has_knowledge, discovery_count, gap_fills, last_updated, specialist_deployed
     """
@@ -154,7 +180,6 @@ def register_specialist(
 ):
     """
     Register a newly created specialist agent with its authority level.
-    
     Args:
         specialist_id: Unique specialist identifier
         domain: Knowledge domain
@@ -183,7 +208,6 @@ def register_specialist(
 def update_specialist_stats(specialist_id: str, new_discoveries: int = 1) -> None:
     """
     Update specialist's discovery count after it fills a gap.
-
     Args:
         specialist_id: Specialist to update
         new_discoveries: Number of new discoveries to add (default: 1)
@@ -202,10 +226,8 @@ def update_specialist_stats(specialist_id: str, new_discoveries: int = 1) -> Non
 def get_specialist_for_domain(domain: str) -> Optional[str]:
     """
     Check if a specialist already exists for this domain.
-
     Args:
         domain: Knowledge domain
-
     Returns: 
         specialist_id or None
     """
@@ -222,14 +244,11 @@ def get_provisional_axioms(domain: str) -> List[str]:
     """
     Retrieves established axioms for a domain to scaffold new manifolds.
     Used by the Curiosity Engine when CPOL detects an epistemic gap.
-
     Only trusts axioms from:
     - Sovereign Root (Tier 0) nodes
     - High-confidence discoveries (>0.8)
-
     Args:
         domain: Knowledge domain
-
     Returns:
         List of axiom strings
     """
@@ -258,11 +277,9 @@ def export_domain_summary(domain: str, output_file: str = None) -> str:
     """
     Generate a human-readable summary of all knowledge in a domain.
     Useful for feeding to new specialists or humans.
-
     Args:
         domain: Knowledge domain
         output_file: Optional file path to write summary
-
     Returns:
         Summary string
     """
@@ -359,7 +376,6 @@ def load_specialist_registry() -> Dict[str, Any]:
     """
     Load specialist registry from disk.
     Public function for external modules.
-
     Returns:
         Registry dict
     """
@@ -378,7 +394,6 @@ def save_specialist_registry(registry: Dict[str, Any]) -> None:
     """
     Save specialist registry to disk.
     Public function for external modules.
-
     Args:
         registry: Registry dict to save
     """
@@ -443,10 +458,8 @@ def generate_specialist_context(domain: str) -> Dict[str, Any]:
     """
     Generate a context package for a new specialist agent.
     Includes: prior discoveries, known gaps, related domains, axioms.
-
     Args:
         domain: Knowledge domain
-
     Returns:
         Context dict with prior_knowledge, axioms, resolutions, suggested_approach
     """
@@ -619,4 +632,3 @@ if __name__ == "__main__":
     print("One is glad to be of service.")
 
     print("="*70)
-
