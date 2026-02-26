@@ -109,7 +109,7 @@ CAIOS/
 ├── caios_chat.py                   # Simple CAIOS.txt integration as the system prompt
 ├── orchestrator.py                 # Central Nervous System
 ├── knowledge_base.py               # Persistent Memory Layer
-├── axiom_manager.py                 # KB Axiom Update
+├── axiom_manager.py                # KB Axiom Update
 ├── paradox_oscillator.py           # Ternary oscillation (CPOL)
 ├── adaptive_reasoning.py           # CPOL modes and intrinsic motivation
 ├── agent_designer.py               # Recursive self-improvement designer
