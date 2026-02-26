@@ -15,6 +15,7 @@ Topological Sovereignty - This kernel implements a Zero-Loss State Transition mo
 Unlike Transformers that "compress" old data into a fuzzy latent space, the Axiom Ratchet locks in logic as immutable geometric coordinates.
 
 Feature          |    Standard "Scaling" AI    |    CAIOS (Project Andrew)
+----------------------------------------------------------------------------
 Context Limit    |    Finite (Window-based)    |    Infinite (Ratchet-based)
 Logic Type       |    Binary / Statistical     |    Ternary / Geometric
 Security         |    Static Encryption        |    Self-Ratcheting Manifold
