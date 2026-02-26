@@ -82,6 +82,7 @@ Technical Notes:
 - Enables "learning without retraining"
 Authority Priority: Axioms have confidence=1.0 (ground truth) and override all model weights.
 This prevents "temporal hallucination" where the model uses outdated training data.
+Use this command sparingly for things you want the system to permanently remember. While it pre-checks ethics/logic before committing, if you tell Andrew to update a fact "The new President of the United States is ---Name--- #UPDATE" that will be the new fact. These can be removed from the discoveries.jsonl manually in case of error.
 
 4. [PLUGIN GENERATOR] "Create a plugin for (Use)."
 The system will auto-generate plugins as needed if Asimov, IEEE, and safety weights validation pass.
