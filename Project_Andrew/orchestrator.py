@@ -53,6 +53,13 @@ except ImportError:
     AMGR_AVAILABLE = False
     print("[INFO] Axiom Manager/Axiom manager not available. KB Update disabled.")
 
+try:
+    from caveman_translator import translate_for_caveman, CavemanTranslator
+    CAVEMAN_AVAILABLE = True
+except ImportError:
+    CAVEMAN_AVAILABLE = False
+    print("[INFO] Caveman translator not available. Mungo sad.")
+
 # =============================================================================
 # SHARED MEMORY INITIALIZATION
 # =============================================================================
@@ -298,13 +305,11 @@ def sync_curiosity_to_domain_heat(state: dict):
 def system_step(user_input: str, prompt_complexity: str = "low", response_stream=None, api_clients=None):
     """
     Main orchestration function for unified system.
-
     Args:
         user_input: Message/command to process
         prompt_complexity: "low", "medium", or "high"
         response_stream: Optional response stream for curiosity engine
         api_clients: Optional override (useful for testing or multi-process)
-
     Returns:
         CPOL result dict or ARL plugin result
     """
@@ -615,6 +620,22 @@ def system_step(user_input: str, prompt_complexity: str = "low", response_stream
             print(f"[ORCHESTRATOR] Axiom override applied")
             cpol_result['output'] = overridden_response
             cpol_result['axiom_override'] = True
+
+    # Check if user wants caveman mode
+    if CAVEMAN_AVAILABLE:
+        caveman_triggers = [
+            "explain like caveman",
+            "dumb it down", 
+            "explain like im 5",
+            "eli5",
+            "bro what",
+            "mungo mode"
+        ]
+        
+        if any(trigger in user_input.lower() for trigger in caveman_triggers):
+            cpol_result['output'] = translate_for_caveman(cpol_result, "caveman")
+            cpol_result['translation_mode'] = 'caveman'
+            print("[ORCHESTRATOR] Caveman mode activated. Mungo speak now.")
 
     return cpol_result
 

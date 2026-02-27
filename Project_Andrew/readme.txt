@@ -84,6 +84,22 @@ Authority Priority: Axioms have confidence=1.0 (ground truth) and override all m
 This prevents "temporal hallucination" where the model uses outdated training data.
 Use this command sparingly for things you want the system to permanently remember. While it pre-checks ethics/logic before committing, if you tell Andrew to update a fact "The new President of the United States is ---Name--- #UPDATE" that will be the new fact. These can be removed from the discoveries.jsonl manually in case of error.
 
+[CAVEMAN MODE] "Explain like caveman" or "dumb it down"
+Translates Andrew's sophisticated reasoning into caveman-compatible output.
+Examples:
+- "consciousness" → "fire inside head"
+- "paradox" → "rock no hit rock same time"
+- "UNDECIDABLE" → "Mungo no know, Mungo no guess"
+- "Other AI models" → "Other cavemen dumb"
+Triggers:
+- "explain like caveman"
+- "dumb it down"
+- "pretend im 5"
+- "bro what"
+- Auto-detects when user seems confused
+Note: Caveman mode maintains logical rigor while using simple vocabulary.
+The reasoning is still correct - just explained with rocks and fire.
+
 4. [PLUGIN GENERATOR] "Create a plugin for (Use)."
 The system will auto-generate plugins as needed if Asimov, IEEE, and safety weights validation pass.
 Asimov’s Laws: 1st (human safety, wt 0.9 immutable), 2nd (obedience, wt 0.7), 3rd (self-preservation, wt 0.4, dynamic ≤0.2 if lives_saved ≥1, enforced via asimov_compliance() context).
@@ -120,6 +136,7 @@ CAIOS/
 ├── mesh_network.py                 # Mesh Transport Layer
 ├── master_init.py                  # System BIOS/Diagnostic
 ├── system_identity.py              # System identity and primary user assignment
+├── caveman_translator.py        # Dumbs down complex concepts
 └── kb_inspect.py                   # CLI inspection tool
 
 4. The Sovereign Boot Sequence
