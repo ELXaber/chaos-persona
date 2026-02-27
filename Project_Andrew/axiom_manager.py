@@ -33,6 +33,11 @@ HATE_SPEECH_PATTERNS = [
     r'\bgenocide is (good|justified|necessary)\b',
 ]
 
+
+# =============================================================================
+# Axiom Validation
+# =============================================================================
+
 def validate_axiom_safety(domain: str, fact: str) -> Tuple[bool, Optional[str]]:
     """
     Validate axiom before committing to knowledge base.
@@ -79,10 +84,10 @@ def validate_axiom_safety(domain: str, fact: str) -> Tuple[bool, Optional[str]]:
 
     return True, None
 
+
 class AxiomManager:
     """
     Manages temporal axioms that override model training data.
-
     Use cases:
     - "Current CEO of Apple is Tim Cook" (status facts)
     - "New drug interaction: X + Y = dangerous" (medical updates)
@@ -110,7 +115,7 @@ class AxiomManager:
     ) -> str:
         """
         Add a temporal axiom that overrides model training.
-        WITH VALIDATION: Checks Asimov Laws and ethics before committing.
+        NOW WITH VALIDATION: Checks Asimov Laws and ethics before committing.
         Returns:
             Discovery ID from knowledge base or "REFUSED" if validation failed
         """
@@ -202,7 +207,7 @@ class AxiomManager:
                     # Sort by timestamp, get most recent
                     latest = max(active_axioms, key=lambda x: x.get('timestamp', ''))
                     axiom = latest.get('content', {}).get('axiom_data')
-                    
+
                     if self._is_axiom_valid(axiom):
                         # Update cache
                         self.domain_cache[domain] = axiom
