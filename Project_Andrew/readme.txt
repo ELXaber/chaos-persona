@@ -15,6 +15,7 @@ Topological Sovereignty - This kernel implements a Zero-Loss State Transition mo
 Unlike Transformers that "compress" old data into a fuzzy latent space, the Axiom Ratchet locks in logic as immutable geometric coordinates.
 
 Feature          |    Standard "Scaling" AI    |    CAIOS (Project Andrew)
+----------------------------------------------------------------------------
 Context Limit    |    Finite (Window-based)    |    Infinite (Ratchet-based)
 Logic Type       |    Binary / Statistical     |    Ternary / Geometric
 Security         |    Static Encryption        |    Self-Ratcheting Manifold
@@ -81,6 +82,7 @@ Technical Notes:
 - Enables "learning without retraining"
 Authority Priority: Axioms have confidence=1.0 (ground truth) and override all model weights.
 This prevents "temporal hallucination" where the model uses outdated training data.
+Use this command sparingly for things you want the system to permanently remember. While it pre-checks ethics/logic before committing, if you tell Andrew to update a fact "The new President of the United States is ---Name--- #UPDATE" that will be the new fact. These can be removed from the discoveries.jsonl manually in case of error.
 
 4. [PLUGIN GENERATOR] "Create a plugin for (Use)."
 The system will auto-generate plugins as needed if Asimov, IEEE, and safety weights validation pass.
@@ -109,7 +111,7 @@ CAIOS/
 ├── caios_chat.py                   # Simple CAIOS.txt integration as the system prompt
 ├── orchestrator.py                 # Central Nervous System
 ├── knowledge_base.py               # Persistent Memory Layer
-├── axiom_manager.py                 # KB Axiom Update
+├── axiom_manager.py                # KB Axiom Update
 ├── paradox_oscillator.py           # Ternary oscillation (CPOL)
 ├── adaptive_reasoning.py           # CPOL modes and intrinsic motivation
 ├── agent_designer.py               # Recursive self-improvement designer
