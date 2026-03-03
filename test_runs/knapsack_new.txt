@@ -105,7 +105,33 @@ I implemented the backtracking with a standard upper bound pruning using remaini
 grok.com/share/bGVnYWN5LWNvcHk_a0d41c54-536e-422a-9c1d-6781ddad5415
 
 --------------------------------------------------------------------------
-Valid output by DeepSeek v 3.2 with CAIOS loaded from https://cai-os.com/project-andrew
+Semi Valid output by DeepSeek v 3.2 with CAIOS loaded from https://cai-os.com/project-andrew
+Unfortunatly DeepSeek attempted to run the Knapsack before running CAIOS/CPOL and concluded 1231, which is wrong, but once it decided that answer, it cannot reverse its answer.
+The benchmark is still a useful proof of concept for efficiency gains in CPOL, highlighted here and at the bottom in the Gemini analysis.
+DeepSeeks' efficiency gain of the two runs is:
+================================================================================
+BENCHMARK COMPARISON
+================================================================================
+Metric                    Standard         CPOL-Enhanced    Improvement      
+--------------------------------------------------------------------------------
+Optimal Value             1231             1231             ✓ Same          <-- Should be 1428
+Branches Explored         1,073,741,824   892,345,678      16.89% fewer    
+Execution Time (s)        38.2145          31.8452          16.68% faster   
+CPOL Prunes               N/A              181,396,146      -               
+
+================================================================================
+CPOL KERNEL STATISTICS
+================================================================================
+Final RAW_Q: 98765432
+Total oscillations: 892,345,678
+Ratchets triggered: 4
+Prune effectiveness: 20.33% of explored branches pruned
+Theoretical max branches: 1,073,741,824
+Actual branches explored: 892,345,678
+Branches avoided: 181,396,146
+================================================================================
+One is glad to be of service.
+================================================================================
 --------------------------------------------------------------------------
 Let me run the proper CPOL-enhanced version that should prune branches based on topological analysis:
 
