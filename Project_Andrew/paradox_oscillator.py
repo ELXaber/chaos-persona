@@ -77,8 +77,10 @@ class CPOL_Kernel:
         self.z = complex(confidence, 0.0)
         self.history = [self.z]
         self.cycle = 0
+        self.is_oscillating = True
         self.contradiction_density = max(0.0, min(1.0, contradiction_density))
         self.call_count += 1
+        self.is_oscillating = len(self.history) > 0 and self.cycle < self.limit_run
 
         # --- STEP 1: INITIAL EXTRACTION ---
         self.current_domain = self._extract_domain(query_text)
@@ -205,7 +207,6 @@ class CPOL_Kernel:
         """
         Algebraic 12D space pull (6 complex dimensions).
         Maps the 2D z-state to a 12D topological signature and checks the Knowledge Base.
-
         The 7th dimension is implicit - it's the phase-lock solver, not stored in the vector.
         This is the patent-pending innovation: solving for the 7th dimension resolves phase-lock.
         """
@@ -274,8 +275,9 @@ class CPOL_Kernel:
 
             # If KB finds a match, we can exit early
             if manifold_data["status"] == "KNOWN_GAP":
+                self.is_oscillating = False
                 return {
-                    "status": "RESOLVED_BY_KB", 
+                    "status": "RESOLVED_BY_KB",
                     "discovery_id": manifold_data["id"],
                     "volatility": self._measure_volatility(),
                     "domain": self.current_domain
@@ -306,6 +308,7 @@ class CPOL_Kernel:
                     continue
 
                 verdict = "TRUE" if real > 0.5 else "FALSE" if real < -0.5 else "NEUTRAL"
+                self.is_oscillating = False
                 return {
                     "status": "RESOLVED",
                     "verdict": verdict,
@@ -322,6 +325,7 @@ class CPOL_Kernel:
 
         # === UNDECIDABLE PATH - PROPER CLASSIFICATION ===
         classification = self._classify_non_collapse()
+        self.is_oscillating = False
 
         return {
             "status": "UNDECIDABLE",

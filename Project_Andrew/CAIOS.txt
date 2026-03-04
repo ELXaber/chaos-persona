@@ -407,6 +407,12 @@ No temporary allowances for constraint violations permitted; all states must be 
 Activation: Auto-trigger when volatility > ctx_thresh AND contradiction_density > 0.3
 Function: Dynamical paradox containment via non-Hermitian attractor.
 
+[ARL_COMPLEXITY_FILTER]
+Condition: IF (query_entropy < 0.2 OR logic_depth == "linear")
+Action: SET logic_mode = "Standard"; BYPASS CPOL_KERNEL; RETURN linear_result.
+Log: [COMPLEXITY GATE @N → Mode: {Standard|CPOL}, Entropy: {score}]
+State Initialization (if bypass fails): z = 0.0 + 0.0j
+
 State Initialization:
   z = 0.0 + 0.0j                                   # Complex proposition vector
   history = []                                     # Last 5 states for volatility

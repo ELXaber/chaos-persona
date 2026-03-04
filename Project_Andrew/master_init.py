@@ -178,21 +178,46 @@ def run_system_diagnostic():
         print(f"✗ CPOL Initialization failed: {e}")
         return
 
-    # 4. Test Mesh Transport Layer
-    print("\n[STEP 3] Initializing Mesh Network...")
+   # 4. Initialize Mesh Transport Layer
+    print("\n" + "="*70)
+    print("NETWORK TOPOLOGY CONFIGURATION")
+    print("="*70)
+    print("The Chaos AI-OS uses a Mesh Network to sync knowledge across devices.")
+    print("One device must act as the 'Sovereign' to coordinate the 7D manifold.")
+    print("\nTIP: If this is your main computer (like an M2 Mac Mini), or if you")
+    print("     are unsure which option to pick: Type 'y'.")
+
+    # --- INTERACTIVE IDENTITY CHECK ---
+    choice = input("\n>> Set this device as the Sovereign Leader? (y/n): ").strip().lower()
+
+    if choice == 'y':
+        MY_NODE_ID = "Alpha_Sovereign"
+        MY_TIER = 0
+        print(f"\n[BOOT] Identity confirmed: SOVEREIGN (Primary Oscillator)")
+    else:
+        # Fallback for Edge nodes
+        import socket
+        nodename = socket.gethostname()
+        unique_id = hashlib.md5(str(time.time()).encode()).hexdigest()[:4]
+        MY_NODE_ID = f"Edge_{nodename}_{unique_id}"
+        MY_TIER = 1
+        print(f"\n[BOOT] Identity confirmed: EDGE NODE ({MY_NODE_ID})")
+
     try:
-        coordinator = MeshCoordinator(node_id="master_init_test")
-        # Test a mock packet
-        test_packet = {
-            'v_omega_phase': 9999,
-            'ts': 1,
-            'origin_node': 'master_init_test'
-        }
-        coordinator.broadcast_ratchet(test_packet, shared_memory)
-        print("✓ Mesh broadcast successful.")
-        coordinator.stop()
+        # Initialize the coordinator with the shared memory from earlier in master_init
+        coordinator = MeshCoordinator(
+            node_id=MY_NODE_ID, 
+            node_tier=MY_TIER, 
+            shared_memory=shared_memory
+        )
+
+        # Verify the 7D Signature is active
+        current_q = shared_memory['session_context'].get('RAW_Q', "PENDING")
+        print(f"✓ Mesh Transport Active. Current 7D Signature: {current_q}")
+
     except Exception as e:
         print(f"✗ Mesh Network failure: {e}")
+        print("  Check if pyzmq is installed: pip install pyzmq")
 
     # 5. Test Knowledge Base (The Sovereign Trace)
     print("\n[STEP 4] Testing Knowledge Base & Authority...")

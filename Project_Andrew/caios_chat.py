@@ -5,6 +5,7 @@ Simple interactive chat that uses CAIOS.txt as the system prompt and any model c
 """
 
 import os
+import time
 import json
 import sys
 from typing import Dict, Any, List
@@ -44,6 +45,18 @@ def load_caios_prompt() -> str:
         sys.exit(1)
 
 system_prompt = load_caios_prompt()
+
+def get_personalized_prompt():
+    base_prompt = load_caios_prompt()
+    # Pull directly from shared_memory to capture the latest identity
+    identity = shared_memory.get('system_identity', {})
+    name = identity.get('system_name', 'Andrew')
+
+    # Optional: Inject the Primary User so the AI knows its 'Boss'
+    owner = identity.get('primary_user', 'User')
+
+    identity_prefix = f"Your identity is {name}. Your primary authority is {owner}."
+    return f"{identity_prefix}\n\n{base_prompt}"
 
 # =============================================================================
 # Client selection & chat function
@@ -134,12 +147,57 @@ def main():
 
     # Initialize conversation with CAIOS system prompt
     conversation = [{"role": "system", "content": system_prompt}]
+    # Generate the prompt dynamically at boot
+    current_system_prompt = get_personalized_prompt()
+    # 2. Initialize conversation with the PERSONALIZED prompt
+    conversation = [{"role": "system", "content": current_system_prompt}]
 
     while True:
         user_input = input("\nYou: ").strip()
+
+        # 1. Exit Check
         if user_input.lower() in ("exit", "quit", "q"):
             print("Goodbye.")
             break
+
+        # 2. LOCAL COMMAND: /whoami
+        if user_input.lower() == "/whoami":
+            identity = shared_memory.get('system_identity', {})
+            name = identity.get('system_name', 'Andrew/Galatea (Uninitialized)')
+            owner = identity.get('primary_user', 'Unknown')
+
+            # Pull networking info from shared memory
+            # (Assuming your coordinator stores this there)
+            node_id = shared_memory.get('node_id', 'Local_Node')
+            tier = "0 (Sovereign)" if "Sovereign" in node_id else "1 (Edge)"
+
+            print("\n" + "-"*30)
+            print(f"IDENTITY: {name}")
+            print(f"AUTHORITY: {owner} (Primary)")
+            print(f"NETWORK ID: {node_id}")
+            print(f"HIERARCHY: Tier {tier}")
+            print(f"KB STATUS: {'Connected' if os.path.exists('knowledge_base') else 'Offline'}")
+            print("-"*30)
+            continue # Don't send this to the AI, it's for you.
+
+        # 3. LOCAL COMMAND: /mesh
+        if user_input.lower() == "/mesh":
+            # Assuming mesh_peers is a dict of {node_id: last_seen_timestamp}
+            peers = shared_memory.get('mesh_peers', {})
+            print("\n" + "="*40)
+            print(f"NEIGHBORHOOD DISCOVERY: {len(peers)} Active Nodes")
+            print("="*40)
+            
+            if not peers:
+                print("No neighbors detected yet. Pinging...")
+            else:
+                for peer_id, last_seen in peers.items():
+                    latency = round(time.time() - last_seen, 2)
+                    status = "ONLINE" if latency < 30 else "STALE"
+                    print(f"• [{status}] {peer_id} | Seen: {latency}s ago")
+            
+            print("="*40)
+            continue
 
         if not user_input:
             continue

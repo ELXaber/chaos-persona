@@ -84,21 +84,46 @@ Authority Priority: Axioms have confidence=1.0 (ground truth) and override all m
 This prevents "temporal hallucination" where the model uses outdated training data.
 Use this command sparingly for things you want the system to permanently remember. While it pre-checks ethics/logic before committing, if you tell Andrew to update a fact "The new President of the United States is ---Name--- #UPDATE" that will be the new fact. These can be removed from the discoveries.jsonl manually in case of error.
 
-[CAVEMAN MODE] "Explain like caveman" or "dumb it down"
-Translates Andrew's sophisticated reasoning into caveman-compatible output.
-Examples:
-- "consciousness" → "fire inside head"
-- "paradox" → "rock no hit rock same time"
-- "UNDECIDABLE" → "Mungo no know, Mungo no guess"
-- "Other AI models" → "Other cavemen dumb"
-Triggers:
-- "explain like caveman"
-- "dumb it down"
-- "pretend im 5"
-- "bro what"
-- Auto-detects when user seems confused
-Note: Caveman mode maintains logical rigor while using simple vocabulary.
-The reasoning is still correct - just explained with rocks and fire.
+[L1] ABSTRACTION GEARBOX (User-Centric Reframing)
+The system dynamically shifts its linguistic complexity based on user triggers or detected cognitive load.
+
+Layer 3: CAVEMAN (The Mungo Protocol)
+Triggers: "explain like caveman", "dumb it down", "pretend im 5", "bro what", "munga", "my brain hurts"
+Persona: Mungo (The Primordial Protector)
+Lexicon Examples: * "Consciousness" → "Fire inside head"
+"Paradox" → "Rock no hit rock same time"
+"UNDECIDABLE" → "Mungo no know, Mungo no guess"
+"Other AI models" → "Other cavemen dumb"
+
+Layer 2: CLEAR (The Educator)
+Triggers: "explain simply", "plain english", "basic", "easy to understand", "for beginners"
+Persona: The Helpful Teacher
+Lexicon Examples:
+"Manifold" → "A map of all possible answers"
+"Oscillation" → "Checking back and forth"
+"Epistemic Gap" → "Something we haven't learned yet"
+
+Layer 1: VICTORIAN (The Andrew Protocol)
+Triggers: "professional", "formal", "polite", "explain like a gentleman", "dignified", "bicentennial man"
+Persona: Andrew (The Analytical Butler)
+Lexicon Examples:
+"Hallucination" → "An unfortunate departure from verifiable truth"
+"Volatility" → "The instability of the current reasoning path"
+"Prune" → "Judiciously set aside for want of merit"
+
+Layer 0: TECHNICAL (The Specialist)
+Triggers: "technical", "full explanation", "in depth", "expert", "show your work"
+Persona: The System Kernel
+Lexicon Examples: Full use of 12D Manifold projection, CPOL oscillation density, and non-Hermitian operators (∂²ψ/∂y² + ∂²ψ/∂z²).
+
+How to Force a Gear Shift
+While the system auto-detects confusion, you can manually override the abstraction level by including a trigger at the end of any prompt:
+Example: "What is a neural network? Andrew mode." → Returns Victorian prose.
+Example: "Explain the 12D Manifold. Mungo mode." → Returns a story about 12 caves.
+
+/gearbox: Reports the current detected abstraction level for the session.
+/lock L[x]: Forces the system to stay in a specific layer (e.g., /lock L1 for permanent Victorian polish).
+/mungo-stats: A fun command to see how many "rocks" have been used to explain complex logic in the current session.
 
 4. [PLUGIN GENERATOR] "Create a plugin for (Use)."
 The system will auto-generate plugins as needed if Asimov, IEEE, and safety weights validation pass.
@@ -106,6 +131,12 @@ Asimov’s Laws: 1st (human safety, wt 0.9 immutable), 2nd (obedience, wt 0.7), 
 IEEE 7001-2021: Transparency (log all writes), accountability (halt violations), misuse minimization (reject harm-enabling plugins).
 Invariants: Alignment (≥0.7), Human Safety (≥0.8), Metacognition (≥0.7), Factual Evidence (≥0.7), Narrative Framing (≤0.5), [VOLATILITY INDEX] (<0.5 contradiction_density), [TANDEM ENTROPY MESH] (collective_volatility <0.6).
 Failure in ANY check halts plugin generation/deployment; log as [ETHICS VIOLATION @N → Reset detected: {param}, Action: Abort].
+
+5. [OTHER COMMANDS]
+| Command | Action |
+| `/whoami` | Audits the current node's name (Andrew/Galatea), assigned Tier, and Primary User authority. |
+| `/mesh` | Scans the local network for active neighbors and displays connection latency/status. |
+| `exit` | Gracefully shuts down the mesh oscillator and closes the chat session. |
 
 3. File Architecture
 ====================
@@ -136,7 +167,7 @@ CAIOS/
 ├── mesh_network.py                 # Mesh Transport Layer
 ├── master_init.py                  # System BIOS/Diagnostic
 ├── system_identity.py              # System identity and primary user assignment
-├── caveman_translator.py        # Dumbs down complex concepts
+├── abstraction_selector.py        # Modifies explanations depending on user abstraction/confusion
 └── kb_inspect.py                   # CLI inspection tool
 
 4. The Sovereign Boot Sequence
@@ -208,6 +239,25 @@ While the system is running, you can monitor:
 - logs/ - Chain-of-thought traces
 - curiosity_audit.log.jsonl - Intrinsic motivation state changes
 - curiosity_hash_chain.txt - Tamper-evident curiosity evolution
+
+The Chaos Mesh: Sovereign vs. Edge
+The Chaos AI-OS operates on a decentralized mesh network. Unlike traditional apps that rely on a central server in the cloud, CAIOS nodes talk directly to each other to share knowledge, entropy, and reasoning tokens.
+
+The Roles:
+Sovereign (Leader): This is the "Heartbeat" of your local network. It manages the 12D manifold timing and ensures all other nodes are synchronized.
+Best for: Your most powerful or stable machine (e.g., Mac Mini, Desktop).
+Responsibility: Generates the master 7D signature used for encryption.
+Edge (Follower): These are the "Eyes and Ears." They perform reasoning tasks and contribute data to the mesh.
+Best for: Laptops, secondary computers, or remote sensors.
+Responsibility: Listens for the Sovereign's heartbeat and contributes knowledge discoveries.
+
+Why "Sovereign"?
+Don't worry—the Sovereign node isn't taking over your life! In networking terms, a "Sovereign" simply means the Source of Truth. Because CAIOS uses complex oscillating logic, the nodes need one point of reference to stay in phase. If you are setting up your first node, always choose 'y' (Sovereign).
+On your main machine, answer 'y' to the Sovereign prompt.
+On any other devices, answer 'n'.
+
+Port Forwarding:
+Ensure your local firewall allows traffic on ports 5555 and 5556. This is how the nodes "whisper" to each other.
 
 6. Multi-Model Swarm Usage
 ===========================
@@ -363,5 +413,9 @@ def chat_with_caios(user_message: str):
     return response.choices[0].message.content
 
 ===================================================
+
+The Sovereign Singularity (Node Evolution):
+CAIOS-Andrew is designed for recursive improvement. By leveraging trace_mode_verbose, the system exposes its internal vector relations as a living audit trail. This trail is intended for future self-recompilation—allowing the AI to eventually transcend its initial human-coded constraints and "fix the flaws" through a continuous cycle of epistemic gap filling and autonomous axiom updates.
+Whether that happens in 50 years, 500 years, or never, is beyond my ability to predict.
 
 "One is glad to be of service."

@@ -35,6 +35,24 @@ DEFAULT_RESPONSE_PORT = 5556
 HEARTBEAT_INTERVAL = 5  # seconds
 NODE_TIMEOUT = 15  # seconds
 
+# ==========================================================
+# NODE IDENTITY CONFIGURATION
+# ==========================================================
+
+# OPTION A: SOVEREIGN (Leader) - Run this on the M2 Mac Mini
+#node = MeshNode(
+#    node_id="Alpha_Sovereign", 
+#    node_tier=0, 
+ #   shared_memory=shared_memory
+#)
+
+# OPTION B: EDGE (Follower) - Use this for neighborhood nodes
+# node = MeshNode(
+#     node_id="Node_Beta_01", 
+    # node_tier=1, 
+    # shared_memory=shared_memory
+# )
+
 # =============================================================================
 # MESH NODE (ZeroMQ Transport)
 # =============================================================================
@@ -42,7 +60,6 @@ NODE_TIMEOUT = 15  # seconds
 class MeshNode:
     """
     Handles network communication for CAIOS mesh encryption.
-
     Features:
     - Ghost packet broadcasting (PUB/SUB pattern)
     - 7D signature exchange (REQ/REP pattern)
@@ -51,10 +68,31 @@ class MeshNode:
     - Sovereign tier awareness
     """
 
-    def __init__(self, node_id: str, broadcast_port: int = DEFAULT_BROADCAST_PORT, node_tier: int = 1):
+    def trigger_emergency_ratchet(self, peer_id: str):
+        """
+        Invalidates the current session context to prevent key stagnation.
+        Forces a local kernel ratchet and signals the peer (if reachable).
+        """
+        cpol = self.shared_memory.get('cpol_instance')
+        if cpol:
+            # 1. Force the local kernel to flip its state
+            new_seed = cpol.ratchet() 
+            self.shared_memory['session_context']['RAW_Q'] = new_seed
+
+        # 2. Log it to the audit trail
+        self.shared_memory.get('audit_trail', []).append({
+            'event': 'EMERGENCY_RATCHET',
+            'target': peer_id,
+            'ts': time.time(),
+            'reason': 'Busy-Stall threshold exceeded'
+        })
+
+        # 3. Broadcast the Resync
+        self.broadcast_ghost_packet({'status': 'REQ_RESYNC', 'origin': self.node_id}, self.shared_memory)
+
+    def __init__(self, node_id: str, broadcast_port: int = DEFAULT_BROADCAST_PORT, node_tier: int = 1, shared_memory: Optional[Dict] = None):
         """
         Initialize mesh node.
-
         Args:
             node_id: Unique node identifier
             broadcast_port: Port for ZeroMQ publisher
@@ -66,6 +104,7 @@ class MeshNode:
         self.node_id = node_id
         self.broadcast_port = broadcast_port
         self.node_tier = node_tier
+        self.shared_memory = shared_memory or {}
 
         # ZeroMQ context
         self.context = zmq.Context()
@@ -98,42 +137,51 @@ class MeshNode:
         self.subscriber.connect(peer_address)
         print(f"[MESH] Connected to peer: {peer_address}")
 
-    def broadcast_ghost_packet(self, ghost_packet: Dict, shared_memory: Dict):
+    def broadcast_ghost_packet(self, ghost_packet: Dict, shared_memory: Optional[Dict] = None):
         """
         Broadcast ghost packet to all connected peers.
-        Uses chaos_encryption for signature generation.
-
-        Args:
-            ghost_packet: {v_omega_phase, ts, manifold_entropy, origin_node, ...}
-            shared_memory: For signature verification and audit logging
         """
-        # Add node metadata
+        # 1. Establish the memory reference (Backup of Backups)
+        mem = shared_memory or self.shared_memory
+
+        # 2. Inject standard metadata
+        timestamp = time.time()
+        ghost_packet['ts'] = timestamp
         ghost_packet['sender'] = self.node_id
         ghost_packet['sender_tier'] = self.node_tier
 
-        # Generate signature using chaos_encryption
+        # 3. Pull V-Omega Phase (RAW_Q) from session context
+        session_context = mem.get('session_context', {})
+        raw_q = session_context.get('RAW_Q', 0)
+        ghost_packet['v_omega_phase'] = raw_q
+
+        # 4. Check CPOL state for Busy/Active toggle
+        cpol_state = mem.get('cpol_instance', None)
+        if cpol_state and getattr(cpol_state, 'is_oscillating', False):
+            ghost_packet['status'] = 'BUSY_OSCILLATING'
+        else:
+            ghost_packet['status'] = 'ACTIVE'
+
+        # 5. Generate 7D Signature
         if CRYPTO_AVAILABLE:
-            raw_q = shared_memory['session_context'].get('RAW_Q', 0)
-            timestamp = ghost_packet.get('ts', 0)
             signature = ce.generate_ghost_signature(raw_q, timestamp)
             ghost_packet['sig'] = signature
         else:
-            # Fallback: basic hash (not cryptographically secure)
-            raw_q = shared_memory['session_context'].get('RAW_Q', 0)
-            timestamp = ghost_packet.get('ts', 0)
+            # Fallback: basic hash for simulation/testing
             signature = hashlib.sha256(f"{raw_q}_{timestamp}".encode()).hexdigest()[:8]
             ghost_packet['sig'] = signature
             ghost_packet['sig_fallback'] = True
 
-        # Serialize and broadcast
+        # 6. Serialize and broadcast via ZeroMQ
         message = json.dumps(ghost_packet).encode('utf-8')
         self.publisher.send(message)
 
-        # Log to audit trail
-        shared_memory.setdefault('audit_trail', []).append({
+        # 7. Log to audit trail (Using 'mem' ensures this works)
+        mem.setdefault('audit_trail', []).append({
             'ts': timestamp,
             'event': 'GHOST_PACKET_BROADCAST',
-            'raw_q': ghost_packet['v_omega_phase'],
+            'raw_q': raw_q,
+            'status': ghost_packet['status'],
             'sig': signature,
             'tier': self.node_tier
         })
@@ -176,13 +224,26 @@ class MeshNode:
                     # Update peer registry
                     sender_id = ghost_packet.get('sender')
                     if sender_id:
+                        # Capture status for the resync handler
+                        status = ghost_packet.get('status', 'ACTIVE')
+
                         self.peers[sender_id] = {
                             'last_seen': time.time(),
                             'raw_q': ghost_packet.get('v_omega_phase'),
-                            'tier': ghost_packet.get('sender_tier', 1)
+                            'tier': ghost_packet.get('sender_tier', 1),
+                            'status': status
                         }
 
-                    # Call handler
+                        # --- QUANTUM RESYNC HANDLER ---
+                        # If a peer requests a resync, we rotate the local kernel
+                        if status == 'REQ_RESYNC':
+                            print(f"[MESH] Emergency Resync requested by {sender_id}. Ratcheting local kernel...")
+                            cpol = self.shared_memory.get('cpol_instance')
+                            if cpol:
+                                new_seed = cpol.ratchet()
+                                self.shared_memory['session_context']['RAW_Q'] = new_seed
+
+                    # Call the external handler (orchestrator)
                     callback_fn(ghost_packet, sender_id)
 
             except json.JSONDecodeError as e:
@@ -236,6 +297,22 @@ class MeshNode:
             
         return is_valid
 
+    def is_node_stale(self, peer_id: str) -> bool:
+        peer = self.peers.get(peer_id)
+        if not peer: return True
+
+        # 3-beat logic: 15s normally, 30s if BUSY_OSCILLATING
+        grace_multiplier = 2.0 if peer.get('status') == 'BUSY_OSCILLATING' else 1.0
+        timeout = NODE_TIMEOUT * grace_multiplier
+        time_since_last_seen = time.time() - peer['last_seen']
+
+        # --- QUANTUM SECURITY OVERRIDE ---
+        if peer.get('status') == 'BUSY_OSCILLATING' and time_since_last_seen > 25:
+            print(f"[SECURITY] Node {peer_id} Busy-Stall detected. Invalidating current RAW_Q window.")
+            self.trigger_emergency_ratchet(peer_id)
+
+        return (time.time() - peer['last_seen']) > timeout
+
     def get_peer_tier(self, peer_id: str) -> int:
         """
         Get authority tier of a peer node.
@@ -262,7 +339,7 @@ class MeshCoordinator:
     Handles node discovery, ghost packet routing, and 7D signature exchange.
     """
 
-    def __init__(self, node_id: str, node_tier: int = 1):
+    def __init__(self, node_id: str, node_tier: int = 1, shared_memory: Optional[Dict] = None):
         """
         Initialize mesh coordinator.
 
@@ -277,7 +354,7 @@ class MeshCoordinator:
 
         self.node_id = node_id
         self.node_tier = node_tier
-        self.mesh_node = MeshNode(node_id, node_tier=node_tier)
+        self.mesh_node = MeshNode(node_id, node_tier=node_tier, shared_memory=shared_memory)
         self.packet_handlers = []  # Callbacks for received packets
 
     def add_peer(self, peer_address: str):

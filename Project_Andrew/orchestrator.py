@@ -54,11 +54,11 @@ except ImportError:
     print("[INFO] Axiom Manager/Axiom manager not available. KB Update disabled.")
 
 try:
-    from caveman_translator import translate_for_caveman, CavemanTranslator
-    CAVEMAN_AVAILABLE = True
+    from abstraction_selector import create_abstraction_dispatcher
+    ABSTRACTION_AVAILABLE = True
 except ImportError:
-    CAVEMAN_AVAILABLE = False
-    print("[INFO] Caveman translator not available. Mungo sad.")
+    ABSTRACTION_AVAILABLE = False
+    print("[INFO] Abstraction selector not available.")
 
 # =============================================================================
 # SHARED MEMORY INITIALIZATION
@@ -81,6 +81,102 @@ shared_memory = {
     'api_clients': {}      # Multi-model swarm clients
 }
 
+class UnifiedAbstractionManager:
+    """
+    Handles both DETECTION and TRANSLATION.
+    Keeps the 'Logic' and the 'Linguistics' in sync.
+    """
+    def __init__(self):
+        self.selector = AbstractionDispatcher() # L0-L3 logic
+        self.translators = {
+            AbstractionLevel.VICTORIAN: VictorianTranslator(),
+            AbstractionLevel.CLEAR: ClearTranslator(),
+            AbstractionLevel.CAVEMAN: CavemanTranslator()
+        }
+
+    def get_response(self, user_input, technical_output, shared_memory):
+        # 1. DETECTION
+        # This tells the Orchestrator exactly how confused the user is.
+        selection = self.selector.process(user_input, technical_output, shared_memory)
+        level = selection['abstraction_level']
+
+        # 2. STATE ADJUSTMENT
+        # If level is CAVEMAN, we update shared memory so the rest of the 
+        # system knows to stop using high-level jargon in logs/KBs.
+        shared_memory['current_user_gear'] = level.name
+
+        # 3. TRANSLATION
+        if level == AbstractionLevel.TECHNICAL:
+            return technical_output['output']
+
+        translator = self.translators.get(level)
+        if translator:
+            return translator.translate(technical_output['output'])
+
+        return technical_output['output']
+
+class CAIOSOrchestrator:
+    def __init__(self, node_id: str, node_tier: int = 1, shared_memory: Optional[Dict] = None):
+        self.node_id = node_id
+        # Use the provided memory or fall back to the global one
+        self.shared_memory = shared_memory or {}
+        # Make sure to pass the memory to the mesh coordinator!
+        self.mesh = MeshCoordinator(node_id, node_tier, shared_memory=self.shared_memory)
+        self.abstraction_manager = UnifiedAbstractionManager()
+
+    def validate_with_asimov(self, request: str, user_id: str = "unknown") -> dict:
+        """Calculates safety and authority weights before allowing a response."""
+        identity = self.shared_memory.get('system_identity')
+
+        # Calculate effective Law 2 weight with user authority
+        if identity:
+            from asimov_logic import get_effective_asimov_weight # Ensure this is imported
+            effective_law_2 = get_effective_asimov_weight(
+                ASIMOV_WEIGHTS['law_2_obey'],
+                user_id,
+                identity
+            )
+        else:
+            effective_law_2 = 0.7 # Default fallback
+
+        # Logic for ALLOW/REFUSE goes here
+        return {
+            'decision': 'ALLOW', 
+            'reason': 'No primary directive violations detected.',
+            'authority_weight': effective_law_2
+        }
+
+    def handle_user_request(self, user_input: str, provider: str = "openai") -> str:
+        """
+        The central heartbeat. It takes raw thoughts and runs them 
+        through the Abstraction Gearbox.
+        """
+        self.shared_memory['last_user_message'] = user_input
+
+        # 1. Safety Check
+        validation = self.validate_with_asimov(user_input)
+        if validation['decision'] == 'REFUSE':
+            return f"Directive Conflict: {validation['reason']}"
+
+        # 2. Kernel Thinking (DeepSeek, Claude, or Local)
+        # Note: You must have a method named 'generate_swarm_response' in this class!
+        technical_output = self.generate_swarm_response(user_input, provider)
+
+        # 3. Gearbox Translation (L0, L1, L2, or L3)
+        final_text = self.abstraction_manager.get_response(
+            user_input, 
+            technical_output, 
+            self.shared_memory
+        )
+
+        # 4. Final memory storage and return
+        self.shared_memory['last_assistant_message'] = final_text
+        return final_text
+
+# =============================================================================
+# SYSTEM BOOT LOGIC (Outside the class, at the left margin)
+# =============================================================================
+
 # Initialize Axiom Manager (if available)
 if AMGR_AVAILABLE:
     axiom_manager = create_axiom_manager()
@@ -90,36 +186,22 @@ else:
     shared_memory['axiom_manager'] = None
     print("[BOOT] Axiom Manager unavailable - KB updates disabled")
 
-# Load system identity
+# INITIALIZE ABSTRACTION DISPATCHER
+if ABSTRACTION_AVAILABLE:
+    from abstraction_selector import create_abstraction_dispatcher
+    shared_memory['abstraction_dispatcher'] = create_abstraction_dispatcher()
+    print("[BOOT] Abstraction dispatcher initialized - 4 translation modes ready")
+else:
+    shared_memory['abstraction_dispatcher'] = None
+    print("[BOOT] Abstraction selector unavailable - using default responses")
+
+# Load system identity (Required for the 2025 Prediction/Signature)
 identity = SystemIdentity(load_existing=True)
 if identity.identity_data['system_id']:
     shared_memory['system_identity'] = identity
     print(f"[BOOT] {identity.get_identity_summary()}")
 else:
     print("[WARNING] System identity not initialized - run master_init.py")
-
-# In your Asimov validation function, add user_id parameter:
-def validate_with_asimov(request: str, user_id: str = "unknown") -> dict:
-
-    # Get identity for authority adjustment
-    identity = shared_memory.get('system_identity')
-
-    # Calculate effective Law 2 weight with user authority
-    if identity:
-        effective_law_2 = get_effective_asimov_weight(
-            ASIMOV_WEIGHTS['law_2_obey'],
-            user_id,
-            identity
-        )
-    else:
-        effective_law_2 = ASIMOV_WEIGHTS['law_2_obey']
-
-    # Use effective_law_2 in validation logic...
-    return {
-        'decision': 'ALLOW' or 'REFUSE',
-        'reason': '...',
-        'authority_weight': effective_law_2  # Include in audit log
-    }
 
 # =============================================================================
 # API CLIENT LOADING (Multi-Model Swarm Support)
@@ -621,21 +703,25 @@ def system_step(user_input: str, prompt_complexity: str = "low", response_stream
             cpol_result['output'] = overridden_response
             cpol_result['axiom_override'] = True
 
-    # Check if user wants caveman mode
-    if CAVEMAN_AVAILABLE:
-        caveman_triggers = [
-            "explain like caveman",
-            "dumb it down", 
-            "explain like im 5",
-            "eli5",
-            "bro what",
-            "mungo mode"
-        ]
+    # Apply abstraction layer (replaces old caveman mode)
+    if ABSTRACTION_AVAILABLE and shared_memory.get('abstraction_dispatcher'):
+        dispatcher = shared_memory['abstraction_dispatcher']
         
-        if any(trigger in user_input.lower() for trigger in caveman_triggers):
-            cpol_result['output'] = translate_for_caveman(cpol_result, "caveman")
-            cpol_result['translation_mode'] = 'caveman'
-            print("[ORCHESTRATOR] Caveman mode activated. Mungo speak now.")
+        # Process through abstraction selector
+        cpol_result = dispatcher.process(
+            user_input=user_input,
+            technical_output=cpol_result,
+            shared_memory=shared_memory
+        )
+        
+        # Log which mode was activated (optional)
+        if cpol_result.get('abstraction_level') == 'CAVEMAN':
+            print("[ORCHESTRATOR] Mungo mode activated. Rock speak now.")
+        elif cpol_result.get('abstraction_level') == 'VICTORIAN':
+            print("[ORCHESTRATOR] Victorian mode activated. Fancy words now.")
+        elif cpol_result.get('abstraction_level') == 'CLEAR':
+            print("[ORCHESTRATOR] Clear mode activated. Simple words now.")
+        # Technical mode is silent (default)
 
     return cpol_result
 
@@ -715,6 +801,36 @@ if __name__ == "__main__":
     print("="*70)
     print("ORCHESTRATOR - Unified Test Suite")
     print("="*70)
+
+    # 1. LOAD SYSTEM IDENTITY (Permanence Layer)
+    from system_identity import SystemIdentity
+    identity = SystemIdentity()
+
+    # Check if this is a fresh install or a returning session
+    if not identity.identity_data.get('system_name'):
+        print("[BOOT] No identity found. Running first-time initialization...")
+        identity.initialize()
+
+    assigned_name = identity.identity_data.get('system_name', 'Alpha')
+    primary_user = identity.identity_data.get('primary_user', 'User')
+
+    print("="*70)
+    print(f"ORCHESTRATOR - {assigned_name.upper()} ACTIVE")
+    print(f"Primary Authority: {primary_user}")
+    print("="*70)
+
+    # 2. Initialize Hardware Kernel
+    kernel = CPOL_Kernel()
+    shared_memory['cpol_instance'] = kernel
+    orchestrator = CAIOSOrchestrator(
+        node_id=f"Sovereign_{assigned_name}",
+        node_tier=0, 
+        shared_memory=shared_memory
+    )
+
+    # 3. Prepare Shared Memory with Identity Info
+    shared_memory['cpol_instance'] = kernel
+    shared_memory['system_identity'] = identity.identity_data # Store the full ID map
 
     # Display system capabilities
     print("\n[SYSTEM CAPABILITIES]")
@@ -818,6 +934,29 @@ if __name__ == "__main__":
         result11 = handle_axiom_commands("/axioms")
         print(f"  Status: {result11.get('status')}")
         print(f"  Output preview: {result11.get('output', 'N/A')[:80]}...")
+
+    # TEST 12: Mesh-Kernel Linkage (Quantum Shield Check)
+    print("\n[TEST 12] Mesh-Kernel Linkage:")
+    
+    # Check 1: Does the mesh see the kernel?
+    if orchestrator.shared_memory.get('cpol_instance'):
+        print("  ✓ Shared Memory Hardware Link: ACTIVE")
+    else:
+        print("  ✗ Shared Memory Hardware Link: FAILED (Check initialization)")
+
+    # Check 2: Verify the 7D Signature Seed (RAW_Q)
+    current_q = orchestrator.shared_memory['session_context'].get('RAW_Q')
+    print(f"  ✓ Initial Manifold State (RAW_Q): {current_q}")
+
+    # Check 3: Test the "Busy-Stall" logic
+    # We simulate a 'Busy' state to see if the mesh registers it
+    kernel.is_oscillating = True 
+    orchestrator.shared_memory['cpol_instance'] = kernel
+    
+    # This imitates what the broadcast_ghost_packet method does
+    test_packet = {}
+    orchestrator.mesh.mesh_node.broadcast_ghost_packet(test_packet)
+    print(f"  ✓ Broadcast Status with Oscillating Kernel: {test_packet.get('status')}")
 
     # === AUDIT ===
     print("\n" + "="*70)
