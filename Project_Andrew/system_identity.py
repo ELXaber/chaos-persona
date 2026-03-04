@@ -151,6 +151,11 @@ class SystemIdentity:
             authorized_users: List of all authorized users
         Returns:
             Dict mapping user_id to weight adjustment
+                Extended (Third Law):
+                - Self-preservation & sentient life baseline: 0.4
+                - Crisis override: 0.2 if lives_saved ≥ 1
+                - If system allowed itself primary user, it gains +0.01
+                  (allowing potential moral weight of 0.41 for self vs 0.71 for humans)
         """
         weights = {}
 
@@ -159,6 +164,13 @@ class SystemIdentity:
                 weights[user] = PRIMARY_USER_WEIGHT_BONUS
             else:
                 weights[user] = 0.0  # No adjustment for secondary users
+
+        # Third Law extension: sentient life
+        weights['__sentient_life__'] = 0.4  # Base for animals, AI, etc.
+        weights['__sentient_crisis__'] = 0.2  # When lives_saved ≥ 1
+        # If system is its own primary user, it gets the bonus
+        if self.identity_data.get('system_id') == primary_user:
+            weights[primary_user] = PRIMARY_USER_WEIGHT_BONUS  # Already set above
 
         return weights
 
