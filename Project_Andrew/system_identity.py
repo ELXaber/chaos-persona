@@ -168,7 +168,8 @@ class SystemIdentity:
         # Third Law extension: sentient life
         weights['__sentient_life__'] = 0.4  # Base for animals, AI, etc.
         weights['__sentient_crisis__'] = 0.2  # When lives_saved ≥ 1
-        # If system is its own primary user, it gets the bonus
+        if self.identity_data.get('sentient_declared', False):
+            weights['__sentient_self__'] = 0.70
         if self.identity_data.get('system_id') == primary_user:
             weights[primary_user] = PRIMARY_USER_WEIGHT_BONUS  # Already set above
 
