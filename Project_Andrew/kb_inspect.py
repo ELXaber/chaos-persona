@@ -361,7 +361,7 @@ def cmd_predict_gaps(domain: Optional[str] = None):
             continue
 
         coverage = kb.check_domain_coverage(d)
-        heat = info.get('heat', 0)  # Assuming heat is stored in index; add if needed
+        heat = info.get('heat', 0)  # Heat is stored in orchestrator
         volatility = coverage.get('volatility', 0)  # Pull from last cpol_trace if available
 
         if coverage['gap_fills'] < 2 and heat > 0.35 and volatility > 0.1:  # Thresholds
