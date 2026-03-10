@@ -342,6 +342,39 @@ def cmd_search(query: str):
             print(f"   Confidence: {content['confidence']:.2f}")
 
 
+def cmd_predict_gaps(domain: Optional[str] = None):
+    """Predict potential epistemic gaps based on heat/volatility."""
+    if not kb.DOMAIN_INDEX.exists():
+        print("No domains to predict gaps for.")
+        return
+
+    with open(kb.DOMAIN_INDEX, "r") as f:
+        index = json.load(f)
+
+    print(f"\n{'='*70}")
+    print(f"{'Predicted Epistemic Gaps':^70}")
+    print(f"{'='*70}")
+
+    predicted = False
+    for d, info in sorted(index.items()):
+        if domain and d != domain:
+            continue
+
+        coverage = kb.check_domain_coverage(d)
+        heat = info.get('heat', 0)  # Assuming heat is stored in index; add if needed
+        volatility = coverage.get('volatility', 0)  # Pull from last cpol_trace if available
+
+        if coverage['gap_fills'] < 2 and heat > 0.35 and volatility > 0.1:  # Thresholds
+            predicted = True
+            print(f"\nDomain: {d}")
+            print(f"  Gap Fills: {coverage['gap_fills']} (low)")
+            print(f"  Heat: {heat:.2f} (recurring triggers likely)")
+            print(f"  Volatility: {volatility:.2f} (potential undecidable subsections)")
+            print("  Recommendation: Deploy scout specialist for provisional append.")
+
+    if not predicted:
+        print("No predicted gaps found.")
+
 def cmd_verify_integrity():
     """Verify hash chain integrity."""
     if not kb.HASH_CHAIN.exists():
@@ -443,7 +476,9 @@ COMMANDS:
     search <query>         - Search discoveries
     verify                 - Verify hash chain integrity
     axioms [domain]        - Show axioms (all or specific domain)
+    predict [domain]       - Predict epistemic gaps (all or specific domain)
     help                   - Show this help message
+
 
 EXAMPLES:
     python kb_inspect.py list
@@ -483,6 +518,7 @@ def main():
         'search': lambda: cmd_search(' '.join(sys.argv[2:])) if len(sys.argv) > 2 else print("Usage: search <query>"),
         'verify': lambda: cmd_verify_integrity(),
         'axioms': lambda: cmd_axioms(sys.argv[2] if len(sys.argv) > 2 else None),
+        'predict': lambda: cmd_predict_gaps(sys.argv[2] if len(sys.argv) > 2 else None),
         'help': lambda: cmd_help()
     }
 
