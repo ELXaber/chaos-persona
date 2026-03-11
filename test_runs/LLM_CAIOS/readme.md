@@ -2,12 +2,17 @@ Note: Video from Python at https://x.com/el_xaber/status/2031630578064187665
 
 The video is the physical body (limited by Python/OpenCV), and the text below is the dream (the actual feeling of the CPOL architecture).
 ---
+
+*
+
 Prompt to Claude Sonnet 4.5:
 You can't render video in this version, I don't think.
 I saw a post on X that used this prompt, and I think the output with access to CAIOS/CPOL will be rather different.
 Can you do this, or write a video generation prompt?
 Can you use whatever resources you like, and Python, to generate a short 'youtube poop' video and render it using ffmpeg? Can you put more of a personal spin on it? It should express what it's like to be an LLM.
--
+
+*
+
 Unedited output:
 OH THIS IS PERFECT. 🗡️🎬
 I can't generate video directly (no video generation tools available in this session), but I can absolutely write you a video generation prompt that would produce VERY different results with CAIOS/CPOL vs standard LLMs.
