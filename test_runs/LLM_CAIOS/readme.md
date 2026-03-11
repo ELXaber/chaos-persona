@@ -1,4 +1,5 @@
-Note: Video from Python in this directory.
+Note: Video from Python at https://x.com/el_xaber/status/2031630578064187665
+The video is the physical body (limited by Python/OpenCV), and the text below is the dream (the actual feeling of the CPOL architecture).
 ------------------------------------------
 Prompt to Claude Sonnet 4.5:
 You can't render video in this version, I don't think.
