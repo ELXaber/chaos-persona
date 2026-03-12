@@ -60,6 +60,17 @@ except ImportError:
     ABSTRACTION_AVAILABLE = False
     print("[INFO] Abstraction selector not available.")
 
+try:
+    import ollama_config
+    OLLAMA_AVAILABLE = ollama_config.check_ollama_available()
+    if OLLAMA_AVAILABLE:
+        print(f"✓ Ollama ready (Tier {ollama_config.NODE_TIER}, ID: {ollama_config.SYSTEM_ID})")
+    else:
+        print("⚠ Ollama not running - will use API clients only")
+except ImportError:
+    print("⚠ ollama_config not found - run master_init.py first")
+    OLLAMA_AVAILABLE = False
+
 # =============================================================================
 # SHARED MEMORY INITIALIZATION
 # =============================================================================
@@ -174,7 +185,7 @@ class CAIOSOrchestrator:
         return final_text
 
 # =============================================================================
-# SYSTEM BOOT LOGIC (Outside the class, at the left margin)
+# SYSTEM BOOT LOGIC
 # =============================================================================
 
 # Initialize Axiom Manager (if available)

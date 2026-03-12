@@ -64,6 +64,28 @@ def get_personalized_prompt():
 
 def select_client(clients: Dict[str, Any]) -> tuple:
     """Let user choose a model from available clients."""
+
+    # Check if Ollama is available
+    try:
+        import ollama_config
+        ollama_available = ollama_config.check_ollama_available()
+    except:
+        ollama_available = False
+
+    print("\nAvailable models:")
+    options = list(clients.keys())
+
+    # Add Ollama as option if running
+    if ollama_available:
+        options.insert(0, "ollama_local")
+        print(f"  1. OLLAMA (Local - Tier {ollama_config.NODE_TIER})")
+        offset = 1
+    else:
+        offset = 0
+
+    for i, provider in enumerate(options[offset:], 1 + offset):
+        print(f"  {i}. {provider.upper()}")
+
     if not clients:
         print("No API clients available. Run master_init.py first.")
         sys.exit(1)
@@ -87,6 +109,42 @@ def select_client(clients: Dict[str, Any]) -> tuple:
 
 def chat_with_model(provider: str, client: Any, messages: List[Dict[str, str]]) -> str:
     """Send chat request to selected model."""
+
+    if provider == "ollama_local":
+        import ollama_config
+        import requests
+        from paradox_oscillator import ParadoxOscillator
+
+        # Get CPOL state from last user message
+        user_query = messages[-1]["content"]
+        oscillator = ParadoxOscillator()
+        contradiction_density = oscillator.detect_contradiction(user_query)
+
+        # Get Ollama params with CAIOS.txt system prompt
+        params = ollama_config.get_cpol_ollama_params(
+            contradiction_density=contradiction_density,
+            evidence_score=0.5  # TODO: Add evidence scoring
+        )
+
+        # Build conversation for Ollama
+        # (Ollama doesn't support multi-turn in generate endpoint,
+        #  you might need to use chat endpoint or concatenate history)
+        prompt = "\n".join([
+            f"{msg['role']}: {msg['content']}" 
+            for msg in messages if msg['role'] != 'system'
+        ])
+
+        response = requests.post(
+            ollama_config.OLLAMA_ENDPOINT,
+            json={
+                **params,
+                "prompt": prompt,
+                "stream": False
+            }
+        )
+
+        return response.json()['response']
+
     try:
         if provider == "openai":
             response = client.chat.completions.create(

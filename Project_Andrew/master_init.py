@@ -309,7 +309,24 @@ def run_system_diagnostic():
         print(f"✗ Identity initialization failed: {e}")
         traceback.print_exc()
 
-    # 7. Test Multi-Model Swarm (if clients available)
+    # 7. Create Ollama Configuration Bridge
+    print("\n[STEP 6.5] Creating Ollama Configuration Bridge...")
+    try:
+        # ollama_config.py is already in the repo
+        # Just verify CAIOS.txt exists
+        if not os.path.exists("CAIOS.txt"):
+            print("⚠ CAIOS.txt not found - Ollama will run without system prompt")
+        else:
+            print("✓ CAIOS.txt found - will be loaded as Ollama system prompt")
+
+        # Test import
+        import ollama_config
+        print(f"✓ Ollama config ready for Node Tier {ollama_config.NODE_TIER}")
+
+    except Exception as e:
+        print(f"⚠ Ollama config issue: {e}")
+
+    # 8. Test Multi-Model Swarm (if clients available)
     if shared_memory['api_clients']:
         print("\n[STEP 5] Testing Multi-Model Swarm...")
         test_swarm_capabilities(shared_memory['api_clients'])
