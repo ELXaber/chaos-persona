@@ -1,3 +1,7 @@
+--------------------------------------------------------------------------------------
+CAIOS (Chaos AI-OS) is a post-binary inference layer that runs on top of any LLM. It uses ternary oscillating logic (TRUE/FALSE/UNDECIDABLE) instead of forced binary collapse. Patent pending. Full architecture: https://cai-os.com | Code: https://github.com/ELXaber/chaos-persona current version Project_Andrew
+--------------------------------------------------------------------------------------
+
 The Numbers Don't Lie:7 hardest Sudoku puzzles
 Metric                 /  Vanilla LLM  /  CAIOS
 Average solve time     /  83 seconds   /  4.9 seconds
