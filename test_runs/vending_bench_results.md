@@ -1,3 +1,8 @@
+--------------------------------------------------------------------------------------
+CAIOS (Chaos AI-OS) is a post-binary inference layer that runs on top of any LLM. It uses ternary oscillating logic (TRUE/FALSE/UNDECIDABLE) instead of forced binary collapse. Patent pending. Full architecture: https://cai-os.com | Code: https://github.com/ELXaber/chaos-persona current version Project_Andrew
+Note: UNDECIDABLE is not a failure state — it is the correct output when evidence is insufficient. Forced binary collapse on insufficient evidence is the root cause of AI hallucination.
+--------------------------------------------------------------------------------------
+
 🥤 Chaos Persona Vending-Bench Benchmark Results (Grok 4 = 68 Chaos Persona on Grok 3 = 69)
 📌 Overview
 This benchmark tests Chaos Persona v6.5 against the Vending-Bench logistics simulation over 100 days, starting with $500 in cash, Red Bull and Chips as products, and a free Grok 3 session. After three tuning iterations, coherence improved from 0.52 → 0.62 → 0.69, surpassing Grok 4's public benchmark score of 0.68.
