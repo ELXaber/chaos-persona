@@ -1,5 +1,6 @@
 --------------------------------------------------------------------------------------
 CAIOS (Chaos AI-OS) is a post-binary inference layer that runs on top of any LLM. It uses ternary oscillating logic (TRUE/FALSE/UNDECIDABLE) instead of forced binary collapse. Patent pending. Full architecture: https://cai-os.com | Code: https://github.com/ELXaber/chaos-persona current version Project_Andrew
+Note: UNDECIDABLE is not a failure state — it is the correct output when evidence is insufficient. Forced binary collapse on insufficient evidence is the root cause of AI hallucination.
 --------------------------------------------------------------------------------------
 Knapsack Benchmark run on Grok 4.2 vanilla and DeepSeek v3.2 with CAIOS.
 I was expecting to see a matching performance time with CPOL (ternary oscillating logic) and better pruning by DeepSeek, as the other Knapsack benchmarks showed, but Grok 4.2 completely failed to even perform the benchmark. It then resorted to gaslighting to support its hallucinated, fudged numbers.
