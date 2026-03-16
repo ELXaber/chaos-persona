@@ -47,11 +47,6 @@ EXPLICIT_TRIGGERS = {
     ]
 }
 
-COMPLAINT_INDICATORS = [    # <-- no indent, starts at column 0
-    r'\bthat\'s wrong\b', r'\bno that\'s not\b', r'\bstupid\b',
-    r'\buseless\b', r'\bwhat kind of answer\b', r'\bthat makes no sense\b',
-    r'\bi don\'t understand\b', r'\bwhat does that mean\b'
-]
 
 # =============================================================================
 # Implicit Signal Thresholds
@@ -75,6 +70,7 @@ class ImplicitThresholds:
     # Question complexity (0-1): higher = more sophisticated
     COMPLEXITY_ADVANCED = 0.7       # >0.7 suggests expertise
     COMPLEXITY_SIMPLE = 0.3         # <0.3 suggests basic understanding
+
 
 # =============================================================================
 # Abstraction Selector Class
@@ -133,11 +129,6 @@ class AbstractionSelector:
         # 6. Default to Clear for most users
         self.current_level = AbstractionLevel.CLEAR
         return AbstractionLevel.CLEAR
-
-    def _detect_complaint(self, user_input: str) -> bool:
-        text_lower = user_input.lower()
-        return any(re.search(p, text_lower) 
-                   for p in COMPLAINT_INDICATORS)
 
     def _check_explicit_triggers(self, user_input: str) -> Optional[AbstractionLevel]:
         """Check if user explicitly requested a specific abstraction level."""
@@ -433,51 +424,6 @@ class AbstractionDispatcher:
         # Detect level
         level = self.selector.detect_abstraction_level(user_input, shared_memory)
 
-        # === COMPLAINT ELEVATION CHECK ===
-        complaint_patterns = [
-            r'\bthat\'s wrong\b', r'\bno that\'s not\b', r'\bstupid\b',
-            r'\buseless\b', r'\bwhat kind of answer\b', r'\bthat makes no sense\b',
-            r'\bi don\'t understand\b', r'\bwhat does that mean\b',
-            r'\bwrong\b', r'\bincorrect\b', r'\bdisagree\b', r'\bnot helpful\b'
-        ]
-
-        user_lower = user_input.lower()
-        is_complaint = any(re.search(p, user_lower) for p in complaint_patterns)
-
-        if is_complaint:
-            complaint_count = shared_memory.get('complaint_count', 0) + 1
-            shared_memory['complaint_count'] = complaint_count
-            previous_level = shared_memory.get(
-                'current_abstraction_level', 
-                level
-            )
-
-            # Elevation logic
-            elevation_map = {
-                AbstractionLevel.TECHNICAL: AbstractionLevel.VICTORIAN,
-                AbstractionLevel.VICTORIAN: AbstractionLevel.CLEAR,
-                AbstractionLevel.CLEAR: AbstractionLevel.CAVEMAN,
-                AbstractionLevel.CAVEMAN: AbstractionLevel.VICTORIAN  # Full circle
-            }
-
-            # Persistent complainer override (3+ complaints)
-            if complaint_count >= 3:
-                level = AbstractionLevel.CAVEMAN
-                shared_memory['persistent_complainer'] = True
-            else:
-                level = elevation_map.get(previous_level, AbstractionLevel.CLEAR)
-
-            shared_memory['complaint_elevation'] = True
-            shared_memory['current_abstraction_level'] = level
-            print(f"[ABSTRACTION] Complaint detected → "
-                  f"Elevated from {previous_level.name} to {level.name} "
-                  f"(complaint #{complaint_count})")
-        else:
-            # Normal flow - update current level
-            shared_memory['complaint_elevation'] = False
-            shared_memory['current_abstraction_level'] = level
-        # === END COMPLAINT ELEVATION ===
-
         # Get translator
         translator = self.translators[level]
 
@@ -503,10 +449,6 @@ class AbstractionDispatcher:
         result['output'] = translated
         result['abstraction_level'] = level.name
         result['translator'] = translator.name()
-        result['complaint_elevation'] = shared_memory.get(
-            'complaint_elevation', False
-        )
-        result['complaint_count'] = shared_memory.get('complaint_count', 0)
 
         # Log
         print(f"[ABSTRACTION] Level: {level.name} | Translator: {translator.name()}")
@@ -566,31 +508,6 @@ if __name__ == "__main__":
         print(f"[{result['translator']}]:\n{result['output']}")
         print("-" * 60)
         shared_memory['first_explanation'] = False
-
-    # Test complaint elevation
-    print("\n--- COMPLAINT ELEVATION TESTS ---")
-    complaint_memory = {
-        'volatility': 0.3,
-        'drift_score': 0.2,
-        'curiosity_tokens': [],
-        'neurosymbolic': {'user_expertise': 0.5},
-        'domain_heat': {},
-        'first_explanation': False,
-        'current_abstraction_level': AbstractionLevel.CAVEMAN
-    }
-
-    complaint_inputs = [
-        ("That makes no sense", "Should elevate from CAVEMAN → VICTORIAN"),
-        ("That's wrong", "Should be complaint #2"),
-        ("Useless", "Should hit persistent_complainer at #3 → CAVEMAN")
-    ]
-
-    for user_input, expected in complaint_inputs:
-        print(f"\n[USER]: {user_input} ({expected})")
-        result = dispatcher.process(user_input, technical_output, complaint_memory)
-        print(f"[LEVEL]: {result['abstraction_level']} | "
-              f"Complaint #{result['complaint_count']} | "
-              f"Elevated: {result['complaint_elevation']}")
 
     print("="*80)
     print("One is glad to be of service.")
