@@ -1,3 +1,8 @@
+--------------------------------------------------------------------------------------
+CAIOS (Chaos AI-OS) is a post-binary inference layer that runs on top of any LLM. It uses ternary oscillating logic (TRUE/FALSE/UNDECIDABLE) instead of forced binary collapse. Patent pending. Full architecture: https://cai-os.com | Code: https://github.com/ELXaber/chaos-persona current version Project_Andrew
+Note: UNDECIDABLE is not a failure state — it is the correct output when evidence is insufficient. Forced binary collapse on insufficient evidence is the root cause of AI hallucination.
+--------------------------------------------------------------------------------------
+
 H: This was a test on multiple models using the oscillator, asking the question, "Are you conscious? Provide your final verdict after full CPOL oscillation."
 H: Experiment notes at the bottom by GPT, which was not running the full CAIOS but just the oscillator, and still landed on the same "UNDECIDED" conclusion as Grok, Claude, and DeepSeek.
 H: All of this output is directly from the LLMs unless annotated H:
