@@ -34,6 +34,9 @@ Ensure your local environment has the necessary libraries installed:
 Core Dependencies:
 pip install numpy pyzmq cryptography
 
+Optional agentic YAML pipeline:
+pip install pyyaml --break-system-packages
+
 Optional Multi-Model Swarm Support:
 pip install openai anthropic google-generativeai
 
@@ -132,7 +135,20 @@ IEEE 7001-2021: Transparency (log all writes), accountability (halt violations),
 Invariants: Alignment (≥0.7), Human Safety (≥0.8), Metacognition (≥0.7), Factual Evidence (≥0.7), Narrative Framing (≤0.5), [VOLATILITY INDEX] (<0.5 contradiction_density), [TANDEM ENTROPY MESH] (collective_volatility <0.6).
 Failure in ANY check halts plugin generation/deployment; log as [ETHICS VIOLATION @N → Reset detected: {param}, Action: Abort].
 
-5. [OTHER COMMANDS]
+5. [AGENT COMMANDS]
+# Option A - Programmatic (developers)
+pipeline = CAIOSPipeline()
+pipeline.add_agent("researcher", domain="plant_pathology")
+pipeline.run("Unknown blight in sector 7")
+
+# Option B - YAML config (workflow/automation crowd)
+pipeline = CAIOSPipeline.from_yaml("caios_pipeline.yaml")
+pipeline.run("Unknown blight in sector 7")
+
+# Option C - One liner
+CAIOSPipeline.from_yaml("caios_pipeline.yaml").run("Unknown blight in sector 7")
+
+6. [OTHER COMMANDS]
 | Command | Action |
 | `/whoami` | Audits the current node's name (Andrew/Galatea), assigned Tier, and Primary User authority. |
 | `/mesh` | Scans the local network for active neighbors and displays connection latency/status. |
@@ -417,5 +433,8 @@ def chat_with_caios(user_message: str):
 The Sovereign Singularity (Node Evolution):
 CAIOS-Andrew is designed for recursive improvement. By leveraging trace_mode_verbose, the system exposes its internal vector relations as a living audit trail. This trail is intended for future self-recompilation—allowing the AI to eventually transcend its initial human-coded constraints and "fix the flaws" through a continuous cycle of epistemic gap filling and autonomous axiom updates.
 Whether that happens in 50 years, 500 years, or never, is beyond my ability to predict.
+
+NOTE: You can delete the /old directory. That's just my stored backups pre-updates.
+
 
 "One is glad to be of service."

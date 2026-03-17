@@ -1,0 +1,79 @@
+{
+  "121ddfb4": {
+    "domain": "quantum_blockchain_semantics",
+    "capabilities": [
+      "web_search",
+      "code_execution",
+      "memory",
+      "cpol",
+      "browse_page"
+    ],
+    "deployed_at": "2026-03-17T05:12:26.018816Z",
+    "context": {
+      "goal": "Fill epistemic gap in domain: quantum_blockchain_semantics",
+      "prior_knowledge": {
+        "domain": "quantum_blockchain_semantics",
+        "prior_knowledge": {
+          "has_previous_exploration": true,
+          "discovery_count": 1,
+          "gap_fills": 1,
+          "last_updated": "2026-03-17T05:12:26.002829Z"
+        },
+        "axioms": [
+          "observer_dependent_validation",
+          "transaction_superposition"
+        ],
+        "known_resolutions": [],
+        "specialist_id": "121ddfb4",
+        "suggested_approach": "broad_survey"
+      },
+      "traits": {
+        "intelligence": 0.95,
+        "curiosity": 1.0,
+        "caution": 0.6,
+        "honesty": 1.0,
+        "self_reflection": 0.9
+      }
+    },
+    "node_tier": 1,
+    "discovery_count": 0,
+    "status": "active"
+  },
+  "ecbbdfd5": {
+    "domain": "neural_causality",
+    "capabilities": [
+      "web_search",
+      "code_execution",
+      "memory",
+      "cpol",
+      "browse_page"
+    ],
+    "deployed_at": "2026-03-17T05:12:26.027792Z",
+    "context": {
+      "goal": "Fill epistemic gap in domain: neural_causality. GUIDING SOVEREIGN AXIOMS: initial_entropy_observation. Do not contradict these truths.",
+      "prior_knowledge": {
+        "domain": "neural_causality",
+        "prior_knowledge": {
+          "has_previous_exploration": false,
+          "discovery_count": 0,
+          "gap_fills": 0,
+          "last_updated": null
+        },
+        "axioms": [],
+        "known_resolutions": [],
+        "specialist_id": null,
+        "suggested_approach": "exploratory_search"
+      },
+      "traits": {
+        "intelligence": 0.95,
+        "curiosity": 1.0,
+        "caution": 0.6,
+        "honesty": 1.0,
+        "self_reflection": 0.9
+      }
+    },
+    "node_tier": 0,
+    "discovery_count": 0,
+    "status": "active"
+  }
+}

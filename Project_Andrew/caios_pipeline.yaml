@@ -1,0 +1,14 @@
+# caios_pipeline.yaml
+# CAIOS Pipeline Configuration
+# Example for Porters Reserve agricultural deployment
+
+pipeline:
+  node_tier: 1
+  agents:
+    - role: researcher
+      domain: plant_pathology
+      tools: [web_search, code_execution, memory, cpol]
+    - role: validator
+      tools: [cpol, web_search]
+    - role: executor
+      tools: [code_execution, memory, cpol]

@@ -1,0 +1,12 @@
+{
+  "quantum_blockchain_semantics": {
+    "discovery_ids": [
+      "f324277e07c7e64d"
+    ],
+    "types": {
+      "epistemic_gap_fill": 1
+    },
+    "first_seen": "2026-03-17T05:12:26.003827Z",
+    "last_updated": "2026-03-17T05:12:26.003827Z"
+  }
+}

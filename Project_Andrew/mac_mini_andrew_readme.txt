@@ -1,3 +1,5 @@
+**Be sure to check the readme.txt for dependencies.**
+
 Step 1: Install Ollama (The Model Runner)
 First, you need Ollama — the engine that runs local models on Mac. It's dead simple:
 
