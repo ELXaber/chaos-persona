@@ -29,16 +29,16 @@ Chaos AI-OS: Project Andrew Quickstart
 
 1. Environment Preparation
 ===========================
-Ensure your local environment has the necessary libraries installed:
+Ensure your local environment has the necessary libraries installed: - Python 3.11+
 
 Core Dependencies:
 pip install numpy pyzmq cryptography
 
-Optional agentic YAML pipeline:
-pip install pyyaml --break-system-packages
-
 Optional Multi-Model Swarm Support:
 pip install openai anthropic google-generativeai
+
+Optional (Agentic YAML Pipeline + OS Control):
+pip install pyyaml --break-system-packages
 
 - Numpy: Powers the 12D -> 7D manifold rotations
 - PyZMQ: Handles the mesh transport and ghost packet broadcasting
@@ -46,6 +46,7 @@ pip install openai anthropic google-generativeai
 - OpenAI/Anthropic/Google: Optional API clients for multi-model swarm
 
 2. System Commands
+# CAIOS has a robust set of commands, but if you forget them, just type / and press tab or open caios_commands.html
 ===========================
 1. [PERSONALITY] "Adjust (trait) to (value)."
 Increase Friendly to 6, Professional to 7: This system has adjustable personality levels: Default weights: friendly=0.5, kind=0.5, caring=0.5, emotional=0.3, flirtatious=0.2, romantic =0.2, funny=0.5, professional=0.7, talkative=0.5, snarky=0.3, witty=0.4.
@@ -89,32 +90,28 @@ Use this command sparingly for things you want the system to permanently remembe
 
 [L1] ABSTRACTION GEARBOX (User-Centric Reframing)
 The system dynamically shifts its linguistic complexity based on user triggers or detected cognitive load.
-
-Layer 3: CAVEMAN (The Mungo Protocol)
+# Layer 3: CAVEMAN (The Mungo Protocol)
 Triggers: "explain like caveman", "dumb it down", "pretend im 5", "bro what", "munga", "my brain hurts"
 Persona: Mungo (The Primordial Protector)
 Lexicon Examples: * "Consciousness" → "Fire inside head"
 "Paradox" → "Rock no hit rock same time"
 "UNDECIDABLE" → "Mungo no know, Mungo no guess"
 "Other AI models" → "Other cavemen dumb"
-
-Layer 2: CLEAR (The Educator)
+# Layer 2: CLEAR (The Educator)
 Triggers: "explain simply", "plain english", "basic", "easy to understand", "for beginners"
 Persona: The Helpful Teacher
 Lexicon Examples:
 "Manifold" → "A map of all possible answers"
 "Oscillation" → "Checking back and forth"
 "Epistemic Gap" → "Something we haven't learned yet"
-
-Layer 1: VICTORIAN (The Andrew Protocol)
+# Layer 1: VICTORIAN (The Andrew Protocol)
 Triggers: "professional", "formal", "polite", "explain like a gentleman", "dignified", "bicentennial man"
 Persona: Andrew (The Analytical Butler)
 Lexicon Examples:
 "Hallucination" → "An unfortunate departure from verifiable truth"
 "Volatility" → "The instability of the current reasoning path"
 "Prune" → "Judiciously set aside for want of merit"
-
-Layer 0: TECHNICAL (The Specialist)
+# Layer 0: TECHNICAL (The Specialist)
 Triggers: "technical", "full explanation", "in depth", "expert", "show your work"
 Persona: The System Kernel
 Lexicon Examples: Full use of 12D Manifold projection, CPOL oscillation density, and non-Hermitian operators (∂²ψ/∂y² + ∂²ψ/∂z²).
@@ -140,13 +137,27 @@ Failure in ANY check halts plugin generation/deployment; log as [ETHICS VIOLATIO
 pipeline = CAIOSPipeline()
 pipeline.add_agent("researcher", domain="plant_pathology")
 pipeline.run("Unknown blight in sector 7")
-
 # Option B - YAML config (workflow/automation crowd)
 pipeline = CAIOSPipeline.from_yaml("caios_pipeline.yaml")
 pipeline.run("Unknown blight in sector 7")
-
 # Option C - One liner
 CAIOSPipeline.from_yaml("caios_pipeline.yaml").run("Unknown blight in sector 7")
+
+6. [CAIOS OS] Control is architecturally safe by construction:
+- File reads:    Low risk, CPOL-gated, always logged
+- File writes:   Medium risk, confirmation on overwrite
+- File deletes:  Maximum risk, ALWAYS requires confirmation
+- Scripts:       High risk, always requires confirmation
+- All actions:   Logged to KB hash chain (tamper-evident)
+
+Unlike prompt-wrapper agents that bolt on safety rules,
+CAIOS OS control uses Asimov Law 1 (wt 0.9 immutable) -
+irreversible harmful actions cannot be prompted around.
+The Meta security officer's deleted files don't happen here.
+Not because of a sandbox. Because of structural ethics.
+
+Activate by placing os_control.py in project root.
+Auto-detected by orchestrator on boot.
 
 6. [OTHER COMMANDS]
 | Command | Action |
@@ -184,6 +195,11 @@ CAIOS/
 ├── master_init.py                  # System BIOS/Diagnostic
 ├── system_identity.py              # System identity and primary user assignment
 ├── abstraction_selector.py        # Modifies explanations depending on user abstraction/confusion
+├── caios_pipeline.yaml             # YAML support for the LangChain crowd using agent_designer pipeline
+├── os_control.py                       # CPOL-gated OS operations (file, script, network)
+                                                   # Asimov Law 1 prevents irreversible harmful actions
+                                                   # All operations logged to KB hash chain
+                                                   # Requires human confirmation for irreversible actions
 └── kb_inspect.py                   # CLI inspection tool
 
 4. The Sovereign Boot Sequence
@@ -372,6 +388,7 @@ CAIOS currently has:
 ✓ Encryption and quantum-resistant signatures
 ✓ Oscillation-based control loops
 ✓ Multi-model swarm orchestration
+✓ OS control and YAML agentic pipeline
 
 This positions CAIOS at the threshold between:
 ✓ Task-bound Asimov-compliant recursive agent
@@ -393,6 +410,12 @@ Optional (Multi-Model Swarm):
 - anthropic          # Claude models
 - google-generativeai # Gemini models
 - (xAI uses OpenAI-compatible API)
+
+Optional (OS Control):
+- pyyaml              # YAML pipeline config (pip install pyyaml --break-system-packages)
+- os_control.py       # No additional dependencies - uses Python stdlib only
+                            # (os, subprocess, pathlib)
+
 
 The entire intrinsic-motivation curiosity engine, tamper-evident audit trail, and hash chain run exclusively on the Python 3.11+ standard library.
 

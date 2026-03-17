@@ -8,6 +8,7 @@ import os
 import time
 import json
 import sys
+import readline
 from typing import Dict, Any, List
 
 # =============================================================================
@@ -184,6 +185,37 @@ def chat_with_model(provider: str, client: Any, messages: List[Dict[str, str]]) 
     except Exception as e:
         return f"Error during API call: {str(e)}"
 
+# =============================================================================
+# Command Palette (Tab Completion)
+# =============================================================================
+
+try:
+    import readline
+
+    COMMANDS = [
+        # Reasoning
+        '/show_reasoning', '/trace_mode_verbose', '/status',
+        # Abstraction
+        '/gearbox', '/lock L0', '/lock L1', '/lock L2', '/lock L3',
+        '/mungo-stats', '/invert_idx',
+        # Knowledge
+        '/axioms', '/axiom_add', '/axiom_refresh', '/rotate axioms',
+        # Agents
+        '/design_agent', '/regen_raw_q',
+        # System
+        '/whoami', '/mesh', 'exit', 'quit'
+    ]
+
+    def completer(text, state):
+        options = [c for c in COMMANDS if c.startswith(text)]
+        return options[state] if state < len(options) else None
+
+    readline.set_completer(completer)
+    readline.parse_and_bind('tab: complete')
+    READLINE_AVAILABLE = True
+
+except ImportError:
+    READLINE_AVAILABLE = False  # Windows fallback - readline not available
 
 # =============================================================================
 # Main interactive loop
@@ -192,6 +224,8 @@ def chat_with_model(provider: str, client: Any, messages: List[Dict[str, str]]) 
 def main():
     print("CAIOS Interactive Chat")
     print("=====================")
+    if READLINE_AVAILABLE:
+        print("Tip: Press Tab to autocomplete / commands")
     print("Type your message and press Enter. Type 'exit' or 'quit' to end.\n")
 
     clients = shared_memory.get("api_clients", {})
@@ -203,8 +237,6 @@ def main():
     provider, client = select_client(clients)
     print(f"\nUsing: {provider.upper()}")
 
-    # Initialize conversation with CAIOS system prompt
-    conversation = [{"role": "system", "content": system_prompt}]
     # Generate the prompt dynamically at boot
     current_system_prompt = get_personalized_prompt()
     # 2. Initialize conversation with the PERSONALIZED prompt

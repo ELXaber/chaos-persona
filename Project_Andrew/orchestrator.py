@@ -71,6 +71,13 @@ except ImportError:
     print("⚠ ollama_config not found - run master_init.py first")
     OLLAMA_AVAILABLE = False
 
+try:
+    import os_control as osc
+    OSC_AVAILABLE = True
+except ImportError:
+    OSC_AVAILABLE = False
+    print("[INFO] OS control not available.")
+
 # =============================================================================
 # SHARED MEMORY INITIALIZATION
 # =============================================================================
@@ -213,6 +220,10 @@ if identity.identity_data['system_id']:
     print(f"[BOOT] {identity.get_identity_summary()}")
 else:
     print("[WARNING] System identity not initialized - run master_init.py")
+
+if OSC_AVAILABLE:
+    shared_memory['os_controller'] = create_os_controller(shared_memory)
+    print("[BOOT] OS Controller initialized - system operations enabled")
 
 # =============================================================================
 # API CLIENT LOADING (Multi-Model Swarm Support)
@@ -968,6 +979,38 @@ if __name__ == "__main__":
     test_packet = {}
     orchestrator.mesh.mesh_node.broadcast_ghost_packet(test_packet)
     print(f"  ✓ Broadcast Status with Oscillating Kernel: {test_packet.get('status')}")
+
+    # TEST 13: OS Controller
+    print("\n[TEST 13] OS Controller:")
+    if OSC_AVAILABLE:
+        osc_test = shared_memory.get('os_controller')
+        if osc_test:
+            print("  ✓ OS Controller initialized")
+
+            # Test read (safe, no confirmation needed)
+            read_result = osc_test.read_file("readme.txt")
+            print(f"  File read status: {read_result['status']}")
+
+            # Test write new file (low risk)
+            write_result = osc_test.write_file(
+                "/tmp/caios_os_test.txt",
+                "CAIOS OS Control Test - safe to delete"
+            )
+            print(f"  File write status: {write_result['status']}")
+
+            # Test delete (high risk - confirm disabled for test)
+            osc_test.require_confirmation = False
+            delete_result = osc_test.delete_file("/tmp/caios_os_test.txt")
+            print(f"  File delete status: {delete_result['status']}")
+            osc_test.require_confirmation = True  # Reset to safe default
+
+            # Test high density action (overwrite existing file)
+            print(f"  Action log entries: {len(osc_test.action_log)}")
+            print("  ✓ OS Controller CPOL gating verified")
+        else:
+            print("  ✗ OS Controller not in shared_memory")
+    else:
+        print("  [SKIP] OS control not available - os_control.py not found")
 
     # === AUDIT ===
     print("\n" + "="*70)

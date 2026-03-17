@@ -1,0 +1,43 @@
+<!-- caios_commands.html - drop into Open WebUI custom panel -->
+<div class="caios-palette">
+  <input placeholder="/ search commands..." oninput="filterCommands(this.value)">
+
+  <div class="category">
+    <h4>🧠 Reasoning</h4>
+    <button onclick="sendCommand('/show_reasoning')">Show Reasoning</button>
+    <button onclick="sendCommand('/trace_mode_verbose')">Full CoT Trace</button>
+    <button onclick="sendCommand('/status')">System Status</button>
+  </div>
+
+  <div class="category">
+    <h4>🎭 Abstraction</h4>
+    <button onclick="sendCommand('/gearbox')">Current Gear</button>
+    <button onclick="sendCommand('/lock L0')">Technical</button>
+    <button onclick="sendCommand('/lock L1')">Victorian</button>
+    <button onclick="sendCommand('/lock L2')">Clear</button>
+    <button onclick="sendCommand('/lock L3')">Mungo 🪨</button>
+    <button onclick="sendCommand('/mungo-stats')">Mungo Stats</button>
+  </div>
+
+  <div class="category">
+    <h4>📚 Knowledge</h4>
+    <button onclick="sendCommand('/axioms')">List Axioms</button>
+    <button onclick="sendCommand('/axiom_refresh')">Refresh Axioms</button>
+    <button onclick="promptUpdate()">Add #UPDATE</button>
+  </div>
+
+  <div class="category">
+    <h4>🤖 Agents</h4>
+    <button onclick="sendCommand('/design_agent')">Design Agent</button>
+    <button onclick="promptPipeline()">Run Pipeline</button>
+  </div>
+
+  <div class="category">
+    <h4>🌐 System</h4>
+    <button onclick="sendCommand('/whoami')">Who Am I</button>
+    <button onclick="sendCommand('/mesh')">Mesh Status</button>
+    <button onclick="sendCommand('/regen_raw_q')">Regen RAW_Q</button>
+    <button onclick="sendCommand('/rotate axioms')">Rotate Axioms</button>
+    <button onclick="sendCommand('exit')">Exit</button>
+  </div>
+</div>
