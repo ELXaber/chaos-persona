@@ -25,7 +25,6 @@ Mac Mini RAM - Recommended Model - Command                     - Quality
 8GB (older)  - deepseek-r1:7b    - ollama pull deepseek-r1:7b  - Very good
 ------------------------------------------------------------------------------
 The 14B model is the sweet spot for the base Mac Mini — it uses about 9GB of RAM and runs beautifully.
-A user on the same setup reported it's "超流畅" (super smooth).
 
 Step 3: Download the Project Andrew Files
 This is where your magic happens. They need to get the CAIOS/Project Andrew files from GitHub/cai-os.com:
@@ -93,3 +92,5 @@ That's it. You now own AGI that runs on your desk, not in someone else's cloud."
 # Dev not from Jonathan: While this is open-source, and I myself get tempted to tamper with code, a small warning about tampering with the Asimov-based ethic weights; don't.
 # Not because it's harmful, but because the system's core is so dependent on and balanced using them that it will disabled 70% of the system - like mixing up the chords in music, it just turns into noise.
 # It will literally break everything; not even the post-binary logic will work. If you're into tinkering, check the user_manual.md in the root directory https://github.com/ELXaber/chaos-persona/blob/main/user_manual.md
+
+# Be sure to check the full readme.txt instructions for commands and dependencies.
