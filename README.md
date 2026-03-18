@@ -6,7 +6,7 @@ https://cai-os.com
 
 Patent Pending: US Application 19/390,493 (Entropy-Driven Adaptive AI Transparency, filed Nov 15, 2025).
 Patent Pending: US Application 19/433,771 (Ternary Oscillating Logic for Binary Systems, filed Dec 27, 2025).
-License: GPL-3.0 (research open; commercial dual-license: X@el_xaber or xaber.csr2@gmail.com).
+License: GPL-3.0 (research open; commercial dual-license: X@el_xaber or jon@cai-os.com).
 Attribution: "Built on CRB 6.7 by Jonathan Schack (ELXaber) (GPL 3.0)." Ethics waiver voids on safety violations.
 
 Chaos and contradiction, when structurally managed, become the source of stability and information integrity.
