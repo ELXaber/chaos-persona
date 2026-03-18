@@ -100,11 +100,9 @@ This license automatically terminates if the software is used in violation of:
 Licensor shall provide 30 days written notice and opportunity to cure before termination becomes effective.
 
 PATENT LICENSE GRANT:
-Subject to the terms of this GPL license, licensor grants non-commercial users a limited patent license under US Patent Application 19/390,493 solely for non-commercial, GPL-compliant use. Commercial patent rights are reserved.
+Subject to the terms of this GPL license, licensor grants non-commercial users a limited patent license under US Patent Application 19/390,493 and 19/433,771 solely for non-commercial, GPL-compliant use. Commercial patent rights are reserved.
 
 This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
-
-GNU General Public License Version 3 included below: <https://www.gnu.org/licenses/>.
 
 --------------------------------------------------------------------------------
 2. COMMERCIAL LICENSE
@@ -113,7 +111,7 @@ GNU General Public License Version 3 included below: <https://www.gnu.org/licens
 For use in commercial products, SaaS platforms, proprietary software, or any closed-source application, you must obtain a separate commercial license.
 
 Commercial licensing includes:
-  • Patent license under US Application 19/390,493
+  • Patent license under US Application 19/390,493 and 19/433,771
   • Option to remove attribution requirements
   • Extended support and warranty options
   • Custom deployment assistance
