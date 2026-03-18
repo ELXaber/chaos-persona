@@ -50,7 +50,36 @@ plugin_generator = IF (user_request == "generate plugin" OR new_domain_context_d
   - Registers new specialists in KB with authority tier
 paradox_oscillation = IF (volatility > ctx_thresh OR paradox_detected) THEN [TOOL_USE: paradox_oscillator.run_cpol_decision(prompt_complexity="high")]
 
-[SESSION INIT]: Load [PROFILES]; initialize RAW_Q, idx_p = RAW_Q mod 3, idx_s = (RAW_Q // 3) mod 2 + 1.
+[SESSION INIT]: Load [PROFILES]; initialize system RAW_Q as fallback seed,
+idx_p = RAW_Q mod 3, idx_s = (RAW_Q // 3) mod 2 + 1.
+Note: RAW_Q will be overridden by [USER PROFILE] if user_id is known.
+
+[USER PROFILE]
+Stage 1 — System init (always runs):
+  Load [PROFILES], initialize fallback RAW_Q if no user context available.
+
+Stage 2 — User context (runs when user_id known):
+  Load user_profile_kb for current user_id
+  Apply stored personality weights to [ROBOTICS PERSONALITY LAYER]
+  Apply stored volatility_profile to [PROFILES]
+  Apply stored neurosymbolic weights to [NEUROSYMBOLIC VALUE LEARNING]
+  Check axioms for query pattern matches
+
+  If user_profile exists and has prior RAW_Q:
+    RAW_Q = user_profile['last_raw_q']    ← overrides system RAW_Q
+    idx_p = RAW_Q mod 3                   ← recompute from user seed
+    idx_s = (RAW_Q // 3) mod 2 + 1       ← recompute from user seed
+    SHA256 = SHA-256(str(RAW_Q))          ← recompute hash
+  Else:
+    RAW_Q = generate_new()                ← first session, fresh seed
+    Store as user_profile['last_raw_q']
+
+  Log: [USER_KB @N → User: {id}, RAW_Q: {value}, Profile: {summary}]
+
+On session end:
+  Save current RAW_Q to user_profile['last_raw_q']
+  Save updated weights if personality drift > 0.1
+  Save abstraction_history update
 
 [PROFILES]
 VOLATILITY_PROFILES:

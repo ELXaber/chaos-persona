@@ -78,6 +78,13 @@ except ImportError:
     OSC_AVAILABLE = False
     print("[INFO] OS control not available.")
 
+try:
+    from user_profile_kb import create_user_profile_kb
+    USER_KB_AVAILABLE = True
+except ImportError:
+    USER_KB_AVAILABLE = False
+    print("[INFO] User Profile KB not available.")
+
 # =============================================================================
 # SHARED MEMORY INITIALIZATION
 # =============================================================================
@@ -212,6 +219,11 @@ if ABSTRACTION_AVAILABLE:
 else:
     shared_memory['abstraction_dispatcher'] = None
     print("[BOOT] Abstraction selector unavailable - using default responses")
+
+# INITIALIZE USER PROFILE
+if USER_KB_AVAILABLE:
+    shared_memory['user_profile_kb'] = create_user_profile_kb()
+    print("[BOOT] User Profile KB initialized - per-user adaptation enabled")
 
 # Load system identity (Required for the 2025 Prediction/Signature)
 identity = SystemIdentity(load_existing=True)
@@ -406,7 +418,9 @@ def sync_curiosity_to_domain_heat(state: dict):
 # MAIN ORCHESTRATION LOGIC
 # =============================================================================
 
-def system_step(user_input: str, prompt_complexity: str = "low", response_stream=None, api_clients=None):
+def system_step(user_input: str, prompt_complexity: str = "low", 
+                response_stream=None, api_clients=None,
+                user_id: str = None):
     """
     Main orchestration function for unified system.
     Args:
@@ -421,6 +435,34 @@ def system_step(user_input: str, prompt_complexity: str = "low", response_stream
     if api_clients is None:
         api_clients = shared_memory.get('api_clients', {})
 
+    # User profile swwitch detection
+    if user_id and shared_memory.get('user_profile_kb'):
+        upkb = shared_memory['user_profile_kb']
+        current_user = shared_memory.get('active_user')
+
+        if current_user != user_id:
+            # Save outgoing user's RAW_Q
+            if current_user:
+                outgoing = upkb['load'](current_user)
+                outgoing['last_raw_q'] = shared_memory[
+                    'session_context'].get('RAW_Q')
+                upkb['save'](current_user, outgoing)
+
+            # Load incoming user profile and RAW_Q
+            incoming = upkb['load'](user_id)
+            if incoming.get('last_raw_q'):
+                shared_memory['session_context']['RAW_Q'] = \
+                    incoming['last_raw_q']
+
+            # Apply personality weights
+            shared_memory['personality_weights'] = \
+                incoming['personality']
+            shared_memory['active_user'] = user_id
+
+            print(f"[USER_KB] User context: {user_id} | "
+                  f"Abstraction: {incoming['abstraction_default']} | "
+                  f"Sessions: {incoming['session_count']}")
+
     # Handle commands (if input starts with /)
     if user_input.startswith('/'):
         cmd_result = handle_axiom_commands(user_input)
@@ -430,7 +472,6 @@ def system_step(user_input: str, prompt_complexity: str = "low", response_stream
 
     # 0. Ensure RAW_Q is initialized
     initialize_raw_q()
-
     clean_input = user_input.strip().lower()
     ts = shared_memory['session_context']['timestep']
     shared_memory['last_user_message'] = user_input
