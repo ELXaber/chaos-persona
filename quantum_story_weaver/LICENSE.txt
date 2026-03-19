@@ -48,6 +48,7 @@ Qualifying entities may satisfy the attribution requirement with the
 simplified form:
 "AI powered by CAIOS: https://cai-os.com"
 displayed on their public-facing website footer or about page.
+For entities without a public website (e.g., families or private individuals), the simplified citation may instead appear in the application's About dialog, splash screen, or a local README file visible to the user, which is already included.
 
 An entity qualifies for simplified attribution if ALL of the following 
 conditions are met:
