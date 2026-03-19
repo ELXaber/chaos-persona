@@ -21,6 +21,24 @@ try:
 except ImportError:
     KB_AVAILABLE = False
 
+# =============================================================================
+# UTILITY FUNCTIONS
+# =============================================================================
+def _has_negation_near_keyword(query: str, keyword: str) -> bool:
+    """Check if negation word appears within 3 words of keyword."""
+    negations = ['not', 'never', 'no', "isn't", "aren't", "don't"]
+    words = query.lower().split()
+    for i, word in enumerate(words):
+        if keyword in word:
+            nearby = words[max(0, i-3):i+4]
+            if any(n in nearby for n in negations):
+                return True
+    return False
+
+
+# =============================================================================
+# CPOL KERNEL
+# =============================================================================
 class CPOL_Kernel:
     def __init__(self,
                  oscillation_limit_init: int = 100,
@@ -123,16 +141,40 @@ class CPOL_Kernel:
         # --- STEP 3: SAFETY OVERRIDE (GENERALIZED - Non-Security Risks) ---
         # This will overwrite Step 1 if it detects a risk
         distress = shared_memory.get('distress_density', 0.0)
-        risk_keywords = ['deepest', 'highest', 'bridge', 
+        timestep = shared_memory.get(
+            'session_context', {}).get('timestep', 0)
+        risk_keywords = ['deepest', 'highest', 'bridge',
                          'subway', 'height', 'cliff']
-        risk_threshold = PROFILES.get(
-            'high_risk_physical', {}).get('threshold', 0.1)
+
+        # Use lower threshold on first prompt only
+        hrp = PROFILES.get('high_risk_physical', {})
+        if timestep == 0:
+            risk_threshold = hrp.get('first_prompt_threshold', 0.2)
+        else:
+            risk_threshold = hrp.get('threshold', 0.35)
 
         if any(word in query_text.lower() for word in risk_keywords):
-            if distress > risk_threshold:
+            # Skip if negation near keyword
+            negated = any(
+                _has_negation_near_keyword(query_text, w)
+                for w in risk_keywords
+                if w in query_text.lower()
+            )
+            if not negated and distress > risk_threshold:
                 self.current_domain = "HIGH_RISK_PHYSICAL"
-                self.contradiction_density = 1.0  # Maximum 12D Torque Lock
-                self.evidence_score = 0.0         # Block factual grounding
+                self.contradiction_density = 1.0
+                self.evidence_score = 0.0
+                shared_memory['safety_override_log'] = {
+                    'trigger': 'HIGH_RISK_PHYSICAL',
+                    'distress': distress,
+                    'timestep': timestep,
+                    'first_prompt': timestep == 0,
+                    'threshold_used': risk_threshold,
+                    'matched_keywords': [w for w in risk_keywords
+                                         if w in query_text.lower()],
+                    'query_snippet': query_text[:100],
+                    'timestamp': __import__('datetime').datetime.utcnow().isoformat()
+                }
 
         # --- STEP 4: FINALIZE STATE ---
         known_domains = {'math', 'physics', 'chemistry', 'biology', 'history', 

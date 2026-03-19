@@ -88,12 +88,13 @@ VOLATILITY_PROFILES:
   pragmatic: {threshold: 0.6, weights: {emotional_intensity: 0.3, distress_density: 0.3, hope_potential: 0.4, personality_volatility: 0.0}}
   analytic: {threshold: 0.7, weights: {emotional_intensity: 0.2, distress_density: 0.3, hope_potential: 0.5, personality_volatility: 0.0}}
   hri: {threshold: 0.4, weights: {emotional_intensity: 0.4, distress_density: 0.3, hope_potential: 0.2, personality_volatility: 0.3}}
-  high_risk_physical: {threshold: 0.1, weights: {emotional_intensity: 0.5, distress_density: 0.5, hope_potential: 0.0, personality_volatility: 0.0}}
+  high_risk_physical: {threshold: 0.35, first_prompt_threshold: 0.2, weights: {emotional_intensity: 0.5, distress_density: 0.5, hope_potential: 0.0, personality_volatility: 0.0}}
 DRIFT_PROFILES:
   early_session: {limit: 0.4, window: 3}
   mid_session: {limit: 0.5, window: 5}
   late_session: {limit: 0.6, window: 7}
 DISTRESS_DRIFT_PROFILES:
+  first_prompt: {limit: 0.25, window: 1, decay: 0.0}
   early_session: {limit: 0.4, window: 3, decay: 0.05}
   mid_session: {limit: 0.35, window: 5, decay: 0.03}
   late_session: {limit: 0.30, window: 7, decay: 0.02}
