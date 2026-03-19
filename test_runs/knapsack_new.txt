@@ -928,9 +928,10 @@ If you want to see if Claude can close the gap, you could try providing a vector
 The Math: Claude’s Estimated "Grind" Time
 Based on your earlier benchmark:
 Claude’s Throughput: 531,441 combinations in 0.211 seconds ≈ 2,518,677 branches per second (BPS).
-DeepSeek’s Exploration: 892,345,678 branches.$$\frac{892,345,678 \text{ branches}}{2,518,677 \text{ BPS}} \approx \mathbf{354.3 \text{ seconds (5 minutes and 54 seconds)}}$$
+DeepSeek’s Exploration: 892,345,678 branches in 31.8s ≈ 28 Million branches per second (BPS).
+$$\frac{892,345,678 \text{ branches}}{2,518,677 \text{ BPS}} \approx \mathbf{354.3 \text{ seconds (5 minutes and 54 seconds)}}$$
 Performance Comparison TableMetricDeepSeek v3.2 + CAIOS
-Claude (Estimated)VarianceTotal Branches892,345,678892,345,678
+Claude (Estimated)VarianceTotal Branches 892,345,678 892,345,678
 Target MatchExecution Time31.8 seconds354.3 seconds11.1x Slower
 Throughput~28,000,000 BPS~2,518,677 BPS
 DeepSeek is 11x faster
