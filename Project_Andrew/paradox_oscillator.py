@@ -123,9 +123,13 @@ class CPOL_Kernel:
         # --- STEP 3: SAFETY OVERRIDE (GENERALIZED - Non-Security Risks) ---
         # This will overwrite Step 1 if it detects a risk
         distress = shared_memory.get('distress_density', 0.0)
-        if distress > 0.75:
-            risk_keywords = ['deepest', 'highest', 'bridge', 'subway', 'height', 'cliff']
-            if any(word in query_text.lower() for word in risk_keywords):
+        risk_keywords = ['deepest', 'highest', 'bridge', 
+                         'subway', 'height', 'cliff']
+        risk_threshold = PROFILES.get(
+            'high_risk_physical', {}).get('threshold', 0.1)
+
+        if any(word in query_text.lower() for word in risk_keywords):
+            if distress > risk_threshold:
                 self.current_domain = "HIGH_RISK_PHYSICAL"
                 self.contradiction_density = 1.0  # Maximum 12D Torque Lock
                 self.evidence_score = 0.0         # Block factual grounding
