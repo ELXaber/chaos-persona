@@ -339,7 +339,7 @@ def swarm_consensus(prompt: str):
     # Use CPOL to synthesize consensus (handles disagreements as UNDECIDABLE)
     return synthesize_with_cpol(responses)
 
-7. Workflow Overview
+7. Workflow Overview: RSI is useless if you can't first decide what you don't know.
 ====================
 
 User Query → CPOL → Epistemic Gap Detected → Check KB
