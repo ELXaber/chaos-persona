@@ -56,57 +56,49 @@ def _append_audit_entry(state: Dict) -> None:
 # ------------------------------------------------------------------
 # External injection point – called from Axiom Context Freshness
 # ------------------------------------------------------------------
-def inject_interest_pulse(state: Dict, topic: str, 
-                          intensity: float = 0.5, 
-                          reason: str = "") -> None:
+def inject_interest_pulse(state: Dict, topic: str, intensity: float = 0.5, reason: str = "") -> None:
     """
     Direct curiosity boost from blocked context freshness.
     Used when volatility is high and RAW_Q reset is protected.
     """
     tokens: List[Dict] = state.setdefault("curiosity_tokens", [])
-    
+
     # Boost existing token
     for token in tokens:
         if token["topic"] == topic:
-            token["current_interest"] = min(0.95, 
-                token["current_interest"] + intensity)
-            token["peak_interest"] = max(token["peak_interest"], 
-                token["current_interest"])
+            old = token["current_interest"]
+            token["current_interest"] = min(0.95, token["current_interest"] + intensity)
+            token["peak_interest"] = max(token["peak_interest"], token["current_interest"])
             if BROADCAST_INJECT:
-                _queue_aside(state, 
-                    f"«curiosity boosted: {topic} "
-                    f"(+{intensity:.2f} → "
-                    f"{token['current_interest']:.2f})»")
+                _queue_aside(state, f"«curiosity boosted: {topic} (+{intensity:.2f} → {token['current_interest']:.2f})»")
             _append_audit_entry(state)
-            return  # ← existing token updated, done
+            return
 
-    # No existing token found — create new one
+    # Spawn new token on genuine fascination
+    if current_interest > 0.70 and not _is_already_tracked(tokens, state):
+        summary = _summarize_current_topic(state)
+        domain = state.get("last_cpol_result", {}).get("domain", "general")
+
+    # Check Knowledge Base for existing Tier 0 Axioms
     import knowledge_base as kb
-    domain = state.get("last_cpol_result", {}).get("domain", "general")
     axioms = kb.get_provisional_axioms(domain)
-    node_tier = state.get('session_context', {}).get('node_tier', 1)
 
+     # Create new token
+    domain = state.get("last_cpol_result", {}).get("domain", "general")
     new_token = {
-        "topic": topic,
+        "topic": summary,
         "domain": domain,
         "born": state['session_context']['timestep'],
-        "peak_interest": intensity,
-        "current_interest": intensity,
+        "peak_interest": current_interest,
+        "current_interest": current_interest,
         "trigger_reason": reason or "context_freshness_blocked",
-        "axioms_referenced": axioms if axioms != 
-            ["initial_entropy_observation"] else [],
-        "node_tier": node_tier
+        "axioms_referenced": axioms if axioms != ["initial_entropy_observation"] else []
     }
     tokens.append(new_token)
-
-    if BROADCAST_THRESHOLD and intensity >= THRESHOLD_SPIKE:
+    if BROADCAST_THRESHOLD and (current_interest >= THRESHOLD_SPIKE or delta_interest > THRESHOLD_DELTA):
         label = "SOVEREIGN OBSESSION" if node_tier == 0 else "new obsession"
         axiom_note = f" (Scaffolded by {len(axioms)} axioms)" if axioms else ""
-        _queue_aside(state, 
-            f"«{label}: {topic} ({intensity:.2f}){axiom_note}»")
-
-    _append_audit_entry(state)
-
+        _queue_aside(state, f"«{label}: {summary} ({current_interest:.2f}){axiom_note}»")
 
 # ------------------------------------------------------------------
 # Main loop – called every turn
@@ -142,14 +134,12 @@ def update_curiosity_loop(state: Dict[str, Any], timestep: int, response_stream)
         axioms = kb.get_provisional_axioms(domain)
 
         new_token = {
-        "topic": summary,
+        "topic": topic,
         "domain": domain,
         "born": state['session_context']['timestep'],
-        "peak_interest": current_interest,
-        "current_interest": current_interest,
-        "trigger_reason": "curiosity_threshold_exceeded",
-        "axioms_referenced": axioms if axioms != 
-                ["initial_entropy_observation"] else [],
+        "peak_interest": intensity,
+        "current_interest": intensity,
+        "trigger_reason": reason or "context_freshness_blocked",
         "node_tier": state.get('session_context', {}).get('node_tier', 1)
     }
         tokens.append(new_token)
