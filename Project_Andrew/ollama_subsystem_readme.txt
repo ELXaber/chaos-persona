@@ -1,3 +1,4 @@
+#V03122026
 Any subsystem that needs to call Ollama:
 python# In a specialist or subsystem:
 

@@ -1,3 +1,4 @@
+#V03172026
 **Be sure to check the readme.txt for dependencies.**
 
 Step 1: Install Ollama (The Model Runner)

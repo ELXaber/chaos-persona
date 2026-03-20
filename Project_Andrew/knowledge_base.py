@@ -1,6 +1,7 @@
+#V03202026
 # =============================================================================
 # Chaos AI-OS — Knowledge Base (Persistent Learning Layer)
-# Purpose: Append-only storage for specialist discoveries + epistemic gap fills
+# Purpose: Append-only storage for specialist discoveries + epistemic gap fills + update
 # =============================================================================
 
 import json
@@ -61,7 +62,7 @@ def log_discovery(
         "node_tier": node_tier,        # Authority level preserved here
         "manifold_sig": str(manifold_sig),
         "cpol_trace": cpol_trace or {},
-        "version": "1.1"               # Incremented version for unified logic
+        "version": "1.1"
     }
 
     # 3. Finalize the Append-Only Hash Chain

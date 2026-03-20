@@ -1,3 +1,4 @@
+#V03182026
 # =============================================================================
 # CAIOS — User Profile Knowledge Base
 # Stores per-user personality state, emotional baselines, and preferences

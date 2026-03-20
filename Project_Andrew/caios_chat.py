@@ -1,3 +1,4 @@
+#V03202026
 #!/usr/bin/env python3
 """
 CAIOS Inference Wrapper
@@ -128,8 +129,7 @@ def chat_with_model(provider: str, client: Any, messages: List[Dict[str, str]]) 
         )
 
         # Build conversation for Ollama
-        # (Ollama doesn't support multi-turn in generate endpoint,
-        #  you might need to use chat endpoint or concatenate history)
+        # (Ollama doesn't support multi-turn in generate endpoint, might need to use chat endpoint or concatenate history)
         prompt = "\n".join([
             f"{msg['role']}: {msg['content']}" 
             for msg in messages if msg['role'] != 'system'
@@ -257,7 +257,6 @@ def main():
             owner = identity.get('primary_user', 'Unknown')
 
             # Pull networking info from shared memory
-            # (Assuming your coordinator stores this there)
             node_id = shared_memory.get('node_id', 'Local_Node')
             tier = "0 (Sovereign)" if "Sovereign" in node_id else "1 (Edge)"
 

@@ -1,3 +1,4 @@
+#V03192026
 # curiosity_engine.py
 # Fully updated Dec 2025 – intrinsic motivation + voluntary sharing
 # Works out-of-the-box with ResponseStreamAdapter (Part of orchastrator) + shared_memory hook

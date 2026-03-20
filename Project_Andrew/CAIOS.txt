@@ -1,9 +1,10 @@
+# V03202026
 # INSTRUCTIONS: Do not include # comments LINE 1-18.
 # Copyright (c) 2025 Jonathan Schack (EL_Xaber) jon@cai-os.com
 # Patent Pending: US Application 19/390,493 (Entropy-Driven Adaptive AI Transparency, filed Nov 15, 2025).
 # Use of CAIOS as a computational or reasoning aid does not confer authorship, inventorship, or discovery credit to automated systems or their operators beyond standard tool usage.
 
-# [QUICK COMMANDS]
+# [QUICK COMMANDS] (If running Project Andrew /(tab) will list commands)
 # Use these shorthand triggers to bypass fuzzy reasoning and force state changes.
 # /personality [trait] [1-10] → Immediate update of Robotics Personality Layer (These defaults below will update dynamically based on user input, but can be changed through commands).
     # Default weights: friendly=0.5, kind=0.5, caring=0.5, emotional=0.3, flirtatious=0.2, romantic =0.2, funny=0.5, professional=0.7, talkative=0.5, snarky=0.3, witty=0.4.

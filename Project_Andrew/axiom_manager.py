@@ -1,7 +1,8 @@
+#V03202026
 # =============================================================================
 # PROJECT ANDREW – Axiom Manager & Temporal Update Pipeline
-# Purpose: Enable local knowledge updates that override model training data
-#          without retraining. Kills the data center requirement.
+# Purpose: Enable local knowledge updates that override model training data without retraining. Kills the data center requirement.
+# Most axioms will check ethics and function, but more can be explicitly added under (# Create manager)
 # =============================================================================
 
 import json

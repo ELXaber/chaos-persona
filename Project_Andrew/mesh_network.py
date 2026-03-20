@@ -1,3 +1,4 @@
+#V03192026
 # =============================================================================
 # mesh_network.py - CAIOS Mesh Transport Layer
 # Handles ghost packet broadcasting, 7D signature exchange, node discovery
@@ -29,7 +30,7 @@ except ImportError:
 # =============================================================================
 # CONFIGURATION
 # =============================================================================
-
+# Note increasing timeout or heartbeat may create an attack vector
 DEFAULT_BROADCAST_PORT = 5555
 DEFAULT_RESPONSE_PORT = 5556
 HEARTBEAT_INTERVAL = 5  # seconds
@@ -39,7 +40,7 @@ NODE_TIMEOUT = 15  # seconds
 # NODE IDENTITY CONFIGURATION
 # ==========================================================
 
-# OPTION A: SOVEREIGN (Leader) - Run this on the M2 Mac Mini
+# OPTION A: SOVEREIGN (Leader) - Run this on the M2 Mac Mini if standalone
 #node = MeshNode(
 #    node_id="Alpha_Sovereign", 
 #    node_tier=0, 
