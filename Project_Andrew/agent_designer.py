@@ -402,6 +402,7 @@ class CAIOSPipeline:
             'kb_specialists': len(self.shared_memory.get('specialists', {})),
             'audit_trail': len(self.shared_memory.get('audit_trail', [])),
             'architecture': 'CAIOS_native',  # Not a prompt wrapper
+            'powered_by': 'Powered by CAIOS – cai-os.com'
             'cpol_gated': True,
             'ethics': 'Asimov_structural'
         }
