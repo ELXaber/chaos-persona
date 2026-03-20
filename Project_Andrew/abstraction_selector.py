@@ -1,7 +1,6 @@
 # =============================================================================
 # PROJECT ANDREW – Abstraction Selector
-# Purpose: Dynamically detect user comprehension level and select appropriate
-#          explanation layer (Technical, Victorian, Clear, Caveman)
+# Purpose: Dynamically detect user comprehension level and select appropriate explanation layer (Technical, Victorian, Clear, Caveman)
 # =============================================================================
 
 import re
@@ -25,7 +24,7 @@ class AbstractionLevel(Enum):
 
 EXPLICIT_TRIGGERS = {
     AbstractionLevel.TECHNICAL: [
-        r'\btechnical\b', r'\bfull explanation\b', r'\bshow reasoning\b',
+        r'\btechnical\b', r'\bfull explanation\b', r'\bsmore specific\b',
         r'\bdetail\b', r'\bin depth\b', r'\badvanced\b', r'\bexpert\b',
         r'\bshow your work\b', r'\bstep by step technical\b'
     ],
@@ -47,7 +46,7 @@ EXPLICIT_TRIGGERS = {
     ]
 }
 
-COMPLAINT_INDICATORS = [    # <-- no indent, starts at column 0
+COMPLAINT_INDICATORS = [
     r'\bthat\'s wrong\b', r'\bno that\'s not\b', r'\bstupid\b',
     r'\buseless\b', r'\bwhat kind of answer\b', r'\bthat makes no sense\b',
     r'\bi don\'t understand\b', r'\bwhat does that mean\b'
@@ -170,8 +169,8 @@ class AbstractionSelector:
         - Domain heat (repeated deep topics)
         - Low volatility on complex topics
         """
-        # This would integrate with your existing neurosymbolic layer
-        # For now, use a simple heuristic
+        # Can integrate with the neurosymbolic layer
+        # For now, uses a simple heuristic
         neuro = shared_memory.get('neurosymbolic', {})
         return neuro.get('user_expertise', 0.5)
 
@@ -296,9 +295,9 @@ class VictorianTranslator(BaseTranslator):
 
         # We loop through the lexicon and apply either regex or simple replacement
         for term, replacement in self.victorian_lexicon.items():
-            if term.startswith(r'\b'):  # It's a regex pattern
+            if term.startswith(r'\b'):
                 translated = re.sub(term, replacement, translated, flags=re.IGNORECASE)
-            else:  # It's a simple term
+            else:
                 translated = translated.replace(term, replacement)
 
         # Handle the Victorian flourish and the Andrew/Galatea prefix
@@ -433,7 +432,7 @@ class AbstractionDispatcher:
         # Detect level
         level = self.selector.detect_abstraction_level(user_input, shared_memory)
 
-        # === COMPLAINT ELEVATION CHECK ===
+        # Complaint elevation check
         complaint_patterns = [
             r'\bthat\'s wrong\b', r'\bno that\'s not\b', r'\bstupid\b',
             r'\buseless\b', r'\bwhat kind of answer\b', r'\bthat makes no sense\b',
@@ -476,7 +475,6 @@ class AbstractionDispatcher:
             # Normal flow - update current level
             shared_memory['complaint_elevation'] = False
             shared_memory['current_abstraction_level'] = level
-        # === END COMPLAINT ELEVATION ===
 
         # Get translator
         translator = self.translators[level]
