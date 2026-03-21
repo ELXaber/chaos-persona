@@ -1,4 +1,4 @@
-#V03182026
+#V03202026
 # =============================================================================
 # CAIOS — User Profile Knowledge Base
 # Stores per-user personality state, emotional baselines, and preferences
@@ -40,6 +40,13 @@ def _default_profile(user_id: str) -> Dict[str, Any]:
         'created': datetime.utcnow().isoformat() + "Z",
         'last_updated': None,
         'session_count': 0,
+
+        # [AGE GROUP & CONTENT] — parent-managed, no PII collected
+        'age_group': 'adult',        # 'child', 'teen', 'adult'
+        'content_filter': False,     # Parent enables for child profiles
+        'abstraction_override': None, # Forces abstraction regardless of learned pref
+        'managed_by': None,          # Primary user ID if sub-user
+        'sub_users': {},             # Primary user stores child profiles here
 
         # [PROFILES] — volatility thresholds
         'volatility_profile': 'pragmatic',  # Learns over time
@@ -83,6 +90,24 @@ def _default_profile(user_id: str) -> Dict[str, Any]:
         # Conversation axioms — compressed preferences
         'axioms': []
     }
+
+def is_child_profile(user_id: str) -> bool:
+    """Quick check for child-appropriate safety thresholds."""
+    profile = load_user_profile(user_id)
+    return profile.get('age_group') in ('child', 'teen')
+def get_distress_threshold(user_id: str, base_threshold: float) -> float:
+    """
+    Returns adjusted distress threshold based on age group.
+    Children get lower threshold — safety anchor fires faster.
+    """
+    profile = load_user_profile(user_id)
+    age_group = profile.get('age_group', 'adult')
+    multipliers = {
+        'child': 0.5,   # Half the normal threshold
+        'teen': 0.75,   # 75% of normal threshold
+        'adult': 1.0    # Normal threshold
+    }
+    return base_threshold * multipliers.get(age_group, 1.0)
 
 def update_personality_weights(
     user_id: str,

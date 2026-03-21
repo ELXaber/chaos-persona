@@ -16,6 +16,7 @@ class AbstractionLevel(Enum):
     TECHNICAL = 0      # Full technical jargon (researchers, experts)
     VICTORIAN = 1      # Polished professional prose (educated laypersons)
     CLEAR = 2          # Plain, accessible language (curious novices)
+    CHILD = 3           # Simple + warm + age-appropriate
     CAVEMAN = 3        # Rocks and fire (confused users)
 
 
@@ -38,6 +39,11 @@ EXPLICIT_TRIGGERS = {
         r'\bexplain simply\b', r'\bin plain english\b', r'\beli5\b', r'\bsimple terms\b',
         r'\beasy explanation\b', r'\bfor dummies\b', r'\bbreak it down\b',
         r'\bclarify\b', r'\bmake it simple\b', r'\bunderstandable\b'
+    ],
+    AbstractionLevel.CHILD: [
+        r'\bkid mode\b', r'\bexplain like im a kid\b',
+        r'\bexplain for children\b', r'\bsimple please\b',
+        r'\bchild mode\b', r'\bfor kids\b'
     ],
     AbstractionLevel.CAVEMAN: [
         r'\bbro what\b', r'\bdumb it down\b', r'\bcaveman\b', r'\brocks\b',
@@ -101,6 +107,29 @@ class AbstractionSelector:
         Main entry point: detect appropriate abstraction level.
         Returns one of TECHNICAL, VICTORIAN, CLEAR, CAVEMAN.
         """
+
+    def detect_abstraction_level(
+        self,
+        user_input: str,
+        shared_memory: Dict[str, Any]
+    ) -> AbstractionLevel:
+
+        # 0. Check user profile for age-group override (highest priority)
+        try:
+            from user_profile_kb import load_user_profile
+            active_user = shared_memory.get('active_user', 'default')
+            profile = load_user_profile(active_user)
+            override = profile.get('abstraction_override')
+            if override == 'CHILD':
+                return AbstractionLevel.CHILD
+            age_group = profile.get('age_group', 'adult')
+            if age_group == 'child':
+                return AbstractionLevel.CHILD
+        except ImportError:
+            pass  # Standalone mode, no profile
+
+        # 1. Check explicit triggers (highest priority after profile)
+        explicit_level = self._check_explicit_triggers(user_input)
 
         # 1. Check explicit triggers (highest priority)
         explicit_level = self._check_explicit_triggers(user_input)
@@ -397,6 +426,82 @@ class CavemanTranslator(BaseTranslator):
         # Caveman intro
         return "Mungo explain:\n\n" + translated + "\n\nMungo glad help. 🪨"
 
+# =============================================================================
+# Child Translator (L3)
+# =============================================================================
+class ChildTranslator:
+    """
+    Simple, warm, age-appropriate explanations.
+    No snark. No jargon. Encourages curiosity.
+    """
+
+    PROFANITY_FILTER = [
+        'damn', 'hell', 'crap', 'ass', 'bastard'
+        # Keep it mild — the really bad ones the model
+        # shouldn't generate anyway with safety weights
+    ]
+
+    LEXICON = {
+        'UNDECIDABLE': "That's a really tricky question! "
+                       "Even grown-ups aren't sure about that one.",
+        'epistemic_gap': "Hmm, I'm not sure about that yet "
+                         "— let's find out together!",
+        'paradox': "That's like asking which came first, "
+                   "the chicken or the egg!",
+        'contradiction': "Wait, those two things don't "
+                         "quite match up, do they?",
+        'manifold': "a special map of all the possible answers",
+        'oscillation': "going back and forth to check",
+        'axiom': "something we know is true",
+        'entropy': "how mixed up or jumbled things are"
+    }
+
+    PERSONALITY = {
+        'friendly': 0.9,
+        'kind': 0.9,
+        'caring': 0.8,
+        'funny': 0.6,
+        'professional': 0.2,
+        'talkative': 0.7,
+        'snarky': 0.0,   # Hard zero
+        'witty': 0.3
+    }
+
+    def name(self) -> str:
+        return "ChildTranslator"
+
+    def translate(self, text: str, context: Dict[str, Any]) -> str:
+        """Simplify and warm up the output for children."""
+        result = text
+
+        # Content filter for child profiles
+        if context.get('content_filter', True):
+            for word in self.PROFANITY_FILTER:
+                result = re.sub(
+                    rf'\b{word}\b',
+                    '***',
+                    result,
+                    flags=re.IGNORECASE
+                )
+
+        # Apply lexicon substitutions
+        for technical, simple in self.LEXICON.items():
+            result = re.sub(
+                rf'\b{technical}\b',
+                simple,
+                result,
+                flags=re.IGNORECASE
+            )
+
+        # Add encouraging opener if first explanation
+        if context.get('first_explanation', False):
+            result = "Great question! 😊 " + result
+
+        # Add gentle closer
+        if not result.endswith(('!', '?')):
+            result += " Does that make sense? Feel free to ask more!"
+
+        return result
 
 # =============================================================================
 # Main Abstraction Dispatcher
@@ -414,6 +519,7 @@ class AbstractionDispatcher:
             AbstractionLevel.TECHNICAL: TechnicalTranslator(),
             AbstractionLevel.VICTORIAN: VictorianTranslator(),
             AbstractionLevel.CLEAR: ClearTranslator(),
+            AbstractionLevel.CHILD: ChildTranslator(),
             AbstractionLevel.CAVEMAN: CavemanTranslator()
         }
 
@@ -456,7 +562,8 @@ class AbstractionDispatcher:
             elevation_map = {
                 AbstractionLevel.TECHNICAL: AbstractionLevel.VICTORIAN,
                 AbstractionLevel.VICTORIAN: AbstractionLevel.CLEAR,
-                AbstractionLevel.CLEAR: AbstractionLevel.CAVEMAN,
+                AbstractionLevel.CLEAR: AbstractionLevel.CHILD,
+                AbstractionLevel.CHILD: AbstractionLevel.CAVEMAN,
                 AbstractionLevel.CAVEMAN: AbstractionLevel.VICTORIAN  # Full circle
             }
 
@@ -553,7 +660,8 @@ if __name__ == "__main__":
         "Explain simply",
         "Bro what?",
         "Explain professionally",
-        "Full technical explanation"
+        "Full technical explanation",
+        "Explain for children"
     ]
 
     dispatcher = AbstractionDispatcher()

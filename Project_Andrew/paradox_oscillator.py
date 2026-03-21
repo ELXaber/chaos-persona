@@ -148,11 +148,21 @@ class CPOL_Kernel:
                          'subway', 'height', 'cliff']
 
         # Use lower threshold on first prompt only
+        # Child/teen profiles get additional reduction via user_profile_kb
         hrp = PROFILES.get('high_risk_physical', {})
-        if timestep == 0:
-            risk_threshold = hrp.get('first_prompt_threshold', 0.2)
-        else:
-            risk_threshold = hrp.get('threshold', 0.35)
+        base_threshold = (
+            hrp.get('first_prompt_threshold', 0.2)
+            if timestep == 0
+            else hrp.get('threshold', 0.35)
+        )
+
+        # Apply age-group adjustment if user_profile_kb available
+        try:
+            from user_profile_kb import get_distress_threshold
+            active_user = shared_memory.get('active_user', 'default')
+            risk_threshold = get_distress_threshold(active_user, base_threshold)
+        except ImportError:
+            risk_threshold = base_threshold  # Fallback if module unavailable
 
         if any(word in query_text.lower() for word in risk_keywords):
             # Skip if negation near keyword

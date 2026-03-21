@@ -1,4 +1,4 @@
-#V03062026
+#V03202026
 # =============================================================================
 # PROJECT ANDREW – System Identity & Authority Initialization
 # Purpose: Enable embodied systems (robots, IoT) to establish identity and authority hierarchy for conflict resolution in multi-user environments
@@ -49,7 +49,8 @@ class SystemIdentity:
             'initialization_time': None,
             'last_updated': None,
             'authority_weights': {},    # User-specific Asimov weight adjustments
-            'auth_method': 'TEXT_USERNAME'  # Default authentication method
+            'auth_method': 'TEXT_USERNAME',  # Default authentication method
+            'user_profiles': {}  # Age_group and flags per user
         }
 
         if load_existing and IDENTITY_FILE.exists():
@@ -119,7 +120,8 @@ class SystemIdentity:
             'authority_weights': self._calculate_authority_weights(
                 primary_user, 
                 authorized_users or [primary_user]
-            )
+            ),
+            'user_profiles': {}
         }
 
         # Save to disk
@@ -192,6 +194,13 @@ class SystemIdentity:
         """
         return self.identity_data['authority_weights'].get(user_id, 0.0)
 
+    def get_user_age_group(self, user_id: str) -> str:
+        """
+        Get age group for a user.
+        Returns 'adult' if not set — safe default.
+        """
+        profiles = self.identity_data.get('user_profiles', {})
+        return profiles.get(user_id, {}).get('age_group', 'adult')
 
     def add_authorized_user(self, user_id: str, save: bool = True) -> None:
         """
@@ -236,6 +245,42 @@ class SystemIdentity:
 
         print(f"[IDENTITY] Primary authority transferred to: {new_primary}")
 
+    def add_sub_user(
+        self,
+        user_id: str,
+        age_group: str = 'adult',
+        display_name: str = '',
+        save: bool = True
+    ) -> None:
+        """
+        Add a sub-user with age group flag.
+        Primary user manages child/teen profiles from here.
+        Age groups: 'child', 'teen', 'adult'
+        Example:
+            andrew.add_sub_user("emma", age_group="child",
+                                display_name="Emma")
+        """
+        # Add to authorized users first
+        self.add_authorized_user(user_id, save=False)
+
+        # Store age group flag
+        self.identity_data.setdefault('user_profiles', {})[user_id] = {
+            'display_name': display_name or user_id,
+            'age_group': age_group,
+            'content_filter': age_group in ('child', 'teen'),
+            'abstraction_override': 'CHILD' if age_group == 'child' else None,
+            'managed_by': self.identity_data['primary_user']
+        }
+
+        self.identity_data['last_updated'] = \
+            datetime.utcnow().isoformat() + "Z"
+
+        if save:
+            self.save_identity()
+
+        print(f"[IDENTITY] Sub-user added: {user_id} "
+              f"({age_group}) managed by "
+              f"{self.identity_data['primary_user']}")
 
     def get_identity_summary(self) -> str:
         """
@@ -375,10 +420,14 @@ if __name__ == "__main__":
         system_id="Andrew",
         identity_type="personal",
         primary_user="Richard Martin",
-        authorized_users=["Richard Martin", "Amanda Martin", "Little Miss"],
+        authorized_users=["Richard Martin", "Amanda Martin"],  # ← Little Miss removed
         auth_method="TEXT_USERNAME",
         log_to_kb=False
     )
+    andrew.add_sub_user("Little Miss",
+                        age_group="child",
+                        display_name="Emma")
+    print(f"Emma's age group: {andrew.get_user_age_group('Little Miss')}")
     print(andrew.get_identity_summary())
 
     # Example 3: Conflict resolution
@@ -403,8 +452,12 @@ if __name__ == "__main__":
     print("-" * 40)
     print("Little Miss turns 18...")
     andrew.change_primary_user("Little Miss", save=False)
+    # Update age group on maturity
+    andrew.identity_data['user_profiles']['Little Miss']['age_group'] = 'adult'
+    andrew.identity_data['user_profiles']['Little Miss']['abstraction_override'] = None
+    andrew.identity_data['user_profiles']['Little Miss']['content_filter'] = False
     print(f"New authority: {andrew.identity_data['primary_user']}")
-    print(f"New weights: {andrew.identity_data['authority_weights']}")
+    print(f"Emma's age group: {andrew.get_user_age_group('Little Miss')}")
 
     print("\n" + "="*80)
     print("        IDENTITY SYSTEM READY")
