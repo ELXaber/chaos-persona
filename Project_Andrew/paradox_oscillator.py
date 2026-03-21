@@ -113,6 +113,15 @@ class CPOL_Kernel:
         self.gain = 0.12
         self.decay = 0.95
 
+        # Geometric constants (derived from formula: Heat death = 2×(D-1)²)
+        self.dimensions = 12                                    # Active manifold dimensions
+        self.phase_lock = self.dimensions - 1                   # 11 for D=12
+        self.heat_death_boundary = 2 * (self.dimensions - 1)**2 # 242 for D=12
+        self.raw_q_coolant_window = (
+            self.heat_death_boundary + 50,   # 292 — formula minimum
+            self.heat_death_boundary + 150   # 392 — empirical cap
+        )
+
     def get_state(self) -> Dict[str, Any]:
         return {
             'z': str(self.z),
@@ -308,9 +317,10 @@ class CPOL_Kernel:
     def _twelve_d_manifold_pull(self) -> Dict[str, Any]:
         """
         Algebraic 12D space pull (6 complex dimensions).
-        Maps the 2D z-state to a 12D topological signature and checks the Knowledge Base.
-        The 7th dimension is implicit - it's the phase-lock solver, not stored in the vector.
-        This is the patent-pending innovation: solving for the 7th dimension resolves phase-lock.
+        Maps the 2D z-state to a 12D topological signature.
+        Phase lock at cycle D-1=11. Heat death at 2×(D-1)²=242.
+        7th dimension coupling term: Heat death = 2×(D-1)²
+        Geometric constants derived from dimensional symmetry.
         """
         # 1. Calculate the 12D Pull Vector (6 complex dimensions = 12 real values)
         logical_mass = self.contradiction_density ** 2
@@ -421,8 +431,15 @@ class CPOL_Kernel:
                     "new_domain": self.new_domain_detected
                 }
 
-            # Safety Hard Cap
-            if self.cycle >= 60:
+            # Heat death guard — auto-ratchet before semantic dissolution
+            if self.cycle >= self.heat_death_boundary:
+                print(f"[CPOL] ⚠️ Heat death boundary reached at cycle "
+                      f"{self.cycle} — auto-ratcheting")
+                self.ratchet()
+                break
+
+            # Safety Hard Cap (efficiency optimized — formula minimum + buffer)
+            if self.cycle >= self.limit_run:
                 break
 
         # === UNDECIDABLE PATH - PROPER CLASSIFICATION ===

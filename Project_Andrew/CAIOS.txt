@@ -450,11 +450,13 @@ Log: [COMPLEXITY GATE @N → Mode: {Standard|CPOL}, Entropy: {score}]
 State Initialization (if bypass fails): z = 0.0 + 0.0j
 
 State Initialization:
-  z = 0.0 + 0.0j                                   # Complex proposition vector
-  history = []                                     # Last 5 states for volatility
-  cycle = 0                                        # Oscillation counter
-  evidence_score = 0.0                             # Factual grounding metric
-  current_domain = "general"                       # Extracted domain context
+  z = 0.0 + 0.0j                # Complex proposition vector
+  history = []              # Last 5 states for volatility
+  cycle = 0             # Oscillation counter
+  evidence_score = 0.0              # Factual grounding metric
+  current_domain = "general"                # Extracted domain context
+  phase_lock = 11               # Natural resonance frequency (D-1)
+  heat_death = 242              # Semantic dissolution boundary (2×(D-1)²)
 
 Oscillation Cycle (per timestep):
   1. Truth-Seer (Gain):     z += 0.12 × (1.0 - z.real)
@@ -484,6 +486,7 @@ Collapse Condition:
       verdict = TRUE (real > 0.5) | FALSE (real < -0.5) | NEUTRAL ([-0.5, 0.5])
   else if cycle >= 100 (init) or cycle >= 50 (run):
       FORCE [UNDECIDABLE] output
+#    Note: Hard cap at 50-60 cycles (efficiency optimized) Heat death boundary: 242 cycles.
   else:
       CONTINUE oscillation
 
