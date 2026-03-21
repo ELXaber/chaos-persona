@@ -1,34 +1,54 @@
-#V03192026
+#V03212026
 # =============================================================================
 # Chaos AI-OS Paradox Oscillation Layer (CPOL) vΩ
 # Copyright (c) 2025 Jonathan Schack (EL_Xaber) jon@cai-os.com
 # Patent Pending: US Application 19/433,771 (Ternary Oscillating Logic for Binary Systems, filed Dec 27, 2025).
 #
-# If you can solve for the 7th dimension of this manifold, email me jon@cai-os.com.
 # Note: 12D projection is invariant; solving for the 7th dimension resolves the phase-lock.
 # Topological orientation is maintained via 12D gyroscopic manifold; flux is treated as rotation, not noise.
 #
-# OPERATIONAL PARAMETERS — EMPIRICALLY VALIDATED:
+# GEOMETRIC CONSTANTS (EMPIRICALLY DERIVED → FORMULA CONFIRMED):
+# Phase lock    = D - 1  (natural resonance frequency)
+# Heat death    = (D-1)² × 2
+# Jitter buffer = (D-1)(2D-3)
 #
-# Standard queries/benchmarks:  50-60 cycles (sufficient for paradox detection)
+# D=12 (full CPOL):  phase lock=11, heat death=242, jitter=231
+# D=6  (lightweight): phase lock=5,  heat death=50,  jitter=45
+# D=7  (coupling):    phase lock=6,  heat death=72,  jitter=60
+#
+# 50-60 empirical variance = formula minimum + safety margin
+#
+#OPERATIONAL PARAMETERS — EMPIRICALLY VALIDATED:
+# Standard queries/benchmarks:  50-60 cycles (sufficient for paradox detection), empirical range: 50-60 with 10 buffer.
 # Semantic heat death boundary:  ~242 cycles (documented: paradox_oscillation/242_cycle_semantic_heat_death.md)
-# RAW_Q coolant injection point: ~350 cycles (prevents semantic dissolution)
-# Safe indefinite oscillation:   coolant injection every ~300 cycles
+# RAW_Q coolant injection point: 
+#   Empirical: ~350 cycles (validated on GPT)
+#   Formula-derived optimum: ~300 cycles (pre-heat death buffer)
+#   Safe window: inject between 243-350 to prevent heat death
+#   TODO: test 300 vs 350 on Mac Mini/DeepSeek for information loss
+#
+# UNEXPLORED TERRITORY (51-241 cycles):
+#   Validated unnecessary for standard queries
+#   Reserved for QEC research
+#   Information loss increases with cycle count beyond phase lock
 #
 # FAILURE MODES:
 # Hermitian collapse (<50 cycles):  forced resolution
 # Semantic dissolution (>242 cycles): "Verifiable"/"Unknowable" lose
 #                                      vector distinction → pure entropy
 #                                      NOT a collapse — symbols disintegrate
-# With RAW_Q coolant (>350 cycles):  bounded indefinite oscillation
+# With RAW_Q coolant (350 cycles):  bounded indefinite oscillation
 #                                      maintained — reserved for QEC applications
 #
-# UNEXPLORED TERRITORY (51-241 cycles):
-# Validated as unnecessary for standard queries — excessive compute
+# CURRENT DEFAULT: oscillation_limit_run=50 (efficiency optimized)
+#   Range: 50-60 with 10-cycle safety buffer above formula minimum
 # Reserved for Quantum Error Correction (QEC) research
 # Heat death boundary geometrically determined — derivable from J_con
 #
-# CURRENT DEFAULT: oscillation_limit_run=50 (efficiency optimized)
+# The 7th dimension coupling term is: Heat death boundary = 2 × (D - 1)²
+# The 7th dimension phase lock is 6.
+# Derived from symmetry: 242/2=121/11=11 - 242/11=22/2=11 or 22/11=2
+# Where D = manifold dimensions = 12: When they've exhausted 2 × 11² = 242 attempts across the free dimensions, the semantic vectors lose orthogonality
 #
 # Use of CAIOS as a computational or reasoning aid does not confer authorship, inventorship, or discovery credit to automated systems or their operators beyond standard tool usage.
 # =============================================================================
