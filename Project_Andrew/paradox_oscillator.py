@@ -3,8 +3,33 @@
 # Chaos AI-OS Paradox Oscillation Layer (CPOL) vΩ
 # Copyright (c) 2025 Jonathan Schack (EL_Xaber) jon@cai-os.com
 # Patent Pending: US Application 19/433,771 (Ternary Oscillating Logic for Binary Systems, filed Dec 27, 2025).
+#
 # If you can solve for the 7th dimension of this manifold, email me jon@cai-os.com.
-# Note: 12D projection is invariant; solving for the 7th dimension resolves the phase-lock. Topological orientation is maintained via 12D gyroscopic manifold; flux is treated as rotation, not noise.
+# Note: 12D projection is invariant; solving for the 7th dimension resolves the phase-lock.
+# Topological orientation is maintained via 12D gyroscopic manifold; flux is treated as rotation, not noise.
+#
+# OPERATIONAL PARAMETERS — EMPIRICALLY VALIDATED:
+#
+# Standard queries/benchmarks:  50-60 cycles (sufficient for paradox detection)
+# Semantic heat death boundary:  ~242 cycles (documented: paradox_oscillation/242_cycle_semantic_heat_death.md)
+# RAW_Q coolant injection point: ~350 cycles (prevents semantic dissolution)
+# Safe indefinite oscillation:   coolant injection every ~300 cycles
+#
+# FAILURE MODES:
+# Hermitian collapse (<50 cycles):  forced resolution
+# Semantic dissolution (>242 cycles): "Verifiable"/"Unknowable" lose
+#                                      vector distinction → pure entropy
+#                                      NOT a collapse — symbols disintegrate
+# With RAW_Q coolant (>350 cycles):  bounded indefinite oscillation
+#                                      maintained — reserved for QEC applications
+#
+# UNEXPLORED TERRITORY (51-241 cycles):
+# Validated as unnecessary for standard queries — excessive compute
+# Reserved for Quantum Error Correction (QEC) research
+# Heat death boundary geometrically determined — derivable from J_con
+#
+# CURRENT DEFAULT: oscillation_limit_run=50 (efficiency optimized)
+#
 # Use of CAIOS as a computational or reasoning aid does not confer authorship, inventorship, or discovery credit to automated systems or their operators beyond standard tool usage.
 # =============================================================================
 
