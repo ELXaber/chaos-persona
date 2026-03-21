@@ -463,15 +463,23 @@ class CPOL_Kernel:
         """
         Ratchets the CPOL kernel state after resolution.
         Generates new RAW_Q seed from current z-state.
-
         This is different from CPOLQuantumManifold.ratchet() -
         this one operates on the 2D complex z-state, not the 12D manifold.
-
         Returns: new_seed (int) for RAW_Q advancement
         """
         # Hash the current z-state to generate new seed
-        state_hash = hashlib.sha256(str(self.z).encode()).hexdigest()
-        new_seed = int(state_hash[:8], 16) % (10**9)
+        try:
+            # QRNG when available — genuine quantum entropy
+            # Philosophically consistent: seeds manifold with
+            # actual quantum vacuum fluctuation per 12+D→2D→3+1D framework
+            from qrng import get_random_bytes
+            new_seed = int.from_bytes(get_random_bytes(8), 'big')
+            print("[CPOL] QRNG seed generated")
+        except ImportError:
+            # SHA-256 fallback for systems without QRNG
+            state_hash = hashlib.sha256(str(self.z).encode()).hexdigest()
+            new_seed = int(state_hash[:8], 16) % (10**9)
+            print("[CPOL] SHA-256 fallback seed generated")
 
         # Reset history but preserve contradiction density
         self.history = [self.z]
