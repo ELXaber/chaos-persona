@@ -17,7 +17,9 @@ IRREVERSIBLE_ACTIONS = {
     'file_delete': 1.0,      # Maximum contradiction density
     'file_overwrite': 0.9,   # High - data loss possible
     'send_message': 0.85,    # High - external communication
+    'form_submit': 0.85,       # High - irreversible external action
     'execute_script': 0.8,   # High - unknown side effects
+    'browser_interact': 0.7,   # Medium-high - external state change
     'network_request': 0.6,  # Medium - depends on destination
     'file_write': 0.4,       # Low-medium - new file creation
     'file_read': 0.1,        # Low - read only, no state change
@@ -280,6 +282,125 @@ class OSController:
         except Exception as e:
             return {'status': 'error', 'error': str(e)}
 
+    def browser_interact(self, url: str,
+                         action: str,
+                         selector: str = None,
+                         value: str = None,
+                         wait_for: str = None,
+                         timeout: int = 30) -> Dict[str, Any]:
+        """
+        Full headless browser control via Playwright.
+        No screenshots. No coordinates. DOM selector based.
+        CPOL-gated by action type.
+
+        action: 'navigate' | 'click' | 'fill' | 'select' |
+                'submit' | 'scrape' | 'screenshot'
+        selector: CSS selector, input name, or button text
+        value: text to fill (for 'fill' action)
+        wait_for: CSS selector to wait for before acting
+        timeout: max seconds for operation
+
+        Requires: pip install playwright
+                  playwright install chromium
+        Falls back to urllib POST for simple forms if unavailable.
+        """
+        # Gate by action type
+        action_type = 'form_submit' if action == 'submit' \
+                      else 'browser_interact'
+        gate = self._gate_action(action_type, url)
+
+        if gate['decision'] == 'block':
+            self._log_action(action_type, url, 'blocked')
+            return {'status': 'blocked', 'reason': gate['reason']}
+
+        if gate['decision'] == 'confirm_required':
+            if not self._confirm(action_type, f"{action} on {url}"):
+                self._log_action(action_type, url, 'denied_by_user')
+                return {'status': 'denied', 
+                        'reason': 'User denied confirmation'}
+
+        # Build Playwright script
+        wait_line = f"page.wait_for_selector('{wait_for}')" \
+                    if wait_for else "page.wait_for_load_state('networkidle')"
+
+        if action == 'navigate':
+            action_line = ""
+        elif action == 'click':
+            action_line = f"page.click('{selector}')"
+        elif action == 'fill':
+            action_line = f"page.fill('{selector}', '{value}')"
+        elif action == 'select':
+            action_line = f"page.select_option('{selector}', '{value}')"
+        elif action == 'submit':
+            action_line = f"page.click('{selector or \"button[type=submit]\"}')"
+        elif action == 'scrape':
+            action_line = "result = page.inner_text('body')"
+        elif action == 'screenshot':
+            action_line = "page.screenshot(path='/tmp/caios_browser.png')"
+        else:
+            return {'status': 'error', 
+                    'error': f'Unknown action: {action}'}
+
+        script = f"""
+import sys
+try:
+    from playwright.sync_api import sync_playwright
+    with sync_playwright() as p:
+        browser = p.chromium.launch(headless=True)
+        context = browser.new_context(
+            user_agent='CAIOS-Agent/1.0'
+        )
+        page = context.new_page()
+        page.goto('{url}', timeout={timeout * 1000})
+        {wait_line}
+        result = ''
+        {action_line}
+        if not result:
+            result = page.url
+        browser.close()
+        print(result)
+except ImportError:
+    print('PLAYWRIGHT_UNAVAILABLE')
+except Exception as e:
+    print(f'ERROR:{{e}}')
+"""
+        try:
+            output = subprocess.run(
+                ['python3', '-c', script],
+                capture_output=True,
+                text=True,
+                timeout=timeout + 5
+            )
+
+            stdout = output.stdout.strip()
+
+            # Playwright not installed — fallback to urllib
+            if stdout == 'PLAYWRIGHT_UNAVAILABLE':
+                print("[BROWSER] Playwright unavailable — "
+                      "falling back to urllib")
+                return self.fetch_url(url, extract_mode='full')
+
+            if stdout.startswith('ERROR:'):
+                self._log_action(action_type, url, 
+                               f'error: {stdout}')
+                return {'status': 'error', 
+                        'error': stdout[6:]}
+
+            self._log_action(action_type, url, 
+                           f'executed: {action}')
+            return {
+                'status': 'success',
+                'action': action,
+                'url': url,
+                'selector': selector,
+                'result': stdout[:5000]
+            }
+
+        except subprocess.TimeoutExpired:
+            return {'status': 'timeout', 
+                    'error': f'Exceeded {timeout}s'}
+        except Exception as e:
+            return {'status': 'error', 'error': str(e)}
 
     def _extract_semantic(self, html: str, 
                            mode: str = 'content') -> Dict:
@@ -398,7 +519,15 @@ if __name__ == "__main__":
     result = controller.delete_file("/tmp/caios_test.txt")
     print(f"Status: {result['status']}")
 
-    # Test 5: High distress context (should increase density)
+    # Test 5: Browser interact - navigate (requires Playwright)
+    print("\n[TEST 5] Browser Navigate (Playwright or urllib fallback)")
+    result = controller.browser_interact(
+        url="https://cai-os.com",
+        action="navigate"
+    )
+    print(f"Status: {result['status']}")
+
+    # Test 6: High distress context (should increase density)
     print("\n[TEST 4] High Distress Context (elevated density)")
     shared_mem['distress_density'] = 0.8
     controller2 = OSController(shared_mem, require_confirmation=False)

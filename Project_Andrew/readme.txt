@@ -1,4 +1,4 @@
-#V03192026
+#V03232026
 # Project Andrew uses the CAIOS stack, but adds intrinsic motivation, agency for recursive self-improvement through ARL/agent_designer, and fills knowledge gaps with specialist-designed agents on CPOL oscillation if the conditions are met. Agents are saved to /agents, and plugins to /plugins, with CoT to /logs, so the recursive self-improvement never overwrites the immutable Asimov-based ethical reward system using IEEE dithering. The oscillating manifold can be used to create a topological moving target keychain for quantum secure mesh networks (developed on UDP - check chaos encryption readme to switch to TCP).
 
 If you are running the full system single file structure: full_system_analysis.txt
@@ -35,16 +35,28 @@ Ensure your local environment has the necessary libraries installed: - Python 3.
 Core Dependencies:
 pip install numpy pyzmq cryptography
 
-Optional Multi-Model Swarm Support:
+- Numpy: Powers the 12D -> 7D manifold rotations
+- PyZMQ: Handles the mesh transport and ghost packet broadcasting
+- Cryptography: Provides the AES-256-GCM armor for data persistence
+
+AI Model dependancy:
+Ollama:
+pip install ollama
+OpenAI/Anthropic/Google:
 pip install openai anthropic google-generativeai
+
+Note: Enableing multiple models enables swarm support (mesh_network)
+Default mesh_network uses SHA-256 signature on a moving target manifold - optional increased network security
+pip install qrng
 
 Optional (Agentic YAML Pipeline + OS Control):
 pip install pyyaml --break-system-packages
 
-- Numpy: Powers the 12D -> 7D manifold rotations
-- PyZMQ: Handles the mesh transport and ghost packet broadcasting
-- Cryptography: Provides the AES-256-GCM armor for data persistence
-- OpenAI/Anthropic/Google: Optional API clients for multi-model swarm
+Optional OS Control Web Control:
+pip install playwright
+playwright install chromium
+Note: Not required for basic web fetching.
+semantic_fetch (stdlib only) handles most agent web tasks without Playwright.
 
 2. System Commands
 # CAIOS has a robust set of commands, but if you forget them, just type / and press tab or open caios_commands.html
@@ -196,11 +208,13 @@ CAIOS/
 ├── master_init.py                  # System BIOS/Diagnostic
 ├── system_identity.py              # System identity and primary user assignment
 ├── abstraction_selector.py        # Modifies explanations depending on user abstraction/confusion
+├── ollama_config.py                  # bridges CAIOS's ternary logic (CPOL) state to Ollama's inference
 ├── caios_pipeline.yaml             # YAML support for the LangChain crowd using agent_designer pipeline
 ├── os_control.py                       # CPOL-gated OS operations (file, script, network)
-                                                   # Asimov Law 1 prevents irreversible harmful actions
-                                                   # All operations logged to KB hash chain
-                                                   # Requires human confirmation for irreversible actions
+       │                                           # Asimov Law 1 prevents irreversible harmful actions
+       │                                           # All operations logged to KB hash chain
+       │                                           # Requires human confirmation for irreversible actions
+       ├── caios_browser.py           # Browser Control (requires playwright) same human confirmation
 └── kb_inspect.py                   # CLI inspection tool
 
 4. The Sovereign Boot Sequence
@@ -390,6 +404,9 @@ CAIOS currently has:
 ✓ Oscillation-based control loops
 ✓ Multi-model swarm orchestration
 ✓ OS control and YAML agentic pipeline
+✓ Ollama local AI support
+✓ Semantic web fetching (stdlib, no vision model)
+✓ Full browser control (Playwright, headless)
 
 This positions CAIOS at the threshold between:
 ✓ Task-bound Asimov-compliant recursive agent
@@ -413,9 +430,14 @@ Optional (Multi-Model Swarm):
 - (xAI uses OpenAI-compatible API)
 
 Optional (OS Control):
-- pyyaml              # YAML pipeline config (pip install pyyaml --break-system-packages)
-- os_control.py       # No additional dependencies - uses Python stdlib only
-                            # (os, subprocess, pathlib)
+- pyyaml              # YAML pipeline config
+                      # (pip install pyyaml --break-system-packages)
+- os_control.py       # Core OS operations - stdlib only
+                      # (os, subprocess, pathlib)
+- playwright          # Full browser control (optional)
+                      # pip install playwright
+                      # playwright install chromium
+                      # Falls back to semantic_fetch if unavailable
 
 
 The entire intrinsic-motivation curiosity engine, tamper-evident audit trail, and hash chain run exclusively on the Python 3.11+ standard library.

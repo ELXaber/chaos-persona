@@ -108,6 +108,7 @@ shared_memory = {
     'available_tools': [        # Agent-accessible tool registry
         'web_search',
         'semantic_fetch',       # CPOL-gated semantic web fetcher
+        'browser_interact',     # Works with Playwright
         'memory'
     ]
 }
