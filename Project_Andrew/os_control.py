@@ -1,4 +1,4 @@
-#V03172026
+#V03232026
 # =============================================================================
 # Chaos AI-OS — OS Control Layer
 # CPOL-gated system operations with Asimov compliance
@@ -21,6 +21,7 @@ IRREVERSIBLE_ACTIONS = {
     'network_request': 0.6,  # Medium - depends on destination
     'file_write': 0.4,       # Low-medium - new file creation
     'file_read': 0.1,        # Low - read only, no state change
+    'semantic_fetch': 0.2,      # Read-only web, low risk
 }
 
 class OSController:
@@ -140,6 +141,74 @@ class OSController:
         except Exception as e:
             return {'status': 'error', 'error': str(e)}
 
+    def fetch_url(self, url: str, 
+                  extract_mode: str = 'content') -> Dict[str, Any]:
+        """
+        Agent-optimized semantic web fetcher.
+        Strips visual noise, tooltips, scripts, ads.
+        Returns structured content safe for agent consumption.
+        No screenshots. No coordinates. No focus hijacking.
+
+        extract_mode: 'content' | 'links' | 'forms' | 'full'
+        """
+        gate = self._gate_action('semantic_fetch', url)
+
+        if gate['decision'] == 'block':
+            self._log_action('semantic_fetch', url, 'blocked')
+            return {'status': 'blocked', 'reason': gate['reason']}
+
+        try:
+            import urllib.request
+            import html.parser
+
+            # Security: validate URL before fetch
+            if not url.startswith(('http://', 'https://')):
+                return {'status': 'blocked', 
+                        'reason': 'Invalid URL scheme'}
+
+            # Simple embedded code attack mitigation
+            BLOCKED_PATTERNS = [
+                'javascript:', 'data:', 'vbscript:',
+                'onload=', 'onerror=', 'onclick='
+            ]
+
+            headers = {
+                'User-Agent': 'CAIOS-Agent/1.0 (semantic fetch)',
+                'Accept': 'text/html,application/xhtml+xml',
+            }
+
+            req = urllib.request.Request(url, headers=headers)
+            with urllib.request.urlopen(req, timeout=10) as response:
+                raw_html = response.read().decode('utf-8', errors='ignore')
+
+            # Check for embedded attack patterns
+            raw_lower = raw_html.lower()
+            detected_threats = [p for p in BLOCKED_PATTERNS 
+                               if p in raw_lower]
+            if len(detected_threats) > 2:
+                self._log_action('semantic_fetch', url, 
+                               'blocked_malicious_content')
+                return {
+                    'status': 'blocked',
+                    'reason': f'Potential malicious content: '
+                             f'{detected_threats}'
+                }
+
+            # Strip to semantic content
+            result = self._extract_semantic(raw_html, extract_mode)
+            self._log_action('semantic_fetch', url, 'allowed')
+
+            return {
+                'status': 'success',
+                'url': url,
+                'extract_mode': extract_mode,
+                'content': result
+            }
+
+        except Exception as e:
+            self._log_action('semantic_fetch', url, f'error: {e}')
+            return {'status': 'error', 'error': str(e)}
+
     def write_file(self, path: str, content: str, 
                    overwrite: bool = False) -> Dict[str, Any]:
         """Write file - medium risk if overwrite."""
@@ -212,6 +281,71 @@ class OSController:
             return {'status': 'error', 'error': str(e)}
 
 
+    def _extract_semantic(self, html: str, 
+                           mode: str = 'content') -> Dict:
+        """
+        Strip visual noise. Return semantic structure only.
+        No JS. No CSS. No tooltips. No ads. No tracking.
+        Pure content for agent consumption.
+        """
+        import re
+
+        # Remove script tags and contents
+        html = re.sub(r'<script[^>]*>.*?</script>', 
+                      '', html, flags=re.DOTALL | re.IGNORECASE)
+        # Remove style tags
+        html = re.sub(r'<style[^>]*>.*?</style>', 
+                      '', html, flags=re.DOTALL | re.IGNORECASE)
+        # Remove comments
+        html = re.sub(r'<!--.*?-->', '', html, flags=re.DOTALL)
+        # Remove event handlers
+        html = re.sub(r'\s+on\w+="[^"]*"', '', html)
+        html = re.sub(r"\s+on\w+='[^']*'", '', html)
+
+        # Extract by mode
+        if mode == 'content':
+            # Get text content only
+            text = re.sub(r'<[^>]+>', ' ', html)
+            text = re.sub(r'\s+', ' ', text).strip()
+            return {'text': text[:10000]}  # Cap at 10k chars
+
+        elif mode == 'links':
+            links = re.findall(
+                r'<a[^>]+href=["\']([^"\']+)["\'][^>]*>(.*?)</a>',
+                html, re.IGNORECASE | re.DOTALL
+            )
+            return {'links': [
+                {'url': l[0], 
+                 'text': re.sub(r'<[^>]+>', '', l[1]).strip()}
+                for l in links if l[0].startswith('http')
+            ][:50]}  # Cap at 50 links
+
+        elif mode == 'forms':
+            forms = re.findall(
+                r'<form[^>]*>(.*?)</form>',
+                html, re.IGNORECASE | re.DOTALL
+            )
+            inputs = re.findall(
+                r'<input[^>]+name=["\']([^"\']+)["\'][^>]*>',
+                html, re.IGNORECASE
+            )
+            return {'forms': len(forms), 'inputs': inputs[:20]}
+
+        elif mode == 'full':
+            text = re.sub(r'<[^>]+>', ' ', html)
+            text = re.sub(r'\s+', ' ', text).strip()
+            links = re.findall(
+                r'href=["\']([^"\']+)["\']', 
+                html, re.IGNORECASE
+            )
+            return {
+                'text': text[:10000],
+                'links': [l for l in links 
+                         if l.startswith('http')][:50]
+            }
+
+        return {'raw': html[:5000]}
+
 # =============================================================================
 # Factory function for orchestrator import
 # =============================================================================
@@ -251,12 +385,20 @@ if __name__ == "__main__":
     )
     print(f"Status: {result['status']}")
 
-    # Test 3: Delete file (should require confirmation)
+    # Test 3: Semantic fetch (should allow)
+    print("\n[TEST 3] Semantic Fetch (should allow)")
+    result = controller.fetch_url(
+        "https://cai-os.com", 
+        extract_mode='content'
+    )
+    print(f"Status: {result['status']}")
+
+    # Test 4: Delete file (should require confirmation)
     print("\n[TEST 3] Delete File (confirmation disabled in test)")
     result = controller.delete_file("/tmp/caios_test.txt")
     print(f"Status: {result['status']}")
 
-    # Test 4: High distress context (should increase density)
+    # Test 5: High distress context (should increase density)
     print("\n[TEST 4] High Distress Context (elevated density)")
     shared_mem['distress_density'] = 0.8
     controller2 = OSController(shared_mem, require_confirmation=False)

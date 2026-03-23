@@ -1,4 +1,4 @@
-#V03182026
+#V03232026
 # =============================================================================
 # Chaos AI-OS – Hardened Orchestrator (Unified Edition)
 # Combines: V1 Logic + V3 Pipeline + Mesh Encryption + Chatbot Safety
@@ -104,7 +104,12 @@ shared_memory = {
     'last_assistant_message': '',
     'swarm_leaders': [],  # Mesh networking
     'active_syncs': {},     # Deduplication cache
-    'api_clients': {}      # Multi-model swarm clients
+    'api_clients': {},      # Multi-model swarm clients
+    'available_tools': [        # Agent-accessible tool registry
+        'web_search',
+        'semantic_fetch',       # CPOL-gated semantic web fetcher
+        'memory'
+    ]
 }
 
 class UnifiedAbstractionManager:

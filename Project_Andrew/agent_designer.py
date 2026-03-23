@@ -1,4 +1,4 @@
-#V03172026
+#V03232026
 # =============================================================================
 # Chaos AI-OS — Agent Designer Plugin (KB-Integrated)
 # Now logs discoveries and checks knowledge base before creating specialists
@@ -88,7 +88,7 @@ def design_agent(
     context = {
         'agent_goal': goal,  # This contains the Sovereign Axioms if tier=0
         'traits': traits or {'intelligence': 0.9, 'honesty': 1.0, 'caution': 0.8},
-        'tools': tools or ['web_search', 'code_execution', 'memory', 'cpol'],
+        'tools': tools or ['web_search', 'semantic_fetch', 'code_execution', 'memory', 'cpol'],
         'safety_multiplier': safety_multiplier,
         'self_healing': True,
         'cpol_mode': 'full',
