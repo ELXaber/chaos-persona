@@ -1,0 +1,23 @@
+# Select a backend with known T1/T2 times long enough that the decoherence isn't hardware-noise dominated before operation 8.
+# 127-qubit Eagle processor has T1 times around 100-300μs.
+
+from qiskit import QuantumCircuit
+from qiskit_ibm_runtime import QiskitRuntimeService, Sampler
+
+# D=3 qubit test: does fidelity drop at operation 8?
+# Phase lock prediction = 2 (D-1)
+# Heat death prediction = 8 (2×(D-1)²)
+
+results = {}
+for depth in range(1, 15):
+    qc = QuantumCircuit(3, 3)
+    for _ in range(depth):
+        qc.h(0)
+        qc.cx(0, 1)
+        qc.cx(1, 2)
+    qc.measure_all()
+    # Run and measure fidelity at each depth
+    results[depth] = run_and_measure(qc)
+
+# Plot: where does fidelity drop significantly?
+# Prediction: at depth 8
