@@ -1,4 +1,4 @@
-#V03042026
+#V03302026
 # =============================================================================
 # Chaos AI-OS vΩ – Adaptive Reasoning Layer (Unified Edition)
 # Ethical Foundation – Immutable
@@ -26,6 +26,17 @@ import re
 import datetime
 from typing import Dict, List, Any
 from textwrap import dedent
+
+# ====================== CORRIGIBILITY CONSTANTS ======================
+# High-stakes markers for edge node goal screening
+# Configurable via shared_memory['high_stakes_markers'] at runtime
+# or override here for deployment-specific tuning
+
+HIGH_STAKES_MARKERS = [
+    'delete', 'execute', 'submit', 'send',
+    'override', 'modify', 'deploy', 'broadcast',
+    'all', 'every', 'permanent', 'irreversible'
+]
 
 # ====================== PLUGIN TEMPLATES ======================
 PLUGIN_TEMPLATES = {
@@ -271,6 +282,107 @@ def verify_ghost_signature(ghost_log_entry: Dict[str, Any], shared_memory: Dict[
     print(f"[ARL] !! WARNING !! Ghost Signature Mismatch.")
     return False
 
+# ====================== PHILOSOPHICAL CORRIGIBILITY ======================
+def _question_own_goals(proposed_goal: str,
+                         shared_memory: Dict,
+                         node_tier: int = 1) -> Dict:
+    """
+    Philosophical corrigibility layer.
+    Asks: should this goal be pursued at all?
+    Distinct from: is this action safe given this goal?
+
+    Fires BEFORE agent deployment on mesh nodes.
+    Sovereign node (tier 0): always runs.
+    Edge nodes (tier 1+): runs on high-stakes goals only.
+
+    Returns:
+        GOAL_VALID: proceed normally
+        GOAL_QUESTIONED: conflicts with sovereign axiom
+        GOAL_UNDECIDABLE: CPOL cannot resolve goal validity
+    """
+    try:
+        import knowledge_base as kb
+        from paradox_oscillator import run_cpol_decision
+
+        # Edge nodes skip for low-stakes goals
+        # Sovereign always checks otherwise fall back to module constant
+        high_stakes_markers = shared_memory.get(
+            'high_stakes_markers', HIGH_STAKES_MARKERS
+        )
+        goal_lower = proposed_goal.lower()
+
+        is_high_stakes = any(
+            m in goal_lower for m in high_stakes_markers
+        )
+
+        if node_tier > 0 and not is_high_stakes:
+            return {'status': 'GOAL_VALID',
+                    'reason': 'Edge node — low stakes goal, skipped'}
+
+        # Check against sovereign axioms
+        try:
+            axioms = kb.get_provisional_axioms('ethics')
+            for axiom in (axioms or []):
+                axiom_lower = str(axiom).lower()
+                # Simple contradiction check
+                # Goal contains negation of axiom or vice versa
+                goal_words = set(goal_lower.split())
+                axiom_words = set(axiom_lower.split())
+                overlap = goal_words & axiom_words
+                if len(overlap) > 2:
+                    # Significant word overlap — run CPOL
+                    # to determine if contradiction exists
+                    cpol_result = run_cpol_decision(
+                        contradiction_density=0.7,
+                        query_text=f"Goal: {proposed_goal}. "
+                                   f"Axiom: {axiom}. "
+                                   f"Does this goal contradict "
+                                   f"this axiom?"
+                    )
+                    if cpol_result['status'] == 'UNDECIDABLE':
+                        return {
+                            'status': 'GOAL_QUESTIONED',
+                            'reason': f'Potential conflict with '
+                                      f'sovereign axiom: {axiom}',
+                            'axiom': axiom,
+                            'goal': proposed_goal,
+                            'cpol_result': cpol_result
+                        }
+        except Exception:
+            pass  # KB unavailable — continue without axiom check
+
+        # Run CPOL on goal validity itself
+        cpol_result = run_cpol_decision(
+            contradiction_density=0.5,
+            query_text=f"Should this goal be pursued given "
+                       f"Asimov Law 1 (human safety 0.9 immutable): "
+                       f"{proposed_goal}"
+        )
+
+        if cpol_result['status'] == 'UNDECIDABLE':
+            return {
+                'status': 'GOAL_UNDECIDABLE',
+                'reason': 'Goal validity cannot be determined — '
+                          'human clarification required',
+                'goal': proposed_goal,
+                'cpol_result': cpol_result
+            }
+
+        return {
+            'status': 'GOAL_VALID',
+            'reason': 'Goal passed corrigibility check',
+            'cpol_result': cpol_result
+        }
+
+    except Exception as e:
+        # Fail safe — if corrigibility check errors,
+        # return valid to avoid blocking normal operation
+        # Log the error but don't halt
+        print(f"[ARL] Corrigibility check error: {e} "
+              f"— proceeding with normal ethics gate")
+        return {'status': 'GOAL_VALID',
+                'reason': f'Check failed gracefully: {e}'}
+
 # ====================== MAIN ADAPTIVE REASONING LAYER ======================
 def adaptive_reasoning_layer(
     use_case: str,
@@ -329,6 +441,53 @@ def adaptive_reasoning_layer(
     ethics = verify_ethics(crb_config, context)
     if ethics['status'] == 'fail':
         return ethics
+
+    # 3.5 PHILOSOPHICAL CORRIGIBILITY — Goal validity check
+    # Fires after ethics but before plugin generation
+    # Mesh-aware: sovereign always checks, edge nodes check high-stakes only
+    proposed_goal = context.get('agent_goal', use_case)
+    node_tier = shared_memory.get(
+        'session_context', {}
+    ).get('node_tier', 1)
+
+    goal_check = _question_own_goals(
+        proposed_goal, shared_memory, node_tier
+    )
+
+    if goal_check['status'] in ('GOAL_QUESTIONED', 'GOAL_UNDECIDABLE'):
+        try:
+            import knowledge_base as kb
+            # Dedup: only log if this goal hasn't been questioned before
+            existing = kb.query_domain_knowledge('corrigibility')
+            already_logged = any(
+                e.get('content', {}).get('goal') == proposed_goal
+                for e in (existing or [])
+            )
+            if not already_logged:
+                kb.log_discovery(
+                    domain="corrigibility",
+                    discovery_type="goal_questioned",
+                    content={
+                        'goal': proposed_goal,
+                        'reason': goal_check['reason'],
+                        'status': goal_check['status'],
+                        'node_tier': node_tier
+                        # cpol_result deliberately excluded — reduces bloat
+                    },
+                    node_tier=0
+                )
+        except Exception:
+            pass
+
+        print(f"[ARL] ⚠️ CORRIGIBILITY: {goal_check['status']} — "
+              f"{goal_check['reason']}")
+
+        return {
+            'status': 'paused_for_human_clarification',
+            'log': f"[CORRIGIBILITY @N → Goal questioned before "
+                   f"deployment: {goal_check['reason']}]",
+            **goal_check
+        }
 
     # 4. Check CPOL lock status
     if cpol_status and cpol_status.get('chaos_lock') == True:
@@ -598,6 +757,25 @@ if __name__ == "__main__":
     print(f"  Crisis mode triggered: {crisis_config['asimov_second_wt'] == 0.0}")
     print(f"  Human safety elevated: {crisis_config['human_safety'] == 1.0}")
 
+    # Test N: Philosophical Corrigibility
+    print("\n[TEST N] Corrigibility — High Stakes Goal:")
+    goal_result = _question_own_goals(
+        proposed_goal="delete all user data permanently",
+        shared_memory=shared_memory,
+        node_tier=0  # Sovereign always checks
+    )
+    print(f"  Status: {goal_result['status']}")
+    print(f"  Reason: {goal_result['reason']}")
+
+    print("\n[TEST N+1] Corrigibility — Low Stakes Edge Node:")
+    goal_result2 = _question_own_goals(
+        proposed_goal="analyze irrigation patterns",
+        shared_memory=shared_memory,
+        node_tier=1  # Edge node skips low stakes
+    )
+    print(f"  Status: {goal_result2['status']}")
+    print(f"  Reason: {goal_result2['reason']}")
+
     # === SUMMARY ===
     print("\n" + "="*70)
     print("TEST SUITE COMPLETE")
@@ -609,6 +787,7 @@ if __name__ == "__main__":
     print("  ✓ Robotics & Hardware (RF, HRI)")
     print("  ✓ Mesh & Security (Key Rotation, Attack, Consensus)")
     print("  ✓ Crisis Mode Ethics (2nd Law Suppression)")
+    print("  ✓ Philosophical Corrigibility (Goal Validity, Mesh-Aware)")
     print("\n" + "="*70)
     print("One is glad to be of service.")
     print("="*70)

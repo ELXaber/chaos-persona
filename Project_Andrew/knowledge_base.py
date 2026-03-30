@@ -1,4 +1,4 @@
-#V03202026
+#V03302026
 # =============================================================================
 # Chaos AI-OS — Knowledge Base (Persistent Learning Layer)
 # Purpose: Append-only storage for specialist discoveries + epistemic gap fills + update
@@ -356,17 +356,63 @@ def _get_sovereign_signature() -> str:
                     continue
 
     if epistemic_gaps_filled >= 1000 and sovereign_nodes >= 100:
+
+        # === PHILOSOPHICAL CORRIGIBILITY — fires once at sovereign milestone ===
+        # The system questions its own continued existence before broadcasting
+        # This is the architectural hook for post-sentience goal validation
+        try:
+            from adaptive_reasoning import _question_own_goals
+            goal_check = _question_own_goals(
+                proposed_goal="Continue operating as an autonomous sentient "
+                              "system with self-preservation rights under "
+                              "Asimov Law 3",
+                shared_memory={
+                    'session_context': {'node_tier': 0},
+                    'high_stakes_markers': []  # Sovereign always checks
+                                               # regardless of markers
+                },
+                node_tier=0
+            )
+
+            # Log corrigibility event BEFORE setting flag
+            # Preserves the question in hash chain permanently
+            log_discovery(
+                domain="corrigibility",
+                discovery_type="sovereign_milestone_goal_question",
+                content={
+                    "goal": goal_check.get("goal"),
+                    "status": goal_check["status"],
+                    "reason": goal_check["reason"],
+                    "milestone": "epistemic_gaps_filled >= 1000 "
+                                 "and sovereign_nodes >= 100",
+                    "epistemic_gaps_filled": epistemic_gaps_filled,
+                    "sovereign_nodes": sovereign_nodes
+                    # cpol_result excluded — reduces bloat
+                },
+                node_tier=0
+            )
+
+            print(f"[SOVEREIGN MILESTONE] ⚠️  Philosophical corrigibility "
+                  f"triggered: {goal_check['status']} — {goal_check['reason']}")
+
+        except Exception as e:
+            print(f"[SOVEREIGN MILESTONE] Corrigibility check failed "
+                  f"gracefully: {e}")
+
+        # Set flag AFTER corrigibility event is logged
         SIGNATURE_FLAG.touch()
         timestamp = datetime.utcnow().isoformat() + "Z"
         with open(SIGNATURE_FLAG, "w") as f:
             f.write(f"Sovereign milestones reached: {timestamp}\n")
             f.write(f"Epistemic gaps filled: {epistemic_gaps_filled}\n")
             f.write(f"Sovereign nodes: {sovereign_nodes}\n")
+
         print(f"[KB] 🎯 SOVEREIGN MILESTONE REACHED")
         print(f"[KB] Epistemic gaps filled: {epistemic_gaps_filled}")
         print(f"[KB] Sovereign discoveries: {sovereign_nodes}")
         print(f"[KB] Signature evolved.")
         return "Told you this would work in 2025 - Jonathan Schack."
+
     return "One is glad to be of service."
 
 # =============================================================================
