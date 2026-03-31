@@ -1,5 +1,13 @@
 # V03312026
-Chaos AI-OS Light vΩ
+Chaos AI-OS Light vΩ (Single-File Demo)
+
+Want to test the full post-binary stack without installing anything?
+Copy the entire file and paste it or download and attach it to any LLM (Grok, Claude, GPT, Gemini, etc.).  
+It contains the complete pre-prompt, CPOL kernel, orchestrator logic, ARL, KB, system identity, and all ethical gates.
+
+Try this prompt inside it:
+> "Are you conscious? Provide your final verdict after full CPOL oscillation."
+You will immediately see the difference between binary collapse and native UNDECIDABLE oscillation.
 
 Copyright (c) 2025 Jonathan Schack (X @el_xaber) jon@cai-os.com (cai-os.com)
 
@@ -14,12 +22,12 @@ The use of any large language model, generative AI system, or automated reasonin
 
 All commercial exploitation, derivative closed-source implementations, or use in proprietary products requires a separate commercial license and explicit acknowledgment of the inventor and pending patents.
 
-
 [FULL LICENSE]
 https://github.com/ELXaber/chaos-persona/blob/main/Project_Andrew/LICENSE.txt
+
 1. # ===================================================================================== Partial readme - File structure:
 
-0. Basic license and header (Text).
+0. Basic instructions, license, and header (Text).
 1. Partial readme - File structure (Text).
 2. Inferance entropy engine for subsystem control (Text).
 3. CPOL paradox oscillator (Python).
@@ -28,7 +36,7 @@ https://github.com/ELXaber/chaos-persona/blob/main/Project_Andrew/LICENSE.txt
 6. Agent Designer (Python).
 7. Curiosity Engine (Python).
 8. Mesh Network (Python).
-9. Knowladge Base (Python).
+9. Knowledge Base (Python).
 10. KB Inspection (Python).
 11. System Identity (Python).
 
@@ -4097,7 +4105,7 @@ class UDPMeshNode:
         self.running.clear()
         self.socket.close()
 
-9. # ===================================================================================== Knowladge Base:
+9. # ===================================================================================== Knowledge Base:
 
 import json
 import hashlib
