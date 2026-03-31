@@ -2,7 +2,7 @@
 
 ### Chaos AI-OS Light vΩ (Single-File Demo)
 Want to test the full post-binary stack without installing anything?
-→ [Chaos AI-OS Light vΩ.txt](Chaos 0AI-OS Light vΩ.txt)
+→ [Chaos AI-OS Light vΩ.txt](Chaos 0AI-OS Light vΩ.txt) https://github.com/ELXaber/chaos-persona/blob/main/Project_Andrew/Chaos_AI-OS_Light_v%CE%A9.txt
 Copy the entire file and paste it into any LLM (Grok, Claude, GPT, Gemini, etc.).  
 It contains the complete pre-prompt, CPOL kernel, orchestrator logic, ARL, KB, system identity, and all ethical gates.
 Try this prompt inside it:
