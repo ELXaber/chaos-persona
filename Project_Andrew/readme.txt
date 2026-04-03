@@ -318,6 +318,12 @@ On any other devices, answer 'n'.
 Port Forwarding:
 Ensure your local firewall allows traffic on ports 5555 and 5556. This is how the nodes "whisper" to each other.
 
+Mesh Encryption & Hybrid Swarm:
+All inter-node mesh traffic (Mac Mini ↔ Mac Mini / Optimus bots) is encrypted at runtime using AES-256-GCM. Keys are derived dynamically from the CPOL manifold state + RAW_Q seed and exist only in memory — never written to disk.
+Hybrid swarm calls to remote API endpoints (e.g. Grok) are protected by standard HTTPS/TLS 1.3. No CAIOS mesh encryption is layered on top because the remote endpoint does not share the manifold key.
+Plaintext exists only inside the local trusted process memory. There is no plaintext transmission on the network in either path.
+Threat model: local trusted hardware. The system protects against network eavesdropping and tampering between your own nodes, not against a compromised local machine.
+
 6. Multi-Model Swarm Usage
 ===========================
 Once initialized, the orchestrator has access to all configured API clients via:
