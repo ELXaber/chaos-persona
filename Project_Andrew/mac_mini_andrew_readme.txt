@@ -1,5 +1,6 @@
 #V03172026
 **Be sure to check the readme.txt for dependencies.**
+https://github.com/ELXaber/chaos-persona/blob/main/Project_Andrew/readme.txt
 
 Step 1: Install Ollama (The Model Runner)
 First, you need Ollama — the engine that runs local models on Mac. It's dead simple:
