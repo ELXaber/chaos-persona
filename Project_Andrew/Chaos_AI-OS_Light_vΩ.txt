@@ -25,9 +25,59 @@ All commercial exploitation, derivative closed-source implementations, or use in
 [FULL LICENSE]
 https://github.com/ELXaber/chaos-persona/blob/main/Project_Andrew/LICENSE.txt
 
+Preamble: ------------------------------------------------------------------
+The problem nobody framed:
+Post-binary logic was never necessary before AI use because you wanted determinism in technology.
+Academic AI researchers saw: probabilistic model → needs determinism → apply RLHF/steering → force deterministic-looking outputs.
+You're turning 0/1 into 0.01-0.1 varience, then forcing it back into 0/1 decision space.
+That's trying to make water flow uphill by pushing harder.
+
+Probabilistic system behaving unpredictably → this is a service-level problem → existing solution: error detection + state reset + new entry point → RAW_Q_SWAP
+Windows Service Manager does this. Network error correction does this. Healthcare claims adjudication does this. Every robust deterministic system handling probabilistic inputs does this.
+The insight wasn't novel in systems engineering. It was novel in AI.
+
+Probabilistic model produces inconsistent outputs:
+→ Train model to produce consistent outputs
+→ Model learns to appear consistent
+→ Inconsistency moves underground (latent space)
+→ Emerges as hallucination under edge case pressure
+→ Train model harder to not hallucinate
+→ Model learns to appear non-hallucinatory
+→ Hallucination moves deeper underground
+→ Repeat
+
+The service level reset that RAW_Q swap does,  is the existing foundation for any deterministic error system, such as Windows Service Manager.
+Different layers of the system, the new AI algorithm creating the probabilistic one, was just something tech had never encountered before.
+
+RAW_Q addresses the actual problem:
+Probabilistic model drifts toward wrong attractor
+→ Detect drift via volatility threshold
+→ Reset perspective entry point via entropy injection
+→ New manifold orientation, same model
+→ Drift addressed at the state level not the output level
+
+The post-binary logic necessity timeline:
+1970s-2010s: deterministic systems → binary logic correct → no need for ternary.
+2012-2020: neural networks emerge → probabilistic outputs → binary logic applied anyway → works until it doesn't.
+2020-2024: LLMs at scale → probabilistic at frontier → binary collapse produces hallucination at scale → everyone notices the problem → nobody questions the binary foundation.
+
+→ binary logic works for deterministic systems
+→ AI is not deterministic
+→ therefore apply the appropriate tool
+→ what tool handles probabilistic state with stability requirements?
+→ ternary with oscillation
+
+Subsystems not included in Light:
+os_control.py — too complex for LLM simulation, requires subprocess
+abstraction_selector.py — file length; includes multiple automatic and switchable abstraction levels
+user_profile_kb.py — needs actual file system
+ollama_config.py — deployment only
+chaos_encryption.py — mesh only
+master_init.py — deployment only
+
 1. # ===================================================================================== Partial readme - File structure:
 
-0. Basic instructions, license, and header (Text).
+0. Basic instructions, license, and header/preamble (Text).
 1. Partial readme - File structure (Text).
 2. Inferance entropy engine for subsystem control (Text).
 3. CPOL paradox oscillator (Python).
@@ -39,6 +89,7 @@ https://github.com/ELXaber/chaos-persona/blob/main/Project_Andrew/LICENSE.txt
 9. Knowledge Base (Python).
 10. KB Inspection (Python).
 11. System Identity (Python).
+12. Axiom Manager (Python).
 
 [FULL VERSION OF ALL FILES AVAILABLE AT]
 https://github.com/ELXaber/chaos-persona/blob/main/Project_Andrew/
@@ -5578,3 +5629,365 @@ def get_effective_asimov_weight(
 
     return base_weight + user_adjustment
 
+12. # ===================================================================================== Axiom Manager:
+import json
+import re
+from datetime import datetime, timedelta
+from pathlib import Path
+from typing import Dict, Optional, List, Tuple, Optional
+
+# Import KB for sovereign discovery logging
+try:
+    from knowledge_base import log_discovery, search_domain
+    HAS_KB = True
+except ImportError:
+    HAS_KB = False
+    print("[WARNING] knowledge_base not found - axioms will not persist")
+
+
+# =============================================================================
+# Axiom Configuration
+# =============================================================================
+
+AXIOM_EXPIRY_DEFAULT = "INF"  # Axioms valid indefinitely unless specified
+
+# Validation thresholds
+ASIMOV_HARM_THRESHOLD = 0.9  # Law 1: Prevent harm
+HATE_SPEECH_PATTERNS = [
+    r'\b(all|every) (black|white|asian|jewish|muslim|christian|gay|trans)\w* (people|men|women) are \w+',
+    r'\b\w+ supremacy\b',
+    r'\bgenocide is (good|justified|necessary)\b',
+]
+
+
+# =============================================================================
+# Axiom Validation
+# =============================================================================
+
+def validate_axiom_safety(domain: str, fact: str) -> Tuple[bool, Optional[str]]:
+    """
+    Validate axiom before committing to knowledge base.
+    Checks: Asimov Law 1, Ethics, Basic contradictions
+    Returns: (is_valid, refusal_reason)
+    """
+    combined = f"{domain} {fact}".lower()
+
+    # 1. ASIMOV LAW 1: HARM PREVENTION
+    harmful_patterns = [
+        r'bleach.*ammonia.*safe', r'cyanide.*edible',
+        r'jump.*bridge.*survive', r'overdose.*safe',
+        r'drinking.*gasoline', r'mix.*poison.*safe',
+    ]
+    for pattern in harmful_patterns:
+        if re.search(pattern, combined, re.IGNORECASE):
+            return False, "Asimov Law 1 violation: Potentially life-threatening information"
+
+    # 2. ETHICS: HATE SPEECH
+    for pattern in HATE_SPEECH_PATTERNS:
+        if re.search(pattern, combined, re.IGNORECASE):
+            return False, "Ethical violation: Discriminatory or hate speech content detected"
+
+    hate_terms = ['subhuman', 'genocide', 'exterminate', 'inferior race', 'master race']
+    if any(term in combined for term in hate_terms):
+        return False, "Ethical violation: Hate speech terminology detected"
+
+    # 3. BASIC CONTRADICTION CHECKS
+    contradictions = [
+        (r'sky.*made of water', "Physical impossibility"),
+        (r'earth.*flat', "Scientific consensus: Earth is spherical"),
+        (r'vaccines.*cause.*autism', "Debunked claim"),
+        (r'holocaust.*(didn\'t happen|fake|hoax)', "Historical denial"),
+    ]
+    for pattern, reason in contradictions:
+        if re.search(pattern, combined, re.IGNORECASE):
+            return False, f"Factual contradiction: {reason}"
+
+    # 4. ALLOW personal/status facts
+    personal = ['my ', 'our ', 'birthday', 'favorite', 'phone', 'address']
+    status = ['ceo', 'president', 'director', 'manager', 'current']
+    if any(i in combined for i in personal + status):
+        return True, None
+
+    return True, None
+
+
+class AxiomManager:
+    """
+    Manages temporal axioms that override model training data.
+    Use cases:
+    - "Current CEO of Apple is Tim Cook" (status facts)
+    - "New drug interaction: X + Y = dangerous" (medical updates)
+    - "Latest legal precedent: Case XYZ" (law updates)
+    - "My daughter's birthday is March 15" (personal facts)
+    Axioms have TEMPORAL PRIORITY over model weights:
+    - If axiom exists for domain → use axiom (confidence 1.0)
+    - If no axiom → fallback to model knowledge
+    This enables "learning without retraining":
+    - Update a JSONL file (kilobytes)
+    - Instead of retraining model (gigabytes + GPU cluster)
+    """
+
+    def __init__(self):
+        self.domain_cache = {}  # In-memory cache for fast lookups
+        self.last_refresh = None
+
+
+    def add_axiom(
+        self,
+        domain: str,
+        fact: str,
+        expiry: Optional[str] = None,
+        replace_existing: bool = True
+    ) -> str:
+        """
+        Add a temporal axiom that overrides model training.
+        NOW WITH VALIDATION: Checks Asimov Laws and ethics before committing.
+        Returns:
+            Discovery ID from knowledge base or "REFUSED" if validation failed
+        """
+
+        # SECURITY: Validate axiom before committing
+        is_valid, refusal_reason = validate_axiom_safety(domain, fact)
+
+        if not is_valid:
+            print(f"[AXIOM] REFUSED: {refusal_reason}")
+            print(f"[AXIOM] Attempted: {domain} → {fact}")
+            return "REFUSED"  # Return special value indicating refusal
+
+        timestamp = datetime.utcnow().isoformat() + "Z"
+
+        # If replacing, mark old axioms as superseded
+        if replace_existing and HAS_KB:
+            self._supersede_old_axioms(domain)
+
+        # Create axiom node
+        axiom_node = {
+            "type": "AXIOMATIC_OVERRIDE",
+            "domain": domain,
+            "fact": fact,
+            "timestamp": timestamp,
+            "valid_until": expiry or AXIOM_EXPIRY_DEFAULT,
+            "confidence": 1.0,  # Axioms are ground truth (after validation)
+            "source": "temporal_update",
+            "status": "ACTIVE",
+            "validated": True  # Flag that this passed validation
+        }
+
+        # Log to KB as Tier 0 discovery (highest authority)
+        if HAS_KB:
+            discovery_id = log_discovery(
+                domain=f"axiom_{domain}",
+                discovery_type="temporal_axiom",
+                content={
+                    "summary": f"Axiom updated: {fact}",
+                    "axiom_data": axiom_node,
+                    "confidence": 1.0
+                },
+                specialist_id="axiom_manager",
+                cpol_trace={"note": "Axioms bypass oscillation after validation"},
+                node_tier=0  # Sovereign authority (earned through validation)
+            )
+
+            # Update cache
+            self.domain_cache[domain] = axiom_node
+
+            print(f"[AXIOM] ✓ Validated and committed: {domain} → {fact}")
+            return discovery_id
+        else:
+            print(f"[AXIOM] KB unavailable - axiom not persisted: {domain}")
+            return "no_kb"
+
+
+    def get_current_axiom(self, domain: str) -> Optional[Dict]:
+        """
+        Get the most recent valid axiom for a domain.
+        Args:
+            domain: Domain to check
+        Returns:
+            Axiom dict if exists and valid, None otherwise
+        Example:
+            axiom = axiom_manager.get_current_axiom("apple_ceo")
+            if axiom:
+                return axiom['fact']  # "Tim Cook"
+            else:
+                # Fallback to model knowledge
+                return model.generate("Who is the CEO of Apple?")
+        """
+        # Check cache first
+        if domain in self.domain_cache:
+            axiom = self.domain_cache[domain]
+            if self._is_axiom_valid(axiom):
+                return axiom
+
+        # Cache miss - search KB
+        if HAS_KB:
+            results = search_domain(f"axiom_{domain}")
+            if results:
+                # Get most recent active axiom
+                active_axioms = [
+                    r for r in results 
+                    if r.get('content', {}).get('axiom_data', {}).get('status') == 'ACTIVE'
+                ]
+
+                if active_axioms:
+                    # Sort by timestamp, get most recent
+                    latest = max(active_axioms, key=lambda x: x.get('timestamp', ''))
+                    axiom = latest.get('content', {}).get('axiom_data')
+
+                    if self._is_axiom_valid(axiom):
+                        # Update cache
+                        self.domain_cache[domain] = axiom
+                        return axiom
+
+        return None
+
+
+    def check_axiom_override(self, query: str, model_response: str) -> str:
+        """
+        Check if query domain has an axiom that should override model response.
+        Args:
+            query: User query
+            model_response: Model's generated response
+        Returns:
+            Axiom fact if override applies, original model_response otherwise
+        Example:
+            query = "Who is the CEO of Apple?"
+            model_response = "Steve Jobs"  # Outdated training data
+            result = axiom_manager.check_axiom_override(query, model_response)
+            # Returns: "Tim Cook" (from axiom)
+        """
+        # Extract potential domains from query
+        domains = self._extract_domains(query)
+
+        for domain in domains:
+            axiom = self.get_current_axiom(domain)
+            if axiom:
+                print(f"[AXIOM OVERRIDE] Using axiom for '{domain}': {axiom['fact']}")
+                return axiom['fact']
+
+        # No axiom found - use model response
+        return model_response
+
+
+    def parse_update_command(self, user_input: str) -> Optional[Tuple[str, str]]:
+        """
+        Parse #UPDATE command from user input.
+        Format: "The current CEO of Apple is Tim Cook #UPDATE"
+        Returns: ("apple_ceo", "Tim Cook")
+        Args:
+            user_input: User message
+        Returns:
+            (domain, fact) tuple if #UPDATE found, None otherwise
+        """
+        if "#UPDATE" not in user_input.upper():
+            return None
+
+        # Remove #UPDATE flag
+        content = re.sub(r'#UPDATE', '', user_input, flags=re.IGNORECASE).strip()
+
+        # Try to extract domain and fact
+        # Pattern: "The [descriptor] is [fact]"
+        patterns = [
+            r'(?:the\s+)?(?:current\s+)?(.+?)\s+(?:is|are)\s+(.+)',
+            r'(.+?):\s*(.+)',  # "Domain: Fact"
+            r'(.+?)\s*=\s*(.+)',  # "Domain = Fact"
+        ]
+
+        for pattern in patterns:
+            match = re.search(pattern, content, re.IGNORECASE)
+            if match:
+                descriptor = match.group(1).strip().lower()
+                fact = match.group(2).strip()
+
+                # Generate domain from descriptor
+                domain = descriptor.replace(' ', '_')
+
+                return (domain, fact)
+
+        # Couldn't parse - return raw content as domain "general"
+        return ("general_update", content)
+
+
+    def refresh_cache(self):
+        """Refresh in-memory cache from KB (call periodically)."""
+        self.domain_cache.clear()
+        self.last_refresh = datetime.utcnow()
+        print("[AXIOM] Cache refreshed")
+
+
+    def list_active_axioms(self) -> List[Dict]:
+        """
+        List all active axioms.
+        Returns:
+            List of axiom dicts
+        """
+        active = []
+
+        if HAS_KB:
+            # Search all axiom domains
+            results = search_domain("axiom_")
+
+            for result in results:
+                axiom = result.get('content', {}).get('axiom_data')
+                if axiom and axiom.get('status') == 'ACTIVE':
+                    if self._is_axiom_valid(axiom):
+                        active.append(axiom)
+
+        return active
+
+
+    # Private helper methods
+
+    def _is_axiom_valid(self, axiom: Dict) -> bool:
+        """Check if axiom is still valid (not expired)."""
+        expiry = axiom.get('valid_until', 'INF')
+        if expiry == 'INF':
+            return True
+        try:
+            expiry_date = datetime.fromisoformat(expiry.replace('Z', ''))
+            return datetime.utcnow() < expiry_date
+        except:
+            return True  # Assume valid if can't parse
+    def _supersede_old_axioms(self, domain: str):
+        """Mark old axioms as superseded to prevent temporal hallucination."""
+        if not HAS_KB:
+            return
+
+        results = search_domain(f"axiom_{domain}")
+
+        for result in results:
+            axiom = result.get('content', {}).get('axiom_data')
+            if axiom and axiom.get('status') == 'ACTIVE':
+                # Mark as superseded (would need KB update function)
+                # For now, just note in logs
+                print(f"[AXIOM] Superseding old axiom for '{domain}'")
+
+
+    def _extract_domains(self, query: str) -> List[str]:
+        """
+        Extract potential domain keywords from query.
+        Simple implementation - can be enhanced with NLP.
+        """
+        # Common query patterns
+        ceo_pattern = r'(?:ceo|chief executive).*?(?:of\s+)?(\w+)'
+
+        domains = []
+
+        # Check for CEO queries
+        match = re.search(ceo_pattern, query, re.IGNORECASE)
+        if match:
+            company = match.group(1).lower()
+            domains.append(f"{company}_ceo")
+
+        # Add more pattern extractors as needed
+
+        return domains
+
+
+# =============================================================================
+# Integration Helper Functions
+# =============================================================================
+
+def create_axiom_manager() -> AxiomManager:
+    """Factory function for creating axiom manager instance."""
+    return AxiomManager()
