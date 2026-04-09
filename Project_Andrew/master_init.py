@@ -1,4 +1,4 @@
-#V03122026
+#V04082026
 # =============================================================================
 # PROJECT ANDREW – Master Integration & Sovereign Boot
 # =============================================================================
@@ -12,15 +12,19 @@
 #    Ensure 'knowledge_base/' directory exists in the root.
 # 5. Permissions:
 #    Script requires write access for JSONL logging and Socket binding (ZMQ).
-#6. System Identity Initialization (First Boot Only)
+# 6. System Identity Initialization (First Boot Only)
 #    [DEPLOYMENT CONFIG] - Uncomment preferred Authentication Layer
-#7. Test Multi-Model Swarm (if clients available)
+# 7. Test Multi-Model Swarm (if clients available)
 # =============================================================================
 
 import os
 import time
 import json
 import traceback
+import hashlib
+import getpass
+from datetime import datetime
+from typing import Optional
 
 # Project Andrew Imports
 from chaos_encryption import generate_raw_q_seed, CPOLQuantumManifold
@@ -136,6 +140,23 @@ def save_api_client_config(clients: dict, filepath: str = "api_clients.json"):
 
     return filepath
 
+def _prompt_password(username: str) -> Optional[str]:
+    """
+    Optionally set a password for a user during setup.
+    Returns SHA-256 hash if set, None if skipped.
+    Family-friendly: explains why before asking.
+    """
+    print(f"\n  Password for '{username}' (optional)")
+    print("  Set one if others share this device (e.g. teenagers in the house).")
+    want_pw = input("  Set a password? (y/n): ").strip().lower()
+    if want_pw != 'y':
+        return None
+    while True:
+        pw = getpass.getpass("  Enter password: ")
+        pw2 = getpass.getpass("  Confirm password: ")
+        if pw == pw2:
+            return hashlib.sha256(pw.encode()).hexdigest()
+        print("  Passwords don't match, try again.")
 
 # =============================================================================
 # Main Diagnostic
@@ -179,7 +200,7 @@ def run_system_diagnostic():
         print(f"✗ CPOL Initialization failed: {e}")
         return
 
-   # 4. Initialize Mesh Transport Layer
+    # 4. Initialize Mesh Transport Layer
     print("\n" + "="*70)
     print("NETWORK TOPOLOGY CONFIGURATION")
     print("="*70)
@@ -268,11 +289,15 @@ def run_system_diagnostic():
             if choice == '1':
                 system_id = input("Enter model/serial number (e.g., AG00001): ").strip()
                 identity_type = 'corporate'
+                user_passwords = {}
                 primary_user = input("Enter facility manager ID: ").strip()
+                user_passwords[primary_user] = _prompt_password(primary_user)
             else:
                 system_id = input("Enter given name (e.g., Andrew, Galatea): ").strip()
                 identity_type = 'personal'
+                user_passwords = {}
                 primary_user = input("Enter owner/primary user name: ").strip()
+                user_passwords[primary_user] = _prompt_password(primary_user)
 
             # Optional: Additional users
             add_more = input("Add additional authorized users? (y/n): ").strip().lower()
@@ -284,6 +309,7 @@ def run_system_diagnostic():
                     if not user:
                         break
                     authorized_users.append(user)
+                    user_passwords[user] = _prompt_password(user)
 
             # Initialize identity (single call - all params correct)
             identity.initialize(
@@ -297,11 +323,13 @@ def run_system_diagnostic():
 
             print("\n✓ Identity initialized successfully")
             print(f"✓ {identity.get_identity_summary()}")
+            write_authorized_users(identity, passwords=user_passwords)
         else:
             # Existing identity loaded
             print(f"✓ Identity loaded: {identity.get_identity_summary()}")
             print(f"  Primary user: {identity.identity_data['primary_user']}")
             print(f"  Authorized users: {len(identity.identity_data['authorized_users'])}")
+            write_authorized_users(identity)
 
         # Store identity in shared memory for orchestrator
         shared_memory['system_identity'] = identity
@@ -329,13 +357,44 @@ def run_system_diagnostic():
 
     # 8. Test Multi-Model Swarm (if clients available)
     if shared_memory['api_clients']:
-        print("\n[STEP 5] Testing Multi-Model Swarm...")
+        print("\n[STEP 8] Testing Multi-Model Swarm...")
         test_swarm_capabilities(shared_memory['api_clients'])
 
     print("\n" + "="*80)
     print("        DIAGNOSTIC COMPLETE: SYSTEM READY FOR SOVEREIGN BOOT")
     print("="*80)
 
+
+def write_authorized_users(identity: SystemIdentity, filepath: str = "users.json", passwords: dict = None):
+    """
+    Derive flat authorized user list from system_identity.
+    This is the ONLY place users.json gets written.
+    Runtime session logic reads it but never writes it.
+    """
+    primary = identity.identity_data['primary_user']
+    authorized = identity.identity_data['authorized_users']
+    sub_users = list(identity.identity_data.get('user_profiles', {}).keys())
+    passwords = passwords or {}
+
+    def make_entry(uid, utype):
+        entry = {'id': uid, 'type': utype}
+        pw_hash = passwords.get(uid)
+        if pw_hash:
+            entry['password_hash'] = pw_hash
+        return entry
+
+    user_list = {
+        'users': (
+            [make_entry(primary, 'primary')] +
+            [make_entry(u, 'authorized') for u in authorized if u != primary] +
+            [make_entry(u, 'sub_user') for u in sub_users]
+        ),
+        'generated_at': datetime.utcnow().isoformat() + "Z",
+        'source': 'system_identity'
+    }
+    with open(filepath, 'w') as f:
+        json.dump(user_list, f, indent=2)
+    print(f"✓ users.json written: {len(user_list['users'])} users")
 
 def test_swarm_capabilities(clients: dict):
     """Test that API clients can actually make calls."""

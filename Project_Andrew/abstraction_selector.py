@@ -107,13 +107,6 @@ class AbstractionSelector:
         Main entry point: detect appropriate abstraction level.
         Returns one of TECHNICAL, VICTORIAN, CLEAR, CAVEMAN.
         """
-
-    def detect_abstraction_level(
-        self,
-        user_input: str,
-        shared_memory: Dict[str, Any]
-    ) -> AbstractionLevel:
-
         # 0. Check user profile for age-group override (highest priority)
         try:
             from user_profile_kb import load_user_profile

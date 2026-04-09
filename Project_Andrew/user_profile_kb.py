@@ -1,4 +1,4 @@
-#V03202026
+#V04082026
 # =============================================================================
 # CAIOS — User Profile Knowledge Base
 # Stores per-user personality state, emotional baselines, and preferences
@@ -32,6 +32,30 @@ def save_user_profile(user_id: str, profile: Dict[str, Any]) -> None:
     with open(_profile_path(user_id), 'w') as f:
         json.dump(profile, f, indent=2)
     print(f"[USER_KB] Profile saved for {user_id}")
+
+def update_complaint_state(
+    user_id: str,
+    complaint_count: int,
+    persistent_complainer: bool = False
+) -> None:
+    """
+    Persist complaint count across sessions so abstraction
+    elevation state survives session end/timeout.
+    """
+    profile = load_user_profile(user_id)
+    profile['complaint_count'] = complaint_count
+    profile['persistent_complainer'] = persistent_complainer
+    save_user_profile(user_id, profile)
+    print(f"[USER_KB] Complaint state saved for {user_id}: "
+          f"count={complaint_count}, persistent={persistent_complainer}")
+
+def get_complaint_state(user_id: str) -> dict:
+    """Load complaint state for session restore."""
+    profile = load_user_profile(user_id)
+    return {
+        'complaint_count': profile.get('complaint_count', 0),
+        'persistent_complainer': profile.get('persistent_complainer', False)
+    }
 
 def _default_profile(user_id: str) -> Dict[str, Any]:
     """Default profile — system learns from here."""
@@ -83,6 +107,8 @@ def _default_profile(user_id: str) -> Dict[str, Any]:
         # Abstraction preference (learned)
         'abstraction_default': 'CLEAR',
         'abstraction_history': [],
+        'complaint_count': 0,
+        'persistent_complainer': False,
 
         # Scratch space — personal preferences
         'scratch': {},
@@ -215,6 +241,8 @@ def create_user_profile_kb():
         'set_scratch': set_scratch,
         'get_scratch': get_scratch,
         'update_abstraction': update_abstraction_preference,
+        'update_complaint': update_complaint_state,
+        'get_complaint': get_complaint_state,
         'summary': get_profile_summary
     }
 

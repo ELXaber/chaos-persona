@@ -1,4 +1,4 @@
-#V03192026
+#V04082026
 # =============================================================================
 # mesh_network.py - CAIOS Mesh Transport Layer
 # Handles ghost packet broadcasting, 7D signature exchange, node discovery
@@ -78,7 +78,7 @@ class MeshNode:
         if cpol:
             # 1. Force the local kernel to flip its state
             new_seed = cpol.ratchet() 
-            self.shared_memory['session_context']['RAW_Q'] = new_seed
+            self.shared_memory['session_context']['RAW_Q'] = result['new_raw_q']
 
         # 2. Log it to the audit trail
         self.shared_memory.get('audit_trail', []).append({
@@ -242,7 +242,7 @@ class MeshNode:
                             cpol = self.shared_memory.get('cpol_instance')
                             if cpol:
                                 new_seed = cpol.ratchet()
-                                self.shared_memory['session_context']['RAW_Q'] = new_seed
+                                self.shared_memory['session_context']['RAW_Q'] = result['new_raw_q']
 
                     # Call the external handler (orchestrator)
                     callback_fn(ghost_packet, sender_id)

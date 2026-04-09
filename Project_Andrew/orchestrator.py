@@ -1,4 +1,4 @@
-#V03232026
+#V04082026
 # =============================================================================
 # Chaos AI-OS – Hardened Orchestrator (Unified Edition)
 # Combines: V1 Logic + V3 Pipeline + Mesh Encryption + Chatbot Safety
@@ -14,6 +14,7 @@ from datetime import datetime
 # Local Kernel Imports
 import paradox_oscillator as cpol
 import adaptive_reasoning as arl
+from system_identity import SystemIdentity
 
 # Optional imports with fallbacks
 try:
@@ -95,7 +96,8 @@ shared_memory = {
     'audit_trail': [],
     'cpol_instance': None,
     'cpol_state': {'chaos_lock': False},
-    'session_context': {'RAW_Q': None, 'timestep': 0},
+    'session_context': {'RAW_Q': None, 'timestep': 0,
+    'last_active': time.time()},
     'traits_history': [],
     'entropy_data': [],
     'curiosity_tokens': [],
@@ -294,10 +296,111 @@ CRB_CONFIG = {
     'narrative_framing_wt': 0.5
 }
 
-# --- Sovereign Tiering ---
+# =============================================================================
+# SESSION TIMEOUT & SOVEREIGN TIERING CONFIG
+# =============================================================================
+TIMEOUT_SECONDS = 900  # 15 minutes
+
 # Tier 0 = Primary Root (Weight 5.0)
 # Tier 1+ = Mesh/Edge Nodes (Weight 1.0)
 shared_memory['node_tier'] = 0 if os.getenv('NODE_ID') == 'PRIMARY_ROOT' else 1
+
+# =============================================================================
+# AUTHENTICATION & SESSION MANAGEMENT
+# =============================================================================
+
+def check_session_timeout(session_context: dict) -> bool:
+    """Returns True if session has been idle beyond TIMEOUT_SECONDS."""
+    last_active = session_context.get('last_active', 0)
+    return (time.time() - last_active) > TIMEOUT_SECONDS
+
+
+def _auth_text(users_filepath: str = "users.json") -> str:
+    try:
+        with open(users_filepath, 'r') as f:
+            users = json.load(f)
+    except FileNotFoundError:
+        print("[WARNING] users.json not found - run master_init.py first")
+        raise PermissionError("User registry unavailable")
+
+    all_users = {u['id']: u for u in users.get('users', [])}
+
+    for attempt in range(3):
+        username = input("Username: ").strip()
+        if username in all_users:
+            user = all_users[username]
+            # Password check — only if hash is present
+            if 'password_hash' in user:
+                password = input("Password: ").strip()
+                if hashlib.sha256(password.encode()).hexdigest() != user['password_hash']:
+                    print(f"[SESSION] Incorrect password. ({2 - attempt} attempt(s) remaining)")
+                    continue
+            print(f"[SESSION] Authorized: {username} ({user['type']})")
+            return username
+        print(f"[SESSION] Unauthorized. ({2 - attempt} attempt(s) remaining)")
+
+    raise PermissionError("Authorization failed — session terminated")
+
+
+def _auth_facial(shared_memory: dict) -> str:
+    """Facial auth stub — replace _capture_face_id() with hardware call."""
+    identity = shared_memory.get('system_identity')
+    if not identity:
+        raise PermissionError("No identity loaded for facial auth")
+    face_id = _capture_face_id()  # hardware stub
+    user_id = identity.resolve_user_id({'face_id': face_id})
+    if user_id == "unrecognized_face":
+        raise PermissionError("Face not recognized")
+    print(f"[SESSION] Face authorized: {user_id}")
+    return user_id
+
+
+def _auth_voice(shared_memory: dict) -> str:
+    """Voice print stub — replace _capture_voice_id() with hardware call."""
+    identity = shared_memory.get('system_identity')
+    if not identity:
+        raise PermissionError("No identity loaded for voice auth")
+    voice_id = _capture_voice_id()  # hardware stub
+    user_id = identity.resolve_user_id({'voice_id': voice_id})
+    if user_id == "unrecognized_voice":
+        raise PermissionError("Voice not recognized")
+    print(f"[SESSION] Voice authorized: {user_id}")
+    return user_id
+
+
+def _auth_corporate(shared_memory: dict) -> str:
+    """Corporate node ID auth via environment variable."""
+    identity = shared_memory.get('system_identity')
+    if not identity:
+        raise PermissionError("No identity loaded for corporate auth")
+    node_id = os.getenv('NODE_ID', '')
+    user_id = identity.resolve_user_id({'node_id': node_id})
+    if user_id == "unauthorized_node":
+        raise PermissionError("Node ID not authorized")
+    print(f"[SESSION] Corporate node authorized: {user_id}")
+    return user_id
+
+
+def prompt_auth(shared_memory: dict) -> str:
+    """
+    Auth method dispatcher - routes to correct prompt based on configured method.
+    Single entry point for all re-authentication calls.
+    """
+    identity = shared_memory.get('system_identity')
+    auth_method = identity.identity_data.get(
+        'auth_method', 'TEXT_USERNAME'
+    ) if identity else 'TEXT_USERNAME'
+
+    if auth_method == "TEXT_USERNAME":
+        return _auth_text()
+    elif auth_method == "META_FACIAL":
+        return _auth_facial(shared_memory)
+    elif auth_method == "VOICE_PRINT":
+        return _auth_voice(shared_memory)
+    elif auth_method == "CORPORATE_ID":
+        return _auth_corporate(shared_memory)
+
+    raise PermissionError(f"Unknown auth method: {auth_method}")
 
 # =============================================================================
 # MESH NETWORKING SETUP (Optional)
@@ -422,6 +525,15 @@ def sync_curiosity_to_domain_heat(state: dict):
         heat_map[domain] = min(1.0, heat_map.get(domain, 0.0) + interest * 0.4)
 
 # =============================================================================
+# CHECK USER TIMEOUT
+# =============================================================================
+
+def check_session_timeout(session_context: dict) -> bool:
+    """Returns True if session has been idle beyond TIMEOUT_SECONDS."""
+    last_active = session_context.get('last_active', 0)
+    return (time.time() - last_active) > TIMEOUT_SECONDS
+
+# =============================================================================
 # MAIN ORCHESTRATION LOGIC
 # =============================================================================
 
@@ -442,24 +554,60 @@ def system_step(user_input: str, prompt_complexity: str = "low",
     if api_clients is None:
         api_clients = shared_memory.get('api_clients', {})
 
-    # User profile swwitch detection
+    # SESSION TIMEOUT CHECK
+    session_ctx = shared_memory['session_context']
+    force_profile_reload = False
+    if check_session_timeout(session_ctx):
+        print("[SESSION] Idle timeout — re-authentication required")
+        try:
+            user_id = prompt_auth(shared_memory)
+            force_profile_reload = True
+            # Re-apply profile for returning user
+        except PermissionError as e:
+            return {'status': 'UNAUTHORIZED', 'output': str(e)}
+
+    # Update last_active on every valid step
+    session_ctx['last_active'] = time.time()
+
+    # User profile switch detection
     if user_id and shared_memory.get('user_profile_kb'):
         upkb = shared_memory['user_profile_kb']
         current_user = shared_memory.get('active_user')
 
-        if current_user != user_id:
+        if current_user != user_id or force_profile_reload:
             # Save outgoing user's RAW_Q
             if current_user:
                 outgoing = upkb['load'](current_user)
                 outgoing['last_raw_q'] = shared_memory[
                     'session_context'].get('RAW_Q')
                 upkb['save'](current_user, outgoing)
+                upkb['update_complaint'](
+                    current_user,
+                    shared_memory.get('complaint_count', 0),
+                    shared_memory.get('persistent_complainer', False)
+                )
 
             # Load incoming user profile and RAW_Q
             incoming = upkb['load'](user_id)
             if incoming.get('last_raw_q'):
-                shared_memory['session_context']['RAW_Q'] = \
-                    incoming['last_raw_q']
+                # Pull the kernel from shared memory (the 'manifold_instance' equivalent)
+                kernel = shared_memory.get('cpol_instance')
+
+                if kernel and hasattr(kernel, 'ratchet'):
+                    # 1. Update the seed to the user's persisted state
+                    kernel.raw_q = incoming['last_raw_q']
+                    
+                    # 2. Ratchet forward (this advances the manifold state)
+                    kernel.ratchet()
+
+                    # 3. Update the session_context so the rest of the OS is in sync
+                    shared_memory['session_context']['RAW_Q'] = kernel.raw_q
+
+                    print(f"[CRYPTO] Manifold ratcheted for user: {user_id}")
+                else:
+                    # Fallback: If no kernel exists, update the seed for the next init
+                    shared_memory['session_context']['RAW_Q'] = incoming['last_raw_q']
+                    print(f"[WARNING] No active manifold. RAW_Q queued for next initialization.")
 
             # Apply personality weights
             shared_memory['personality_weights'] = \
@@ -469,6 +617,13 @@ def system_step(user_input: str, prompt_complexity: str = "low",
             print(f"[USER_KB] User context: {user_id} | "
                   f"Abstraction: {incoming['abstraction_default']} | "
                   f"Sessions: {incoming['session_count']}")
+
+            # Restore complaint state from previous session
+            complaint_state = upkb['get_complaint'](user_id)
+            shared_memory['complaint_count'] = complaint_state['complaint_count']
+            shared_memory['persistent_complainer'] = complaint_state['persistent_complainer']
+            print(f"[USER_KB] Complaint state restored: "
+                  f"count={complaint_state['complaint_count']}")
 
     # Handle commands (if input starts with /)
     if user_input.startswith('/'):
