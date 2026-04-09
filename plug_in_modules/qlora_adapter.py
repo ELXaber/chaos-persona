@@ -1,3 +1,9 @@
+# The bitsandbytes library has historically been Linux/CUDA only — Mac MPS support is improving, but not guaranteed on the M-series chip.
+# On a Mac Mini, test with pip install bitsandbytes and check if 4-bit quantization works on MPS.
+# If not, the fallback is 8-bit or straight float16 without quantization, which will use more RAM but will run.
+# The Ollama bridge at the bottom (export_to_ollama_modelfile, merge_adapter_weights) is the path to getting a fine-tuned adapter running locally — you train with HuggingFace, merge the LoRA weights back into the base model, then import to Ollama.
+# The CAIOS.txt system prompt gets baked into the Modelfile, so it loads automatically without needing to pass it every call.
+
 #V04082026
 # =============================================================================
 # CAIOS — QLoRA Adapter Template
