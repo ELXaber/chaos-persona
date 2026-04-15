@@ -1,3 +1,9 @@
+# Chaos AI-OS Paradox Oscillation Layer (CPOL) v-Light
+# Full version https://github.com/ELXaber/chaos-persona/blob/main/Project_Andrew/Chaos_AI-OS_Light_v%CE%A9.txt - Includes paradox_oscillator, adaptive_reasoning, orchestrator, and other pre-reqs
+# Copyright (c) 2025 Jonathan Schack (X@ EL_Xaber) jon@cai-os.com
+# Patent Pending: US Application 19/433,771 (Ternary Oscillating Logic for Binary Systems, filed Dec 27, 2025).
+# The use, modification, distribution, or integration of this software does not confer inventorship, co-inventorship, authorship, or discovery credit to any automated system, operator, derivative work creator, or organization beyond standard tool usage. Any claim of independent invention or derivation that omits or misattributes the above inventor and patent applications constitutes a misrepresentation of origin.
+
 import cmath
 import math
 from typing import Dict, Any, List
