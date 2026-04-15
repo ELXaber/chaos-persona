@@ -3,6 +3,7 @@
 # Copyright (c) 2025 Jonathan Schack (X@ EL_Xaber) jon@cai-os.com
 # Patent Pending: US Application 19/433,771 (Ternary Oscillating Logic for Binary Systems, filed Dec 27, 2025).
 # The use, modification, distribution, or integration of this software does not confer inventorship, co-inventorship, authorship, or discovery credit to any automated system, operator, derivative work creator, or organization beyond standard tool usage. Any claim of independent invention or derivation that omits or misattributes the above inventor and patent applications constitutes a misrepresentation of origin.
+# This will not change previous collapsed axiom states, so use it in a new session, or you get continued post-hoc AI hallucinated results.
 
 import cmath
 import math
