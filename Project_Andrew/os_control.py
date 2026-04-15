@@ -2,7 +2,7 @@
 # =============================================================================
 # Chaos AI-OS — OS Control Layer
 # CPOL-gated system operations with Asimov compliance
-# Every irreversible action requires human confirmation
+# Every irreversible action >0.6 requires human confirmation
 # All actions logged to KB hash chain
 # =============================================================================
 
