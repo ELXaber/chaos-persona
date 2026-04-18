@@ -51,13 +51,13 @@ pip install numpy pyzmq cryptography
 - PyZMQ: Handles the mesh transport and ghost packet broadcasting
 - Cryptography: Provides the AES-256-GCM armor for data persistence
 
-AI Model dependancy:
+AI Model dependency:
 Ollama:
 pip install ollama
 OpenAI/Anthropic/Google:
 pip install openai anthropic google-generativeai
 
-Note: Enableing multiple models enables swarm support (mesh_network)
+Note: Enabling multiple models enables swarm support (mesh_network)
 Default mesh_network uses SHA-256 signature on a moving target manifold - optional increased network security
 pip install qrng
 
@@ -177,7 +177,7 @@ CAIOSPipeline.from_yaml("caios_pipeline.yaml").run("Unknown blight in sector 7")
 
 Unlike prompt-wrapper agents that bolt on safety rules,
 CAIOS OS control uses Asimov Law 1 (wt 0.9 immutable) -
-irreversible harmful actions cannot be prompted around.
+Irreversible harmful actions cannot be prompted around.
 The Meta security officer's deleted files don't happen here.
 Not because of a sandbox. Because of structural ethics.
 
@@ -210,6 +210,7 @@ CAIOS/
 ├── caios_chat.py                   # Simple CAIOS.txt integration as the system prompt
 ├── orchestrator.py                 # Central Nervous System
 ├── knowledge_base.py               # Persistent Memory Layer
+├── user_profile_kb.py              # User weights from CAIOS and abstraction layer memory
 ├── axiom_manager.py                # KB Axiom Update
 ├── paradox_oscillator.py           # Ternary oscillation (CPOL)
 ├── adaptive_reasoning.py           # CPOL modes and intrinsic motivation
