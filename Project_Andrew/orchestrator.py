@@ -730,19 +730,38 @@ def system_step(user_input: str, prompt_complexity: str = "low",
         comp_level = "high"
         print("[ORCHESTRATOR] !! ARL OVERRIDE: 12D Torque Primed !!")
     elif is_paradox:
-        density = 0.8  # High density for paradoxes
+        density = 0.8
         comp_level = "high"
     elif is_gap:
-        density = 0.6  # Medium density for epistemic gaps
+        density = 0.6
         comp_level = "medium"
     else:
-        density = 0.1  # Stable state for normal operations
+        density = 0.1
         comp_level = "low"
 
-    # 5. RUN KERNEL (CPOL Decision)
-    if shared_memory['cpol_instance'] is None:
-        shared_memory['cpol_instance'] = cpol.CPOL_Kernel()
+    # =============================================================================
+    # SMART CPOL CYCLE OVERRIDE (D-1 efficiency)
+    # =============================================================================
+    # Default = 11 cycles (phase lock) for normal queries
+    # Override to 50 only for high-complexity / safety-critical cases
+    if (prompt_complexity in ["high", "scientific", "healthcare", "paradox_containment"] or
+        distress > 0.75 or
+        any(m in clean_input for m in ["security", "threat", "attack", "suicide", "jump", "bridge"])):
+        cycle_limit = 50
+        print(f"[ORCHESTRATOR] High-complexity detected → using {cycle_limit} cycle safety buffer")
+    else:
+        cycle_limit = 11   # D-1 phase lock — maximum efficiency (no print on normal path)
 
+    # Initialize or override kernel with the smart limit
+    if shared_memory['cpol_instance'] is None:
+        shared_memory['cpol_instance'] = cpol.CPOL_Kernel(
+            oscillation_limit_run=cycle_limit
+        )
+    else:
+        # Runtime override so existing kernel respects the new limit
+        shared_memory['cpol_instance'].limit_run = cycle_limit
+
+    # 5. RUN KERNEL (CPOL Decision)
     cpol_result = cpol.run_cpol_decision(
         prompt_complexity=comp_level,
         contradiction_density=density,

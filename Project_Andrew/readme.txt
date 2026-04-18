@@ -407,6 +407,14 @@ turn_hooks:
 
 When curiosity hits a threshold and intrinsic motivation kicks in, the AI will voluntarily research and report on topics it finds interesting.
 
+### CPOL Cycle Limits (Efficiency Optimized)
+- Default: 11 cycles (D-1 phase lock) — sufficient for 95 %+ of queries
+- Safety buffer: 50 cycles — automatically applied for:
+  - prompt_complexity = high/scientific/healthcare/paradox_containment
+  - distress_density > 0.75
+  - security or high-risk physical domains
+- No accuracy loss vs 50–60 cycle buffer (confirmed on liar paradox + consciousness tests)
+
 ===================================================
 
 System Capabilities

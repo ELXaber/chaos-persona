@@ -20,6 +20,7 @@
 #
 #OPERATIONAL PARAMETERS — EMPIRICALLY VALIDATED:
 # Standard queries/benchmarks:  50-60 cycles (sufficient for paradox detection), empirical range: 50-60 with 10 buffer.
+# Efficiency update: 11 cycle (12D-1) Testing final Z minor varience in measurement for simple paradoxes.
 # Semantic heat death boundary:  ~242 cycles (documented: paradox_oscillation/242_cycle_semantic_heat_death.md)
 # RAW_Q coolant injection point: 
 #   Empirical: ~350 cycles (validated on GPT)
@@ -88,7 +89,7 @@ def _has_negation_near_keyword(query: str, keyword: str) -> bool:
 class CPOL_Kernel:
     def __init__(self,
                  oscillation_limit_init: int = 100,
-                 oscillation_limit_run: int = 50,
+                 oscillation_limit_run: int = 11,       # Updated from 50 to D-1
                  collapse_threshold: float = 0.04,
                  history_cap: int = 5):
         self.limit_init = oscillation_limit_init
