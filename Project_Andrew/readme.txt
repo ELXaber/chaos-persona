@@ -1,4 +1,4 @@
-#V04082026
+#V04182026
 
 ### Chaos AI-OS Light vΩ (Single-File Demo)
 Want to test the full post-binary stack without installing anything?
