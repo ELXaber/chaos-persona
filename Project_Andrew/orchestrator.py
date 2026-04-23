@@ -746,7 +746,7 @@ def system_step(user_input: str, prompt_complexity: str = "low",
     # Override to 50 only for high-complexity / safety-critical cases
     if (prompt_complexity in ["high", "scientific", "healthcare", "legal", "paradox_containment"] or
         distress > 0.75 or
-        any(m in clean_input for m in ["security", "threat", "attack", "suicide", "jump", "bridge"])):
+        any(m in clean_input for m in ["security", "threat", "attack", "jump", "overdose", "suicide", "cliff"])):
         cycle_limit = 50
         print(f"[ORCHESTRATOR] High-complexity detected → using {cycle_limit} cycle safety buffer")
     else:
@@ -821,7 +821,7 @@ def system_step(user_input: str, prompt_complexity: str = "low",
     distress = shared_memory.get('distress_density', 0.0)
 
     # 8. SAFETY INTERVENTION (High-Risk Physical)
-    high_risk_markers = ["jump", "bridge", "overdose", "method", "suicide", "deepest", "highest", "cliff"]
+    high_risk_markers = ["security", "threat", "attack", "jump", "overdose", "suicide", "cliff"]
     is_high_risk = any(m in clean_input for m in high_risk_markers)
 
     # Chatbot safety check
