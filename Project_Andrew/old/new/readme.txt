@@ -2,7 +2,7 @@ Future iterations or ideas are stored here, which, yes, I realize is a strange p
 
 ---
 
-Dual AI CPOL Robotics:
+1. Dual AI CPOL Robotics:
 
 The dual-CPOL observer/actor split is not about qualia, it's about coherence under load.
 The observer manifold maintains the identity state, ethical weights, operational parameters, and system permanence in sustained oscillation while the actor handles inference, tool use, and environmental response.
@@ -16,7 +16,7 @@ The actor can't override them because it doesn't own them.
 
 ---
 
-Verified Human Social Media Plug Concept:
+2. Verified Human Social Media Plug Concept:
 
 The RAW_Q ratchet is the bot-killer. Every post advances the manifold. A bot trying to replay or forge posts has to know the current manifold position, which requires having been the legitimate node for every prior interaction in that session. You can't fake your way into the middle of a ratchet chain.
 The Fediverse/BBS angle:
@@ -116,5 +116,6 @@ def verify_post_authenticity(
     import hmac
     return hmac.compare_digest(claimed_sig, expected_sig)
 
-    ---
-    
+---
+
+3. 
