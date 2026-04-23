@@ -744,7 +744,7 @@ def system_step(user_input: str, prompt_complexity: str = "low",
     # =============================================================================
     # Default = 11 cycles (phase lock) for normal queries
     # Override to 50 only for high-complexity / safety-critical cases
-    if (prompt_complexity in ["high", "scientific", "healthcare", "paradox_containment"] or
+    if (prompt_complexity in ["high", "scientific", "healthcare", "legal", "paradox_containment"] or
         distress > 0.75 or
         any(m in clean_input for m in ["security", "threat", "attack", "suicide", "jump", "bridge"])):
         cycle_limit = 50
