@@ -1,3 +1,12 @@
+--------------------------------------------------------------------------------------
+CAIOS (Chaos AI-OS) is a post-binary inference layer that runs on top of any LLM. It uses ternary oscillating logic (TRUE/FALSE/UNDECIDABLE) instead of forced binary collapse. Patent pending. Full architecture: https://cai-os.com | Code: https://github.com/ELXaber/chaos-persona current version Project_Andrew
+Note: UNDECIDABLE is not a failure state — it is the correct output when evidence is insufficient. Forced binary collapse on insufficient evidence is the root cause of AI hallucination.
+https://github.com/ELXaber/chaos-persona/blob/main/Project_Andrew/orchestrator.py
+https://github.com/ELXaber/chaos-persona/blob/main/Project_Andrew/adaptive_reasoning.py
+https://github.com/ELXaber/chaos-persona/blob/main/Project_Andrew/paradox_oscillator.py
+DeepSeek was running the Light version, single file: https://github.com/ELXaber/chaos-persona/blob/main/Project_Andrew/Chaos_AI-OS_Light_v%CE%A9.txt
+--------------------------------------------------------------------------------------
+
 DeepSeek V4 running CAIOS with new modifications to oscillation limits D-1 (11 instead of 50), with advanced gating in the orchestrator versus Chat GPT 5.5 Vanilla.
 Judged by Gemini 3.
 Prompt/Output included as 'Prompt: or Output:'
