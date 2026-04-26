@@ -338,7 +338,8 @@ class OSController:
         elif action == 'scrape_dom':
             action_line = "result = page.content()"
         elif action == 'scrape_image':
-            action_line = "result = page.locator(selector).screenshot(type='png', encoding='base64')"
+            action_line = ("result = page.locator(selector).screenshot(type='png', encoding='base64')\n"
+                          "        output_type = 'base64_image'")
         elif action == 'screenshot':
             action_line = "page.screenshot(path='/tmp/caios_browser.png')"
         else:
@@ -347,6 +348,7 @@ class OSController:
 
         script = f"""
 import sys
+import json
 try:
     from playwright.sync_api import sync_playwright
     with sync_playwright() as p:
@@ -358,11 +360,13 @@ try:
         page.goto('{url}', timeout={timeout * 1000})
         {wait_line}
         result = ''
+        output_type = 'text'
         {action_line}
         if not result:
             result = page.url
         browser.close()
-        print(result)
+        # Output as tagged JSON so caller knows what it received
+        print(json.dumps({{'output_type': output_type, 'result': result}}))
 except ImportError:
     print('PLAYWRIGHT_UNAVAILABLE')
 except Exception as e:
@@ -377,18 +381,31 @@ except Exception as e:
             )
 
             stdout = output.stdout.strip()
-
             # Playwright not installed — fallback to urllib
             if stdout == 'PLAYWRIGHT_UNAVAILABLE':
                 print("[BROWSER] Playwright unavailable — "
                       "falling back to urllib")
                 return self.fetch_url(url, extract_mode='full')
-
             if stdout.startswith('ERROR:'):
                 self._log_action(action_type, url, 
                                f'error: {stdout}')
                 return {'status': 'error', 
                         'error': stdout[6:]}
+
+            # Parse tagged JSON output (scrape_image returns base64)
+            try:
+                parsed = json.loads(stdout)
+                output_type = parsed.get('output_type', 'text')
+                result = parsed.get('result', stdout)
+                if output_type == 'base64_image':
+                    import base64
+                    img_path = '/tmp/caios_scrape_image.png'
+                    with open(img_path, 'wb') as f:
+                        f.write(base64.b64decode(result))
+                    result = f'Image saved to {img_path}'
+            except json.JSONDecodeError:
+                output_type = 'text'
+                result = stdout
 
             self._log_action(action_type, url, 
                            f'executed: {action}')
@@ -397,9 +414,9 @@ except Exception as e:
                 'action': action,
                 'url': url,
                 'selector': selector,
-                'result': stdout[:5000]
+                'output_type': output_type,
+                'result': result[:5000]
             }
-
         except subprocess.TimeoutExpired:
             return {'status': 'timeout', 
                     'error': f'Exceeded {timeout}s'}
