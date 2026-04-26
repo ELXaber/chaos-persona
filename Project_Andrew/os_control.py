@@ -1,4 +1,4 @@
-#V04142026
+#V04252026
 # =============================================================================
 # Chaos AI-OS — OS Control Layer
 # CPOL-gated system operations with Asimov compliance
@@ -294,7 +294,7 @@ class OSController:
         CPOL-gated by action type.
 
         action: 'navigate' | 'click' | 'fill' | 'select' |
-                'submit' | 'scrape' | 'screenshot'
+                'submit' | 'scrape' | 'scrape_image' | 'scrape_dom' | 'screenshot'
         selector: CSS selector, input name, or button text
         value: text to fill (for 'fill' action)
         wait_for: CSS selector to wait for before acting
@@ -335,6 +335,10 @@ class OSController:
             action_line = f"page.click('{selector or \"button[type=submit]\"}')"
         elif action == 'scrape':
             action_line = "result = page.inner_text('body')"
+        elif action == 'scrape_dom':
+            action_line = "result = page.content()"
+        elif action == 'scrape_image':
+            action_line = "result = page.locator(selector).screenshot(type='png', encoding='base64')"
         elif action == 'screenshot':
             action_line = "page.screenshot(path='/tmp/caios_browser.png')"
         else:

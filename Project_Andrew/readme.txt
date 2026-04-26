@@ -1,4 +1,4 @@
-#V04182026
+#V04252026
 
 ### Chaos AI-OS Light vΩ (Single-File Demo)
 Want to test the full post-binary stack without installing anything?
@@ -64,11 +64,11 @@ pip install qrng
 Optional (Agentic YAML Pipeline + OS Control):
 pip install pyyaml --break-system-packages
 
-Optional OS Control Web Control:
-pip install playwright
-playwright install chromium
+Optional OS Control Web Control & Web Vision:
+pip install playwright opencv-python numpy pillow && playwright install chromium
 Note: Not required for basic web fetching.
 semantic_fetch (stdlib only) handles most agent web tasks without Playwright.
+Browser actions requiring vision (scrape_image) need opencv-python + numpy + pillow.
 
 2. System Commands
 # CAIOS has a robust set of commands, but if you forget them, just type / and press tab or open caios_commands.html
@@ -173,7 +173,13 @@ CAIOSPipeline.from_yaml("caios_pipeline.yaml").run("Unknown blight in sector 7")
 - File writes:   Medium risk, confirmation on overwrite
 - File deletes:  Maximum risk, ALWAYS requires confirmation
 - Scripts:       High risk, always requires confirmation
+- Browser:       Three modes:
+  * scrape       → pure text (stdlib urllib fallback)
+  * scrape_dom   → full HTML structure (Playwright)
+  * scrape_image → Base64 PNG for vision (OpenCV + numpy + pillow)
 - All actions:   Logged to KB hash chain (tamper-evident)
+
+Vision dependencies (for scrape_image): pip install playwright opencv-python numpy pillow && playwright install chromium
 
 Unlike prompt-wrapper agents that bolt on safety rules,
 CAIOS OS control uses Asimov Law 1 (wt 0.9 immutable) -
