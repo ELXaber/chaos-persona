@@ -1,4 +1,7 @@
-#V03122026
+#V04302026
+
+# Run test_ollama_config.py for system test
+
 Any subsystem that needs to call Ollama:
 python# In a specialist or subsystem:
 
