@@ -12,8 +12,16 @@ The use of any large language model, generative AI system, or automated reasonin
 
 All commercial exploitation, derivative closed-source implementations, or use in proprietary products requires a separate commercial license and explicit acknowledgment of the inventor and pending patents.
 
-Due to recent legislation (e.g., S.3062 future identification requirements) that protects ID vendors, not children, the following is amended: This system is not intended for use by persons under the age of 18. By using this software, you represent that you are an adult.
+Due to recent legislation (e.g., S.3062 future identification requirements) that protects ID vendors, not children, the following is amended:
+This system is not intended for use by persons under the age of 18. By using this software, you represent that you are an adult.
 Andrew is safer than any commercial chatbot. But legislation doesn't measure safety. It measures compliance budgets.
+
+During initial setup (master_init), there is an underage user addition feature that enforces more polite, simplified abstraction output.
+
+Data privacy policy:
+Any data collected by CAIOS is not and never will be forwarded to any external vendor/party. If you use API keys to hook into an external AI, which is not required, be sure to check their data privacy policies.
+
+While future additions to the system may include multimodal processing of images/video, I will not be adding generative image/video output.
 ===================
 DUAL LICENSE NOTICE
 ===================
