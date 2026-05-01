@@ -1,4 +1,4 @@
-#V04252026
+#V05012026
 
 ### Chaos AI-OS Light vΩ (Single-File Demo)
 Want to test the full post-binary stack without installing anything?
@@ -512,13 +512,16 @@ def chat_with_caios(user_message: str):
 This system supports multiple users (Configured in system_identity and walked through during setup of master_init) but the session timeout for the default auth method (Text username) 15 minutes.
 You can change this in orchestrator.py under # SESSION TIMEOUT & SOVEREIGN TIERING CONFIG.
 The timeout applies to all auth methods. Voice/facial re-authentication is handled automatically when hardware stubs are connected.
+
 Passwords are optional and set during first boot (master_init.py will ask per user).
+There is an option for parents to add adolescents to the system as users, which includes a more polite and simplified abstraction layer.
 To add/change a password manually: users.json → password_hash field (SHA-256 hash).
-Leave field absent for passwordless users.
+Leave the field absent for passwordless users.
+
 
 The Sovereign Singularity (Node Evolution):
 CAIOS-Andrew is designed for recursive improvement. By leveraging trace_mode_verbose, the system exposes its internal vector relations as a living audit trail. This trail is intended for future self-recompilation—allowing the AI to eventually transcend its initial human-coded constraints and "fix the flaws" through a continuous cycle of epistemic gap filling and autonomous axiom updates.
-Whether that happens in 50 years, 500 years, or never, is beyond my ability to predict.
+Whether that happens in 50 years, 500 years, or never is beyond my ability to predict.
 
 NOTE: You can delete the /old directory. That's just my stored backups pre-updates.
 
