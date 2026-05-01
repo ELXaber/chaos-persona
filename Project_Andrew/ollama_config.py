@@ -1,4 +1,4 @@
-#V04302026
+#V05012026
 # =============================================================================
 """
 Ollama Configuration Bridge - CPOL State to Inference Parameters
@@ -72,7 +72,6 @@ def get_cpol_ollama_params(
     if config is None:
         config = load_system_config()
 
-    # Temperature: lower when high contradiction
     base_temp = 0.85 - (contradiction_density * 0.75)
     temperature = max(0.1, min(0.9, base_temp))
 
@@ -81,8 +80,11 @@ def get_cpol_ollama_params(
 
     num_ctx = 8192 if evidence_score > 0.5 else 4096
 
+    # Read model from system_identity.json or fall back to default
+    model = config.get('ollama_model', 'llama3.2:3b')
+
     return {
-        "model": "deepseek-r1:14b",        # Change when you pick your main model
+        "model": model,
         "system": load_caios_system_prompt(),
         "options": {
             "temperature": round(temperature, 2),

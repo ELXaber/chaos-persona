@@ -1,4 +1,4 @@
-#V04302026
+#V05012026
 #!/usr/bin/env python3
 """
 CAIOS Inference Wrapper
@@ -104,36 +104,24 @@ def get_personalized_prompt():
 
 def select_client(clients: Dict[str, Any]) -> tuple:
     """Let user choose a model from available clients."""
-
-    # Check if Ollama is available
-    try:
-        import ollama_config
-        ollama_available = ollama_config.check_ollama_available()
-    except:
-        ollama_available = False
-
-    print("\nAvailable models:")
     options = list(clients.keys())
 
-    # Add Ollama as option if running
-    if ollama_available:
-        options.insert(0, "ollama_local")
-        print(f"  1. OLLAMA (Local - Tier {ollama_config.NODE_TIER})")
-        offset = 1
-    else:
-        offset = 0
-
-    for i, provider in enumerate(options[offset:], 1 + offset):
-        print(f"  {i}. {provider.upper()}")
-
-    if not clients:
-        print("No API clients available. Run master_init.py first.")
+    if not options:
+        print("No clients available. Run master_init.py first.")
         sys.exit(1)
 
     print("\nAvailable models:")
-    options = list(clients.keys())
     for i, provider in enumerate(options, 1):
-        print(f"  {i}. {provider.upper()}")
+        if provider == 'ollama_local':
+            try:
+                import ollama_config
+                print(f"  {i}. OLLAMA Local "
+                      f"(Tier {ollama_config.NODE_TIER} | "
+                      f"{ollama_config.SYSTEM_CONFIG.get('ollama_model', 'local')})")
+            except Exception:
+                print(f"  {i}. OLLAMA Local")
+        else:
+            print(f"  {i}. {provider.upper()}")
 
     while True:
         try:
@@ -141,8 +129,7 @@ def select_client(clients: Dict[str, Any]) -> tuple:
             if 1 <= choice <= len(options):
                 provider = options[choice - 1]
                 return provider, clients[provider]
-            else:
-                print(f"Please enter a number between 1 and {len(options)}.")
+            print(f"Please enter a number between 1 and {len(options)}.")
         except ValueError:
             print("Please enter a valid number.")
 
