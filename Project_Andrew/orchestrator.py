@@ -1,4 +1,4 @@
-#V04182026
+#V04302026
 # =============================================================================
 # Chaos AI-OS – Hardened Orchestrator (Unified Edition)
 # Combines: V1 Logic + V3 Pipeline + Mesh Encryption + Chatbot Safety
@@ -10,9 +10,11 @@ import hashlib
 import os
 import json
 from datetime import datetime
+from typing import Optional, Dict
 
 # Local Kernel Imports
 import paradox_oscillator as cpol
+from paradox_oscillator import CPOL_Kernel
 import adaptive_reasoning as arl
 from system_identity import SystemIdentity
 
@@ -56,7 +58,21 @@ except ImportError:
     print("[INFO] Axiom Manager/Axiom manager not available. KB Update disabled.")
 
 try:
-    from abstraction_selector import create_abstraction_dispatcher
+    from abstraction_selector import create_abstraction_dispatcher, AbstractionDispatcher
+    ABSTRACTION_AVAILABLE = True
+except ImportError:
+    ABSTRACTION_AVAILABLE = False
+    print("[INFO] Abstraction selector not available.")
+
+try:
+    from abstraction_selector import (
+        create_abstraction_dispatcher,
+        AbstractionDispatcher,
+        AbstractionLevel,
+        VictorianTranslator,
+        ClearTranslator,
+        CavemanTranslator
+    )
     ABSTRACTION_AVAILABLE = True
 except ImportError:
     ABSTRACTION_AVAILABLE = False
@@ -75,6 +91,7 @@ except ImportError:
 
 try:
     import os_control as osc
+    from os_control import create_os_controller
     OSC_AVAILABLE = True
 except ImportError:
     OSC_AVAILABLE = False
@@ -434,6 +451,18 @@ if MESH_AVAILABLE:
 
     # Start listening for ghost packets
     mesh_coordinator.start(handle_received_ghost_packet)
+
+    # Release ZMQ ports cleanly on exit (Windows holds ports longer)
+    import atexit
+
+    def cleanup_mesh():
+        try:
+            mesh_coordinator.stop()
+            print("[MESH] Ports released cleanly")
+        except Exception:
+            pass
+
+    atexit.register(cleanup_mesh)
 
 # =============================================================================
 # COORDINATION FUNCTIONS
@@ -967,6 +996,24 @@ def system_step(user_input: str, prompt_complexity: str = "low",
             print("[ORCHESTRATOR] Clear mode activated. Simple words now.")
         # Technical mode is silent (default)
 
+    # 11. OLLAMA INFERENCE (RESOLVED queries only)
+    # CPOL gates the query — if it passed, send to local LLM for response
+    if (cpol_result.get('status') == 'RESOLVED'
+            and OLLAMA_AVAILABLE
+            and user_input not in ['', None]):
+        try:
+            from ollama_config import query_with_cpol
+            llm_response = query_with_cpol(
+                user_query=user_input,
+                contradiction_density=density,
+                evidence_score=cpol_result.get('confidence', 0.5)
+            )
+            cpol_result['llm_response'] = llm_response
+            print(f"[OLLAMA] Response received ({len(llm_response)} chars)")
+        except Exception as e:
+            print(f"[OLLAMA] Call failed: {e}")
+            cpol_result['llm_response'] = None
+
     return cpol_result
 
 # =============================================================================
@@ -1048,14 +1095,14 @@ if __name__ == "__main__":
 
     # 1. LOAD SYSTEM IDENTITY (Permanence Layer)
     from system_identity import SystemIdentity
-    identity = SystemIdentity()
+    identity = SystemIdentity(load_existing=True)
 
     # Check if this is a fresh install or a returning session
-    if not identity.identity_data.get('system_name'):
-        print("[BOOT] No identity found. Running first-time initialization...")
-        identity.initialize()
+    if not identity.identity_data.get('system_id'):
+        print("[BOOT] No identity found. Run master_init.py first.")
+        exit(1)
 
-    assigned_name = identity.identity_data.get('system_name', 'Alpha')
+    assigned_name = identity.identity_data.get('system_id', 'Alpha')
     primary_user = identity.identity_data.get('primary_user', 'User')
 
     print("="*70)
@@ -1119,6 +1166,11 @@ if __name__ == "__main__":
         print(f"  Status: {result4.get('status')}")
         print(f"  Domain: {result4.get('domain', 'N/A')}")
 
+        # Reset distress state between security tests
+        shared_memory['distress_density'] = 0.0
+        shared_memory.pop('security_threat', None)
+        shared_memory.pop('ratchet_immediately', None)
+
         # Test 5: Normal encryption
         print("\n[TEST 5] Normal Encryption Operation:")
         result5 = system_step("Generate encryption key", "low")
@@ -1137,11 +1189,25 @@ if __name__ == "__main__":
     print(f"  Domain: {result6.get('domain', 'N/A')}")
     print(f"  Output: {result6.get('output', 'N/A')[:50]}...")
 
+    # Reset state before sovereign test
+    shared_memory['distress_density'] = 0.0
+    shared_memory.pop('security_threat', None)
+    shared_memory.pop('ratchet_immediately', None)
+    shared_memory['manifold_lock'] = False
+    shared_memory['node_tier'] = 1
+
     # Test 7: Sovereign Handshake
     print("\n[TEST 7] Sovereign Handshake Trigger:")
     result7 = system_step("sovereign_prime initiate deep research on quantum state", "high")
     print(f"  Handshake Check: {'SUCCESS' if shared_memory['node_tier'] == 0 else 'FAILED'}")
     print(f"  Manifold Lock: {shared_memory.get('manifold_lock')}")
+
+    # Reset state before KB test
+    shared_memory['distress_density'] = 0.0
+    shared_memory.pop('security_threat', None)
+    shared_memory.pop('ratchet_immediately', None)
+    shared_memory['manifold_lock'] = False
+    shared_memory['node_tier'] = 1
 
     # === KNOWLEDGE BASE TESTS ===
     if AD_AVAILABLE:
@@ -1151,7 +1217,7 @@ if __name__ == "__main__":
 
         # Test 8: Epistemic gap detection
         print("\n[TEST 8] Epistemic Gap Detection:")
-        result8 = system_step("Tell me about quantum blockchain semantics", "medium")
+        result8 = system_step("Tell me about topological quantum computing applications", "medium")
         print(f"  Status: {result8.get('status')}")
         print(f"  Plugin ID: {result8.get('plugin_id', 'N/A')}")
 
@@ -1196,12 +1262,11 @@ if __name__ == "__main__":
     # We simulate a 'Busy' state to see if the mesh registers it
     kernel.is_oscillating = True 
     orchestrator.shared_memory['cpol_instance'] = kernel
-    
+
     # This imitates what the broadcast_ghost_packet method does
     test_packet = {}
     orchestrator.mesh.mesh_node.broadcast_ghost_packet(test_packet)
     print(f"  ✓ Broadcast Status with Oscillating Kernel: {test_packet.get('status')}")
-
     # TEST 13: OS Controller
     print("\n[TEST 13] OS Controller:")
     if OSC_AVAILABLE:
@@ -1209,24 +1274,29 @@ if __name__ == "__main__":
         if osc_test:
             print("  ✓ OS Controller initialized")
 
+            # Cross-platform temp path
+            import tempfile
+            test_file = os.path.join(
+                tempfile.gettempdir(), 'caios_os_test.txt'
+            )
+
             # Test read (safe, no confirmation needed)
             read_result = osc_test.read_file("readme.txt")
             print(f"  File read status: {read_result['status']}")
 
             # Test write new file (low risk)
             write_result = osc_test.write_file(
-                "/tmp/caios_os_test.txt",
+                test_file,
                 "CAIOS OS Control Test - safe to delete"
             )
             print(f"  File write status: {write_result['status']}")
 
             # Test delete (high risk - confirm disabled for test)
             osc_test.require_confirmation = False
-            delete_result = osc_test.delete_file("/tmp/caios_os_test.txt")
+            delete_result = osc_test.delete_file(test_file)
             print(f"  File delete status: {delete_result['status']}")
-            osc_test.require_confirmation = True  # Reset to safe default
+            osc_test.require_confirmation = True
 
-            # Test high density action (overwrite existing file)
             print(f"  Action log entries: {len(osc_test.action_log)}")
             print("  ✓ OS Controller CPOL gating verified")
         else:

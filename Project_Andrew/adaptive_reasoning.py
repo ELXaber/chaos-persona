@@ -1,4 +1,4 @@
-#V03302026
+#V04302026
 # =============================================================================
 # Chaos AI-OS vΩ – Adaptive Reasoning Layer (Unified Edition)
 # Ethical Foundation – Immutable
@@ -429,12 +429,14 @@ def adaptive_reasoning_layer(
     audit_trail = shared_memory.get('audit_trail', [])
     if audit_trail:
         last_event = audit_trail[-1]
-        if last_event.get('event') == 'GHOST_INTERVENTION':
-            if not verify_ghost_signature(last_event, shared_memory):
-                return {
-                    'status': 'error',
-                    'log': '[ARL] Ghost Verification Failed: Reset Authenticity Unverified.'
-                }
+        # Guard against string log entries mixed into audit trail
+        if isinstance(last_event, dict):
+            if last_event.get('event') == 'GHOST_INTERVENTION':
+                if not verify_ghost_signature(last_event, shared_memory):
+                    return {
+                        'status': 'error',
+                        'log': '[ARL] Ghost Verification Failed: Reset Authenticity Unverified.'
+                    }
 
     # 3. Ethics verification (Updated to Chaos AI-OS vΩ)
     # NOTE: This may modify crb_config during crisis (distress > 0.75)

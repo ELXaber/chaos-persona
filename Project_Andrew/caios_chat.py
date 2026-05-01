@@ -1,15 +1,17 @@
-#V03202026
+#V04302026
 #!/usr/bin/env python3
 """
 CAIOS Inference Wrapper
 Simple interactive chat that uses CAIOS.txt as the system prompt and any model client initialized by master_init.py
 """
 
+# Mac OS import readline
+
 import os
 import time
 import json
 import sys
-import readline
+
 from typing import Dict, Any, List
 
 # =============================================================================
@@ -19,14 +21,50 @@ from typing import Dict, Any, List
 SHARED_MEMORY_FILE = "shared_memory.json"  # optional - if you want to save/load
 
 def load_shared_memory() -> Dict[str, Any]:
-    """Load shared memory from file or return empty dict."""
+    """Load shared memory from file or bootstrap from existing config files."""
+    # Try shared_memory.json first
     if os.path.exists(SHARED_MEMORY_FILE):
         try:
             with open(SHARED_MEMORY_FILE, "r", encoding="utf-8") as f:
                 return json.load(f)
         except Exception as e:
             print(f"Warning: Could not load shared_memory.json: {e}")
-    return {}
+
+    # Bootstrap from files master_init.py already wrote
+    memory = {}
+
+    # Load system identity
+    if os.path.exists("system_identity.json"):
+        try:
+            with open("system_identity.json", "r", encoding="utf-8") as f:
+                identity = json.load(f)
+            memory['system_identity'] = identity
+        except Exception:
+            pass
+
+    # Load API client list
+    if os.path.exists("api_clients.json"):
+        try:
+            with open("api_clients.json", "r", encoding="utf-8") as f:
+                config = json.load(f)
+            # Re-initialize actual clients from environment
+            from master_init import load_api_clients
+            memory['api_clients'] = load_api_clients(memory)
+        except Exception:
+            memory['api_clients'] = {}
+    else:
+        memory['api_clients'] = {}
+
+    # Add Ollama as available client if running
+    try:
+        import ollama_config
+        if ollama_config.check_ollama_available():
+            memory['api_clients']['ollama_local'] = 'ollama'
+            memory['node_id'] = ollama_config.SYSTEM_ID
+    except Exception:
+        pass
+
+    return memory
 
 shared_memory = load_shared_memory()
 
@@ -111,40 +149,13 @@ def select_client(clients: Dict[str, Any]) -> tuple:
 
 def chat_with_model(provider: str, client: Any, messages: List[Dict[str, str]]) -> str:
     """Send chat request to selected model."""
-
     if provider == "ollama_local":
-        import ollama_config
-        import requests
-        from paradox_oscillator import ParadoxOscillator
-
-        # Get CPOL state from last user message
+        from ollama_config import query_with_cpol
         user_query = messages[-1]["content"]
-        oscillator = ParadoxOscillator()
-        contradiction_density = oscillator.detect_contradiction(user_query)
-
-        # Get Ollama params with CAIOS.txt system prompt
-        params = ollama_config.get_cpol_ollama_params(
-            contradiction_density=contradiction_density,
-            evidence_score=0.5  # TODO: Add evidence scoring
-        )
-
-        # Build conversation for Ollama
-        # (Ollama doesn't support multi-turn in generate endpoint, might need to use chat endpoint or concatenate history)
-        prompt = "\n".join([
-            f"{msg['role']}: {msg['content']}" 
-            for msg in messages if msg['role'] != 'system'
-        ])
-
-        response = requests.post(
-            ollama_config.OLLAMA_ENDPOINT,
-            json={
-                **params,
-                "prompt": prompt,
-                "stream": False
-            }
-        )
-
-        return response.json()['response']
+        try:
+            return query_with_cpol(user_query=user_query)
+        except Exception as e:
+            return f"[OLLAMA] Error: {str(e)}"
 
     try:
         if provider == "openai":

@@ -1,4 +1,4 @@
-#V04082026
+#V04302026
 # =============================================================================
 # mesh_network.py - CAIOS Mesh Transport Layer
 # Handles ghost packet broadcasting, 7D signature exchange, node discovery
@@ -112,7 +112,29 @@ class MeshNode:
 
         # Publisher socket (broadcasts ghost packets)
         self.publisher = self.context.socket(zmq.PUB)
-        self.publisher.bind(f"tcp://*:{broadcast_port}")
+
+        # Try preferred port, step up if in use (Windows holds ports longer)
+        bound = False
+        for port_offset in range(6):
+            try:
+                self.publisher.bind(
+                    f"tcp://*:{broadcast_port + port_offset}"
+                )
+                self.broadcast_port = broadcast_port + port_offset
+                if port_offset > 0:
+                    print(f"[MESH] Port {broadcast_port} in use — "
+                          f"bound to {self.broadcast_port}")
+                bound = True
+                break
+            except zmq.error.ZMQError:
+                continue
+
+        if not bound:
+            raise RuntimeError(
+                f"[MESH] No available ports in range "
+                f"{broadcast_port}-{broadcast_port + 5}. "
+                f"Run: netstat -ano | findstr :{broadcast_port}"
+            )
 
         # Subscriber socket (receives ghost packets from other nodes)
         self.subscriber = self.context.socket(zmq.SUB)

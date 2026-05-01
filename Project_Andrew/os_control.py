@@ -1,4 +1,4 @@
-#V04252026
+#V04302026
 # =============================================================================
 # Chaos AI-OS — OS Control Layer
 # CPOL-gated system operations with Asimov compliance
@@ -332,7 +332,8 @@ class OSController:
         elif action == 'select':
             action_line = f"page.select_option('{selector}', '{value}')"
         elif action == 'submit':
-            action_line = f"page.click('{selector or \"button[type=submit]\"}')"
+            selector_to_use = selector if selector else "button[type=submit]"
+            action_line = f"page.click('{selector_to_use}')"
         elif action == 'scrape':
             action_line = "result = page.inner_text('body')"
         elif action == 'scrape_dom':

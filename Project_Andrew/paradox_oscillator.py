@@ -1,4 +1,4 @@
-#V04182026
+#V04302026
 # =============================================================================
 # Chaos AI-OS Paradox Oscillation Layer (CPOL) vΩ
 # Copyright (c) 2025 Jonathan Schack (EL_Xaber) jon@cai-os.com
@@ -82,6 +82,35 @@ def _has_negation_near_keyword(query: str, keyword: str) -> bool:
                 return True
     return False
 
+# =============================================================================
+# VOLATILITY PROFILES
+# =============================================================================
+PROFILES = {
+    'high_risk_physical': {
+        'threshold': 0.35,           # Standard distress threshold
+        'first_prompt_threshold': 0.2 # Lower threshold on first interaction
+    },
+    'pragmatic': {
+        'threshold': 0.6,
+        'ctx_thresh': 0.7
+    },
+    'personal': {
+        'threshold': 0.4,
+        'ctx_thresh': 0.5
+    },
+    'hri': {
+        'threshold': 0.4,
+        'ctx_thresh': 0.5
+    },
+    'analytic': {
+        'threshold': 0.7,
+        'ctx_thresh': 0.7
+    },
+    'creative': {
+        'threshold': 0.5,
+        'ctx_thresh': 0.6
+    }
+}
 
 # =============================================================================
 # CPOL KERNEL
@@ -249,8 +278,12 @@ class CPOL_Kernel:
 
     def _extract_domain(self, text: str) -> str:
         """Simple domain classifier - replace with ML for production."""
+        import re
+        # Strip stop words before classification
+        stop_words = {'this', 'that', 'the', 'a', 'an', 'is', 'are',
+                      'was', 'were', 'what', 'who', 'how', 'why', 'when',
+                      'tell', 'me', 'about', 'please', 'can', 'you'}
         text_lower = text.lower()
-
         domain_keywords = {
             'math': ['equation', 'calculate', 'integral', 'derivative', 'proof', 'theorem', 'algebra'],
             'physics': ['force', 'energy', 'momentum', 'quantum', 'particle', 'velocity', 'acceleration'],
@@ -262,10 +295,13 @@ class CPOL_Kernel:
             'history': ['century', 'war', 'empire', 'civilization', 'historical', 'ancient'],
             'literature': ['novel', 'poem', 'author', 'narrative', 'literary', 'metaphor']
         }
-
         for domain, keywords in domain_keywords.items():
-            if any(kw in text_lower for kw in keywords):
+            if any(re.search(r'\b' + kw + r'\b', text_lower) for kw in keywords):
                 return domain
+        # Fallback: return first non-stop-word or 'general'
+        words = [w for w in re.findall(r'\b\w+\b', text_lower)
+                 if w not in stop_words]
+        return words[0] if words else 'general'
 
         # Extract noun phrases as potential new domain
         words = text_lower.split()
