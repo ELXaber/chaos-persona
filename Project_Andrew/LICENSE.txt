@@ -12,6 +12,8 @@ The use of any large language model, generative AI system, or automated reasonin
 
 All commercial exploitation, derivative closed-source implementations, or use in proprietary products requires a separate commercial license and explicit acknowledgment of the inventor and pending patents.
 
+Due to recent legislation (e.g., S.3062 future identification requirements) that protects ID vendors, not children, the following is amended: This system is not intended for use by persons under the age of 18. By using this software, you represent that you are an adult.
+Andrew is safer than any commercial chatbot. But legislation doesn't measure safety. It measures compliance budgets.
 ===================
 DUAL LICENSE NOTICE
 ===================
