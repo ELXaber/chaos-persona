@@ -1,0 +1,29 @@
+{
+  "system_id": "Andrew",
+  "identity_type": "personal",
+  "primary_user": "Richard Martin",
+  "authorized_users": [
+    "Richard Martin",
+    "Amanda Martin",
+    "Little Miss"
+  ],
+  "initialization_time": "2026-05-01T23:24:36.863662Z",
+  "last_updated": "2026-05-01T23:24:36.864746Z",
+  "auth_method": "TEXT_USERNAME",
+  "authority_weights": {
+    "Richard Martin": 0.01,
+    "Amanda Martin": 0.0,
+    "__sentient_life__": 0.4,
+    "__sentient_crisis__": 0.2,
+    "Little Miss": 0.0
+  },
+  "user_profiles": {
+    "Little Miss": {
+      "display_name": "Emma",
+      "age_group": "child",
+      "content_filter": true,
+      "abstraction_override": "CHILD",
+      "managed_by": "Richard Martin"
+    }
+  }
+}

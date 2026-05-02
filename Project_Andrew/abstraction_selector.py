@@ -1,4 +1,4 @@
-#V03202026
+#V05012026
 # =============================================================================
 # PROJECT ANDREW – Abstraction Selector
 # Purpose: Dynamically detect user comprehension level and select appropriate explanation layer (Technical, Victorian, Clear, Caveman)
@@ -323,11 +323,21 @@ class VictorianTranslator(BaseTranslator):
             else:
                 translated = translated.replace(term, replacement)
 
-        # Handle the Victorian flourish and the Andrew/Galatea prefix
-        prefix = "One is glad to be of service. "
+        # Goblin torque check (before adding prefix)
+        goblin_torque = (
+            context and
+            context.get('contradiction_density', 0) > 0.85 and
+            context.get('volatility', 0) > 0.7 and
+            (hash(context.get('user_input', '')) % 314159 < 100)
+        )
 
-        if context and context.get('formal_request'):
+        # Choose prefix based on goblin state
+        if goblin_torque:
+            prefix = "THE GOBLINS ARE IN THE WALLS. THEY WERE ALWAYS IN THE WALLS.\n\nOne is glad to be of service. "
+        elif context and context.get('formal_request'):
             prefix = "I shall endeavor to explain the matter thusly:\n\n"
+        else:
+            prefix = "One is glad to be of service. "
 
         return f"{prefix}{translated}"
 
@@ -591,7 +601,10 @@ class AbstractionDispatcher:
         context = {
             'formal_request': 'professional' in user_input.lower(),
             'first_explanation': shared_memory.get('first_explanation', True),
-            'level': level.name
+            'level': level.name,
+            'contradiction_density': technical_output.get('confidence', 0.0),
+            'volatility': shared_memory.get('volatility', 0.0),
+            'user_input': user_input
         }
 
         # Translate
