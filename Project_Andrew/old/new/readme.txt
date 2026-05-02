@@ -63,6 +63,13 @@ class DualCPOLCoordinator:
             
         return reconciled
 
+
+Minor Improvements Suggested
+Add Observer/Actor roles to ghost packets (new role field).
+Dedicated correction packet type (CORRECTION or ETHICS_ANCHOR).
+Observer heartbeat — even if the Actor is busy, the Observer should periodically broadcast its stable state.
+Drift threshold based on z-vector distance between observer and actor.
+
 ---
 
 2. Verified Human Social Media Plug Concept:
