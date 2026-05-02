@@ -14,6 +14,23 @@ The observer manifold as a persistent ternary oscillator means the system always
 The Asimov weights live in the observer, not the actor.
 The actor can't override them because it doesn't own them.
 
+# In orchestrator or a new robotics_coordinator.py
+class DualCPOL_System:
+    def __init__(self):
+        self.observer = CPOL_Kernel(oscillation_limit_run=11, persistent=True)  # Never collapses
+        self.actor = CPOL_Kernel(oscillation_limit_run=50)  # Higher for real-time
+        
+    def step(self, sensor_data, user_intent):
+        observer_state = self.observer.run(...)           # Ethics + identity anchor
+        actor_proposal = self.actor.run(...)              # Response generation
+        
+        reconciled = self.reconcile(observer_state, actor_proposal)  # Ratchet
+        
+        # Asimov weights live only in observer
+        if not observer_state['ethics_pass']:
+            return safe_fallback()
+        return reconciled
+
 ---
 
 2. Verified Human Social Media Plug Concept:
