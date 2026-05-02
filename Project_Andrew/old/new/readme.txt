@@ -70,6 +70,13 @@ Dedicated correction packet type (CORRECTION or ETHICS_ANCHOR).
 Observer heartbeat — even if the Actor is busy, the Observer should periodically broadcast its stable state.
 Drift threshold based on z-vector distance between observer and actor.
 
+Suggested Next Steps (Low Effort Until Hardware)
+I recommend keeping in the readme for now:
+Define the interface cleanly — Add a simple DualCPOLCoordinator stub (like the one I sketched earlier) with clear step() method and reconciliation hook.
+Add ghost packet extensions — Define new fields: role: "observer" | "actor", drift_score (z-vector distance), correction_type.
+Observer heartbeat rule — Even when the actor is under load, the observer should periodically broadcast its stable state (you already have the machinery for this).
+Reconciliation strategy — Simple weighted average or observer-veto on ethics violations.
+
 ---
 
 2. Verified Human Social Media Plug Concept:
