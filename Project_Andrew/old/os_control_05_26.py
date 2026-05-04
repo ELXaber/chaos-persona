@@ -20,7 +20,6 @@ IRREVERSIBLE_ACTIONS = {
     'form_submit': 0.85,       # High - irreversible external action
     'execute_script': 0.8,   # High - unknown side effects
     'browser_interact': 0.7,   # Medium-high - external state change
-    'windows_mcp': 0.7,   # Medium-high — depends on tool type
     'network_request': 0.6,  # Medium - depends on destination
     'file_write': 0.4,       # Low-medium - new file creation
     'file_read': 0.1,        # Low - read only, no state change
@@ -284,11 +283,6 @@ class OSController:
             return {'status': 'error', 'error': str(e)}
 
     def browser_interact(self, url: str,
-        # Windows fallback — route to windows_mcp if Playwright unavailable
-        import platform
-        if platform.system() == 'Windows':
-            # Try Playwright first, fall back to windows_mcp scrape
-            pass  # existing code handles PLAYWRIGHT_UNAVAILABLE fallback
                          action: str,
                          selector: str = None,
                          value: str = None,
@@ -427,73 +421,6 @@ except Exception as e:
         except subprocess.TimeoutExpired:
             return {'status': 'timeout', 
                     'error': f'Exceeded {timeout}s'}
-        except Exception as e:
-            return {'status': 'error', 'error': str(e)}
-
-    def windows_mcp(self, tool: str, 
-                    params: Dict[str, Any]) -> Dict[str, Any]:
-        """
-        Execute Windows-MCP tool via subprocess.
-        Windows-only alternative to Playwright for browser/UI control.
-
-        Tool options: click, type, scroll, screenshot, snapshot,
-                      app, shell, scrape, clipboard, process, registry
-
-        Requires: pip install windows-mcp
-        """
-        # Adjust density based on tool risk
-        high_risk_tools = {'shell', 'registry', 'process'}
-        medium_risk_tools = {'click', 'type', 'app', 'clipboard'}
-
-        if tool in high_risk_tools:
-            action_type = 'execute_script'   # 0.8 density — confirm required
-        elif tool in medium_risk_tools:
-            action_type = 'browser_interact' # 0.7 density
-        else:
-            action_type = 'windows_mcp'      # 0.7 density default
-
-        gate = self._gate_action(action_type, tool)
-
-        if gate['decision'] == 'block':
-            self._log_action('windows_mcp', tool, 'blocked')
-            return {'status': 'blocked', 'reason': gate['reason']}
-
-        if gate['decision'] == 'confirm_required':
-            if not self._confirm('windows_mcp', 
-                                f"{tool}: {json.dumps(params)}"):
-                self._log_action('windows_mcp', tool, 'denied_by_user')
-                return {'status': 'denied', 
-                        'reason': 'User denied confirmation'}
-
-        # Build MCP command
-        cmd = f"windows-mcp {tool} {json.dumps(params)}"
-
-        try:
-            result = subprocess.run(
-                cmd,
-                shell=True,
-                capture_output=True,
-                text=True,
-                timeout=30
-            )
-
-            if result.returncode != 0:
-                return {
-                    'status': 'error',
-                    'error': result.stderr.strip() or 'Non-zero exit code'
-                }
-
-            # Parse JSON output
-            try:
-                output = json.loads(result.stdout)
-            except json.JSONDecodeError:
-                output = result.stdout.strip()
-
-            self._log_action('windows_mcp', tool, 'allowed')
-            return {'status': 'success', 'output': output}
-
-        except subprocess.TimeoutExpired:
-            return {'status': 'timeout', 'error': 'Exceeded 30s'}
         except Exception as e:
             return {'status': 'error', 'error': str(e)}
 

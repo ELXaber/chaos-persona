@@ -1,4 +1,4 @@
-#V05012026
+#V05042026
 
 ### Chaos AI-OS Light vΩ (Single-File Demo)
 Want to test the full post-binary stack without installing anything?
@@ -64,11 +64,14 @@ pip install qrng
 Optional (Agentic YAML Pipeline + OS Control):
 pip install pyyaml --break-system-packages
 
-Optional OS Control Web Control & Web Vision:
+Mac/Linux Optional OS Control Web Control & Web Vision:
 pip install playwright opencv-python numpy pillow && playwright install chromium
 Note: Not required for basic web fetching.
 semantic_fetch (stdlib only) handles most agent web tasks without Playwright.
 Browser actions requiring vision (scrape_image) need opencv-python + numpy + pillow.
+
+Windows UI Automation (Optional, Windows only):
+pip install windows-mcp
 
 2. System Commands
 # CAIOS has a robust set of commands, but if you forget them, just type / and press tab or open caios_commands.html

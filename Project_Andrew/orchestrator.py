@@ -1,4 +1,4 @@
-#V04302026
+#V05042026
 # =============================================================================
 # Chaos AI-OS – Hardened Orchestrator (Unified Edition)
 # Combines: V1 Logic + V3 Pipeline + Mesh Encryption + Chatbot Safety
@@ -128,6 +128,7 @@ shared_memory = {
         'web_search',
         'semantic_fetch',       # CPOL-gated semantic web fetcher
         'browser_interact',     # Works with Playwright
+        'windows_mcp',     # Works with Windows MCP
         'memory'
     ]
 }

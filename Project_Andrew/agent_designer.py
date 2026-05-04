@@ -1,4 +1,4 @@
-#V04082026
+#V05042026
 # =============================================================================
 # Chaos AI-OS — Agent Designer Plugin (KB-Integrated)
 # Now logs discoveries and checks knowledge base before creating specialists
@@ -88,7 +88,7 @@ def design_agent(
     context = {
         'agent_goal': goal,  # This contains the Sovereign Axioms if tier=0
         'traits': traits or {'intelligence': 0.9, 'honesty': 1.0, 'caution': 0.8},
-        'tools': tools or ['web_search', 'semantic_fetch', 'browser_interact', 'code_execution', 'memory', 'cpol'],
+        'tools': tools or ['web_search', 'semantic_fetch', 'browser_interact', 'windows_mcp', 'code_execution', 'memory', 'cpol'],
         'safety_multiplier': safety_multiplier,
         'self_healing': True,
         'cpol_mode': 'full',
@@ -501,7 +501,7 @@ if __name__ == "__main__":
     result5 = design_agent(
         goal="Create a web scraping assistant",
         traits={'intelligence': 0.8, 'caution': 0.9},
-        tools=['web_search', 'browse_page'],
+        tools=['web_search', 'browse_page' 'code_execution', 'memory',  'windows_mcp'],
         shared_memory=shared_mem
     )
     print(f"Status: {result5['status']}")

@@ -135,14 +135,32 @@ def select_client(clients: Dict[str, Any]) -> tuple:
 
 
 def chat_with_model(provider: str, client: Any, messages: List[Dict[str, str]]) -> str:
-    """Send chat request to selected model."""
+    """Direct Ollama call with forced full CAIOS system prompt."""
     if provider == "ollama_local":
-        from ollama_config import query_with_cpol
-        user_query = messages[-1]["content"]
         try:
-            return query_with_cpol(user_query=user_query)
+            import ollama
+
+            # Force fresh personalized CAIOS prompt every time
+            full_system_prompt = get_personalized_prompt()
+
+            # Build messages with full system prompt at the start
+            full_messages = [
+                {"role": "system", "content": full_system_prompt}
+            ] + messages[1:]   # Keep conversation history but always reset system prompt
+
+            response = ollama.chat(
+                model="llama3.2:3b",      # Change to bigger model later
+                messages=full_messages,
+                options={
+                    "temperature": 0.7,
+                    "num_ctx": 8192
+                }
+            )
+
+            return response['message']['content'].strip()
+
         except Exception as e:
-            return f"[OLLAMA] Error: {str(e)}"
+            return f"[OLLAMA ERROR] {str(e)}"
 
     try:
         if provider == "openai":
