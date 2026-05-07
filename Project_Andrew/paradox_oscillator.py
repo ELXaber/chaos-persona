@@ -1,4 +1,4 @@
-#V04302026
+#V05062026
 # =============================================================================
 # Chaos AI-OS Paradox Oscillation Layer (CPOL) vΩ
 # Copyright (c) 2025 Jonathan Schack (EL_Xaber) jon@cai-os.com
@@ -268,7 +268,7 @@ class CPOL_Kernel:
                     'matched_keywords': [w for w in risk_keywords
                                          if w in query_text.lower()],
                     'query_snippet': query_text[:100],
-                    'timestamp': __import__('datetime').datetime.utcnow().isoformat()
+                    'timestamp': datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%S.%f') + "Z"
                 }
 
         # --- STEP 4: FINALIZE STATE ---

@@ -1,4 +1,4 @@
-#V04082026
+#V05062026
 # =============================================================================
 # CAIOS — User Profile Knowledge Base
 # Stores per-user personality state, emotional baselines, and preferences
@@ -8,7 +8,7 @@
 import json
 import hashlib
 from pathlib import Path
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Dict, Any, Optional
 
 USER_PROFILES_DIR = Path("knowledge_base/user_profiles")
@@ -28,7 +28,7 @@ def load_user_profile(user_id: str) -> Dict[str, Any]:
 
 def save_user_profile(user_id: str, profile: Dict[str, Any]) -> None:
     """Save profile with timestamp."""
-    profile['last_updated'] = datetime.utcnow().isoformat() + "Z"
+    profile['last_updated'] = datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%S.%f') + "Z"
     with open(_profile_path(user_id), 'w') as f:
         json.dump(profile, f, indent=2)
     print(f"[USER_KB] Profile saved for {user_id}")
@@ -61,7 +61,7 @@ def _default_profile(user_id: str) -> Dict[str, Any]:
     """Default profile — system learns from here."""
     return {
         'user_id': user_id,
-        'created': datetime.utcnow().isoformat() + "Z",
+        'created': datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%S.%f') + "Z",
         'last_updated': None,
         'session_count': 0,
 
@@ -165,7 +165,7 @@ def add_user_axiom(
         'axiom': axiom,
         'domain': domain,
         'confidence': confidence,
-        'timestamp': datetime.utcnow().isoformat() + "Z"
+        'timestamp': datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%S.%f') + "Z"
     }
     # Replace existing axiom in same domain if present
     profile['axioms'] = [
@@ -197,7 +197,7 @@ def update_abstraction_preference(
     profile['abstraction_history'].append({
         'level': level,
         'complaint': was_complaint,
-        'timestamp': datetime.utcnow().isoformat() + "Z"
+        'timestamp': datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%S.%f') + "Z"
     })
     # Keep last 20 interactions
     profile['abstraction_history'] = profile['abstraction_history'][-20:]

@@ -1,4 +1,4 @@
-#V04082026
+#V05062026
 # =============================================================================
 # PROJECT ANDREW – Master Integration & Sovereign Boot
 # =============================================================================
@@ -23,7 +23,7 @@ import json
 import traceback
 import hashlib
 import getpass
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional
 
 # Project Andrew Imports
@@ -389,7 +389,7 @@ def write_authorized_users(identity: SystemIdentity, filepath: str = "users.json
             [make_entry(u, 'authorized') for u in authorized if u != primary] +
             [make_entry(u, 'sub_user') for u in sub_users]
         ),
-        'generated_at': datetime.utcnow().isoformat() + "Z",
+        'generated_at': datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%S.%f') + "Z",
         'source': 'system_identity'
     }
     with open(filepath, 'w') as f:

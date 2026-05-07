@@ -1,4 +1,4 @@
-#V03102026
+#V05062026
 #!/usr/bin/env python3
 # =============================================================================
 # Knowledge Base Inspector - CLI Tool
@@ -9,7 +9,7 @@ import sys
 import json
 from pathlib import Path
 import knowledge_base as kb
-from datetime import datetime
+from datetime import datetime, timezone
 
 def cmd_list_domains():
     """List all domains in the knowledge base."""
@@ -136,7 +136,7 @@ def cmd_list_specialists():
 def cmd_export_domain(domain: str, output_file: str = None):
     """Export domain summary to file."""
     if not output_file:
-        output_file = f"knowledge_export_{domain}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt"
+        output_file = f"knowledge_export_{domain}_{datetime.now(timezone.utc).strftime('%Y%m%d_%H%M%S')}.txt"
 
     summary = kb.export_domain_summary(domain, output_file)
     print(summary)

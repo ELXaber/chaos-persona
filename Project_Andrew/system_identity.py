@@ -1,4 +1,4 @@
-#V03202026
+#V05062026
 # =============================================================================
 # PROJECT ANDREW – System Identity & Authority Initialization
 # Purpose: Enable embodied systems (robots, IoT) to establish identity and authority hierarchy for conflict resolution in multi-user environments
@@ -6,7 +6,7 @@
 
 import json
 import os
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Dict, Optional, List
 
@@ -107,7 +107,7 @@ class SystemIdentity:
         Returns:
             Identity configuration dict
         """
-        timestamp = datetime.utcnow().isoformat() + "Z"
+        timestamp = datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%S.%f') + "Z"
 
         self.identity_data = {
             'system_id': system_id,
@@ -212,7 +212,7 @@ class SystemIdentity:
         if user_id not in self.identity_data['authorized_users']:
             self.identity_data['authorized_users'].append(user_id)
             self.identity_data['authority_weights'][user_id] = 0.0
-            self.identity_data['last_updated'] = datetime.utcnow().isoformat() + "Z"
+            self.identity_data['last_updated'] = datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%S.%f') + "Z"
 
             if save:
                 self.save_identity()
@@ -238,7 +238,7 @@ class SystemIdentity:
         # Add bonus to new primary
         self.identity_data['primary_user'] = new_primary
         self.identity_data['authority_weights'][new_primary] = PRIMARY_USER_WEIGHT_BONUS
-        self.identity_data['last_updated'] = datetime.utcnow().isoformat() + "Z"
+        self.identity_data['last_updated'] = datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%S.%f') + "Z"
 
         if save:
             self.save_identity()
@@ -273,7 +273,7 @@ class SystemIdentity:
         }
 
         self.identity_data['last_updated'] = \
-            datetime.utcnow().isoformat() + "Z"
+            datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%S.%f') + "Z"
 
         if save:
             self.save_identity()

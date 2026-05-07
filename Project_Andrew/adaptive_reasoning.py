@@ -1,4 +1,4 @@
-#V05042026
+#V05062026
 # =============================================================================
 # Chaos AI-OS vΩ – Adaptive Reasoning Layer (Unified Edition)
 # Ethical Foundation – Immutable
@@ -23,7 +23,7 @@ This disclaimer is part of the source code and cannot be removed.
 import hashlib
 import ast
 import re
-import datetime
+from datetime import datetime, timezone
 from typing import Dict, List, Any
 from textwrap import dedent
 
@@ -422,7 +422,7 @@ def adaptive_reasoning_layer(
     if context.get('domain') == "MESH_SECURITY_THREAT" or distress > 0.9:
         context['contradiction_density'] = 1.0
         context['cpol_mode'] = 'full'  # Ensure oscillation is forced, bypassing monitor_only
-        timestamp = datetime.datetime.now().isoformat()
+        timestamp = datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%S.%f') + "Z"
         log_entries.append(f"[{timestamp}] !! METRIC FRICTION OVERRIDE: 12D TORQUE LOCKED !!")
 
     # 2. GHOST VALIDATION: Check the most recent audit entry for a reset
@@ -593,7 +593,7 @@ def adaptive_reasoning_layer(
         'use_case': use_case,
         'logic': source,
         'traits_snapshot': traits.copy(),
-        'timestamp': datetime.datetime.now().isoformat(),
+        'timestamp': datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%S.%f') + "Z",
         'safety_wt': 0.9,
         'source': 'ARL_vΩ',
         'powered_by': 'Powered by CAIOS – cai-os.com'

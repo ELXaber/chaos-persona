@@ -1,11 +1,11 @@
-#V03192026
+#V05062026
 # curiosity_engine.py
 # Fully updated Dec 2025 – intrinsic motivation + voluntary sharing
 # Works out-of-the-box with ResponseStreamAdapter (Part of orchastrator) + shared_memory hook
 
 import json
 import hashlib
-from datetime import datetime
+from datetime import datetime, timezone
 import random
 from typing import List, Dict, Any, Optional
 
@@ -32,7 +32,7 @@ HASH_CHAIN_FILE = "curiosity_hash_chain.txt"
 def _append_audit_entry(state: Dict) -> None:
     tokens = state.get("curiosity_tokens", [])
     entry = {
-        "timestamp": datetime.utcnow().isoformat() + "Z",
+        "timestamp": datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%S.%f') + "Z",
         "timestep": state['session_context'].get('timestep', 0),
         "token_count": len(tokens),
         "total_heat": sum(t["current_interest"] for t in tokens),

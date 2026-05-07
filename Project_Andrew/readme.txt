@@ -1,4 +1,4 @@
-#V05042026
+#V05062026
 
 ### Chaos AI-OS Light vΩ (Single-File Demo)
 Want to test the full post-binary stack without installing anything?
@@ -42,7 +42,7 @@ Chaos AI-OS: Project Andrew Quickstart
 
 1. Environment Preparation
 ===========================
-Ensure your local environment has the necessary libraries installed: - Python 3.11+
+Ensure your local environment has the necessary libraries installed: - Python 3.13+
 
 Core Dependencies:
 pip install numpy pyzmq cryptography
@@ -72,6 +72,8 @@ Browser actions requiring vision (scrape_image) need opencv-python + numpy + pil
 
 Windows UI Automation (Optional, Windows only):
 pip install windows-mcp
+or
+python -m pip install windows-mcp
 
 2. System Commands
 # CAIOS has a robust set of commands, but if you forget them, just type / and press tab or open caios_commands.html

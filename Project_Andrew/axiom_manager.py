@@ -1,4 +1,4 @@
-#V03202026
+#V05062026
 # =============================================================================
 # PROJECT ANDREW – Axiom Manager & Temporal Update Pipeline
 # Purpose: Enable local knowledge updates that override model training data without retraining. Kills the data center requirement.
@@ -7,7 +7,7 @@
 
 import json
 import re
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Dict, Optional, List, Tuple, Optional
 
@@ -129,7 +129,7 @@ class AxiomManager:
             print(f"[AXIOM] Attempted: {domain} → {fact}")
             return "REFUSED"  # Return special value indicating refusal
 
-        timestamp = datetime.utcnow().isoformat() + "Z"
+        timestamp = datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%S.%f') + "Z"
 
         # If replacing, mark old axioms as superseded
         if replace_existing and HAS_KB:
@@ -286,7 +286,7 @@ class AxiomManager:
     def refresh_cache(self):
         """Refresh in-memory cache from KB (call periodically)."""
         self.domain_cache.clear()
-        self.last_refresh = datetime.utcnow()
+        self.last_refresh = datetime.now(timezone.utc)
         print("[AXIOM] Cache refreshed")
 
 
@@ -319,10 +319,13 @@ class AxiomManager:
         if expiry == 'INF':
             return True
         try:
-            expiry_date = datetime.fromisoformat(expiry.replace('Z', ''))
-            return datetime.utcnow() < expiry_date
+            expiry_date = datetime.fromisoformat(
+                expiry.replace('Z', '+00:00')
+            )
+            return datetime.now(timezone.utc) < expiry_date
         except:
             return True  # Assume valid if can't parse
+
     def _supersede_old_axioms(self, domain: str):
         """Mark old axioms as superseded to prevent temporal hallucination."""
         if not HAS_KB:
@@ -401,7 +404,7 @@ if __name__ == "__main__":
     # Example 3: Personal fact with expiry
     print("\nExample 3: Personal Fact (Temporary)")
     print("-" * 40)
-    expiry = (datetime.utcnow() + timedelta(days=365)).isoformat() + "Z"
+    expiry = (datetime.now(timezone.utc) + timedelta(days=365)).strftime('%Y-%m-%dT%H:%M:%S.%f') + "Z"
     manager.add_axiom(
         domain="daughter_birthday",
         fact="March 15",

@@ -1,6 +1,6 @@
-#V03202026
+#V05062026
 # This extension is experimental for Grok and X or other AI and social media intergration and may require some modifications.
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import random
 
 # [ADD THIS GLOBAL THROTTLE inside your main file or shared_memory init]
@@ -14,7 +14,7 @@ stream = ResponseStreamAdapter()
 curiosity_engine.update_curiosity_loop(state=shared_memory, timestep=current_step, response_stream=stream)
 
 # NEW: Autonomous X posting logic
-now = datetime.now()
+now = datetime.now(timezone.utc)
 last_post = shared_memory.get('last_auto_post')
 cooldown = timedelta(hours=shared_memory['post_cooldown_hours'])
 

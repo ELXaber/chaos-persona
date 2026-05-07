@@ -1,4 +1,4 @@
-#V04302026
+#V05062026
 # =============================================================================
 # Chaos AI-OS — OS Control Layer
 # CPOL-gated system operations with Asimov compliance
@@ -105,7 +105,7 @@ class OSController:
             'target': str(target),
             'decision': decision,
             'result': str(result) if result else None,
-            'timestamp': __import__('datetime').datetime.utcnow().isoformat()
+            'timestamp': datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%S.%f') + "Z"
         }
         self.action_log.append(entry)
 

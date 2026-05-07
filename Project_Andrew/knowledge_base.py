@@ -1,4 +1,4 @@
-#V03302026
+#V05062026
 # =============================================================================
 # Chaos AI-OS — Knowledge Base (Persistent Learning Layer)
 # Purpose: Append-only storage for specialist discoveries + epistemic gap fills + update
@@ -7,7 +7,7 @@
 import json
 import hashlib
 import os
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Dict, List, Any, Optional
 from pathlib import Path
 
@@ -54,7 +54,7 @@ def log_discovery(
 
     # 2. Build the UNIFIED entry (Authority + Quantum Anchor + Content)
     entry = {
-        "timestamp": datetime.utcnow().isoformat() + "Z",
+        "timestamp": datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%S.%f') + "Z",
         "domain": domain,
         "type": discovery_type,
         "content": content,
@@ -193,7 +193,7 @@ def register_specialist(
     registry[specialist_id] = {
         "domain": domain,
         "capabilities": capabilities,
-        "deployed_at": datetime.utcnow().isoformat() + "Z",
+        "deployed_at": datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%S.%f') + "Z",
         "context": deployment_context,
         "node_tier": node_tier,       # Authority inherited from Orchestrator
         "discovery_count": 0,
@@ -217,7 +217,7 @@ def update_specialist_stats(specialist_id: str, new_discoveries: int = 1) -> Non
 
     if specialist_id in registry:
         registry[specialist_id]["discovery_count"] += new_discoveries
-        registry[specialist_id]["last_active"] = datetime.utcnow().isoformat() + "Z"
+        registry[specialist_id]["last_active"] = datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%S.%f') + "Z"
         save_specialist_registry(registry)
         print(f"[KB] Updated specialist {specialist_id}: {new_discoveries} new discoveries")
     else:
@@ -401,7 +401,7 @@ def _get_sovereign_signature() -> str:
 
         # Set flag AFTER corrigibility event is logged
         SIGNATURE_FLAG.touch()
-        timestamp = datetime.utcnow().isoformat() + "Z"
+        timestamp = datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%S.%f') + "Z"
         with open(SIGNATURE_FLAG, "w") as f:
             f.write(f"Sovereign milestones reached: {timestamp}\n")
             f.write(f"Epistemic gaps filled: {epistemic_gaps_filled}\n")
@@ -467,11 +467,11 @@ def _update_domain_index(domain: str, discovery_id: str, discovery_type: str) ->
         index[domain] = {
             "discovery_ids": [],
             "types": {},
-            "first_seen": datetime.utcnow().isoformat() + "Z"
+            "first_seen": datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%S.%f') + "Z"
         }
 
     index[domain]["discovery_ids"].append(discovery_id)
-    index[domain]["last_updated"] = datetime.utcnow().isoformat() + "Z"
+    index[domain]["last_updated"] = datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%S.%f') + "Z"
 
     # Track discovery types
     type_count = index[domain]["types"].get(discovery_type, 0)
@@ -493,7 +493,7 @@ def _update_hash_chain(entry_str: str) -> None:
     new_hash = hashlib.sha256((prev_hash + entry_str).encode()).hexdigest()
 
     with open(HASH_CHAIN, "a") as f:
-        timestamp = datetime.utcnow().isoformat() + "Z"
+        timestamp = datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%S.%f') + "Z"
         f.write(f"{timestamp} {new_hash}\n")
 
 
