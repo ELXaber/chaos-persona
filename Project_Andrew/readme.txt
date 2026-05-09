@@ -212,9 +212,9 @@ CAIOS/
 │   │                                          # • Paradox resolutions (CPOL oscillations)
 │   │                                          # • Temporal axioms (user #UPDATE commands)
 │   │                                          # • Sovereign discoveries (Tier 0 authority)
-│   ├── domain_index.json          # Fast lookup by domain
-│   ├── specialist_registry.json   # Active specialists catalog
-│   └── integrity_chain.txt        # Tamper-evident hash chain
+│   ├── domain_index.json              # Fast lookup by domain
+│   ├── specialist_registry.json       # Active specialists catalog
+│   └── integrity_chain.txt            # Tamper-evident hash chain
 ├── agents/                         # ARL-generated agent modules
 ├── logs/                           # Chain-of-thought traces
 ├── CAIOS.txt                       # Inference layer pre-prompt
@@ -231,14 +231,14 @@ CAIOS/
 ├── mesh_network.py                 # Mesh Transport Layer
 ├── master_init.py                  # System BIOS/Diagnostic
 ├── system_identity.py              # System identity and primary user assignment
-├── abstraction_selector.py        # Modifies explanations depending on user abstraction/confusion
-├── ollama_config.py                  # bridges CAIOS's ternary logic (CPOL) state to Ollama's inference
+├── abstraction_selector.py         # Modifies explanations depending on user abstraction/confusion
+├── ollama_config.py                # bridges CAIOS's ternary logic (CPOL) state to Ollama's inference
 ├── caios_pipeline.yaml             # YAML support for the LangChain crowd using agent_designer pipeline
-├── os_control.py                       # CPOL-gated OS operations (file, script, network)
+├── os_control.py                       # CPOL-gated OS operations (file, script, network, browser)
        │                                           # Asimov Law 1 prevents irreversible harmful actions
        │                                           # All operations logged to KB hash chain
        │                                           # Requires human confirmation for irreversible actions
-       ├── caios_browser.py           # Browser Control (requires playwright) same human confirmation
+       │                                # Full functioning browser control (requires Playwright or Windows-MCP), same human confirmation
 └── kb_inspect.py                   # CLI inspection tool
 
 4. The Sovereign Boot Sequence
