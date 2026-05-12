@@ -10,7 +10,6 @@ Try this prompt inside it:
 You will immediately see the difference between binary collapse and native UNDECIDABLE oscillation.
 
 
-
 # Project Andrew uses the CAIOS stack, but adds intrinsic motivation, agency for recursive self-improvement through ARL/agent_designer, and fills knowledge gaps with specialist-designed agents on CPOL oscillation if the conditions are met. Agents are saved to /agents, and plugins to /plugins, with CoT to /logs, so the recursive self-improvement never overwrites the immutable Asimov-based ethical reward system using IEEE dithering. The oscillating manifold can be used to create a topological moving target keychain for quantum secure mesh networks (developed on UDP - check chaos encryption readme to switch to TCP).
 
 If you are running the full system single file structure: full_system_analysis.txt
@@ -54,8 +53,9 @@ pip install numpy pyzmq cryptography
 AI Model dependency:
 Ollama:
 pip install ollama
+
 OpenAI/Anthropic/Google:
-pip install openai anthropic google-generativeai
+pip install (openai anthropic google-generativeai) other
 
 Note: Enabling multiple models enables swarm support (mesh_network)
 Default mesh_network uses SHA-256 signature on a moving target manifold - optional increased network security
