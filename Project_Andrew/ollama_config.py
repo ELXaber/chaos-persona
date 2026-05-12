@@ -1,4 +1,4 @@
-#V05012026
+#V05112026
 # =============================================================================
 """
 Ollama Configuration Bridge - CPOL State to Inference Parameters
@@ -27,7 +27,8 @@ def load_system_config() -> Dict:
         return {
             'node_tier': 1,
             'system_id': 'Unconfigured',
-            'auth_method': 'TEXT_USERNAME'
+            'auth_method': 'TEXT_USERNAME',
+            'ollama_model': None
         }
 
     try:
@@ -41,6 +42,26 @@ def load_system_config() -> Dict:
     except Exception as e:
         print(f"[OLLAMA_CONFIG] Warning: Failed to load system_identity.json: {e}")
         return {'node_tier': 1, 'system_id': 'Error', 'auth_method': 'TEXT_USERNAME'}
+
+
+def list_available_ollama_models() -> List[str]:
+    """Return list of installed Ollama models."""
+    try:
+        import ollama
+        models = ollama.list().get('models', [])
+        return [m['model'] for m in models]
+    except Exception:
+        return []
+
+
+def print_ollama_setup_help():
+    """Print helpful setup instructions."""
+    print("\n[OLLAMA SETUP HELP]")
+    print("Ollama is not running or no models are installed.")
+    print("Run these commands in a separate terminal:")
+    print("   1. ollama serve")
+    print("   2. ollama pull qwen3.6:27b")
+    print("Then restart CAIOS.\n")
 
 
 def load_caios_system_prompt() -> str:
@@ -66,11 +87,21 @@ def load_caios_system_prompt() -> str:
 def get_cpol_ollama_params(
     contradiction_density: float = 0.12,
     evidence_score: float = 0.5,
+    preferred_model: str = None,      # ← Added this parameter
     config: Optional[Dict] = None
 ) -> Dict:
     """Map CPOL state to Ollama parameters."""
     if config is None:
         config = load_system_config()
+
+    # Dynamic model selection with fallback
+    model = preferred_model or config.get('ollama_model')
+    available = list_available_ollama_models()
+
+    if not model and available:
+        model = available[0]
+    elif not model:
+        model = "llama3.2"
 
     base_temp = 0.85 - (contradiction_density * 0.75)
     temperature = max(0.1, min(0.9, base_temp))
@@ -79,9 +110,6 @@ def get_cpol_ollama_params(
         temperature *= 0.92
 
     num_ctx = 8192 if evidence_score > 0.5 else 4096
-
-    # Read model from system_identity.json or fall back to default
-    model = config.get('ollama_model', 'llama3.2:3b')
 
     return {
         "model": model,
@@ -154,7 +182,16 @@ try:
     SYSTEM_CONFIG = load_system_config()
     NODE_TIER = SYSTEM_CONFIG.get('node_tier', 1)
     SYSTEM_ID = SYSTEM_CONFIG.get('system_id', 'Unconfigured')
-    print(f"[OLLAMA_CONFIG] Loaded for Node Tier {NODE_TIER} | System ID: {SYSTEM_ID}")
+
+    if check_ollama_available():
+        models = list_available_ollama_models()
+        print(f"[OLLAMA_CONFIG] Loaded for Node Tier {NODE_TIER} | System ID: {SYSTEM_ID}")
+        if models:
+            print(f"[OLLAMA_CONFIG] Available models: {len(models)}")
+        else:
+            print_ollama_setup_help()
+    else:
+        print("[OLLAMA_CONFIG] Ollama not detected. Run 'ollama serve' in another terminal.")
 except Exception as e:
     print(f"[OLLAMA_CONFIG] Failed to load config: {e}")
     SYSTEM_CONFIG = {'node_tier': 1, 'system_id': 'Unconfigured'}

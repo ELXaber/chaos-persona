@@ -1,4 +1,4 @@
-#V05012026
+#V05112026
 #!/usr/bin/env python3
 """
 CAIOS Inference Wrapper
@@ -13,6 +13,14 @@ import json
 import sys
 
 from typing import Dict, Any, List
+
+try:
+    import orchestrator as orch
+    print("[CAIOS_CHAT] Full Orchestrator loaded successfully.")
+    ORCHESTRATOR_AVAILABLE = True
+except ImportError as e:
+    print(f"[CAIOS_CHAT] Orchestrator not loaded: {e}")
+    ORCHESTRATOR_AVAILABLE = False
 
 # =============================================================================
 # Load shared memory (created by master_init.py)
@@ -114,12 +122,15 @@ def select_client(clients: Dict[str, Any]) -> tuple:
     for i, provider in enumerate(options, 1):
         if provider == 'ollama_local':
             try:
-                import ollama_config
-                print(f"  {i}. OLLAMA Local "
-                      f"(Tier {ollama_config.NODE_TIER} | "
-                      f"{ollama_config.SYSTEM_CONFIG.get('ollama_model', 'local')})")
+                import ollama
+                models = ollama.list().get('models', [])
+                model_names = [m['model'] for m in models]
+                print(f"  {i}. OLLAMA Local — {len(model_names)} models available")
+                if model_names:
+                    for j, m in enumerate(model_names, 1):
+                        print(f"      {i}.{j} {m}")
             except Exception:
-                print(f"  {i}. OLLAMA Local")
+                print(f"  {i}. OLLAMA Local (could not list models)")
         else:
             print(f"  {i}. {provider.upper()}")
 
@@ -128,39 +139,83 @@ def select_client(clients: Dict[str, Any]) -> tuple:
             choice = int(input("\nSelect model (number): "))
             if 1 <= choice <= len(options):
                 provider = options[choice - 1]
-                return provider, clients[provider]
+                client = clients[provider]
+
+                if provider == 'ollama_local':
+                    try:
+                        import ollama
+                        models = ollama.list().get('models', [])
+                        model_names = [m['model'] for m in models]
+
+                        if not model_names:
+                            selected_model = input("No models found. Enter model name (e.g. llama3.2): ") or "llama3.2"
+                        elif len(model_names) == 1:
+                            selected_model = model_names[0]
+                            print(f"Using: {selected_model}")
+                        else:
+                            for k, m in enumerate(model_names, 1):
+                                print(f"  {k}. {m}")
+                            m_choice = int(input("Select Ollama model (number): "))
+                            selected_model = model_names[m_choice - 1]
+                    except Exception as e:
+                        print(f"Warning: Could not list Ollama models: {e}")
+                        selected_model = input("Enter Ollama model name: ") or "llama3.2"
+                    return provider, client, selected_model
+
+                return provider, client, None
             print(f"Please enter a number between 1 and {len(options)}.")
         except ValueError:
             print("Please enter a valid number.")
 
+def chat_with_model(provider: str, client: Any, 
+                    messages: List[Dict[str, str]],
+                    ollama_model: str = None) -> str:
+    """Main entry point: CAIOS Prompt → Orchestrator → Model"""
+    user_input = messages[-1]["content"] if messages else ""
 
-def chat_with_model(provider: str, client: Any, messages: List[Dict[str, str]]) -> str:
-    """Direct Ollama call with forced full CAIOS system prompt."""
-    if provider == "ollama_local":
-        try:
-            import ollama
+    # === 1. Try Full Orchestrator (Preferred Path) ===
+    try:
+        import orchestrator as orch
 
-            # Force fresh personalized CAIOS prompt every time
-            full_system_prompt = get_personalized_prompt()
+        # Pass through the full orchestration pipeline
+        result = orch.system_step(
+            user_input=user_input,
+            prompt_complexity="medium",        # Can be made dynamic later
+            api_clients=shared_memory.get('api_clients'),
+            user_id=shared_memory.get('active_user')
+        )
 
-            # Build messages with full system prompt at the start
-            full_messages = [
-                {"role": "system", "content": full_system_prompt}
-            ] + messages[1:]   # Keep conversation history but always reset system prompt
+        # Extract final output
+        if isinstance(result, dict):
+            output = result.get('output') or result.get('llm_response') or str(result)
+            return output
+        else:
+            return str(result)
 
-            response = ollama.chat(
-                model="llama3.2:3b",      # Change to bigger model later
-                messages=full_messages,
-                options={
-                    "temperature": 0.7,
-                    "num_ctx": 8192
-                }
-            )
+    except Exception as e:
+        print(f"[ORCHESTRATOR] Failed: {e} — falling back to direct model")
 
-            return response['message']['content'].strip()
+    # === 2. Fallback: Direct Ollama with full prompt ===
+    try:
+        import ollama
+        from ollama_config import get_cpol_ollama_params
 
-        except Exception as e:
-            return f"[OLLAMA ERROR] {str(e)}"
+        params = get_cpol_ollama_params(preferred_model=ollama_model)
+        full_system_prompt = get_personalized_prompt()
+
+        full_messages = [
+            {"role": "system", "content": full_system_prompt}
+        ] + [msg for msg in messages if msg.get("role") != "system"]
+
+        response = ollama.chat(
+            model=params['model'],
+            messages=full_messages,
+            options=params['options']
+        )
+        return response['message']['content'].strip()
+
+    except Exception as e:
+        return f"[ERROR] Both orchestrator and direct model failed: {e}"
 
     try:
         if provider == "openai":
@@ -250,7 +305,7 @@ def main():
         print("Run 'python master_init.py' first to initialize clients.")
         return
 
-    provider, client = select_client(clients)
+    provider, client, ollama_model = select_client(clients)
     print(f"\nUsing: {provider.upper()}")
 
     # Generate the prompt dynamically at boot
@@ -285,7 +340,32 @@ def main():
             print("-"*30)
             continue # Don't send this to the AI, it's for you.
 
-        # 3. LOCAL COMMAND: /mesh
+        # 3. LOCAL COMMAND: /debug
+        if user_input.lower() == "/debug":
+            print("\n" + "="*70)
+            print("CAIOS DEBUG INFORMATION")
+            print("="*70)
+
+            identity = shared_memory.get('system_identity', {})
+            print(f"System ID          : {identity.get('system_id', 'Not set')}")
+            print(f"Primary User       : {identity.get('primary_user', 'Not set')}")
+            print(f"Auth Method        : {identity.get('auth_method', 'TEXT_USERNAME')}")
+            print(f"Current Model      : {ollama_model or 'Unknown'}")
+
+            prompt_len = len(full_system_prompt) if 'full_system_prompt' in locals() else len(get_personalized_prompt())
+            print(f"System Prompt Size : {prompt_len} characters")
+
+            print("\nPrompt Preview (first 500 characters):")
+            preview = full_system_prompt[:500] if 'full_system_prompt' in locals() else get_personalized_prompt()[:500]
+            print(preview + "..." if len(preview) == 500 else preview)
+
+            cpol = shared_memory.get('cpol_state', {})
+            print(f"CPOL Status        : {cpol.get('status', 'Unknown')}")
+
+            print("="*70)
+            continue
+
+        # 4. LOCAL COMMAND: /mesh
         if user_input.lower() == "/mesh":
             # Assuming mesh_peers is a dict of {node_id: last_seen_timestamp}
             peers = shared_memory.get('mesh_peers', {})
@@ -313,7 +393,7 @@ def main():
         print("\nThinking...", end="", flush=True)
 
         # Get response from model
-        response_text = chat_with_model(provider, client, conversation)
+        response_text = chat_with_model(provider, client, conversation, ollama_model)
 
         print("\r" + " " * 20 + "\r", end="")  # clear "Thinking..."
         print(f"CAIOS: {response_text}")
