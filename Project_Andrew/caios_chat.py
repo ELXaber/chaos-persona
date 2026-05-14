@@ -1,4 +1,4 @@
-#V05112026
+#V05122026
 #!/usr/bin/env python3
 """
 CAIOS Inference Wrapper
@@ -96,14 +96,18 @@ system_prompt = load_caios_prompt()
 
 def get_personalized_prompt():
     base_prompt = load_caios_prompt()
-    # Pull directly from shared_memory to capture the latest identity
     identity = shared_memory.get('system_identity', {})
-    name = identity.get('system_name', 'Andrew')
 
-    # Optional: Inject the Primary User so the AI knows its 'Boss'
+    # system_identity.json uses 'system_id' not 'system_name'
+    name = identity.get('system_id', 
+           identity.get('system_name', 'Andrew'))
     owner = identity.get('primary_user', 'User')
 
-    identity_prefix = f"Your identity is {name}. Your primary authority is {owner}."
+    identity_prefix = (
+        f"Your name is {name}. "
+        f"Your primary authority and owner is {owner}. "
+        f"When introducing yourself, state your name and that you serve {owner}."
+    )
     return f"{identity_prefix}\n\n{base_prompt}"
 
 # =============================================================================
@@ -187,7 +191,10 @@ def chat_with_model(provider: str, client: Any,
 
         # Extract final output
         if isinstance(result, dict):
-            output = result.get('output') or result.get('llm_response') or str(result)
+            # Priority: actual LLM response > abstraction output > raw dict
+            output = (result.get('llm_response') or 
+                     result.get('output') or 
+                     str(result))
             return output
         else:
             return str(result)
@@ -299,6 +306,26 @@ def main():
         print("Tip: Press Tab to autocomplete / commands")
     print("Type your message and press Enter. Type 'exit' or 'quit' to end.\n")
 
+    # === AUTHENTICATION ===
+    if ORCHESTRATOR_AVAILABLE:
+        try:
+            from orchestrator import prompt_auth, shared_memory as orch_memory
+            print("[AUTH] Authentication required.")
+            user_id = prompt_auth(orch_memory)
+            shared_memory['active_user'] = user_id
+            print(f"[AUTH] Welcome, {user_id}.")
+        except PermissionError as e:
+            print(f"[AUTH] Access denied: {e}")
+            sys.exit(1)
+        except Exception as e:
+            print(f"[AUTH] Auth unavailable: {e} — proceeding as guest")
+            user_id = "guest"
+            shared_memory['active_user'] = user_id
+    else:
+        user_id = "guest"
+        shared_memory['active_user'] = user_id
+
+    # === MODEL SELECTION ===
     clients = shared_memory.get("api_clients", {})
     if not clients:
         print("No API clients found in shared memory.")

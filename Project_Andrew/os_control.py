@@ -1,4 +1,4 @@
-#V05062026
+#V05122026
 # =============================================================================
 # Chaos AI-OS — OS Control Layer
 # CPOL-gated system operations with Asimov compliance
@@ -284,11 +284,7 @@ class OSController:
             return {'status': 'error', 'error': str(e)}
 
     def browser_interact(self, url: str,
-        # Windows fallback — route to windows_mcp if Playwright unavailable
-        import platform
-        if platform.system() == 'Windows':
-            # Try Playwright first, fall back to windows_mcp scrape
-            pass  # existing code handles PLAYWRIGHT_UNAVAILABLE fallback
+    # Windows fallback — route to windows_mcp if Playwright unavailable
                          action: str,
                          selector: str = None,
                          value: str = None,
