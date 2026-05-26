@@ -1,4 +1,4 @@
-#V05262026
+#V05112026
 # =============================================================================
 """
 Ollama Configuration Bridge - CPOL State to Inference Parameters
@@ -64,29 +64,21 @@ def print_ollama_setup_help():
     print("Then restart CAIOS.\n")
 
 
-def load_caios_system_prompt(max_chars: int = 8000) -> str:
-    """Load CAIOS.txt safely with UTF-8 encoding.
-    max_chars: truncate for memory-constrained models (default 8000)
-               set to 0 for no truncation (32b+ models with full VRAM)
-    """
+def load_caios_system_prompt() -> str:
+    """Load CAIOS.txt safely with UTF-8 encoding."""
     if not os.path.exists(CAIOS_PROMPT_PATH):
         print("[OLLAMA_CONFIG] Warning: CAIOS.txt not found.")
         return ""
+
     try:
         with open(CAIOS_PROMPT_PATH, 'r', encoding='utf-8') as f:
-            content = f.read().strip()
-        if max_chars > 0 and len(content) > max_chars:
-            print(f"[OLLAMA_CONFIG] System prompt truncated: "
-                  f"{len(content)} → {max_chars} chars")
-            return content[:max_chars]
-        return content
+            return f.read().strip()
     except UnicodeDecodeError:
+        # Fallback with replacement for problematic characters
         with open(CAIOS_PROMPT_PATH, 'r', encoding='utf-8', errors='replace') as f:
             content = f.read().strip()
-            print("[OLLAMA_CONFIG] Warning: Some characters replaced due to encoding.")
-        if max_chars > 0 and len(content) > max_chars:
-            return content[:max_chars]
-        return content
+            print("[OLLAMA_CONFIG] Warning: Some characters in CAIOS.txt were replaced due to encoding.")
+            return content
     except Exception as e:
         print(f"[OLLAMA_CONFIG] Error loading CAIOS.txt: {e}")
         return ""
@@ -95,7 +87,7 @@ def load_caios_system_prompt(max_chars: int = 8000) -> str:
 def get_cpol_ollama_params(
     contradiction_density: float = 0.12,
     evidence_score: float = 0.5,
-    preferred_model: str = None,
+    preferred_model: str = None,      # ← Added this parameter
     config: Optional[Dict] = None
 ) -> Dict:
     """Map CPOL state to Ollama parameters."""
@@ -118,14 +110,6 @@ def get_cpol_ollama_params(
         temperature *= 0.92
 
     num_ctx = 8192 if evidence_score > 0.5 else 4096
-
-    # Adjust system prompt size based on model
-    if '32b' in model or '27b' in model or '70b' in model:
-        prompt_limit = 0       # No truncation for large models
-    elif '14b' in model:
-        prompt_limit = 12000   # Generous for 14b
-    else:
-        prompt_limit = 8000    # Conservative for 7b and smaller
 
     return {
         "model": model,
@@ -207,18 +191,7 @@ def query_with_cpol(
         system=identity_prefix + params['system'],
         options=params['options']
     )
-
-    # if response is entirely in <think> block
-    result = response.get('response', '').strip()
-
-    if not result:
-        # Fallback: check alternate response fields
-        result = response.get('message', {}).get('content', '').strip()
-
-    if not result:
-        result = "[LLM] No response generated — query may need rephrasing"
-
-    return result
+    return response['response']
 
 # Auto-load on import
 try:

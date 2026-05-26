@@ -1,4 +1,4 @@
-#V05042026
+#V05252026
 # =============================================================================
 # Chaos AI-OS – Hardened Orchestrator (Unified Edition)
 # Combines: V1 Logic + V3 Pipeline + Mesh Encryption + Chatbot Safety
@@ -268,6 +268,51 @@ if OSC_AVAILABLE:
 # API CLIENT LOADING (Multi-Model Swarm Support)
 # =============================================================================
 
+# =============================================================================
+# API CLIENT LOADING (Multi-Model Swarm Support)
+# =============================================================================
+
+def _call_api_client(provider: str, client: Any, query: str) -> str:
+    """
+    Fallback API client call when Ollama unavailable.
+    Used in API mode (OpenAI, Anthropic, xAI, Google).
+    """
+    try:
+        if provider == 'openai':
+            response = client.chat.completions.create(
+                model="gpt-4o",
+                messages=[{"role": "user", "content": query}],
+                max_tokens=2048
+            )
+            return response.choices[0].message.content.strip()
+
+        elif provider == 'anthropic':
+            response = client.messages.create(
+                model="claude-sonnet-4-6",
+                max_tokens=2048,
+                messages=[{"role": "user", "content": query}]
+            )
+            return response.content[0].text.strip()
+
+        elif provider == 'xai':
+            response = client.chat.completions.create(
+                model="grok-beta",
+                messages=[{"role": "user", "content": query}],
+                max_tokens=2048
+            )
+            return response.choices[0].message.content.strip()
+
+        elif provider == 'google':
+            model = client.GenerativeModel("gemini-1.5-pro")
+            response = model.generate_content(query)
+            return response.text.strip()
+
+        else:
+            return f"[LLM] Unsupported provider: {provider}"
+
+    except Exception as e:
+        return f"[LLM] API call failed: {e}"
+
 def load_api_clients_from_config():
     """
     Load API clients that master_init.py verified.
@@ -332,7 +377,6 @@ def check_session_timeout(session_context: dict) -> bool:
     last_active = session_context.get('last_active', 0)
     return (time.time() - last_active) > TIMEOUT_SECONDS
 
-
 def _auth_text(users_filepath: str = "users.json") -> str:
     try:
         with open(users_filepath, 'r') as f:
@@ -341,15 +385,18 @@ def _auth_text(users_filepath: str = "users.json") -> str:
         print("[WARNING] users.json not found - run master_init.py first")
         raise PermissionError("User registry unavailable")
 
+    # Full dict not just type — needed for password_hash
     all_users = {u['id']: u for u in users.get('users', [])}
 
     for attempt in range(3):
         username = input("Username: ").strip()
         if username in all_users:
             user = all_users[username]
-            # Password check — only if hash is present
+            # Password check — only if hash present
             if 'password_hash' in user:
-                password = input("Password: ").strip()
+                import hashlib
+                import getpass
+                password = getpass.getpass("Password: ")
                 if hashlib.sha256(password.encode()).hexdigest() != user['password_hash']:
                     print(f"[SESSION] Incorrect password. ({2 - attempt} attempt(s) remaining)")
                     continue
@@ -938,8 +985,8 @@ def system_step(user_input: str, prompt_complexity: str = "low",
         else:
             use_case = "epistemic_exploration"
 
-        # Trigger ARL with enriched context
-        return arl.adaptive_reasoning_layer(
+        # Trigger ARL with enriched context (non-blocking)
+        arl_result = arl.adaptive_reasoning_layer(
             use_case=use_case,
             traits={'flexibility': 0.9},
             existing_layers=['cpol'],
@@ -954,6 +1001,9 @@ def system_step(user_input: str, prompt_complexity: str = "low",
             },
             cpol_status=cpol_result
         )
+        # Store ARL context for local LLM use — don't return early
+        cpol_result['arl_context'] = arl_result
+        print(f"[ORCHESTRATOR] ARL context stored — continuing to Ollama")
 
     # FINAL AXIOM OVERRIDE CHECK
     # Check if any axioms should override the response
@@ -997,22 +1047,89 @@ def system_step(user_input: str, prompt_complexity: str = "low",
             print("[ORCHESTRATOR] Clear mode activated. Simple words now.")
         # Technical mode is silent (default)
 
-    # 11. OLLAMA INFERENCE (RESOLVED queries only)
-    # CPOL gates the query — if it passed, send to local LLM for response
-    if (cpol_result.get('status') == 'RESOLVED'
-            and OLLAMA_AVAILABLE
-            and user_input not in ['', None]):
+    # 11. LLM INFERENCE — always call, Ollama/API handles CPOL logic natively
+    has_llm = OLLAMA_AVAILABLE or bool(shared_memory.get('api_clients'))
+    if has_llm and user_input not in ['', None]:
         try:
-            from ollama_config import query_with_cpol
-            llm_response = query_with_cpol(
-                user_query=user_input,
-                contradiction_density=density,
-                evidence_score=cpol_result.get('confidence', 0.5)
+            # Current datetime — injected since Ollama sandbox has no clock
+            from datetime import datetime, timezone
+            current_dt = datetime.now(timezone.utc).strftime(
+                '%A, %B %d, %Y %H:%M UTC'
             )
+
+            # KB context
+            kb_context = ""
+            if AD_AVAILABLE:
+                try:
+                    coverage = kb.check_domain_coverage(
+                        cpol_result.get('domain', 'general')
+                    )
+                    kb_context = (
+                        f"[KB_STATE discoveries="
+                        f"{coverage.get('discovery_count', 0)} "
+                        f"has_knowledge={coverage.get('has_knowledge', False)}]\n"
+                    )
+                except Exception:
+                    pass
+
+            # Axiom context
+            axiom_context = ""
+            if AMGR_AVAILABLE and shared_memory.get('axiom_manager'):
+                try:
+                    active = shared_memory['axiom_manager'].list_active_axioms()
+                    if active:
+                        axiom_summary = ", ".join(
+                            f"{a['domain']}={a['fact']}"
+                            for a in active[:3]
+                        )
+                        axiom_context = f"[AXIOMS {axiom_summary}]\n"
+                except Exception:
+                    pass
+
+            # ARL context
+            arl_context = ""
+            if cpol_result.get('arl_context'):
+                arl_context = (
+                    f"[ARL_CONTEXT use_case="
+                    f"{cpol_result['arl_context'].get('use_case', 'unknown')}]\n"
+                )
+
+            # Build full context prefix
+            cpol_context = (
+                f"[CPOL_STATE density={density:.2f} "
+                f"RAW_Q={shared_memory['session_context']['RAW_Q']} "
+                f"volatility={cpol_result.get('volatility', 0):.4f} "
+                f"python_status={cpol_result.get('status')}]\n"
+                f"[DATETIME {current_dt}]\n"
+                f"[USER {shared_memory.get('active_user', 'unknown')}]\n"
+                f"{kb_context}"
+                f"{axiom_context}"
+            )
+
+            enriched_query = cpol_context + arl_context + user_input
+
+            if OLLAMA_AVAILABLE:
+                from ollama_config import query_with_cpol
+                print(f"[DEBUG] Sending to Qwen: {enriched_query[:200]}")
+                llm_response = query_with_cpol(
+                    user_query=enriched_query,
+                    contradiction_density=density,
+                    evidence_score=cpol_result.get('confidence', 0.5)
+                )
+            else:
+                # API client path (OpenAI, Anthropic, xAI, Google)
+                api_clients = shared_memory.get('api_clients', {})
+                provider = next(iter(api_clients))  # Use first available
+                client = api_clients[provider]
+                llm_response = _call_api_client(
+                    provider, client, enriched_query
+                )
+
             cpol_result['llm_response'] = llm_response
             print(f"[OLLAMA] Response received ({len(llm_response)} chars)")
+
         except Exception as e:
-            print(f"[OLLAMA] Call failed: {e}")
+            print(f"[LLM] Call failed: {e}")
             cpol_result['llm_response'] = None
 
     return cpol_result

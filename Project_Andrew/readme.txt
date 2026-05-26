@@ -201,6 +201,12 @@ Auto-detected by orchestrator on boot.
 | `/mesh` | Scans the local network for active neighbors and displays connection latency/status. |
 | `exit` | Gracefully shuts down the mesh oscillator and closes the chat session. |
 
+RSI Autonomy Controls:
+reduce warmth or lower curiosity - slows down autonomous specialist spawning  
+pause autonomy / wait for command - makes it strictly reactive  
+set autonomy level [1-5] - coarse control
+
+
 3. File Architecture
 ====================
 Verify that all core components are in the same root directory:

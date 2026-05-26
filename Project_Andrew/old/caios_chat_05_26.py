@@ -1,4 +1,4 @@
-#V05252026
+#V05122026
 #!/usr/bin/env python3
 """
 CAIOS Inference Wrapper
@@ -192,11 +192,9 @@ def chat_with_model(provider: str, client: Any,
         # Extract final output
         if isinstance(result, dict):
             # Priority: actual LLM response > abstraction output > raw dict
-            output = result.get('llm_response')
-            if not output:
-                output = result.get('output', '')
-            if not output or output == str(result):
-                output = "[Andrew] I processed that but couldn't generate a response. Please try rephrasing."
+            output = (result.get('llm_response') or 
+                     result.get('output') or 
+                     str(result))
             return output
         else:
             return str(result)
@@ -218,13 +216,10 @@ def chat_with_model(provider: str, client: Any,
 
         response = ollama.chat(
             model=params['model'],
-            messages=[
-                {"role": "system", "content": identity_prefix + params['system']},
-                {"role": "user", "content": user_query}
-            ],
+            messages=full_messages,
             options=params['options']
         )
-        result = response.get('message', {}).get('content', '').strip()
+        return response['message']['content'].strip()
 
     except Exception as e:
         return f"[ERROR] Both orchestrator and direct model failed: {e}"

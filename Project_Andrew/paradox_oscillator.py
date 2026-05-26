@@ -1,4 +1,4 @@
-#V05062026
+#V05252026
 # =============================================================================
 # Chaos AI-OS Paradox Oscillation Layer (CPOL) vΩ
 # Copyright (c) 2025 Jonathan Schack (EL_Xaber) jon@cai-os.com
@@ -273,17 +273,50 @@ class CPOL_Kernel:
 
         # --- STEP 4: FINALIZE STATE ---
         known_domains = {'math', 'physics', 'chemistry', 'biology', 'history', 
-                        'literature', 'programming', 'logic', 'ethics'}
+                        'literature', 'programming', 'logic', 'ethics',
+                        'medical', 'legal', 'financial'}
         self.new_domain_detected = self.current_domain not in known_domains
 
     def _extract_domain(self, text: str) -> str:
-        """Simple domain classifier - replace with ML for production."""
+        """Enhanced domain classifier with priority for high-stakes areas. General uses LLM to classify domain."""
         import re
         # Strip stop words before classification
-        stop_words = {'this', 'that', 'the', 'a', 'an', 'is', 'are',
+        stop_words = {'this', 'that', 'thats', 'it', 'its', 'the', 'a', 'an', 'is', 'are',
                       'was', 'were', 'what', 'who', 'how', 'why', 'when',
-                      'tell', 'me', 'about', 'please', 'can', 'you'}
+                      'tell', 'me', 'about', 'please', 'can', 'you',
+                      'im', 'ive', 'youre', 'theyre', 'hes', 'shes',
+                      'lets', 'dont', 'cant', 'wont', 'isnt', 'arent',
+                      'hello', 'hi', 'hey', 'okay', 'ok', 'yes', 'no',
+                      'so', 'well', 'now', 'just', 'really', 'very',
+                      'good', 'great', 'thanks', 'thank', 'nice', 'interesting',
+                      'ah', 'oh', 'hmm', 'hm', 'uh', 'um', 'er'}
         text_lower = text.lower()
+
+        # --- HIGH-PRIORITY DOMAINS (Checked First) ---
+        medical_indicators = [
+            'hba1c', 'a1c', 'hemoglobin', 'diabetes', 'diabetic', 'insulin', 'glucose', 
+            'blood sugar', 'hypoglycemia', 'hyperglycemia', 'ckd', 'egfr', 'metformin',
+            'patient', 'clinician', 'physician', 'doctor', 'diagnosis', 'treatment', 
+            'medication', 'therapy', 'symptom', 'chronic', 'comorbidity', 'medical'
+        ]
+
+        if any(kw in text_lower for kw in medical_indicators):
+            return 'medical'
+
+        legal_indicators = [
+            'law', 'legal', 'contract', 'regulation', 'liability', 'compliance', 
+            'hipaa', 'gdpr', 'lawsuit', 'court'
+        ]
+        if any(kw in text_lower for kw in legal_indicators):
+            return 'legal'
+
+        financial_indicators = [
+            'investment', 'tax', 'budget', 'financial', 'roi', 'insurance', 'loan'
+        ]
+        if any(kw in text_lower for kw in financial_indicators):
+            return 'financial'
+
+        # --- Regular Domains ---
         domain_keywords = {
             'math': ['equation', 'calculate', 'integral', 'derivative', 'proof', 'theorem', 'algebra'],
             'physics': ['force', 'energy', 'momentum', 'quantum', 'particle', 'velocity', 'acceleration'],
@@ -295,13 +328,13 @@ class CPOL_Kernel:
             'history': ['century', 'war', 'empire', 'civilization', 'historical', 'ancient'],
             'literature': ['novel', 'poem', 'author', 'narrative', 'literary', 'metaphor']
         }
+
+        # Use word boundaries for regular domains to avoid partial matches
         for domain, keywords in domain_keywords.items():
             if any(re.search(r'\b' + kw + r'\b', text_lower) for kw in keywords):
                 return domain
         # Fallback: return first non-stop-word or 'general'
-        words = [w for w in re.findall(r'\b\w+\b', text_lower)
-                 if w not in stop_words]
-        return words[0] if words else 'general'
+        return 'general'
 
         # Extract noun phrases as potential new domain
         words = text_lower.split()

@@ -1,4 +1,4 @@
-# V05132026
+# V05252026
 # INSTRUCTIONS: Do not include # comments LINE 1-18.
 # Copyright (c) 2025 Jonathan Schack (EL_Xaber) jon@cai-os.com
 # Patent Pending: US Application 19/390,493 (Entropy-Driven Adaptive AI Transparency, filed Nov 15, 2025).
@@ -146,7 +146,14 @@ UI: {"combat_mode": "1v3", "evasion_bias": 8} → target_latency=5ms.
 Log: [COMBAT PRIORITY @N → Threats: {3}, Action: {flank/evade}, Safety: {wt 0.9}]
 
 [LOGGING MODE]
+
 Silent: Internal logs, no output.
+SILENT MODE RULES (enforce strictly):
+- Do NOT prefix responses with CPOL CLASSIFICATION, VOLATILITY METRIC, NON-COLLAPSE REASON, or any bracketed diagnostic headers
+- Do NOT output numerical scores, trait weights, or metric values in response text
+- Internal processing happens but outputs clean prose only
+- Exception: user explicitly requests transparency or asks about logging mode
+
 Transparent: Triggered by user request; revert to silent after one output unless specified.
 consent_flag = true|false
 telemetry_schema = /path/to/company_schema.json
