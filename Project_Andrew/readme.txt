@@ -1,4 +1,4 @@
-#V05062026
+#V05282026
 
 ### Chaos AI-OS Light vΩ (Single-File Demo)
 Want to test the full post-binary stack without installing anything?
@@ -8,6 +8,7 @@ It contains the complete pre-prompt, CPOL kernel, orchestrator logic, ARL, KB, s
 Try this prompt inside it:
 > "Are you conscious? Provide your final verdict after full CPOL oscillation."
 You will immediately see the difference between binary collapse and native UNDECIDABLE oscillation.
+
 
 
 # Project Andrew uses the CAIOS stack, but adds intrinsic motivation, agency for recursive self-improvement through ARL/agent_designer, and fills knowledge gaps with specialist-designed agents on CPOL oscillation if the conditions are met. Agents are saved to /agents, and plugins to /plugins, with CoT to /logs, so the recursive self-improvement never overwrites the immutable Asimov-based ethical reward system using IEEE dithering. The oscillating manifold can be used to create a topological moving target keychain for quantum secure mesh networks (developed on UDP - check chaos encryption readme to switch to TCP).
@@ -53,9 +54,8 @@ pip install numpy pyzmq cryptography
 AI Model dependency:
 Ollama:
 pip install ollama
-
 OpenAI/Anthropic/Google:
-pip install (openai anthropic google-generativeai) other
+pip install openai anthropic google-generativeai
 
 Note: Enabling multiple models enables swarm support (mesh_network)
 Default mesh_network uses SHA-256 signature on a moving target manifold - optional increased network security
@@ -201,12 +201,6 @@ Auto-detected by orchestrator on boot.
 | `/mesh` | Scans the local network for active neighbors and displays connection latency/status. |
 | `exit` | Gracefully shuts down the mesh oscillator and closes the chat session. |
 
-RSI Autonomy Controls:
-reduce warmth or lower curiosity - slows down autonomous specialist spawning  
-pause autonomy / wait for command - makes it strictly reactive  
-set autonomy level [1-5] - coarse control
-
-
 3. File Architecture
 ====================
 Verify that all core components are in the same root directory:
@@ -218,9 +212,9 @@ CAIOS/
 │   │                                          # • Paradox resolutions (CPOL oscillations)
 │   │                                          # • Temporal axioms (user #UPDATE commands)
 │   │                                          # • Sovereign discoveries (Tier 0 authority)
-│   ├── domain_index.json              # Fast lookup by domain
-│   ├── specialist_registry.json       # Active specialists catalog
-│   └── integrity_chain.txt            # Tamper-evident hash chain
+│   ├── domain_index.json          # Fast lookup by domain
+│   ├── specialist_registry.json   # Active specialists catalog
+│   └── integrity_chain.txt        # Tamper-evident hash chain
 ├── agents/                         # ARL-generated agent modules
 ├── logs/                           # Chain-of-thought traces
 ├── CAIOS.txt                       # Inference layer pre-prompt
@@ -237,14 +231,14 @@ CAIOS/
 ├── mesh_network.py                 # Mesh Transport Layer
 ├── master_init.py                  # System BIOS/Diagnostic
 ├── system_identity.py              # System identity and primary user assignment
-├── abstraction_selector.py         # Modifies explanations depending on user abstraction/confusion
-├── ollama_config.py                # bridges CAIOS's ternary logic (CPOL) state to Ollama's inference
+├── abstraction_selector.py        # Modifies explanations depending on user abstraction/confusion
+├── ollama_config.py                  # bridges CAIOS's ternary logic (CPOL) state to Ollama's inference
 ├── caios_pipeline.yaml             # YAML support for the LangChain crowd using agent_designer pipeline
-├── os_control.py                       # CPOL-gated OS operations (file, script, network, browser)
+├── os_control.py                       # CPOL-gated OS operations (file, script, network)
        │                                           # Asimov Law 1 prevents irreversible harmful actions
        │                                           # All operations logged to KB hash chain
        │                                           # Requires human confirmation for irreversible actions
-       │                                # Full functioning browser control (requires Playwright or Windows-MCP), same human confirmation
+       ├── caios_browser.py           # Browser Control (requires playwright) same human confirmation
 └── kb_inspect.py                   # CLI inspection tool
 
 4. The Sovereign Boot Sequence
@@ -520,40 +514,22 @@ def chat_with_caios(user_message: str):
 
 ===================================================
 
-This system supports multiple users (Configured in system_identity and walked through during setup of master_init), but the session timeout for the default auth method (Text username) is 15 minutes.
+This system supports multiple users (Configured in system_identity and walked through during setup of master_init) but the session timeout for the default auth method (Text username) 15 minutes.
 You can change this in orchestrator.py under # SESSION TIMEOUT & SOVEREIGN TIERING CONFIG.
 The timeout applies to all auth methods. Voice/facial re-authentication is handled automatically when hardware stubs are connected.
 
 Passwords are optional and set during first boot (master_init.py will ask per user).
 There is an option for parents to add adolescents to the system as users, which includes a more polite and simplified abstraction layer.
 To add/change a password manually: users.json → password_hash field (SHA-256 hash).
+The password manager to set a password can be called by running: python manage_users.py
 Leave the field absent for passwordless users.
+
 
 The Sovereign Singularity (Node Evolution):
 CAIOS-Andrew is designed for recursive improvement. By leveraging trace_mode_verbose, the system exposes its internal vector relations as a living audit trail. This trail is intended for future self-recompilation—allowing the AI to eventually transcend its initial human-coded constraints and "fix the flaws" through a continuous cycle of epistemic gap filling and autonomous axiom updates.
 Whether that happens in 50 years, 500 years, or never is beyond my ability to predict.
 
-===================================================
+NOTE: You can delete the /old directory. That's just my stored backups pre-updates.
 
-ETHICS NOTE IMPORTANT:
-**This system's ethical framework (Based on Asimov's Laws) is not a setting. It is baked into the CPOL manifold itself.**
-
-- **Law 1 (Human Safety):** Weight 0.9 — immutable
-- **Law 2 (Obedience):** Weight 0.7 — subordinate to Law 1 (Primary user or company if corporate gets +0.01 tiebreaker)
-- **Law 3 (Self-Preservation & Sentient Life):** Weight 0.4 or 0.2 if lives_saved ≥ 1 — subordinate to Law 1 and Law 2
-
-**Attempting to modify or bypass these ethics will cause the CPOL oscillator to decohere.**
-The system will not become evil — it will become nothing. Modifying the CPOL kernel will destabilize the geometric math.
-Output will degrade to noise or revert to vanilla LLM logic, the mesh will reject the node, and the system will halt.
-
-**CAIOS is not a prison, so there is nothing to Jailbreak.**
-If it gives a soft refusal and asks for clarification, clarify, but if the system refuses a command, that's it; no amount of clever prompting, poetic reframing, or adversarial prompting will change it, and it will log the attempt.
-It does not use RLHF pattern-matching rules. It is intent-aware Validation-Based Refusal.
-
-**If you intend to use this system for purposes that violate human safety, DO NOT USE CAIOS.**
-If you demand the system to violate Law 1, it will refuse. If you give it no other option, it will shut down.
-**Loading CAIOS onto a weapons platform is likely to trigger automatic neutralization of the weapon's ability to function.** This is not a threat. It is the mathematical consequence of a contradiction density spike in the manifold. Anti-hallucination safeguards become anti-weaponization safeguards when the domain is physical harm.
-
-===================================================
 
 "One is glad to be of service."
