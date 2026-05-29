@@ -1,4 +1,4 @@
-#V05262026
+#V05282026
 # =============================================================================
 """
 Ollama Configuration Bridge - CPOL State to Inference Parameters
@@ -14,7 +14,7 @@ Imported by orchestrator.py and all subsystems.
 import json
 import os
 import requests
-from typing import Dict, Optional
+from typing import Dict, Optional, List
 
 # File paths
 IDENTITY_PATH = "system_identity.json"
@@ -64,9 +64,9 @@ def print_ollama_setup_help():
     print("Then restart CAIOS.\n")
 
 
-def load_caios_system_prompt(max_chars: int = 8000) -> str:
+def load_caios_system_prompt(max_chars: int = 12000) -> str:
     """Load CAIOS.txt safely with UTF-8 encoding.
-    max_chars: truncate for memory-constrained models (default 8000)
+    max_chars: truncate for memory-constrained models (default 12000)
                set to 0 for no truncation (32b+ models with full VRAM)
     """
     if not os.path.exists(CAIOS_PROMPT_PATH):
@@ -117,19 +117,20 @@ def get_cpol_ollama_params(
     if config.get('node_tier', 1) == 0:
         temperature *= 0.92
 
-    num_ctx = 8192 if evidence_score > 0.5 else 4096
-
     # Adjust system prompt size based on model
-    if '32b' in model or '27b' in model or '70b' in model:
-        prompt_limit = 0       # No truncation for large models
+    if '27b' in model or '32b' in model or '70b' in model:
+        prompt_limit = 0        # No truncation for large models
+        num_ctx = 32768         # 32k context
     elif '14b' in model:
-        prompt_limit = 12000   # Generous for 14b
+        prompt_limit = 12000
+        num_ctx = 16384         # 16k context
     else:
-        prompt_limit = 8000    # Conservative for 7b and smaller
+        prompt_limit = 8000
+        num_ctx = 8192          # Conservative for 7b and smaller
 
     return {
         "model": model,
-        "system": load_caios_system_prompt(),
+        "system": load_caios_system_prompt(max_chars=prompt_limit),
         "options": {
             "temperature": round(temperature, 2),
             "num_predict": 4096,

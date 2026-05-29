@@ -1,4 +1,4 @@
-#V05062026
+#V05282026
 # =============================================================================
 # PROJECT ANDREW – Axiom Manager & Temporal Update Pipeline
 # Purpose: Enable local knowledge updates that override model training data without retraining. Kills the data center requirement.
@@ -292,23 +292,30 @@ class AxiomManager:
 
     def list_active_axioms(self) -> List[Dict]:
         """
-        List all active axioms.
+        List all active axioms, deduplicated by domain (most recent wins).
         Returns:
             List of axiom dicts
         """
         active = []
-
         if HAS_KB:
             # Search all axiom domains
             results = search_domain("axiom_")
-
             for result in results:
                 axiom = result.get('content', {}).get('axiom_data')
                 if axiom and axiom.get('status') == 'ACTIVE':
                     if self._is_axiom_valid(axiom):
                         active.append(axiom)
 
-        return active
+        # Deduplicate by domain — keep most recent entry per domain
+        seen_domains = {}
+        for axiom in sorted(active, 
+                            key=lambda x: x.get('timestamp', ''), 
+                            reverse=True):
+            domain = axiom.get('domain')
+            if domain not in seen_domains:
+                seen_domains[domain] = axiom
+
+        return list(seen_domains.values())
 
 
     # Private helper methods

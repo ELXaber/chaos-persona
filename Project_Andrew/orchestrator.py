@@ -1,4 +1,4 @@
-#V05252026
+#V05282026
 # =============================================================================
 # Chaos AI-OS – Hardened Orchestrator (Unified Edition)
 # Combines: V1 Logic + V3 Pipeline + Mesh Encryption + Chatbot Safety
@@ -103,6 +103,10 @@ try:
 except ImportError:
     USER_KB_AVAILABLE = False
     print("[INFO] User Profile KB not available.")
+
+os.makedirs("knowledge_base", exist_ok=True)
+os.makedirs("logs", exist_ok=True)
+os.makedirs("agents", exist_ok=True)
 
 # =============================================================================
 # SHARED MEMORY INITIALIZATION
@@ -1110,7 +1114,7 @@ def system_step(user_input: str, prompt_complexity: str = "low",
 
             if OLLAMA_AVAILABLE:
                 from ollama_config import query_with_cpol
-                print(f"[DEBUG] Sending to Qwen: {enriched_query[:200]}")
+                print(f"[DEBUG] Sending to Qwen: {enriched_query[:500]}")
                 llm_response = query_with_cpol(
                     user_query=enriched_query,
                     contradiction_density=density,

@@ -1,4 +1,4 @@
-#V05252026
+#V05282026
 #!/usr/bin/env python3
 """
 CAIOS Inference Wrapper
@@ -76,21 +76,52 @@ def load_shared_memory() -> Dict[str, Any]:
 
 shared_memory = load_shared_memory()
 
+def refresh_and_inject_kb_state():
+    """Force reload KB and return summary for injection"""
+    try:
+        from axiom_manager import create_axiom_manager
+        am = create_axiom_manager()
+        active = am.list_active_axioms()
+        count = len(active)
+        shared_memory['kb_state'] = {
+            'discoveries': count,
+            'has_knowledge': count > 0,
+            'last_refresh': time.time()
+        }
+        summary = f"[KB_STATE discoveries={count} has_knowledge={count > 0}]"
+        print(f"[KB] Refreshed: {count} axioms loaded")
+        return summary
+    except Exception as e:
+        print(f"[KB Refresh Warning]: {e}")
+        return "[KB_STATE discoveries=0 has_knowledge=False]"
+
 # =============================================================================
 # Load CAIOS system prompt
 # =============================================================================
 
 def load_caios_prompt() -> str:
-    """Read CAIOS.txt as the system prompt."""
+    """Read CAIOS.txt as the system prompt, stripping # comments."""
     try:
         with open("CAIOS.txt", "r", encoding="utf-8") as f:
-            return f.read().strip()
+            content = f.read()
     except FileNotFoundError:
         print("Error: CAIOS.txt not found in current directory.")
         sys.exit(1)
     except Exception as e:
         print(f"Error reading CAIOS.txt: {e}")
         sys.exit(1)
+
+    # Strip # comments after reading
+    cleaned = []
+    for l in content.split('\n'):
+        if l.strip().startswith('#'):
+            continue  # Skip full comment lines
+        if '#' in l:
+            l = l[:l.index('#')].rstrip()  # Strip inline comments
+        if l.strip():  # Skip now-empty lines
+            cleaned.append(l)
+
+    return '\n'.join(cleaned)
 
 system_prompt = load_caios_prompt()
 
@@ -425,6 +456,7 @@ def main():
         print("\nThinking...", end="", flush=True)
 
         # Get response from model
+        kb_summary = refresh_and_inject_kb_state()
         response_text = chat_with_model(provider, client, conversation, ollama_model)
 
         print("\r" + " " * 20 + "\r", end="")  # clear "Thinking..."
