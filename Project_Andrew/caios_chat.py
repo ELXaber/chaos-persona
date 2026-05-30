@@ -1,4 +1,4 @@
-#V05282026
+#V05292026
 #!/usr/bin/env python3
 """
 CAIOS Inference Wrapper
@@ -141,6 +141,29 @@ def get_personalized_prompt():
     )
     return f"{identity_prefix}\n\n{base_prompt}"
 
+def load_recent_history(n: int = 10) -> list:
+    """Load last N exchanges for conversation continuity."""
+    log_path = os.path.join('knowledge_base', 'conversation_log.jsonl')
+    if not os.path.exists(log_path):
+        return []
+    entries = []
+    try:
+        with open(log_path, 'r', encoding='utf-8') as f:
+            for line in f:
+                try:
+                    entries.append(json.loads(line.strip()))
+                except Exception:
+                    continue
+    except Exception:
+        return []
+    # Return last N as conversation format
+    recent = entries[-n:]
+    history = []
+    for e in recent:
+        history.append({"role": "user", "content": e['user']})
+        history.append({"role": "assistant", "content": e['andrew']})
+    return history
+
 # =============================================================================
 # Client selection & chat function
 # =============================================================================
@@ -249,13 +272,11 @@ def chat_with_model(provider: str, client: Any,
 
         response = ollama.chat(
             model=params['model'],
-            messages=[
-                {"role": "system", "content": identity_prefix + params['system']},
-                {"role": "user", "content": user_query}
-            ],
+            messages=full_messages,
             options=params['options']
         )
         result = response.get('message', {}).get('content', '').strip()
+        return result if result else "[Andrew] No response generated."
 
     except Exception as e:
         return f"[ERROR] Both orchestrator and direct model failed: {e}"
@@ -298,6 +319,26 @@ def chat_with_model(provider: str, client: Any,
 
     except Exception as e:
         return f"Error during API call: {str(e)}"
+
+def log_exchange(user_input: str, response: str,
+                 cpol_status: str, domain: str):
+    from datetime import datetime, timezone
+    entry = {
+        'timestamp': datetime.now(timezone.utc).strftime(
+            '%Y-%m-%dT%H:%M:%S.%f') + "Z",
+        'user': user_input,
+        'andrew': response,
+        'cpol_status': cpol_status,
+        'domain': domain,
+        'user_id': shared_memory.get('active_user', 'unknown')
+    }
+    log_path = os.path.join('knowledge_base', 'conversation_log.jsonl')
+    try:
+        os.makedirs('knowledge_base', exist_ok=True)
+        with open(log_path, 'a', encoding='utf-8') as f:
+            f.write(json.dumps(entry) + '\n')
+    except Exception as e:
+        print(f"[LOG] Warning: Could not write exchange log: {e}")
 
 # =============================================================================
 # Command Palette (Tab Completion)
@@ -373,8 +414,12 @@ def main():
 
     # Generate the prompt dynamically at boot
     current_system_prompt = get_personalized_prompt()
+    recent_history = load_recent_history(n=6)
     # 2. Initialize conversation with the PERSONALIZED prompt
     conversation = [{"role": "system", "content": current_system_prompt}]
+    conversation.extend(recent_history)
+    if recent_history:
+        print(f"[HISTORY] Restored {len(recent_history)//2} recent exchanges")
 
     while True:
         user_input = input("\nYou: ").strip()
@@ -387,7 +432,7 @@ def main():
         # 2. LOCAL COMMAND: /whoami
         if user_input.lower() == "/whoami":
             identity = shared_memory.get('system_identity', {})
-            name = identity.get('system_name', 'Andrew/Galatea (Uninitialized)')
+            name = identity.get('system_id', 'Andrew/Galatea (Uninitialized)')
             owner = identity.get('primary_user', 'Unknown')
 
             # Pull networking info from shared memory
@@ -461,6 +506,14 @@ def main():
 
         print("\r" + " " * 20 + "\r", end="")  # clear "Thinking..."
         print(f"CAIOS: {response_text}")
+
+        # Log exchange for session continuity
+        log_exchange(
+            user_input=user_input,
+            response=response_text,
+            cpol_status=shared_memory.get('last_cpol_result', {}).get('status', 'unknown'),
+            domain=shared_memory.get('last_cpol_result', {}).get('domain', 'general')
+        )
 
         # Add assistant response to history
         conversation.append({"role": "assistant", "content": response_text})

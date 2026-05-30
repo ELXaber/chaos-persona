@@ -1,4 +1,4 @@
-#V05012026
+#V05292026
 # =============================================================================
 # PROJECT ANDREW – Abstraction Selector
 # Purpose: Dynamically detect user comprehension level and select appropriate explanation layer (Technical, Victorian, Clear, Caveman)
@@ -543,31 +543,39 @@ class AbstractionDispatcher:
         level = self.selector.detect_abstraction_level(user_input, shared_memory)
 
         # Complaint elevation check
-        complaint_patterns = [
-            r'\bthat\'s wrong\b', r'\bno that\'s not\b', r'\bstupid\b',
-            r'\buseless\b', r'\bwhat kind of answer\b', r'\bthat makes no sense\b',
-            r'\bi don\'t understand\b', r'\bwhat does that mean\b',
-            r'\bwrong\b', r'\bincorrect\b', r'\bdisagree\b', r'\bnot helpful\b'
-        ]
-
         user_lower = user_input.lower()
-        is_complaint = any(re.search(p, user_lower) for p in complaint_patterns)
+        directed_complaint = any([
+            'you' in user_lower and bool(re.search(r'\bwrong\b', user_lower)),
+            'your' in user_lower and bool(re.search(r'\bincorrect\b', user_lower)),
+            bool(re.search(r'\bthat\'s wrong\b', user_lower)),
+            bool(re.search(r'\byou\'re wrong\b', user_lower)),
+            bool(re.search(r'\bthat makes no sense\b', user_lower)),
+            bool(re.search(r'\bwhat kind of answer\b', user_lower)),
+            bool(re.search(r'\bstupid\b', user_lower)),
+            bool(re.search(r'\buseless\b', user_lower)),
+            bool(re.search(r'\bnot helpful\b', user_lower)),
+        ])
 
-        if is_complaint:
+        if directed_complaint:
             complaint_count = shared_memory.get('complaint_count', 0) + 1
             shared_memory['complaint_count'] = complaint_count
             previous_level = shared_memory.get(
-                'current_abstraction_level', 
+                'current_abstraction_level',
                 level
             )
+            if isinstance(previous_level, str):
+                try:
+                    previous_level = AbstractionLevel[previous_level]
+                except KeyError:
+                    previous_level = level
 
             # Elevation logic
             elevation_map = {
-                AbstractionLevel.TECHNICAL: AbstractionLevel.VICTORIAN,
-                AbstractionLevel.VICTORIAN: AbstractionLevel.CLEAR,
-                AbstractionLevel.CLEAR: AbstractionLevel.CHILD,
-                AbstractionLevel.CHILD: AbstractionLevel.CAVEMAN,
-                AbstractionLevel.CAVEMAN: AbstractionLevel.VICTORIAN  # Full circle
+                AbstractionLevel.TECHNICAL: AbstractionLevel.CLEAR,      # Expert confused → plain language
+                AbstractionLevel.CLEAR: AbstractionLevel.VICTORIAN,      # Plain not landing → more structured
+                AbstractionLevel.VICTORIAN: AbstractionLevel.CAVEMAN,    # Formal not working → simplify hard
+                AbstractionLevel.CHILD: AbstractionLevel.CLEAR,          # Smart child → move up
+                AbstractionLevel.CAVEMAN: AbstractionLevel.VICTORIAN     # Full circle → try structured again
             }
 
             # Persistent complainer override (3+ complaints)
