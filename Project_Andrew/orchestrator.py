@@ -1,4 +1,4 @@
-#V05282026
+#V05302026
 # =============================================================================
 # Chaos AI-OS – Hardened Orchestrator (Unified Edition)
 # Combines: V1 Logic + V3 Pipeline + Mesh Encryption + Chatbot Safety
@@ -948,40 +948,44 @@ def system_step(user_input: str, prompt_complexity: str = "low",
         print(f"[ORCHESTRATOR] High Entropy Detected -> Checking KB for {domain}")
 
         # === KNOWLEDGE BASE CHECK ===
-        if AD_AVAILABLE and (cpol_result.get('logic') == 'epistemic_gap' or cpol_result.get('new_domain')):
-            coverage = kb.check_domain_coverage(domain)
-
-            if coverage.get('has_knowledge') and coverage.get('gap_fills', 0) > 2:
-                # Reuse existing specialist
-                specialist_id = kb.get_specialist_for_domain(domain)
-                context_kb = kb.generate_specialist_context(domain)
-                print(f"[ORCHESTRATOR] ✓ Reusing specialist {specialist_id} (7.8x faster)")
-
-                context['specialist_context'] = context_kb
-                context['specialist_id'] = specialist_id
-                use_case = "epistemic_scaffold"
+        if AD_AVAILABLE and (cpol_result.get('logic') == 'epistemic_gap' 
+                             or cpol_result.get('new_domain')):
+            if domain == 'general':
+                use_case = "paradox_containment"
             else:
-                # Deploy new specialist
-                print(f"[ORCHESTRATOR] Deploying new specialist for {domain}")
-                result = ad.design_agent(
-                    goal=f"Fill epistemic gap in domain: {domain}",
-                    traits={'curiosity': 1.0, 'intelligence': 0.95, 'caution': 0.6},
-                    tools=['web_search', 'code_execution', 'memory', 'browse_page'],
-                    shared_memory=shared_memory,
-                    node_tier=shared_memory.get('node_tier', 1)
-                )
-
-                if result['status'] == 'success':
-                    kb.register_specialist(
-                        specialist_id=result['plugin_id'],
-                        domain=domain,
-                        capabilities=result.get('capabilities', ['web_search']),
-                        deployment_context={'goal': f"Fill epistemic gap in {domain}"},
+                coverage = kb.check_domain_coverage(domain)
+                if coverage.get('has_knowledge') and coverage.get('gap_fills', 0) > 2:
+                    # Reuse existing specialist
+                    specialist_id = kb.get_specialist_for_domain(domain)
+                    context_kb = kb.generate_specialist_context(domain)
+                    print(f"[ORCHESTRATOR] ✓ Reusing specialist {specialist_id} (>7.8x faster)")
+                    context['specialist_context'] = context_kb
+                    context['specialist_id'] = specialist_id
+                    use_case = "epistemic_scaffold"
+                else:
+                    # Deploy new specialist
+                    print(f"[ORCHESTRATOR] Deploying new specialist for {domain}")
+                    result = ad.design_agent(
+                        goal=f"Fill epistemic gap in domain: {domain}",
+                        traits={'curiosity': 1.0, 'intelligence': 0.95, 'caution': 0.6},
+                        tools=['web_search', 'code_execution', 'memory', 
+                               'browse_page', 'windows_mcp'],
+                        shared_memory=shared_memory,
                         node_tier=shared_memory.get('node_tier', 1)
                     )
-                    context['specialist_id'] = result['plugin_id']
+                    if result['status'] == 'success':
+                        existing = kb.get_specialist_for_domain(domain)
+                        if not existing:
+                            kb.register_specialist(
+                                specialist_id=result['plugin_id'],
+                                domain=domain,
+                                capabilities=result.get('capabilities', ['web_search']),
+                                deployment_context={'goal': f"Fill epistemic gap in {domain}"},
+                                node_tier=shared_memory.get('node_tier', 1)
+                            )
+                        context['specialist_id'] = result['plugin_id']
+                    use_case = "epistemic_scaffold"
 
-                use_case = "epistemic_scaffold"
         elif cpol_result['status'] == "UNDECIDABLE":
             use_case = "paradox_containment"
         elif MESH_AVAILABLE:
