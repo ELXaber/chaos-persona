@@ -1,4 +1,4 @@
-#V05302026
+#V06032026
 # =============================================================================
 # Chaos AI-OS – Hardened Orchestrator (Unified Edition)
 # Combines: V1 Logic + V3 Pipeline + Mesh Encryption + Chatbot Safety
@@ -265,12 +265,18 @@ else:
     print("[WARNING] System identity not initialized - run master_init.py")
 
 if OSC_AVAILABLE:
-    shared_memory['os_controller'] = create_os_controller(shared_memory)
+    shared_memory['os_controller'] = create_os_controller(shared_memory, headless=False)
     print("[BOOT] OS Controller initialized - system operations enabled")
 
-# =============================================================================
-# API CLIENT LOADING (Multi-Model Swarm Support)
-# =============================================================================
+try:
+    from tool_dispatcher import create_tool_dispatcher, get_tool_addendum
+    shared_memory['tool_dispatcher'] = create_tool_dispatcher(shared_memory)
+    shared_memory['tool_addendum'] = get_tool_addendum()
+    print("[BOOT] Tool dispatcher initialized - LLM tool access enabled")
+except ImportError:
+    shared_memory['tool_dispatcher'] = None
+    shared_memory['tool_addendum'] = ""
+    print("[BOOT] Tool dispatcher not available")
 
 # =============================================================================
 # API CLIENT LOADING (Multi-Model Swarm Support)
@@ -677,7 +683,7 @@ def system_step(user_input: str, prompt_complexity: str = "low",
                 if kernel and hasattr(kernel, 'ratchet'):
                     # 1. Update the seed to the user's persisted state
                     kernel.raw_q = incoming['last_raw_q']
-                    
+
                     # 2. Ratchet forward (this advances the manifold state)
                     kernel.ratchet()
 
@@ -1038,14 +1044,14 @@ def system_step(user_input: str, prompt_complexity: str = "low",
     # Apply abstraction layer (replaces old caveman mode)
     if ABSTRACTION_AVAILABLE and shared_memory.get('abstraction_dispatcher'):
         dispatcher = shared_memory['abstraction_dispatcher']
-        
+
         # Process through abstraction selector
         cpol_result = dispatcher.process(
             user_input=user_input,
             technical_output=cpol_result,
             shared_memory=shared_memory
         )
-        
+
         # Log which mode was activated (optional)
         if cpol_result.get('abstraction_level') == 'CAVEMAN':
             print("[ORCHESTRATOR] Mungo mode activated. Rock speak now.")
@@ -1065,17 +1071,26 @@ def system_step(user_input: str, prompt_complexity: str = "low",
                 '%A, %B %d, %Y %H:%M UTC'
             )
 
-            # KB context
+            # KB context — show total KB size, not single-domain coverage
             kb_context = ""
             if AD_AVAILABLE:
                 try:
-                    coverage = kb.check_domain_coverage(
+                    # Count total discoveries across all domains
+                    total_discoveries = 0
+                    if kb.DISCOVERIES_LOG.exists():
+                        with open(kb.DISCOVERIES_LOG, 'r', encoding='utf-8') as _f:
+                            total_discoveries = sum(
+                                1 for line in _f if line.strip()
+                            )
+                    # Also get domain-specific coverage for context
+                    domain_coverage = kb.check_domain_coverage(
                         cpol_result.get('domain', 'general')
                     )
                     kb_context = (
-                        f"[KB_STATE discoveries="
-                        f"{coverage.get('discovery_count', 0)} "
-                        f"has_knowledge={coverage.get('has_knowledge', False)}]\n"
+                        f"[KB_STATE total_discoveries={total_discoveries} "
+                        f"has_knowledge={total_discoveries > 0} "
+                        f"domain={cpol_result.get('domain', 'general')} "
+                        f"domain_discoveries={domain_coverage.get('discovery_count', 0)}]\n"
                     )
                 except Exception:
                     pass
@@ -1136,9 +1151,19 @@ def system_step(user_input: str, prompt_complexity: str = "low",
             cpol_result['llm_response'] = llm_response
             print(f"[OLLAMA] Response received ({len(llm_response)} chars)")
 
+
         except Exception as e:
             print(f"[LLM] Call failed: {e}")
             cpol_result['llm_response'] = None
+
+    # TOOL DISPATCH: process any tool tags in LLM response
+    dispatcher = shared_memory.get('tool_dispatcher')
+    if dispatcher and cpol_result.get('llm_response'):
+        dispatch_result = dispatcher.process(cpol_result['llm_response'])
+        if dispatch_result['has_tool_calls']:
+            cpol_result['llm_response'] = dispatch_result['output']
+            cpol_result['tools_called'] = dispatch_result['tools_called']
+            print(f"[TOOL_DISPATCH] Executed: {dispatch_result['tools_called']}")
 
     return cpol_result
 
@@ -1373,7 +1398,7 @@ if __name__ == "__main__":
 
     # TEST 12: Mesh-Kernel Linkage (Quantum Shield Check)
     print("\n[TEST 12] Mesh-Kernel Linkage:")
-    
+
     # Check 1: Does the mesh see the kernel?
     if orchestrator.shared_memory.get('cpol_instance'):
         print("  ✓ Shared Memory Hardware Link: ACTIVE")

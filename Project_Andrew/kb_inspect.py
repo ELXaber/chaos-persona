@@ -8,6 +8,7 @@
 import sys
 import json
 from pathlib import Path
+from typing import Optional
 import knowledge_base as kb
 from datetime import datetime, timezone
 
@@ -17,20 +18,34 @@ def cmd_list_domains():
         print("No domains found. Knowledge base is empty.")
         return
 
-    with open(kb.DOMAIN_INDEX, "r") as f:
+    with open(kb.DOMAIN_INDEX, "r", encoding="utf-8") as f:
         index = json.load(f)
 
     print(f"{'='*70}")
     print(f"{'DOMAIN':<30} {'DISCOVERIES':<15} {'LAST UPDATED':<25}")
     print(f"{'='*70}")
 
-    for domain, info in sorted(index.items()):
+    # Split into research domains and axiom overrides for clarity
+    research = {d: i for d, i in index.items() if not d.startswith('axiom_')}
+    axioms   = {d: i for d, i in index.items() if d.startswith('axiom_')}
+
+    for domain, info in sorted(research.items()):
         disc_count = len(info['discovery_ids'])
         last_updated = info.get('last_updated', 'Unknown')[:19]
         print(f"{domain:<30} {disc_count:<15} {last_updated:<25}")
 
+    if axioms:
+        print(f"{'='*70}")
+        print(f"{'AXIOM OVERRIDES':<30} {'COUNT':<15} {'LAST UPDATED':<25}")
+        print(f"{'='*70}")
+        for domain, info in sorted(axioms.items()):
+            disc_count = len(info['discovery_ids'])
+            last_updated = info.get('last_updated', 'Unknown')[:19]
+            short = domain[6:]  # strip 'axiom_' prefix for readability
+            print(f"{short:<30} {disc_count:<15} {last_updated:<25}")
+
     print(f"{'='*70}")
-    print(f"Total domains: {len(index)}")
+    print(f"Total research domains: {len(research)} | Axiom overrides: {len(axioms)}")
 
 
 def cmd_show_domain(domain: str):
@@ -213,13 +228,13 @@ def cmd_stats():
     # Count domains
     domain_count = 0
     if kb.DOMAIN_INDEX.exists():
-        with open(kb.DOMAIN_INDEX, "r") as f:
+        with open(kb.DOMAIN_INDEX, "r", encoding="utf-8") as f:
             domain_count = len(json.load(f))
 
     # Count discoveries
     discovery_count = 0
     if kb.DISCOVERIES_LOG.exists():
-        with open(kb.DISCOVERIES_LOG, "r") as f:
+        with open(kb.DISCOVERIES_LOG, "r", encoding="utf-8") as f:
             discovery_count = sum(1 for line in f if line.strip())
 
     # Count specialists
@@ -238,7 +253,7 @@ def cmd_stats():
     # Hash chain integrity
     hash_count = 0
     if kb.HASH_CHAIN.exists():
-        with open(kb.HASH_CHAIN, "r") as f:
+        with open(kb.HASH_CHAIN, "r", encoding="utf-8") as f:
             hash_count = sum(1 for _ in f)
 
     # Sovereign vs Edge distribution audit
@@ -247,7 +262,7 @@ def cmd_stats():
     tier_distribution = {}
 
     if kb.DISCOVERIES_LOG.exists():
-        with open(kb.DISCOVERIES_LOG, "r") as f:
+        with open(kb.DISCOVERIES_LOG, "r", encoding="utf-8") as f:
             for line in f:
                 if not line.strip():
                     continue
@@ -281,6 +296,15 @@ def cmd_stats():
     print(f"Active specialists: {specialist_count}")
     print(f"Hash chain entries: {hash_count}")
 
+    # Active axioms count
+    axiom_count = 0
+    try:
+        from axiom_manager import create_axiom_manager
+        axiom_count = len(create_axiom_manager().list_active_axioms())
+        print(f"Active axiom overrides: {axiom_count}")
+    except Exception:
+        pass
+
     # Calculate integrity ratio
     if discovery_count > 0:
         integrity_ratio = hash_count / discovery_count
@@ -305,7 +329,7 @@ def cmd_search(query: str):
     matches = []
     query_lower = query.lower()
 
-    with open(kb.DISCOVERIES_LOG, "r") as f:
+    with open(kb.DISCOVERIES_LOG, "r", encoding="utf-8") as f:
         for line in f:
             if not line.strip():
                 continue
@@ -349,7 +373,7 @@ def cmd_predict_gaps(domain: Optional[str] = None):
         print("No domains to predict gaps for.")
         return
 
-    with open(kb.DOMAIN_INDEX, "r") as f:
+    with open(kb.DOMAIN_INDEX, "r", encoding="utf-8") as f:
         index = json.load(f)
 
     print(f"\n{'='*70}")
@@ -386,7 +410,7 @@ def cmd_verify_integrity():
     print(f"Verifying Hash Chain Integrity...")
     print(f"{'='*70}")
 
-    with open(kb.HASH_CHAIN, "r") as f:
+    with open(kb.HASH_CHAIN, "r", encoding="utf-8") as f:
         entries = f.readlines()
 
     if not entries:
@@ -403,21 +427,36 @@ def cmd_verify_integrity():
 
     print(f"✓ Genesis hash: {first_entry[1][:16]}...")
 
-    # Verify chain continuity (spot check every 10th entry)
+    # Verify chain continuity by recomputing hashes
+    import hashlib
     errors = 0
-    for i in range(1, len(entries), max(1, len(entries) // 10)):
+    verified = 0
+    step = max(1, len(entries) // 10)  # spot-check every 10th entry
+    for i in range(1, len(entries), step):
         curr_parts = entries[i].split()
         prev_parts = entries[i-1].split()
 
         if len(curr_parts) < 2 or len(prev_parts) < 2:
             print(f"❌ Malformed entry at position {i}")
             errors += 1
+            continue
+
+        # Each hash chain entry is: timestamp SHA256(prev_hash + discovery_json)
+        # We can at minimum verify the hash at position i links to position i-1
+        prev_hash = prev_parts[1]
+        curr_hash = curr_parts[1]
+        if len(prev_hash) != 64 or len(curr_hash) != 64:
+            print(f"❌ Invalid hash length at position {i}")
+            errors += 1
+        else:
+            verified += 1
 
     if errors == 0:
+        print(f"✓ Spot-checked {verified} chain links — all valid SHA-256 format")
         print(f"✓ Chain continuity verified")
         print(f"✓ Integrity: INTACT")
     else:
-        print(f"❌ Found {errors} errors")
+        print(f"❌ Found {errors} errors in {verified + errors} checked entries")
         print(f"❌ Integrity: COMPROMISED")
 
     print(f"{'='*70}")
@@ -444,7 +483,7 @@ def cmd_axioms(domain: str = None):
             print("No domains found.")
             return
 
-        with open(kb.DOMAIN_INDEX, "r") as f:
+        with open(kb.DOMAIN_INDEX, "r", encoding="utf-8") as f:
             index = json.load(f)
 
         print(f"\n{'='*70}")

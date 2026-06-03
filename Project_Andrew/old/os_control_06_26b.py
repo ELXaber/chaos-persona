@@ -1,4 +1,4 @@
-#V06022026
+#V05122026
 # =============================================================================
 # Chaos AI-OS — OS Control Layer
 # CPOL-gated system operations with Asimov compliance
@@ -39,7 +39,6 @@ class OSController:
         self.shared_memory = shared_memory
         self.require_confirmation = require_confirmation
         self.cpol = CPOL_Kernel()
-        self.headless_mode = False
         self.action_log = []
 
     def _gate_action(self, action_type: str, target: str, 
@@ -91,18 +90,12 @@ class OSController:
         Human confirmation prompt for irreversible actions.
         Simple CLI for now - Open WebUI button later.
         """
-        if not self.require_confirmation:
-            return True
-        try:
-            print(f"\n[OS CONTROL] ⚠️  CONFIRMATION REQUIRED")
-            print(f"[OS CONTROL] Action: {action_type}")
-            print(f"[OS CONTROL] Target: {target}")
-            print(f"[OS CONTROL] This action may be irreversible.")
-            response = input("[OS CONTROL] Approve? (yes/no): ").strip().lower()
-            return response in ('yes', 'y')
-        except EOFError:
-            print("[OS CONTROL] Non-interactive terminal — auto-denying irreversible action")
-            return False
+        print(f"\n[OS CONTROL] ⚠️  CONFIRMATION REQUIRED")
+        print(f"[OS CONTROL] Action: {action_type}")
+        print(f"[OS CONTROL] Target: {target}")
+        print(f"[OS CONTROL] This action may be irreversible.")
+        response = input("[OS CONTROL] Approve? (yes/no): ").strip().lower()
+        return response in ('yes', 'y')
 
     def _log_action(self, action_type: str, target: str, 
                     decision: str, result: Any = None):
@@ -569,13 +562,10 @@ except Exception as e:
 # Factory function for orchestrator import
 # =============================================================================
 
-def create_os_controller(shared_memory: Dict,
-                         require_confirmation: bool = True,
-                         headless: bool = False) -> OSController:
+def create_os_controller(shared_memory: Dict, 
+                         require_confirmation: bool = True) -> OSController:
     """Factory function - matches pattern of other CAIOS modules."""
-    ctrl = OSController(shared_memory, require_confirmation=not headless if headless else require_confirmation)
-    ctrl.headless_mode = headless
-    return ctrl
+    return OSController(shared_memory, require_confirmation)
 
 
 # =============================================================================
