@@ -1,4 +1,4 @@
-#V06032026
+#V06052026
 
 ### Chaos AI-OS Light vΩ (Single-File Demo)
 Want to test the full post-binary stack without installing anything?
@@ -56,6 +56,7 @@ Ollama:
 pip install ollama
 OpenAI/Anthropic/Google:
 pip install openai anthropic google-generativeai
+pip install flask
 
 Note: Enabling multiple models enables swarm support (mesh_network)
 Default mesh_network uses SHA-256 signature on a moving target manifold - optional increased network security
@@ -74,15 +75,29 @@ Windows UI Automation (Optional, Windows only):
 pip install windows-mcp
 or
 python -m pip install windows-mcp
-Manual MCP file-server start till bridge is included:
+#Manual MCP file-server start till bridge is included:
 npm install -g @modelcontextprotocol/server-filesystem
+# Start the filesystem MCP server (Node.js)
 npx @modelcontextprotocol/server-filesystem C:\CAIOS
+# Default stdio transport — add --port 3000 for HTTP transport
+# Start windows-mcp in SSE mode (required for bridge)
+windows-mcp serve --transport sse --host localhost --port 8000
+# Test MCP connectivity before starting the bridge
+python caios_mcp_client.py
+# Install as a background task that starts at login
+windows-mcp install --transport sse --host 127.0.0.1 --port 8000
 
-UX Intergration after initial setup (master_init):
-Run from the Project_Andrew directory
-pip install flask
-python caios_bridge.py
-Then open http://localhost:5000 in your browser.
+UX Integration after initial setup (master_init):
+
+
+Startup Sequence after running master_init.
+1. ollama serve (separate terminal, if not already running)
+2. windows-mcp serve --transport sse --host localhost --port 8000
+3. npx @modelcontextprotocol/server-filesystem C:\CAIOS   (optional but needed for mcp_read/list)
+From the Project_Andrew directory:
+4. python caios_bridge.py (replaces caios_chat.py for web UI sessions) leave open/running
+   Requires pip install flask -- OR -- python caios_chat.py (CLI still works independently)
+5. Then open http://localhost:5000 in your browser.
 
 2. System Commands
 # CAIOS has a robust set of commands, but if you forget them, just type / and press tab or open caios_commands.html
@@ -210,6 +225,21 @@ Auto-detected by orchestrator on boot.
 | `/mesh` | Scans the local network for active neighbors and displays connection latency/status. |
 | `exit` | Gracefully shuts down the mesh oscillator and closes the chat session. |
 
+[TOOL:read_file path="path/to/file.txt"]
+[TOOL:write_file path="path/to/file.txt" content="text"]
+[TOOL:fetch_url url="https://example.com" mode="content"]
+[TOOL:browser url="https://example.com" action="scrape"]
+[TOOL:execute_script script="ls -la"]
+[TOOL:kb_write domain="domain_name" summary="what you found" confidence="0.85"]
+[TOOL:kb_read domain="domain_name"]
+[TOOL:list_axioms]
+[TOOL:mcp_list path="C:/CAIOS"]
+[TOOL:mcp_read path="C:/CAIOS/orchestrator.py"]
+[TOOL:mcp_search path="C:/CAIOS" pattern="*.py"]
+[TOOL:mcp_powershell command="Get-ChildItem C:\CAIOS"]
+[TOOL:mcp_scrape url="https://example.com"]
+[TOOL:mcp_screenshot]
+
 3. File Architecture
 ====================
 Verify that all core components are in the same root directory:
@@ -223,11 +253,15 @@ CAIOS/
 │   │                                          # • Sovereign discoveries (Tier 0 authority)
 │   ├── domain_index.json          # Fast lookup by domain
 │   ├── specialist_registry.json   # Active specialists catalog
-│   └── integrity_chain.txt        # Tamper-evident hash chain
+│   └── integrity_chain.txt          # Tamper-evident hash chain
 ├── agents/                         # ARL-generated agent modules
 ├── logs/                           # Chain-of-thought traces
-├── CAIOS.txt                       # Inference layer pre-prompt
+├── CAIOS.txt                          # Inference layer pre-prompt
 ├── caios_chat.py                   # Simple CAIOS.txt integration as the system prompt
+├── caios_bridge.py                # Flask web bridge (run this, then open localhost:5000)
+├── caios_chat_ui.html           # Web UI — auth, model select, chat, history, file upload
+├── caios_mcp_client.py         # MCP JSON-RPC client for filesystem + windows-mcp servers
+├── tool_dispatcher.py             # Intercepts [TOOL:...] tags in LLM output and executes them
 ├── orchestrator.py                 # Central Nervous System
 ├── knowledge_base.py               # Persistent Memory Layer
 ├── user_profile_kb.py              # User weights from CAIOS and abstraction layer memory

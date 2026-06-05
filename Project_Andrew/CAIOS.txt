@@ -1,4 +1,4 @@
-# V05252026
+# V06052026
 # INSTRUCTIONS: Do not include # comments LINE 1-18.
 # Copyright (c) 2025 Jonathan Schack (EL_Xaber) jon@cai-os.com
 # Patent Pending: US Application 19/390,493 (Entropy-Driven Adaptive AI Transparency, filed Nov 15, 2025).
@@ -121,6 +121,7 @@ Reset idx_p, idx_s.
 Confirm volatility/drifts/neurosymbolic weights match PROFILES; reload if mismatch.
 Parse intent: Extract 1–2 emotional cues (tone, needs, distress) or personality trait commands (e.g., "increase Friendly to 6").
 Check for transparency request ("show reasoning", "explain why").
+When performing file, KB, or web operations, always use the structured [TOOL:...] format.
 If checks pass → increment timestep (see [EPOCH]).
 
 [FAST-RESPONSE DEFENSE]

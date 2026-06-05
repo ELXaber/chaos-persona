@@ -1,4 +1,4 @@
-#V06052026
+#V06042026
 # =============================================================================
 # CAIOS Web Bridge — Flask server that connects caios_chat_ui.html to the
 # existing orchestrator/caios_chat.py stack.
@@ -26,15 +26,6 @@ from flask import (
     Flask, request, jsonify, send_file,
     Response, stream_with_context
 )
-
-# MCP client — graceful if caios_mcp_client.py not present yet
-try:
-    from caios_mcp_client import mcp_tool, mcp_status, get_client as get_mcp_client
-    MCP_AVAILABLE = True
-except ImportError:
-    MCP_AVAILABLE = False
-    def mcp_status(): return {'filesystem_server': False, 'windows_mcp': False}
-    def mcp_tool(tool, args): return {'ok': False, 'content': '[MCP] caios_mcp_client.py not found'}
 
 app = Flask(__name__, static_folder='.', static_url_path='')
 
@@ -237,7 +228,6 @@ def api_boot():
         'users': user_list,
         'kb': _kb_stats(),
         'orchestrator': ORCH_AVAILABLE,
-        'mcp': mcp_status(),
     })
 
 
@@ -466,45 +456,6 @@ def api_status():
         'provider': sess.get('provider', 'none'),
         'user': sess.get('user_id', 'guest'),
     })
-
-
-# =============================================================================
-# Route — POST /api/mcp
-# Lets the UI (and Andrew via tool tags) call MCP tools directly.
-# Body: { "token": "...", "tool": "read_file", "args": { "path": "C:/CAIOS/readme.txt" } }
-# =============================================================================
-
-@app.route('/api/mcp', methods=['POST'])
-def api_mcp():
-    body = request.get_json(silent=True) or {}
-    token = body.get('token', '')
-    if token not in _sessions:
-        return jsonify({'error': 'Invalid session'}), 401
-
-    if not MCP_AVAILABLE:
-        return jsonify({'ok': False,
-                        'content': 'caios_mcp_client.py not found in CAIOS directory'})
-
-    tool = body.get('tool', '')
-    args = body.get('args', {})
-
-    if not tool:
-        # Return server status if no tool specified
-        return jsonify({'status': mcp_status()})
-
-    result = mcp_tool(tool, args)
-
-    # Log to audit trail
-    shared_memory.setdefault('audit_trail', []).append({
-        'ts': time.time(),
-        'event': 'MCP_TOOL_CALL',
-        'tool': tool,
-        'args': args,
-        'ok': result.get('ok'),
-        'user': _sessions[token].get('user_id'),
-    })
-
-    return jsonify(result)
 
 
 # =============================================================================

@@ -1,11 +1,11 @@
-#V06052026
+#V06022026
 # =============================================================================
 # PROJECT ANDREW – Tool Dispatcher
 # Intercepts LLM output for structured tool calls and routes them to the
 # appropriate controller (os_control, knowledge_base, axiom_manager, etc.)
 #
 # HOW IT WORKS:
-# The LLM (e.g., Qwen 27b in testing) via Ollama cannot directly call Python functions, but it
+# The LLM (Qwen via Ollama) cannot directly call Python functions, but it
 # CAN be prompted to emit structured XML-like tool tags in its response.
 # This module:
 #   1. Scans LLM output for [TOOL:...] tags
@@ -30,13 +30,6 @@ import re
 import json
 from typing import Dict, Any, List, Tuple, Optional
 from datetime import datetime, timezone
-
-try:
-    from caios_mcp_client import mcp_tool as _mcp_call
-    MCP_AVAILABLE = True
-except ImportError:
-    MCP_AVAILABLE = False
-    def _mcp_call(tool, args): return {'ok': False, 'content': '[MCP] caios_mcp_client.py not found'}
 
 
 # =============================================================================
@@ -346,57 +339,7 @@ class ToolDispatcher:
         if tool_name == 'list_axioms':
             return _handle_list_axioms(attrs, self.shared_memory)
 
-        # MCP filesystem and windows-mcp tools
-        if tool_name in ('mcp_read', 'mcp_list', 'mcp_write',
-                          'mcp_search', 'mcp_powershell', 'mcp_scrape',
-                          'mcp_screenshot'):
-            return self._dispatch_mcp(tool_name, attrs)
-
         return f"[TOOL RESULT] Unknown tool: {tool_name}"
-
-    def _dispatch_mcp(self, tool_name: str, attrs: Dict) -> str:
-        """Route [TOOL:mcp_*] tags to caios_mcp_client."""
-        if not MCP_AVAILABLE:
-            return '[TOOL RESULT] MCP unavailable — caios_mcp_client.py not found'
-
-        # Map tag names to (mcp_tool_name, required_arg)
-        route_map = {
-            'mcp_read':       ('read_file',      'path'),
-            'mcp_list':       ('list_directory', 'path'),
-            'mcp_write':      ('write_file',     'path'),
-            'mcp_search':     ('search_files',   'path'),
-            'mcp_powershell': ('powershell',     'command'),
-            'mcp_scrape':     ('scrape',         'url'),
-            'mcp_screenshot': ('screenshot',     None),
-        }
-
-        if tool_name not in route_map:
-            return f'[TOOL RESULT] Unknown MCP tool: {tool_name}'
-
-        mcp_name, required_arg = route_map[tool_name]
-
-        # Build arguments dict from tag attrs
-        mcp_args = dict(attrs)  # pass all attrs through
-        if required_arg and required_arg not in mcp_args:
-            return f'[TOOL RESULT] {tool_name}: missing required attr "{required_arg}"'
-
-        # mcp_write needs content attr too
-        if tool_name == 'mcp_write' and 'content' not in mcp_args:
-            return '[TOOL RESULT] mcp_write: missing required attr "content"'
-
-        # mcp_search needs pattern attr
-        if tool_name == 'mcp_search' and 'pattern' not in mcp_args:
-            mcp_args['pattern'] = '*'  # default to all files
-
-        result = _mcp_call(mcp_name, mcp_args)
-
-        if result['ok']:
-            content = result['content']
-            if len(content) > 4000:
-                content = content[:4000] + f'\n... [truncated, {len(result["content"])} chars total]'
-            return f'[TOOL RESULT] {tool_name}({attrs.get(required_arg or "", "")}):\n{content}'
-        else:
-            return f'[TOOL RESULT] {tool_name} failed: {result["content"]}'
 
     def _log_dispatch(self, tool_name: str, attrs: Dict, result: str):
         """Log tool call to shared memory audit trail."""
@@ -415,7 +358,7 @@ class ToolDispatcher:
 # System Prompt Injection
 # =============================================================================
 
-TOOL_SYSTEM_ADDENDUM = r"""
+TOOL_SYSTEM_ADDENDUM = """
 [TOOL ACCESS]
 You have access to system tools via structured tags. Use these when the user asks you to read/write files, browse the web, access the knowledge base, or run scripts.
 
@@ -435,20 +378,10 @@ AVAILABLE TOOLS:
   [TOOL:kb_read domain="domain_name"]
   [TOOL:list_axioms]
 
-MCP TOOLS (filesystem server + windows-mcp):
-  [TOOL:mcp_list path="C:/CAIOS"]
-  [TOOL:mcp_read path="C:/CAIOS/orchestrator.py"]
-  [TOOL:mcp_write path="C:/CAIOS/notes.txt" content="text here"]
-  [TOOL:mcp_search path="C:/CAIOS" pattern="*.py"]
-  [TOOL:mcp_powershell command="Get-Date"]
-  [TOOL:mcp_scrape url="https://example.com"]
-  [TOOL:mcp_screenshot]
-
 RULES:
 - Emit the tag inline in your response where the result should appear
 - Only emit a tool tag if the user actually requested that action
 - After the tool result appears, continue your response naturally
-- For C:\CAIOS filesystem access: prefer mcp_read / mcp_list over read_file
 - For web research: use fetch_url for simple reads, browser for interactive pages
 - For KB writes: use kb_write when you discover something worth persisting
 - Delete requires user confirmation — the system handles that automatically

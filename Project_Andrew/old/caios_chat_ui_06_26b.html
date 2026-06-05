@@ -410,9 +410,6 @@ const S = {
   sending: false,
 };
 
-// All history entries keyed by timestamp — used by sidebar click handlers
-let allHistoryEntries = [];
-
 const COMMANDS = [
   '/whoami','/status','/debug','/mesh','/axioms','/axiom_refresh',
   '/show_reasoning','/trace_mode_verbose','/gearbox',
@@ -614,7 +611,6 @@ async function loadHistory() {
     const data = await r.json();
     if (data.error) return;
 
-    allHistoryEntries = data.entries;  // cache for click handlers
     renderHistorySidebar(data.entries);
 
     // Show last 6 exchanges in the chat window
@@ -624,10 +620,6 @@ async function loadHistory() {
       appendMsg('andrew', e.andrew, e.cpol_status, e.domain, null, true);
     });
     messages.scrollTop = messages.scrollHeight;
-
-    // Mark the most recent sidebar item as active
-    const firstItem = $('hist-scroll').querySelector('.hist-item');
-    if (firstItem) firstItem.classList.add('active');
   } catch(e) {}
 }
 
@@ -657,51 +649,16 @@ function renderHistorySidebar(entries) {
     label.textContent = date === today ? 'Today' : date === yesterday ? 'Yesterday' : date;
     scroll.appendChild(label);
 
-    // One sidebar entry per unique user message within this date
+    // Show unique exchanges (one entry per user turn)
     const seen = new Set();
     items.slice().reverse().forEach(e => {
       const preview = e.user.slice(0, 40);
       if (seen.has(preview)) return;
       seen.add(preview);
-
       const item = document.createElement('div');
       item.className = 'hist-item';
       item.textContent = preview + (e.user.length > 40 ? '…' : '');
-      item.title = e.user;  // full text on hover
-
-      // ── Click: load this conversation thread into the message pane ──
-      item.addEventListener('click', () => {
-        // Mark active in sidebar
-        document.querySelectorAll('.hist-item').forEach(i => i.classList.remove('active'));
-        item.classList.add('active');
-
-        // Find all entries from the same date that form a conversation thread.
-        // We show every exchange from that day, grouped around this message.
-        const clickedDate = e.timestamp ? e.timestamp.slice(0,10) : null;
-        const thread = clickedDate
-          ? allHistoryEntries.filter(x =>
-              x.timestamp && x.timestamp.slice(0,10) === clickedDate)
-          : [e];
-
-        // Clear pane and replay thread
-        messages.innerHTML = '';
-        thread.forEach(entry => {
-          appendMsg('user',   entry.user,   null, null, null, true);
-          appendMsg('andrew', entry.andrew, entry.cpol_status, entry.domain, null, true);
-        });
-
-        // Add a subtle divider so it's clear this is historical
-        const divider = document.createElement('div');
-        divider.style.cssText = (
-          'text-align:center;font-size:11px;color:var(--text3);'
-          + 'padding:8px 0 4px;font-family:var(--mono);'
-        );
-        divider.textContent = '— end of ' + (clickedDate === today ? 'today' :
-          clickedDate === yesterday ? 'yesterday' : clickedDate) + ' —';
-        messages.appendChild(divider);
-        messages.scrollTop = messages.scrollHeight;
-      });
-
+      item.title = e.user;
       scroll.appendChild(item);
     });
   });
@@ -904,13 +861,6 @@ async function sendMessage() {
         attachment_path: attachPath || null,
       }),
     });
-    // 401 = session timed out on the server side
-    if (r.status === 401) {
-      thinkEl.remove();
-      handleSessionExpiry();
-      return;
-    }
-
     const data = await r.json();
     thinkEl.remove();
 
@@ -931,34 +881,6 @@ async function sendMessage() {
   S.sending = false;
   btnSend.disabled = msgInput.value.trim().length === 0;
   messages.scrollTop = messages.scrollHeight;
-}
-
-// ══════════════════════════════════════════════════════════════
-// Session timeout handler
-// ══════════════════════════════════════════════════════════════
-function handleSessionExpiry() {
-  // Reset session state
-  S.token = null;
-  S.userId = null;
-  S.display = null;
-
-  // Show a notice in the chat pane before hiding it
-  appendMsg('andrew',
-    '**Session expired** — you have been idle for 15 minutes. ' +
-    'Please sign in again to continue.',
-    'idle', 'system');
-
-  // Brief delay so the user sees the message, then slide back to auth
-  setTimeout(() => {
-    shell.classList.remove('visible');
-    panelModel.style.display = 'none';
-    panelAuth.style.display  = 'block';
-    overlay.style.display    = 'flex';
-    // Clear the password field but keep the username pre-filled
-    const pwField = document.getElementById('inp-pw');
-    if (pwField) pwField.value = '';
-    $('auth-err').style.display = 'none';
-  }, 2000);
 }
 
 // ══════════════════════════════════════════════════════════════
@@ -1032,17 +954,6 @@ $('btn-new').addEventListener('click', () => {
 // Start
 // ══════════════════════════════════════════════════════════════
 boot();
-// Ping /api/status every 5 minutes to detect server-side timeout
-// before the user tries to send a message
-setInterval(async () => {
-  if (!S.token) return;
-  try {
-    const r = await fetch(`/api/status?token=${S.token}`);
-    if (r.status === 401) handleSessionExpiry();
-  } catch(_) {
-    // bridge not reachable — don't trigger expiry, could be transient
-  }
-}, 5 * 60 * 1000);
 </script>
 </body>
 </html>
