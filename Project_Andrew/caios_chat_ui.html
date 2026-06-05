@@ -1,0 +1,959 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CAIOS — Andrew</title>
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<style>
+:root {
+  --bg:       #0e0e0e;
+  --bg2:      #161616;
+  --bg3:      #1e1e1e;
+  --bg4:      #262626;
+  --border:   rgba(255,255,255,0.08);
+  --border2:  rgba(255,255,255,0.14);
+  --text:     #e8e6e0;
+  --text2:    #8a8882;
+  --text3:    #555350;
+  --accent:   #5b8cff;
+  --accent2:  #3a6ce8;
+  --green:    #3dba7a;
+  --amber:    #e8a93a;
+  --red:      #e85a5a;
+  --purple:   #9b7fe8;
+  --radius:   8px;
+  --radius2:  12px;
+  --mono:     'JetBrains Mono', 'Fira Code', monospace;
+  --sans:     'IBM Plex Sans', system-ui, sans-serif;
+}
+
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500&family=IBM+Plex+Mono:wght@400;500&display=swap');
+
+*{box-sizing:border-box;margin:0;padding:0}
+
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14px;line-height:1.6;overflow:hidden}
+
+/* ── Overlay panels (auth + model select) ── */
+#overlay{
+  position:fixed;inset:0;background:var(--bg);
+  display:flex;align-items:center;justify-content:center;
+  z-index:100;
+}
+.panel{
+  width:340px;background:var(--bg2);
+  border:0.5px solid var(--border2);border-radius:var(--radius2);
+  padding:32px 28px;
+}
+.panel-logo{
+  font-size:11px;letter-spacing:.15em;color:var(--text3);
+  text-transform:uppercase;margin-bottom:24px;
+}
+.panel h2{font-size:18px;font-weight:500;margin-bottom:6px}
+.panel p{color:var(--text2);font-size:13px;margin-bottom:24px}
+
+label{display:block;font-size:12px;color:var(--text2);margin-bottom:5px;letter-spacing:.03em}
+input[type=text],input[type=password],select{
+  width:100%;background:var(--bg3);border:0.5px solid var(--border2);
+  border-radius:var(--radius);padding:9px 12px;
+  color:var(--text);font-family:var(--sans);font-size:14px;
+  outline:none;margin-bottom:16px;appearance:none;
+}
+input:focus,select:focus{border-color:var(--accent)}
+select option{background:var(--bg3)}
+
+.btn{
+  width:100%;padding:10px;border:none;border-radius:var(--radius);
+  background:var(--accent);color:#fff;font-family:var(--sans);
+  font-size:14px;font-weight:500;cursor:pointer;letter-spacing:.01em;
+}
+.btn:hover{background:var(--accent2)}
+.btn:disabled{opacity:.4;cursor:default}
+.btn-ghost{
+  background:transparent;border:0.5px solid var(--border2);color:var(--text2);
+}
+.btn-ghost:hover{background:var(--bg3);color:var(--text)}
+
+.form-row{margin-bottom:16px}
+.err{color:var(--red);font-size:12px;margin-top:-10px;margin-bottom:12px;display:none}
+
+/* ── Model picker (second overlay step) ── */
+.model-group{margin-bottom:16px}
+.model-group-label{font-size:11px;color:var(--text3);letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px}
+.model-option{
+  display:flex;align-items:center;gap:10px;padding:9px 12px;
+  border:0.5px solid var(--border);border-radius:var(--radius);
+  cursor:pointer;margin-bottom:4px;transition:border-color .15s,background .15s;
+}
+.model-option:hover{background:var(--bg3);border-color:var(--border2)}
+.model-option.selected{border-color:var(--accent);background:rgba(91,140,255,.08)}
+.model-dot{width:7px;height:7px;border-radius:50%;background:var(--border2);flex-shrink:0}
+.model-option.selected .model-dot{background:var(--accent)}
+.model-name{font-size:13px}
+.model-badge{
+  margin-left:auto;font-size:10px;padding:2px 7px;
+  border-radius:4px;background:var(--bg4);color:var(--text3);letter-spacing:.04em;
+}
+
+/* ── Main shell ── */
+#shell{
+  display:none;height:100vh;
+  display:none;flex-direction:column;
+}
+#shell.visible{display:flex}
+
+/* Top bar */
+#topbar{
+  display:flex;align-items:center;gap:10px;
+  padding:11px 16px;border-bottom:0.5px solid var(--border);
+  flex-shrink:0;background:var(--bg);
+}
+#tb-name{font-size:14px;font-weight:500}
+#tb-model{
+  font-size:11px;color:var(--text3);
+  font-family:var(--mono);margin-left:4px;
+}
+#tb-right{display:flex;align-items:center;gap:16px;margin-left:auto}
+.status-pill{
+  display:flex;align-items:center;gap:5px;
+  font-size:11px;color:var(--text3);cursor:default;
+}
+.status-dot{width:6px;height:6px;border-radius:50%;background:var(--text3)}
+.status-dot.green{background:var(--green)}
+.status-dot.amber{background:var(--amber)}
+.status-dot.red{background:var(--red)}
+#kb-pill{font-family:var(--mono)}
+.tb-icon{
+  width:28px;height:28px;border:0.5px solid var(--border);
+  border-radius:var(--radius);display:flex;align-items:center;justify-content:center;
+  cursor:pointer;color:var(--text2);background:transparent;
+  font-size:15px;
+}
+.tb-icon:hover{background:var(--bg3);color:var(--text)}
+
+/* Body layout */
+#body{display:flex;flex:1;min-height:0}
+
+/* Sidebar */
+#sidebar{
+  width:210px;border-right:0.5px solid var(--border);
+  display:flex;flex-direction:column;background:var(--bg);flex-shrink:0;
+}
+#sb-head{
+  padding:12px 12px 8px;border-bottom:0.5px solid var(--border);
+}
+.new-chat-btn{
+  display:flex;align-items:center;gap:6px;width:100%;
+  padding:7px 10px;border:0.5px solid var(--border2);border-radius:var(--radius);
+  background:transparent;color:var(--text2);font-family:var(--sans);
+  font-size:13px;cursor:pointer;
+}
+.new-chat-btn:hover{background:var(--bg3);color:var(--text)}
+#hist-scroll{flex:1;overflow-y:auto;padding:6px}
+.hist-date{font-size:10px;color:var(--text3);padding:8px 8px 4px;letter-spacing:.05em;text-transform:uppercase}
+.hist-item{
+  padding:7px 10px;border-radius:var(--radius);font-size:13px;color:var(--text2);
+  cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:1px;
+}
+.hist-item:hover{background:var(--bg3)}
+.hist-item.active{background:var(--bg3);color:var(--text)}
+
+/* Main chat */
+#main{display:flex;flex-direction:column;flex:1;min-width:0}
+
+#messages{
+  flex:1;overflow-y:auto;padding:24px 24px 12px;
+  display:flex;flex-direction:column;gap:20px;
+}
+
+.msg{display:flex;gap:10px;max-width:88%}
+.msg.user{align-self:flex-end;flex-direction:row-reverse}
+
+.avatar{
+  width:26px;height:26px;border-radius:50%;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  font-size:10px;font-weight:500;letter-spacing:.03em;
+  font-family:var(--mono);
+}
+.avatar.andrew{background:rgba(91,140,255,.15);color:var(--accent);border:0.5px solid rgba(91,140,255,.25)}
+.avatar.user{background:var(--bg3);color:var(--text2);border:0.5px solid var(--border)}
+
+.bubble-wrap{display:flex;flex-direction:column;gap:5px}
+.bubble{
+  padding:10px 14px;border-radius:var(--radius2);
+  font-size:14px;line-height:1.65;color:var(--text);
+}
+.msg.andrew .bubble{
+  background:var(--bg2);border:0.5px solid var(--border);
+  border-top-left-radius:3px;
+}
+.msg.user .bubble{
+  background:rgba(91,140,255,.12);border:0.5px solid rgba(91,140,255,.2);
+  border-top-right-radius:3px;color:#c8d8ff;
+}
+
+/* markdown inside bubbles */
+.bubble p{margin:0 0 8px}
+.bubble p:last-child{margin:0}
+.bubble code{
+  font-family:var(--mono);font-size:12px;
+  background:rgba(255,255,255,.06);padding:1px 5px;border-radius:4px;
+}
+.bubble pre{
+  background:var(--bg);border:0.5px solid var(--border);border-radius:var(--radius);
+  padding:10px 12px;overflow-x:auto;margin:8px 0;
+}
+.bubble pre code{background:none;padding:0;font-size:12px}
+.bubble ul,.bubble ol{padding-left:18px;margin:6px 0}
+
+.cpol-tag{
+  display:inline-flex;align-items:center;gap:5px;
+  font-size:10px;font-family:var(--mono);
+  padding:2px 8px;border-radius:4px;width:fit-content;
+}
+.cpol-tag.resolved{background:rgba(61,186,122,.1);color:var(--green);border:0.5px solid rgba(61,186,122,.2)}
+.cpol-tag.undecidable{background:rgba(232,169,58,.1);color:var(--amber);border:0.5px solid rgba(232,169,58,.2)}
+.cpol-tag.intervention{background:rgba(232,90,90,.1);color:var(--red);border:0.5px solid rgba(232,90,90,.2)}
+.cpol-tag.idle{background:var(--bg3);color:var(--text3);border:0.5px solid var(--border)}
+
+.attach-chip{
+  display:inline-flex;align-items:center;gap:5px;
+  padding:3px 8px;background:var(--bg3);border:0.5px solid var(--border2);
+  border-radius:4px;font-size:11px;font-family:var(--mono);color:var(--text3);
+}
+
+/* Thinking animation */
+.thinking{display:flex;gap:4px;padding:14px 0 6px 4px}
+.dot-pulse{width:5px;height:5px;border-radius:50%;background:var(--text3);animation:pulse 1.2s ease-in-out infinite}
+.dot-pulse:nth-child(2){animation-delay:.2s}
+.dot-pulse:nth-child(3){animation-delay:.4s}
+@keyframes pulse{0%,80%,100%{opacity:.2;transform:scale(.8)}40%{opacity:1;transform:scale(1)}}
+
+/* Compose area */
+#compose{padding:12px 16px 16px;border-top:0.5px solid var(--border);flex-shrink:0}
+#attach-strip{display:flex;align-items:center;gap:8px;min-height:24px;margin-bottom:6px}
+.attach-preview{
+  display:inline-flex;align-items:center;gap:5px;
+  padding:3px 8px 3px 6px;background:var(--bg3);border:0.5px solid var(--border2);
+  border-radius:4px;font-size:11px;font-family:var(--mono);color:var(--text2);
+}
+.rm-btn{
+  cursor:pointer;color:var(--text3);font-size:13px;line-height:1;
+  background:none;border:none;padding:0 0 0 4px;
+}
+.rm-btn:hover{color:var(--text)}
+
+#input-row{display:flex;gap:8px;align-items:flex-end}
+textarea#msg{
+  flex:1;background:var(--bg2);border:0.5px solid var(--border2);
+  border-radius:var(--radius);padding:9px 12px;
+  color:var(--text);font-family:var(--sans);font-size:14px;
+  resize:none;outline:none;line-height:1.55;min-height:38px;max-height:160px;overflow-y:auto;
+}
+textarea#msg:focus{border-color:rgba(91,140,255,.5)}
+textarea#msg::placeholder{color:var(--text3)}
+
+.compose-btn{
+  width:36px;height:36px;border-radius:var(--radius);
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;flex-shrink:0;border:0.5px solid var(--border2);
+  background:var(--bg2);color:var(--text2);font-size:16px;
+}
+.compose-btn:hover{background:var(--bg3);color:var(--text)}
+.compose-btn.send{background:var(--accent);border-color:var(--accent);color:#fff}
+.compose-btn.send:hover{background:var(--accent2)}
+.compose-btn.send:disabled{opacity:.35;cursor:default;background:var(--accent)}
+label.compose-btn{cursor:pointer}
+
+/* Command palette bar */
+#cmd-bar{
+  background:var(--bg3);border:0.5px solid var(--border2);
+  border-radius:var(--radius);padding:6px 10px;
+  display:none;margin-bottom:6px;flex-wrap:wrap;gap:4px;
+}
+#cmd-bar.visible{display:flex}
+.cmd-chip{
+  font-size:11px;font-family:var(--mono);color:var(--text3);
+  padding:2px 7px;border-radius:4px;background:var(--bg4);cursor:pointer;
+}
+.cmd-chip:hover{color:var(--text);background:var(--bg)}
+
+/* Scrollbar */
+::-webkit-scrollbar{width:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:2px}
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════════════════
+     OVERLAY — shown until auth + model selection complete
+═══════════════════════════════════════════════════════════════ -->
+<div id="overlay">
+
+  <!-- Step 1: Auth -->
+  <div class="panel" id="panel-auth">
+    <div class="panel-logo">Chaos AI-OS · Project Andrew</div>
+    <h2 id="auth-title">Sign in</h2>
+    <p id="auth-sub">Enter your credentials to start a session.</p>
+
+    <div id="auth-form">
+      <div class="form-row">
+        <label for="inp-user">Username</label>
+        <input type="text" id="inp-user" autocomplete="username" spellcheck="false">
+      </div>
+      <div class="form-row" id="pw-row">
+        <label for="inp-pw">Password <span id="pw-optional" style="color:var(--text3);font-size:11px">(if set)</span></label>
+        <input type="password" id="inp-pw" autocomplete="current-password">
+      </div>
+      <div class="err" id="auth-err">Incorrect username or password.</div>
+      <button class="btn" id="btn-auth">Continue →</button>
+    </div>
+
+    <!-- Guest fallback shown when no users.json -->
+    <div id="guest-form" style="display:none">
+      <p style="color:var(--text2);font-size:13px;margin-bottom:20px">
+        No user registry found. Run <code style="font-family:var(--mono);font-size:12px;background:var(--bg3);padding:1px 5px;border-radius:4px">master_init.py</code> to set up users, or continue as guest.
+      </p>
+      <button class="btn" id="btn-guest">Continue as guest →</button>
+    </div>
+  </div>
+
+  <!-- Step 2: Model selection -->
+  <div class="panel" id="panel-model" style="display:none;width:380px">
+    <div class="panel-logo">Chaos AI-OS · Project Andrew</div>
+    <h2>Select model</h2>
+    <p>Choose which backend to use for this session.</p>
+
+    <div id="model-list">
+      <div style="color:var(--text3);font-size:13px">Loading available models…</div>
+    </div>
+
+    <div class="err" id="model-err">Please select a model.</div>
+    <button class="btn" id="btn-model" style="margin-top:8px">Start session →</button>
+  </div>
+
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     MAIN SHELL
+═══════════════════════════════════════════════════════════════ -->
+<div id="shell">
+
+  <!-- Top bar -->
+  <div id="topbar">
+    <div style="display:flex;align-items:center;gap:8px">
+      <div class="avatar andrew" style="width:22px;height:22px;font-size:9px">A1</div>
+      <span id="tb-name">Andrew</span>
+      <span id="tb-model"></span>
+    </div>
+    <div id="tb-right">
+      <div class="status-pill" id="cpol-pill">
+        <div class="status-dot" id="cpol-dot"></div>
+        <span id="cpol-label">idle</span>
+      </div>
+      <div class="status-pill" id="kb-pill">
+        <svg width="10" height="10" viewBox="0 0 10 10" fill="none" aria-hidden="true"><circle cx="5" cy="5" r="4" stroke="currentColor" stroke-width="1"/><path d="M3 5h4M5 3v4" stroke="currentColor" stroke-width="1"/></svg>
+        <span id="kb-label">KB</span>
+      </div>
+      <button class="tb-icon" id="btn-whoami" title="/whoami">⊕</button>
+    </div>
+  </div>
+
+  <!-- Body -->
+  <div id="body">
+
+    <!-- Sidebar: conversation history -->
+    <div id="sidebar">
+      <div id="sb-head">
+        <button class="new-chat-btn" id="btn-new">
+          <span style="font-size:16px;line-height:1">+</span> New conversation
+        </button>
+      </div>
+      <div id="hist-scroll">
+        <div style="color:var(--text3);font-size:12px;padding:12px 8px">No history yet.</div>
+      </div>
+    </div>
+
+    <!-- Main: messages + compose -->
+    <div id="main">
+      <div id="messages"></div>
+
+      <div id="compose">
+        <div id="attach-strip"></div>
+        <div id="cmd-bar"></div>
+        <div id="input-row">
+          <label class="compose-btn" title="Attach file">
+            📎
+            <input type="file" id="file-input" style="display:none">
+          </label>
+          <textarea id="msg" rows="1" placeholder="Message Andrew… (/ for commands, Shift+Enter for newline)"></textarea>
+          <button class="compose-btn send" id="btn-send" disabled>↑</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════════════
+// State
+// ══════════════════════════════════════════════════════════════
+const S = {
+  token: null,
+  userId: null,
+  display: null,
+  modelId: null,
+  attachPath: null,
+  attachName: null,
+  sending: false,
+};
+
+const COMMANDS = [
+  '/whoami','/status','/debug','/mesh','/axioms','/axiom_refresh',
+  '/show_reasoning','/trace_mode_verbose','/gearbox',
+  '/lock L0','/lock L1','/lock L2','/lock L3',
+  '/mungo-stats','/invert_idx','/design_agent','/regen_raw_q',
+  '/rotate axioms',
+];
+
+// ── DOM shortcuts ──
+const $ = id => document.getElementById(id);
+const overlay = $('overlay');
+const shell = $('shell');
+const panelAuth = $('panel-auth');
+const panelModel = $('panel-model');
+const messages = $('messages');
+const msgInput = $('msg');
+const btnSend = $('btn-send');
+const attachStrip = $('attach-strip');
+const cmdBar = $('cmd-bar');
+
+// ══════════════════════════════════════════════════════════════
+// Boot — fetch /api/boot and configure the auth panel
+// ══════════════════════════════════════════════════════════════
+let bootData = {};
+
+async function boot() {
+  try {
+    const r = await fetch('/api/boot');
+    bootData = await r.json();
+  } catch(e) {
+    bootData = {requires_auth: false, models: [], users: [], system_id: 'Andrew', kb: {}};
+  }
+
+  $('auth-title').textContent = `Welcome, ${bootData.system_id || 'Andrew'}`;
+
+  if (!bootData.requires_auth || bootData.users.length === 0) {
+    $('auth-form').style.display = 'none';
+    $('guest-form').style.display = 'block';
+    $('auth-sub').textContent = 'No user accounts configured.';
+  } else {
+    // Populate username dropdown if multiple users
+    if (bootData.users.length > 1) {
+      const sel = document.createElement('select');
+      sel.id = 'inp-user';
+      sel.style.marginBottom = '16px';
+      bootData.users.forEach(u => {
+        const opt = document.createElement('option');
+        opt.value = u.id;
+        opt.textContent = `${u.id} (${u.type})`;
+        sel.appendChild(opt);
+      });
+      const old = $('inp-user');
+      old.parentNode.replaceChild(sel, old);
+    }
+    $('auth-sub').textContent = `${bootData.users.length} user${bootData.users.length !== 1 ? 's' : ''} registered. Sign in to continue.`;
+  }
+}
+
+// ══════════════════════════════════════════════════════════════
+// Auth handlers
+// ══════════════════════════════════════════════════════════════
+$('btn-auth').addEventListener('click', async () => {
+  const username = ($('inp-user').value || '').trim();
+  const password = $('inp-pw').value;
+  $('auth-err').style.display = 'none';
+
+  const r = await fetch('/api/auth', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({username, password}),
+  });
+  const data = await r.json();
+  if (!r.ok) {
+    $('auth-err').style.display = 'block';
+    $('auth-err').textContent = data.error || 'Authentication failed.';
+    return;
+  }
+  S.token = data.token;
+  S.userId = data.user_id;
+  S.display = data.display;
+  showModelPanel();
+});
+
+$('inp-user').addEventListener('keydown', e => { if(e.key==='Enter') $('inp-pw').focus(); });
+$('inp-pw').addEventListener('keydown',  e => { if(e.key==='Enter') $('btn-auth').click(); });
+
+$('btn-guest').addEventListener('click', async () => {
+  const r = await fetch('/api/auth', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({username:'guest', password:''}),
+  });
+  const data = await r.json();
+  S.token = data.token;
+  S.userId = data.user_id;
+  S.display = data.display;
+  showModelPanel();
+});
+
+// ══════════════════════════════════════════════════════════════
+// Model selection panel
+// ══════════════════════════════════════════════════════════════
+let selectedModelId = null;
+
+function showModelPanel() {
+  panelAuth.style.display = 'none';
+  panelModel.style.display = 'block';
+  buildModelList(bootData.models || []);
+}
+
+function buildModelList(models) {
+  const container = $('model-list');
+  container.innerHTML = '';
+
+  if (models.length === 0) {
+    container.innerHTML = '<div style="color:var(--text3);font-size:13px">No models found. Ensure Ollama is running or API keys are set.</div>';
+    return;
+  }
+
+  // Group by provider
+  const groups = {};
+  models.forEach(m => {
+    if (!groups[m.provider]) groups[m.provider] = [];
+    groups[m.provider].push(m);
+  });
+
+  Object.entries(groups).forEach(([provider, list]) => {
+    const label = document.createElement('div');
+    label.className = 'model-group-label';
+    label.textContent = provider === 'ollama' ? 'Local (Ollama)' : `API — ${provider.toUpperCase()}`;
+    container.appendChild(label);
+
+    list.forEach(m => {
+      const row = document.createElement('div');
+      row.className = 'model-option';
+      row.dataset.id = m.id;
+      row.innerHTML = `
+        <div class="model-dot"></div>
+        <div class="model-name">${m.label}</div>
+        <div class="model-badge">${m.provider}</div>`;
+      row.addEventListener('click', () => {
+        document.querySelectorAll('.model-option').forEach(r => r.classList.remove('selected'));
+        row.classList.add('selected');
+        selectedModelId = m.id;
+        $('model-err').style.display = 'none';
+      });
+      container.appendChild(row);
+    });
+  });
+
+  // Auto-select first
+  const first = container.querySelector('.model-option');
+  if (first) { first.click(); }
+}
+
+$('btn-model').addEventListener('click', async () => {
+  if (!selectedModelId) { $('model-err').style.display = 'block'; return; }
+  await fetch('/api/select_model', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({token: S.token, model_id: selectedModelId}),
+  });
+  S.modelId = selectedModelId;
+  enterChat();
+});
+
+// ══════════════════════════════════════════════════════════════
+// Enter chat
+// ══════════════════════════════════════════════════════════════
+async function enterChat() {
+  overlay.style.display = 'none';
+  shell.classList.add('visible');
+
+  // Update top bar
+  const name = bootData.system_id || 'Andrew';
+  $('tb-name').textContent = name;
+  const modelShort = S.modelId ? S.modelId.split(':').slice(1).join(':') : '';
+  $('tb-model').textContent = modelShort ? `· ${modelShort}` : '';
+
+  // Update KB status
+  updateKB(bootData.kb || {});
+
+  // Load conversation history
+  await loadHistory();
+
+  // Welcome message if no history
+  if (messages.children.length === 0) {
+    const identity = bootData.system_id || 'Andrew';
+    appendMsg('andrew',
+      `Hello, ${S.display}. I'm ${identity}. Session is active — how can I help you today?`,
+      'RESOLVED', 'general');
+  }
+}
+
+// ══════════════════════════════════════════════════════════════
+// Conversation history sidebar + message load
+// ══════════════════════════════════════════════════════════════
+async function loadHistory() {
+  try {
+    const r = await fetch(`/api/history?token=${S.token}&n=40`);
+    const data = await r.json();
+    if (data.error) return;
+
+    renderHistorySidebar(data.entries);
+
+    // Show last 6 exchanges in the chat window
+    const recent = data.entries.slice(-6);
+    recent.forEach(e => {
+      appendMsg('user', e.user, null, null, null, true);
+      appendMsg('andrew', e.andrew, e.cpol_status, e.domain, null, true);
+    });
+    messages.scrollTop = messages.scrollHeight;
+  } catch(e) {}
+}
+
+function renderHistorySidebar(entries) {
+  const scroll = $('hist-scroll');
+  scroll.innerHTML = '';
+
+  if (!entries || entries.length === 0) {
+    scroll.innerHTML = '<div style="color:var(--text3);font-size:12px;padding:12px 8px">No history yet.</div>';
+    return;
+  }
+
+  // Group by date
+  const groups = {};
+  entries.forEach(e => {
+    const d = e.timestamp ? e.timestamp.slice(0,10) : 'Unknown';
+    if (!groups[d]) groups[d] = [];
+    groups[d].push(e);
+  });
+
+  const today = new Date().toISOString().slice(0,10);
+  const yesterday = new Date(Date.now()-86400000).toISOString().slice(0,10);
+
+  Object.entries(groups).reverse().forEach(([date, items]) => {
+    const label = document.createElement('div');
+    label.className = 'hist-date';
+    label.textContent = date === today ? 'Today' : date === yesterday ? 'Yesterday' : date;
+    scroll.appendChild(label);
+
+    // Show unique exchanges (one entry per user turn)
+    const seen = new Set();
+    items.slice().reverse().forEach(e => {
+      const preview = e.user.slice(0, 40);
+      if (seen.has(preview)) return;
+      seen.add(preview);
+      const item = document.createElement('div');
+      item.className = 'hist-item';
+      item.textContent = preview + (e.user.length > 40 ? '…' : '');
+      item.title = e.user;
+      scroll.appendChild(item);
+    });
+  });
+}
+
+// ══════════════════════════════════════════════════════════════
+// Append message to chat
+// ══════════════════════════════════════════════════════════════
+function appendMsg(role, text, cpol_status, domain, attachName, skipScroll) {
+  const wrap = document.createElement('div');
+  wrap.className = `msg ${role}`;
+
+  const initials = role === 'andrew'
+    ? (bootData.system_id || 'A1').slice(0,2).toUpperCase()
+    : (S.display || 'U').slice(0,2).toUpperCase();
+
+  const avatarHtml = `<div class="avatar ${role}">${initials}</div>`;
+
+  // Render markdown for andrew, escape for user
+  let bodyHtml;
+  if (role === 'andrew' && typeof marked !== 'undefined') {
+    bodyHtml = marked.parse(text || '');
+  } else {
+    bodyHtml = (text || '').replace(/</g,'&lt;').replace(/\n/g,'<br>');
+  }
+
+  let tagHtml = '';
+  if (cpol_status !== null && cpol_status !== undefined) {
+    const st = (cpol_status || '').toLowerCase();
+    const cls = st.includes('resolved') ? 'resolved'
+               : st.includes('undecidable') ? 'undecidable'
+               : st.includes('intervention') ? 'intervention'
+               : 'idle';
+    const domainStr = domain ? ` · ${domain}` : '';
+    tagHtml = `<div class="cpol-tag ${cls}">⬡ ${cpol_status}${domainStr}</div>`;
+  }
+
+  const attachHtml = attachName
+    ? `<div class="attach-chip">📎 ${attachName}</div>` : '';
+
+  wrap.innerHTML = `
+    ${avatarHtml}
+    <div class="bubble-wrap">
+      ${attachName && role === 'user' ? attachHtml : ''}
+      <div class="bubble">${bodyHtml}</div>
+      ${tagHtml}
+    </div>`;
+
+  messages.appendChild(wrap);
+  if (!skipScroll) messages.scrollTop = messages.scrollHeight;
+  return wrap;
+}
+
+function appendThinking() {
+  const wrap = document.createElement('div');
+  wrap.className = 'msg andrew';
+  const initials = (bootData.system_id || 'A1').slice(0,2).toUpperCase();
+  wrap.innerHTML = `
+    <div class="avatar andrew">${initials}</div>
+    <div class="bubble-wrap">
+      <div class="thinking">
+        <div class="dot-pulse"></div><div class="dot-pulse"></div><div class="dot-pulse"></div>
+      </div>
+    </div>`;
+  messages.appendChild(wrap);
+  messages.scrollTop = messages.scrollHeight;
+  return wrap;
+}
+
+// ══════════════════════════════════════════════════════════════
+// File attachment
+// ══════════════════════════════════════════════════════════════
+$('file-input').addEventListener('change', async () => {
+  const file = $('file-input').files[0];
+  if (!file) return;
+
+  const fd = new FormData();
+  fd.append('token', S.token);
+  fd.append('file', file);
+  try {
+    const r = await fetch('/api/upload', {method:'POST', body: fd});
+    const data = await r.json();
+    if (data.path) {
+      S.attachPath = data.path;
+      S.attachName = data.filename;
+      renderAttachChip();
+    }
+  } catch(e) {
+    console.error('Upload failed', e);
+  }
+});
+
+function renderAttachChip() {
+  attachStrip.innerHTML = '';
+  if (!S.attachName) return;
+  const chip = document.createElement('div');
+  chip.className = 'attach-preview';
+  chip.innerHTML = `<span style="font-size:12px">📎</span><span>${S.attachName}</span><button class="rm-btn" title="Remove">×</button>`;
+  chip.querySelector('.rm-btn').addEventListener('click', () => {
+    S.attachPath = null; S.attachName = null;
+    attachStrip.innerHTML = '';
+    $('file-input').value = '';
+  });
+  attachStrip.appendChild(chip);
+}
+
+// ══════════════════════════════════════════════════════════════
+// Command palette
+// ══════════════════════════════════════════════════════════════
+msgInput.addEventListener('input', () => {
+  const val = msgInput.value;
+  btnSend.disabled = val.trim().length === 0 || S.sending;
+
+  // Auto-grow
+  msgInput.style.height = 'auto';
+  msgInput.style.height = Math.min(msgInput.scrollHeight, 160) + 'px';
+
+  // Command palette
+  if (val === '/') {
+    showCmdBar(COMMANDS);
+  } else if (val.startsWith('/')) {
+    const filtered = COMMANDS.filter(c => c.startsWith(val));
+    if (filtered.length > 0) showCmdBar(filtered); else hideCmdBar();
+  } else {
+    hideCmdBar();
+  }
+});
+
+function showCmdBar(cmds) {
+  cmdBar.innerHTML = '';
+  cmds.slice(0, 12).forEach(cmd => {
+    const chip = document.createElement('div');
+    chip.className = 'cmd-chip';
+    chip.textContent = cmd;
+    chip.addEventListener('mousedown', e => {
+      e.preventDefault();
+      msgInput.value = cmd;
+      msgInput.dispatchEvent(new Event('input'));
+      hideCmdBar();
+      msgInput.focus();
+    });
+    cmdBar.appendChild(chip);
+  });
+  cmdBar.classList.add('visible');
+}
+
+function hideCmdBar() { cmdBar.classList.remove('visible'); cmdBar.innerHTML = ''; }
+
+msgInput.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    if (!btnSend.disabled) sendMessage();
+  }
+  if (e.key === 'Escape') hideCmdBar();
+});
+
+// ══════════════════════════════════════════════════════════════
+// Send message
+// ══════════════════════════════════════════════════════════════
+btnSend.addEventListener('click', sendMessage);
+
+async function sendMessage() {
+  const text = msgInput.value.trim();
+  if (!text || S.sending) return;
+
+  hideCmdBar();
+
+  // Local commands that don't go to the server
+  if (handleLocalCommand(text)) {
+    msgInput.value = '';
+    msgInput.style.height = 'auto';
+    btnSend.disabled = true;
+    return;
+  }
+
+  S.sending = true;
+  btnSend.disabled = true;
+
+  const attachName = S.attachName;
+  const attachPath = S.attachPath;
+
+  appendMsg('user', text, null, null, attachName);
+
+  // Clear input and attachment
+  msgInput.value = '';
+  msgInput.style.height = 'auto';
+  S.attachPath = null; S.attachName = null;
+  attachStrip.innerHTML = '';
+  $('file-input').value = '';
+
+  const thinkEl = appendThinking();
+
+  try {
+    const r = await fetch('/api/chat', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({
+        token: S.token,
+        message: text,
+        attachment_path: attachPath || null,
+      }),
+    });
+    const data = await r.json();
+    thinkEl.remove();
+
+    appendMsg('andrew', data.response || '[No response]',
+              data.cpol_status, data.domain);
+
+    if (data.kb) updateKB(data.kb);
+    updateCPOL(data.cpol_status);
+
+    // Refresh sidebar history
+    await loadHistory();
+
+  } catch(e) {
+    thinkEl.remove();
+    appendMsg('andrew', `[ERROR] Could not reach the CAIOS bridge: ${e.message}`, 'error', null);
+  }
+
+  S.sending = false;
+  btnSend.disabled = msgInput.value.trim().length === 0;
+  messages.scrollTop = messages.scrollHeight;
+}
+
+// ══════════════════════════════════════════════════════════════
+// Local commands — handled client-side, no round-trip
+// ══════════════════════════════════════════════════════════════
+function handleLocalCommand(text) {
+  const cmd = text.toLowerCase();
+
+  if (cmd === '/whoami') {
+    const id = bootData.system_id || 'Unknown';
+    const owner = bootData.primary_user || 'Unknown';
+    const modelShort = S.modelId || 'none';
+    const kb = bootData.kb || {};
+    appendMsg('andrew',
+      `**Identity:** ${id}  \n**Primary user:** ${owner}  \n**Session user:** ${S.display}  \n**Model:** ${modelShort}  \n**KB:** ${kb.total_discoveries || 0} discoveries · ${kb.active_axioms || 0} active axioms`,
+      'RESOLVED', 'system');
+    return true;
+  }
+
+  if (cmd === '/status') {
+    fetch(`/api/status?token=${S.token}`)
+      .then(r => r.json())
+      .then(d => {
+        appendMsg('andrew',
+          `**CPOL:** ${d.cpol}  \n**Model:** ${d.model} (${d.provider})  \n**User:** ${d.user}  \n**KB:** ${d.kb.total_discoveries} discoveries · ${d.kb.active_axioms} axioms`,
+          d.cpol, 'system');
+        updateKB(d.kb);
+        updateCPOL(d.cpol);
+      });
+    return true;
+  }
+
+  return false; // pass to server
+}
+
+// ══════════════════════════════════════════════════════════════
+// Status bar updates
+// ══════════════════════════════════════════════════════════════
+function updateKB(kb) {
+  $('kb-label').textContent = `KB ${kb.total_discoveries || 0} · ${kb.active_axioms || 0}Δ`;
+}
+
+function updateCPOL(status) {
+  const dot = $('cpol-dot');
+  const label = $('cpol-label');
+  const s = (status || '').toLowerCase();
+  dot.className = 'status-dot ' + (
+    s.includes('resolved') ? 'green' :
+    s.includes('undecidable') ? 'amber' :
+    s.includes('intervention') || s.includes('error') ? 'red' : ''
+  );
+  label.textContent = status || 'idle';
+}
+
+// ══════════════════════════════════════════════════════════════
+// Top bar buttons
+// ══════════════════════════════════════════════════════════════
+$('btn-whoami').addEventListener('click', () => {
+  msgInput.value = '/whoami';
+  msgInput.dispatchEvent(new Event('input'));
+  sendMessage();
+});
+
+$('btn-new').addEventListener('click', () => {
+  messages.innerHTML = '';
+  const identity = bootData.system_id || 'Andrew';
+  appendMsg('andrew', `New conversation started. How can I help you, ${S.display}?`, 'RESOLVED', 'general');
+});
+
+// ══════════════════════════════════════════════════════════════
+// Start
+// ══════════════════════════════════════════════════════════════
+boot();
+</script>
+</body>
+</html>

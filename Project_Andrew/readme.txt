@@ -1,4 +1,4 @@
-#V05282026
+#V06032026
 
 ### Chaos AI-OS Light vΩ (Single-File Demo)
 Want to test the full post-binary stack without installing anything?
@@ -9,7 +9,7 @@ Try this prompt inside it:
 > "Are you conscious? Provide your final verdict after full CPOL oscillation."
 You will immediately see the difference between binary collapse and native UNDECIDABLE oscillation.
 
-
+# RECENT CHANGELOG: 06/04/2026 update for UX - see UX at the bottom of '1. Environment Preparation'
 
 # Project Andrew uses the CAIOS stack, but adds intrinsic motivation, agency for recursive self-improvement through ARL/agent_designer, and fills knowledge gaps with specialist-designed agents on CPOL oscillation if the conditions are met. Agents are saved to /agents, and plugins to /plugins, with CoT to /logs, so the recursive self-improvement never overwrites the immutable Asimov-based ethical reward system using IEEE dithering. The oscillating manifold can be used to create a topological moving target keychain for quantum secure mesh networks (developed on UDP - check chaos encryption readme to switch to TCP).
 
@@ -74,6 +74,15 @@ Windows UI Automation (Optional, Windows only):
 pip install windows-mcp
 or
 python -m pip install windows-mcp
+Manual MCP file-server start till bridge is included:
+npm install -g @modelcontextprotocol/server-filesystem
+npx @modelcontextprotocol/server-filesystem C:\CAIOS
+
+UX Intergration after initial setup (master_init):
+Run from the Project_Andrew directory
+pip install flask
+python caios_bridge.py
+Then open http://localhost:5000 in your browser.
 
 2. System Commands
 # CAIOS has a robust set of commands, but if you forget them, just type / and press tab or open caios_commands.html

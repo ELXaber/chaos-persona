@@ -1,4 +1,4 @@
-#V06032026
+#V06042026
 # =============================================================================
 # Chaos AI-OS – Hardened Orchestrator (Unified Edition)
 # Combines: V1 Logic + V3 Pipeline + Mesh Encryption + Chatbot Safety
@@ -1071,18 +1071,14 @@ def system_step(user_input: str, prompt_complexity: str = "low",
                 '%A, %B %d, %Y %H:%M UTC'
             )
 
-            # KB context — show total KB size, not single-domain coverage
+            # KB context — total count across all domains
             kb_context = ""
             if AD_AVAILABLE:
                 try:
-                    # Count total discoveries across all domains
                     total_discoveries = 0
                     if kb.DISCOVERIES_LOG.exists():
                         with open(kb.DISCOVERIES_LOG, 'r', encoding='utf-8') as _f:
-                            total_discoveries = sum(
-                                1 for line in _f if line.strip()
-                            )
-                    # Also get domain-specific coverage for context
+                            total_discoveries = sum(1 for line in _f if line.strip())
                     domain_coverage = kb.check_domain_coverage(
                         cpol_result.get('domain', 'general')
                     )
