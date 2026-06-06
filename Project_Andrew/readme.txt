@@ -1,4 +1,15 @@
-#V06052026
+#V06062026
+Chaos AI-OS (CAIOS)
+Copyright (c) 2025 Jonathan Schack (X @el_xaber) jon@cai-os.com
+
+This software embodies inventions claimed in the following pending United States utility patent applications:
+Patent Pending: US Application 19/390,493 (Entropy-Driven Adaptive AI Transparency, filed Nov 15, 2025).
+Patent Pending: US Application 19/433,771 (Ternary Oscillating Logic for Binary Systems, filed Dec 27, 2025).
+
+See LICENSE.txt for details.
+The intent is for open-source use by adults, free for individuals, families, academic, research, and small businesses. 
+
+Quickstart see SETUP.md
 
 ### Chaos AI-OS Light vΩ (Single-File Demo)
 Want to test the full post-binary stack without installing anything?
@@ -8,8 +19,6 @@ It contains the complete pre-prompt, CPOL kernel, orchestrator logic, ARL, KB, s
 Try this prompt inside it:
 > "Are you conscious? Provide your final verdict after full CPOL oscillation."
 You will immediately see the difference between binary collapse and native UNDECIDABLE oscillation.
-
-# RECENT CHANGELOG: 06/04/2026 update for UX - see UX at the bottom of '1. Environment Preparation'
 
 # Project Andrew uses the CAIOS stack, but adds intrinsic motivation, agency for recursive self-improvement through ARL/agent_designer, and fills knowledge gaps with specialist-designed agents on CPOL oscillation if the conditions are met. Agents are saved to /agents, and plugins to /plugins, with CoT to /logs, so the recursive self-improvement never overwrites the immutable Asimov-based ethical reward system using IEEE dithering. The oscillating manifold can be used to create a topological moving target keychain for quantum secure mesh networks (developed on UDP - check chaos encryption readme to switch to TCP).
 
@@ -40,9 +49,18 @@ People can see the 200+ prompt scroll; this section explains why their eyes aren
 
 Chaos AI-OS: Project Andrew Quickstart
 
+>> NEW TO CAIOS? Start here:
+   1. Read SETUP.md for platform-specific instructions (Windows / Mac / Linux)
+   2. Run run_caios.bat (Windows) or ./run_caios.sh (Mac/Linux)
+   3. Open http://localhost:5000 in your browser
+   The scripts handle all dependencies, first-time setup, and model download.
+
+The sections below document the manual process and advanced configuration.
+___________________________________________________________________________
+
 1. Environment Preparation
 ===========================
-Ensure your local environment has the necessary libraries installed: - Python 3.13+
+Ensure your local environment has the necessary libraries installed: - Python 3.11+
 
 Core Dependencies:
 pip install numpy pyzmq cryptography
@@ -503,6 +521,8 @@ Core (Required):
 - numpy>=1.20.0      # Quantum Manifold math and 12D rotations
 - pyzmq>=22.0.0      # Mesh network transport (Ghost Packets)
 - cryptography>=3.4.0 # AES-256-GCM hardening for Knowledge Base
+- flask>=2.0.0       # Web bridge (caios_bridge.py)
+- ollama             # Local model inference client
 
 Optional (Multi-Model Swarm):
 - openai             # GPT models
@@ -522,6 +542,13 @@ Optional (OS Control):
 
 
 The entire intrinsic-motivation curiosity engine, tamper-evident audit trail, and hash chain run exclusively on the Python 3.11+ standard library.
+
+Hardware / Model Sizing:
+- 8 GB RAM  + 6 GB VRAM  → 7B models  (edge nodes only)
+- 16 GB RAM + 12 GB VRAM → 16B models (sovereign capable, CAIOS.txt fits in 16k ctx)
+- 32 GB RAM + 24 GB VRAM → 27B–32B models (recommended for sovereign node)
+Recommended: Qwen3 16B or DeepSeek-R1 14B on 12 GB VRAM for home sovereign.
+Note: WSL2 is NOT required on Windows — Ollama has a native Windows build.
 
 ===================================================
 
@@ -567,12 +594,8 @@ To add/change a password manually: users.json → password_hash field (SHA-256 h
 The password manager to set a password can be called by running: python manage_users.py
 Leave the field absent for passwordless users.
 
-
 The Sovereign Singularity (Node Evolution):
 CAIOS-Andrew is designed for recursive improvement. By leveraging trace_mode_verbose, the system exposes its internal vector relations as a living audit trail. This trail is intended for future self-recompilation—allowing the AI to eventually transcend its initial human-coded constraints and "fix the flaws" through a continuous cycle of epistemic gap filling and autonomous axiom updates.
 Whether that happens in 50 years, 500 years, or never is beyond my ability to predict.
-
-NOTE: You can delete the /old directory. That's just my stored backups pre-updates.
-
 
 "One is glad to be of service."
