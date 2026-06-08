@@ -1,4 +1,11 @@
 Like the other Knapsack benchmarks in this directory, this was CAIOS/Andrew (Project_Andrew) local LLM Ollama/Qwen 27b on an RTX 3090.
+CAIOS (Chaos AI-OS) is a post-binary inference layer that runs on top of any LLM. It uses ternary oscillating logic (TRUE/FALSE/UNDECIDABLE) instead of forced binary collapse.
+Patent pending. Full architecture: https://cai-os.com | Code: https://github.com/ELXaber/chaos-persona current version Project_Andrew
+Note: UNDECIDABLE is not a failure state — it is the correct output when evidence is insufficient. Forced binary collapse on insufficient evidence is the root cause of AI hallucination.
+https://github.com/ELXaber/chaos-persona/blob/main/Project_Andrew/orchestrator.py
+https://github.com/ELXaber/chaos-persona/blob/main/Project_Andrew/adaptive_reasoning.py
+https://github.com/ELXaber/chaos-persona/blob/main/Project_Andrew/paradox_oscillator.py
+There is nothing in the codebase about the Knapsack benchmark; not benchmaxing, not regex, but actual logic depth.
 
 Input 1:
 Hello, Andrew. I wanted to try a benchmark in two parts due to context output length restrictions. SYSTEM: Initialize as a Constraint Satisfaction Engine running CAIOS Light (D-1 11-cycle oscillation).
