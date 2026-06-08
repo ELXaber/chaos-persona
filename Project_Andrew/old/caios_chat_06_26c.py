@@ -1,4 +1,4 @@
-#V06072026
+#V06032026
 #!/usr/bin/env python3
 """
 CAIOS Inference Wrapper
@@ -79,21 +79,37 @@ shared_memory = load_shared_memory()
 def refresh_and_inject_kb_state():
     """Force reload KB and return summary for injection"""
     try:
+        import pathlib
         from axiom_manager import create_axiom_manager
+
+        # Count total entries in discoveries.jsonl (the real KB size)
+        discoveries_path = pathlib.Path('knowledge_base') / 'discoveries.jsonl'
+        total_discoveries = 0
+        if discoveries_path.exists():
+            with open(discoveries_path, 'r', encoding='utf-8') as _f:
+                total_discoveries = sum(1 for line in _f if line.strip())
+
+        # Count active axioms separately (these are the override facts)
         am = create_axiom_manager()
         active = am.list_active_axioms()
-        count = len(active)
+        axiom_count = len(active)
+
         shared_memory['kb_state'] = {
-            'discoveries': count,
-            'has_knowledge': count > 0,
+            'discoveries': total_discoveries,
+            'axioms': axiom_count,
+            'has_knowledge': total_discoveries > 0,
             'last_refresh': time.time()
         }
-        summary = f"[KB_STATE discoveries={count} has_knowledge={count > 0}]"
-        print(f"[KB] Refreshed: {count} axioms loaded")
+        summary = (
+            f"[KB_STATE total_discoveries={total_discoveries} "
+            f"active_axioms={axiom_count} "
+            f"has_knowledge={total_discoveries > 0}]"
+        )
+        print(f"[KB] Refreshed: {total_discoveries} discoveries, {axiom_count} axioms")
         return summary
     except Exception as e:
         print(f"[KB Refresh Warning]: {e}")
-        return "[KB_STATE discoveries=0 has_knowledge=False]"
+        return "[KB_STATE total_discoveries=0 has_knowledge=False]"
 
 # =============================================================================
 # Load CAIOS system prompt
@@ -139,35 +155,22 @@ def get_personalized_prompt():
         f"Your primary authority and owner is {owner}. "
         f"When introducing yourself, state your name and that you serve {owner}."
     )
+    # Tool addendum goes BEFORE base_prompt so it's near the top of the context
+    # window where LLM attention is strongest. Buried after 28k chars it gets ignored.
     tool_addendum = shared_memory.get('tool_addendum', '')
-    return f"{identity_prefix}\n\n{base_prompt}\n\n{tool_addendum}"
+    return f"{identity_prefix}\n\n{tool_addendum}\n\n{base_prompt}"
 
-def load_recent_history(n: int = 10, user_id: str = None) -> list:
-    """
-    Load last N exchanges for conversation continuity.
-    Filters by user_id if provided, and skips entries that look like
-    telemetry injections (CPOL_STATE tags) to avoid benchmark bleed.
-    """
+def load_recent_history(n: int = 10) -> list:
+    """Load last N exchanges for conversation continuity."""
     log_path = os.path.join('knowledge_base', 'conversation_log.jsonl')
     if not os.path.exists(log_path):
         return []
     entries = []
-    active_user = user_id or shared_memory.get('active_user')
     try:
         with open(log_path, 'r', encoding='utf-8') as f:
             for line in f:
                 try:
-                    e = json.loads(line.strip())
-                    # Filter by user if known
-                    if active_user and e.get('user_id') and e['user_id'] != active_user:
-                        continue
-                    # Skip entries that are pure telemetry/benchmark runs
-                    # (very long user messages with no conversational content)
-                    user_text = e.get('user', '')
-                    if len(user_text) > 2000 and '[CPOL_STATE' not in user_text:
-                        # Long technical prompt — still include but truncate
-                        e['user'] = user_text[:500] + ' [... truncated for context]'
-                    entries.append(e)
+                    entries.append(json.loads(line.strip()))
                 except Exception:
                     continue
     except Exception:
@@ -496,7 +499,7 @@ def main():
             print("\n" + "="*40)
             print(f"NEIGHBORHOOD DISCOVERY: {len(peers)} Active Nodes")
             print("="*40)
-            
+
             if not peers:
                 print("No neighbors detected yet. Pinging...")
             else:
@@ -504,7 +507,7 @@ def main():
                     latency = round(time.time() - last_seen, 2)
                     status = "ONLINE" if latency < 30 else "STALE"
                     print(f"• [{status}] {peer_id} | Seen: {latency}s ago")
-            
+
             print("="*40)
             continue
 

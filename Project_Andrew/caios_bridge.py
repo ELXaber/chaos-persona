@@ -1,4 +1,4 @@
-#V06052026
+#V06062026
 # =============================================================================
 # CAIOS Web Bridge — Flask server that connects caios_chat_ui.html to the
 # existing orchestrator/caios_chat.py stack.
@@ -281,10 +281,13 @@ def api_auth():
     }
     shared_memory['active_user'] = username
 
-    # Load user profile if available
+    # Load user profile, increment session count, save
     try:
         if shared_memory.get('user_profile_kb'):
-            profile = shared_memory['user_profile_kb']['load'](username)
+            upkb = shared_memory['user_profile_kb']
+            profile = upkb['load'](username)
+            profile['session_count'] = profile.get('session_count', 0) + 1
+            upkb['save'](username, profile)
             shared_memory['personality_weights'] = profile.get('personality', {})
     except Exception:
         pass

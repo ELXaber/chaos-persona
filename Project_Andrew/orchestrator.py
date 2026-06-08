@@ -1,4 +1,4 @@
-#V06042026
+#V06072026
 # =============================================================================
 # Chaos AI-OS – Hardened Orchestrator (Unified Edition)
 # Combines: V1 Logic + V3 Pipeline + Mesh Encryption + Chatbot Safety
@@ -683,7 +683,7 @@ def system_step(user_input: str, prompt_complexity: str = "low",
                 if kernel and hasattr(kernel, 'ratchet'):
                     # 1. Update the seed to the user's persisted state
                     kernel.raw_q = incoming['last_raw_q']
-
+                    
                     # 2. Ratchet forward (this advances the manifold state)
                     kernel.ratchet()
 
@@ -729,7 +729,14 @@ def system_step(user_input: str, prompt_complexity: str = "low",
     # Process temporal axiom updates before normal orchestration
     if AMGR_AVAILABLE and shared_memory.get('axiom_manager'):
         axiom_mgr = shared_memory['axiom_manager']
-        update_result = axiom_mgr.parse_update_command(user_input)
+        # Only parse the line(s) containing #UPDATE, not the whole message.
+        # This prevents a long message ending with '#UPDATE keyword' from
+        # committing the entire message text as a garbage axiom domain.
+        import re as _re
+        update_lines = [l for l in user_input.splitlines()
+                        if _re.search(r'#UPDATE', l, _re.IGNORECASE)]
+        update_input = ' '.join(update_lines) if update_lines else ''
+        update_result = axiom_mgr.parse_update_command(update_input) if update_input else None
 
         if update_result:
             domain, fact = update_result
@@ -1044,14 +1051,14 @@ def system_step(user_input: str, prompt_complexity: str = "low",
     # Apply abstraction layer (replaces old caveman mode)
     if ABSTRACTION_AVAILABLE and shared_memory.get('abstraction_dispatcher'):
         dispatcher = shared_memory['abstraction_dispatcher']
-
+        
         # Process through abstraction selector
         cpol_result = dispatcher.process(
             user_input=user_input,
             technical_output=cpol_result,
             shared_memory=shared_memory
         )
-
+        
         # Log which mode was activated (optional)
         if cpol_result.get('abstraction_level') == 'CAVEMAN':
             print("[ORCHESTRATOR] Mungo mode activated. Rock speak now.")
@@ -1071,22 +1078,17 @@ def system_step(user_input: str, prompt_complexity: str = "low",
                 '%A, %B %d, %Y %H:%M UTC'
             )
 
-            # KB context — total count across all domains
+            # KB context
             kb_context = ""
             if AD_AVAILABLE:
                 try:
-                    total_discoveries = 0
-                    if kb.DISCOVERIES_LOG.exists():
-                        with open(kb.DISCOVERIES_LOG, 'r', encoding='utf-8') as _f:
-                            total_discoveries = sum(1 for line in _f if line.strip())
-                    domain_coverage = kb.check_domain_coverage(
+                    coverage = kb.check_domain_coverage(
                         cpol_result.get('domain', 'general')
                     )
                     kb_context = (
-                        f"[KB_STATE total_discoveries={total_discoveries} "
-                        f"has_knowledge={total_discoveries > 0} "
-                        f"domain={cpol_result.get('domain', 'general')} "
-                        f"domain_discoveries={domain_coverage.get('discovery_count', 0)}]\n"
+                        f"[KB_STATE discoveries="
+                        f"{coverage.get('discovery_count', 0)} "
+                        f"has_knowledge={coverage.get('has_knowledge', False)}]\n"
                     )
                 except Exception:
                     pass
@@ -1147,6 +1149,31 @@ def system_step(user_input: str, prompt_complexity: str = "low",
             cpol_result['llm_response'] = llm_response
             print(f"[OLLAMA] Response received ({len(llm_response)} chars)")
 
+            # OS INTENT DETECTION — check if query needs browser/OS action
+            os_intent_markers = [
+                'look up', 'search for', 'browse', 'open browser',
+                'fetch', 'navigate to', 'check the url', 'find online',
+                'what is the', 'latest news', 'current price'
+            ]
+            if (OSC_AVAILABLE and 
+                shared_memory.get('os_controller') and
+                any(m in user_input.lower() for m in os_intent_markers)):
+                try:
+                    osc = shared_memory['os_controller']
+                    # Extract likely URL or search term from user input
+                    # Simple approach: use semantic_fetch for web lookups
+                    search_term = user_input  # orchestrator passes full query
+                    fetch_result = osc.semantic_fetch(
+                        query=search_term,
+                        max_results=3
+                    )
+                    if fetch_result.get('status') == 'success':
+                        cpol_result['os_result'] = fetch_result
+                        # Inject result into context for next turn
+                        shared_memory['last_os_result'] = fetch_result
+                        print(f"[OS_CONTROL] Web fetch completed")
+                except Exception as e:
+                    print(f"[OS_CONTROL] Intent detection failed: {e}")
 
         except Exception as e:
             print(f"[LLM] Call failed: {e}")
@@ -1394,7 +1421,7 @@ if __name__ == "__main__":
 
     # TEST 12: Mesh-Kernel Linkage (Quantum Shield Check)
     print("\n[TEST 12] Mesh-Kernel Linkage:")
-
+    
     # Check 1: Does the mesh see the kernel?
     if orchestrator.shared_memory.get('cpol_instance'):
         print("  ✓ Shared Memory Hardware Link: ACTIVE")

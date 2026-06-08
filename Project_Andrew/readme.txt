@@ -258,6 +258,8 @@ Auto-detected by orchestrator on boot.
 [TOOL:mcp_scrape url="https://example.com"]
 [TOOL:mcp_screenshot]
 
+System update: run update.bat/.sh and it will check for new versions of the file.
+
 3. File Architecture
 ====================
 Verify that all core components are in the same root directory:
@@ -301,6 +303,8 @@ CAIOS/
        │                                           # Requires human confirmation for irreversible actions
        ├── caios_browser.py           # Browser Control (requires playwright) same human confirmation
 └── kb_inspect.py                   # CLI inspection tool
+├── run_caios.bat &.sh              # CAIOS nstaller
+├── update.bat & .sh                  # CAIOS file version updater
 
 4. The Sovereign Boot Sequence
 ===============================

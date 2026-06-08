@@ -1,3 +1,4 @@
+# V06062026
 # CAIOS — Andrew  |  Quick Setup Guide
 
 > **What you need before starting:**
@@ -23,7 +24,7 @@ See Hardware Notes at the bottom for details.
 3. When it finishes, Ollama runs in the background automatically
 
 ### Step 3 — Run the setup script
-1. Open the `Project_Andrew` folder
+1. Open the `Project_Andrew` folder after downloading the Andrew.rar from https://cai-os.com or https://github.com/ELXaber/chaos-persona/tree/main/Project_Andrew and extracting the files.
 2. Double-click **`run_caios.bat`**
 3. A terminal window opens and walks through the rest automatically:
    - Installs required packages
@@ -32,6 +33,7 @@ See Hardware Notes at the bottom for details.
 4. When you see **"Web UI: http://localhost:5000"**, open that address in your browser
 
 > **Next time:** Just double-click `run_caios.bat` again — setup is skipped and it launches directly.
+> **Alternate Next time:** Open a terminal window and run python caios_bridge.py then open a browser to http://localhost:5000
 
 ---
 
@@ -50,7 +52,7 @@ brew install python@3.12
 ```
 
 ### Step 3 — Run the setup script
-In Terminal, navigate to the Project_Andrew folder:
+In Terminal, navigate to the Project_Andrew folder after downloading the Andrew.rar from https://cai-os.com or https://github.com/ELXaber/chaos-persona/tree/main/Project_Andrew and extracting the files:
 ```
 cd /path/to/Project_Andrew
 chmod +x run_caios.sh
@@ -75,7 +77,7 @@ sudo apt install python3.12 python3.12-pip python3.12-venv
 ```
 On other distributions (Arch, Fedora, etc.) use the equivalent package manager.
 
-### Step 2 — Run the setup script
+### Step 2 — Run the setup script after downloading the Andrew.rar from https://cai-os.com or https://github.com/ELXaber/chaos-persona/tree/main/Project_Andrew and extracting the files
 ```bash
 cd /path/to/Project_Andrew
 chmod +x run_caios.sh
@@ -136,6 +138,15 @@ Ollama is running but no models are downloaded yet. Open a terminal and run:
 ollama pull qwen3:27b
 ```
 Then refresh the browser.
+
+**Other issues: check for updates**
+If something in CAIOS isn't working as expected, check for updated versions by running update.sh or update.bat.
+Downloads anything newer, and backs up the replaced file as filename.bak before overwriting.
+Files in the PROTECTED set (system_identity.json, users.json, CAIOS.txt, etc.) are never touched by the updater.
+I don't anticipate any new updates to CAIOS.txt (main inference and entropy engine, which can be customized, but you may wish to check for new/optomized versions occasionally, especially if using a smaller LLM than 27b.
+It will compare the version #V######## at the top of every file to what's on GitHub at 
+https://github.com/ELXaber/chaos-persona/tree/main/Project_Andrew
+
 
 ---
 

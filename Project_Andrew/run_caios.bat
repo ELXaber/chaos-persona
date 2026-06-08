@@ -1,3 +1,4 @@
+@rem V06062026
 @echo off
 setlocal EnableDelayedExpansion
 title CAIOS — Andrew One Setup

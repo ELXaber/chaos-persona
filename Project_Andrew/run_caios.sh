@@ -1,3 +1,4 @@
+#V06062026
 #!/usr/bin/env bash
 # CAIOS — Andrew One  |  First-Time Setup & Launch
 # Works on macOS (Intel + Apple Silicon) and Linux (Ubuntu/Debian/Arch)
