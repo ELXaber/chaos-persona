@@ -1,4 +1,4 @@
-#V06062026
+#V06082026
 Chaos AI-OS (CAIOS)
 Copyright (c) 2025 Jonathan Schack (X @el_xaber) jon@cai-os.com
 
@@ -259,6 +259,7 @@ Auto-detected by orchestrator on boot.
 [TOOL:mcp_screenshot]
 
 System update: run update.bat/.sh and it will check for new versions of the file.
+Axiom/KB cleanup: python kb_cleanup.py purge 1324c84703b1ef53 <-- Replace that with the axiom to purge which will create a .discoveries.jsonl.bak
 
 3. File Architecture
 ====================

@@ -1,13 +1,15 @@
-#V06092026
+#V06062026
 # =============================================================================
-# CAIOS Web Bridge — Flask server that connects caios_chat_ui.html to the existing orchestrator/caios_chat.py stack.
+# CAIOS Web Bridge — Flask server that connects caios_chat_ui.html to the
+# existing orchestrator/caios_chat.py stack.
 #
 # Run from the Project_Andrew directory:
 #   pip install flask
 #   python caios_bridge.py
 #
 # Then open http://localhost:5000 in your browser.
-# The CLI caios_chat.py continues to work alongside this — they share the same orchestrator, shared_memory, and conversation_log.jsonl.
+# The CLI caios_chat.py continues to work alongside this — they share the
+# same orchestrator, shared_memory, and conversation_log.jsonl.
 # =============================================================================
 
 import os
@@ -195,7 +197,8 @@ def favicon():
 # =============================================================================
 # Route — GET /api/boot
 # Returns everything the UI needs on first load:
-#   identity, available models, users list (names only, no hashes), KB stats, whether auth is required.
+#   identity, available models, users list (names only, no hashes),
+#   KB stats, whether auth is required.
 # =============================================================================
 
 @app.route('/api/boot')
@@ -295,7 +298,7 @@ def api_auth():
 
 # =============================================================================
 # Route — POST /api/select_model
-# Body: { "token": "...", "model_id": "ollama:qwen3.6:27b" } <- example
+# Body: { "token": "...", "model_id": "ollama:qwen3.6:27b" }
 # =============================================================================
 
 @app.route('/api/select_model', methods=['POST'])
@@ -491,47 +494,6 @@ def api_mcp():
     if not tool:
         # Return server status if no tool specified
         return jsonify({'status': mcp_status()})
-
-    # KB cleanup commands — routed here so Andrew can call them via tool tags
-    if tool == 'kb_sweep':
-        try:
-            import kb_cleanup
-            import io, contextlib
-            buf = io.StringIO()
-            with contextlib.redirect_stdout(buf):
-                kb_cleanup.cmd_sweep(fix=args.get('fix', False))
-            return jsonify({'ok': True, 'content': buf.getvalue()})
-        except Exception as e:
-            return jsonify({'ok': False, 'content': f'kb_sweep error: {e}'})
-
-    if tool == 'kb_purge':
-        target = args.get('id') or args.get('pattern', '')
-        by_pattern = 'pattern' in args
-        if not target:
-            return jsonify({'ok': False, 'content': 'kb_purge requires id or pattern'})
-        try:
-            import kb_cleanup
-            import io, contextlib
-            buf = io.StringIO()
-            with contextlib.redirect_stdout(buf):
-                # Auto-confirm in API context (user confirmed via UI)
-                import unittest.mock
-                with unittest.mock.patch('builtins.input', return_value='yes'):
-                    kb_cleanup.cmd_purge(target, by_pattern=by_pattern)
-            return jsonify({'ok': True, 'content': buf.getvalue()})
-        except Exception as e:
-            return jsonify({'ok': False, 'content': f'kb_purge error: {e}'})
-
-    if tool == 'kb_validate':
-        try:
-            import kb_cleanup
-            import io, contextlib
-            buf = io.StringIO()
-            with contextlib.redirect_stdout(buf):
-                kb_cleanup.cmd_validate()
-            return jsonify({'ok': True, 'content': buf.getvalue()})
-        except Exception as e:
-            return jsonify({'ok': False, 'content': f'kb_validate error: {e}'})
 
     result = mcp_tool(tool, args)
 

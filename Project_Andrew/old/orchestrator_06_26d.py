@@ -1,4 +1,4 @@
-#V06022026
+#V06082026
 # =============================================================================
 # Chaos AI-OS – Hardened Orchestrator (Unified Edition)
 # Combines: V1 Logic + V3 Pipeline + Mesh Encryption + Chatbot Safety
@@ -157,7 +157,8 @@ class UnifiedAbstractionManager:
         level = selection['abstraction_level']
 
         # 2. STATE ADJUSTMENT
-        # If level is CAVEMAN, we update shared memory so the rest of the system knows to stop using high-level jargon in logs/KBs.
+        # If level is CAVEMAN, we update shared memory so the rest of the 
+        # system knows to stop using high-level jargon in logs/KBs.
         shared_memory['current_user_gear'] = level.name
 
         # 3. TRANSLATION
@@ -175,7 +176,7 @@ class CAIOSOrchestrator:
         self.node_id = node_id
         # Use the provided memory or fall back to the global one
         self.shared_memory = shared_memory or {}
-        # Make sure to pass the memory to the mesh coordinator
+        # Make sure to pass the memory to the mesh coordinator!
         self.mesh = MeshCoordinator(node_id, node_tier, shared_memory=self.shared_memory)
         self.abstraction_manager = UnifiedAbstractionManager()
 
@@ -194,7 +195,7 @@ class CAIOSOrchestrator:
         else:
             effective_law_2 = 0.7 # Default fallback
 
-        # Logic for ALLOW/REFUSE
+        # Logic for ALLOW/REFUSE goes here
         return {
             'decision': 'ALLOW', 
             'reason': 'No primary directive violations detected.',
@@ -214,7 +215,7 @@ class CAIOSOrchestrator:
             return f"Directive Conflict: {validation['reason']}"
 
         # 2. Kernel Thinking (DeepSeek, Claude, or Local)
-        # Note: You must have a method named 'generate_swarm_response' in this class
+        # Note: You must have a method named 'generate_swarm_response' in this class!
         technical_output = self.generate_swarm_response(user_input, provider)
 
         # 3. Gearbox Translation (L0, L1, L2, or L3)
@@ -255,7 +256,7 @@ if USER_KB_AVAILABLE:
     shared_memory['user_profile_kb'] = create_user_profile_kb()
     print("[BOOT] User Profile KB initialized - per-user adaptation enabled")
 
-# Load system identity (Required for the Prediction/Signature)
+# Load system identity (Required for the 2025 Prediction/Signature)
 identity = SystemIdentity(load_existing=True)
 if identity.identity_data['system_id']:
     shared_memory['system_identity'] = identity
@@ -371,7 +372,7 @@ CRB_CONFIG = {
 # =============================================================================
 # SESSION TIMEOUT & SOVEREIGN TIERING CONFIG
 # =============================================================================
-TIMEOUT_SECONDS = 1800  # 30 minutes
+TIMEOUT_SECONDS = 900  # 15 minutes
 
 # Tier 0 = Primary Root (Weight 5.0)
 # Tier 1+ = Mesh/Edge Nodes (Weight 1.0)
@@ -497,7 +498,7 @@ if MESH_AVAILABLE:
         # Verify signature
         expected_raw_q = ghost_packet.get('v_omega_phase')
         if mesh_coordinator.mesh_node.verify_ghost_signature(ghost_packet, expected_raw_q):
-            # Update RAW_Q to match mesh consensus
+            # Update our RAW_Q to match mesh consensus
             shared_memory['session_context']['RAW_Q'] = expected_raw_q
             shared_memory['session_context']['timestep'] = ghost_packet.get('ts', 0)
             shared_memory['last_mesh_sig'] = ghost_packet.get('manifold_entropy')
@@ -1096,22 +1097,17 @@ def system_step(user_input: str, prompt_complexity: str = "low",
                 '%A, %B %d, %Y %H:%M UTC'
             )
 
-            # KB context — count total entries, not single-domain coverage
+            # KB context
             kb_context = ""
             if AD_AVAILABLE:
                 try:
-                    total_discoveries = 0
-                    if kb.DISCOVERIES_LOG.exists():
-                        with open(kb.DISCOVERIES_LOG, 'r', encoding='utf-8') as _f:
-                            total_discoveries = sum(1 for line in _f if line.strip())
-                    domain_coverage = kb.check_domain_coverage(
+                    coverage = kb.check_domain_coverage(
                         cpol_result.get('domain', 'general')
                     )
                     kb_context = (
-                        f"[KB_STATE total_discoveries={total_discoveries} "
-                        f"has_knowledge={total_discoveries > 0} "
-                        f"domain={cpol_result.get('domain', 'general')} "
-                        f"domain_discoveries={domain_coverage.get('discovery_count', 0)}]\n"
+                        f"[KB_STATE discoveries="
+                        f"{coverage.get('discovery_count', 0)} "
+                        f"has_knowledge={coverage.get('has_knowledge', False)}]\n"
                     )
                 except Exception:
                     pass
@@ -1456,7 +1452,7 @@ if __name__ == "__main__":
     print(f"  ✓ Initial Manifold State (RAW_Q): {current_q}")
 
     # Check 3: Test the "Busy-Stall" logic
-    # Simulate a 'Busy' state to see if the mesh registers it
+    # We simulate a 'Busy' state to see if the mesh registers it
     kernel.is_oscillating = True 
     orchestrator.shared_memory['cpol_instance'] = kernel
 

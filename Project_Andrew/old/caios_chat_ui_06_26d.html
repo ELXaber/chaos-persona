@@ -1,4 +1,4 @@
-<!-- V06092026 -->
+<!-- V06062026 -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -420,7 +420,6 @@ const COMMANDS = [
   '/lock L0','/lock L1','/lock L2','/lock L3',
   '/mungo-stats','/invert_idx','/design_agent','/regen_raw_q',
   '/rotate axioms',
-  '/kb_sweep','/kb_validate','/kb_purge','/kb_list_bad',
 ];
 
 // ── DOM shortcuts ──
@@ -906,6 +905,13 @@ async function sendMessage() {
         attachment_path: attachPath || null,
       }),
     });
+    // 401 = session timed out on the server side
+    if (r.status === 401) {
+      thinkEl.remove();
+      handleSessionExpiry();
+      return;
+    }
+
     const data = await r.json();
     thinkEl.remove();
 
@@ -926,6 +932,34 @@ async function sendMessage() {
   S.sending = false;
   btnSend.disabled = msgInput.value.trim().length === 0;
   messages.scrollTop = messages.scrollHeight;
+}
+
+// ══════════════════════════════════════════════════════════════
+// Session timeout handler
+// ══════════════════════════════════════════════════════════════
+function handleSessionExpiry() {
+  // Reset session state
+  S.token = null;
+  S.userId = null;
+  S.display = null;
+
+  // Show a notice in the chat pane before hiding it
+  appendMsg('andrew',
+    '**Session expired** — you have been idle for 15 minutes. ' +
+    'Please sign in again to continue.',
+    'idle', 'system');
+
+  // Brief delay so the user sees the message, then slide back to auth
+  setTimeout(() => {
+    shell.classList.remove('visible');
+    panelModel.style.display = 'none';
+    panelAuth.style.display  = 'block';
+    overlay.style.display    = 'flex';
+    // Clear the password field but keep the username pre-filled
+    const pwField = document.getElementById('inp-pw');
+    if (pwField) pwField.value = '';
+    $('auth-err').style.display = 'none';
+  }, 2000);
 }
 
 // ══════════════════════════════════════════════════════════════
@@ -999,6 +1033,17 @@ $('btn-new').addEventListener('click', () => {
 // Start
 // ══════════════════════════════════════════════════════════════
 boot();
+// Ping /api/status every 5 minutes to detect server-side timeout
+// before the user tries to send a message
+setInterval(async () => {
+  if (!S.token) return;
+  try {
+    const r = await fetch(`/api/status?token=${S.token}`);
+    if (r.status === 401) handleSessionExpiry();
+  } catch(_) {
+    // bridge not reachable — don't trigger expiry, could be transient
+  }
+}, 5 * 60 * 1000);
 </script>
 </body>
 </html>

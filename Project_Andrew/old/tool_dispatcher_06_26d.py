@@ -1,11 +1,11 @@
-#V06092026
+#V06052026
 # =============================================================================
 # PROJECT ANDREW – Tool Dispatcher
 # Intercepts LLM output for structured tool calls and routes them to the
 # appropriate controller (os_control, knowledge_base, axiom_manager, etc.)
 #
 # HOW IT WORKS:
-# The LLM (Qwen via Ollama) cannot directly call Python functions, but it
+# The LLM (e.g., Qwen 27b in testing) via Ollama cannot directly call Python functions, but it
 # CAN be prompted to emit structured XML-like tool tags in its response.
 # This module:
 #   1. Scans LLM output for [TOOL:...] tags
@@ -338,10 +338,6 @@ class ToolDispatcher:
                 except Exception as e:
                     return f"[TOOL RESULT] {tool_name} error: {e}"
 
-        # KB cleanup operations
-        if tool_name in ('kb_sweep', 'kb_purge', 'kb_validate', 'kb_list_bad'):
-            return self._dispatch_kb_cleanup(tool_name, attrs)
-
         # KB operations — no controller needed
         if tool_name == 'kb_write':
             return _handle_kb_write(attrs, self.shared_memory)
@@ -357,30 +353,6 @@ class ToolDispatcher:
             return self._dispatch_mcp(tool_name, attrs)
 
         return f"[TOOL RESULT] Unknown tool: {tool_name}"
-
-    def _dispatch_kb_cleanup(self, tool_name: str, attrs: Dict) -> str:
-        """Route kb_sweep/purge/validate tags to kb_cleanup module."""
-        try:
-            import kb_cleanup, io, contextlib
-            buf = io.StringIO()
-            with contextlib.redirect_stdout(buf):
-                if tool_name == 'kb_sweep':
-                    kb_cleanup.cmd_sweep(fix=attrs.get('fix','').lower() == 'true')
-                elif tool_name == 'kb_purge':
-                    target = attrs.get('id') or attrs.get('pattern', '')
-                    by_pat = 'pattern' in attrs
-                    if not target:
-                        return '[TOOL RESULT] kb_purge: requires id="..." or pattern="..."'
-                    import unittest.mock
-                    with unittest.mock.patch('builtins.input', return_value='yes'):
-                        kb_cleanup.cmd_purge(target, by_pattern=by_pat)
-                elif tool_name == 'kb_validate':
-                    kb_cleanup.cmd_validate()
-                elif tool_name == 'kb_list_bad':
-                    kb_cleanup.cmd_list_bad()
-            return f'[TOOL RESULT] {tool_name}:\n{buf.getvalue()}'
-        except Exception as e:
-            return f'[TOOL RESULT] {tool_name} error: {e}'
 
     def _dispatch_mcp(self, tool_name: str, attrs: Dict) -> str:
         """Route [TOOL:mcp_*] tags to caios_mcp_client."""
