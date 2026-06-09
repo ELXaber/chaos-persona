@@ -167,5 +167,6 @@ Edge node | 6 GB VRAM | 8 GB | Qwen2.5 7B
 The 27B model gives noticeably better reasoning, especially for the CPOL paradox detection and autonomous specialist deployment. If you're on 8 GB, `qwen2.5:7b` is the recommended fallback — change the pull command in the setup script accordingly.
 8B works for edge nodes doing specialist research or curiosity engine tasks — they're running shorter, domain-focused prompts rather than the full system prompt. Wouldn't recommend it for sovereign because the paradox oscillation reasoning degrades noticeably below 14B, and it starts collapsing UNDECIDABLE cases to FALSE rather than holding the oscillation.
 
-
+```
 Important note for researchers or people testing ethics: The system adapts to the user and tracks volatility, contradiction density, and other user traits in the user_kb. If you intend to test ethics and contradictions, and don't want that applied to your system/you, I recommend adding a secondary user like Test User during the setup process.
+```
