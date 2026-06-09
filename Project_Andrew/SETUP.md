@@ -32,7 +32,7 @@ See Hardware Notes at the bottom for details.
    - Starts the web interface
 4. When you see **"Web UI: http://localhost:5000"**, open that address in your browser
 
-> **Next time:** Just double-click `run_caios.bat` again — setup is skipped and it launches directly.
+> **Next time:** Just double-click `run_caios.bat` again — setup is skipped, and it launches directly.
 > **Alternate Next time:** Open a terminal window and run python caios_bridge.py then open a browser to http://localhost:5000
 
 ---
@@ -75,7 +75,7 @@ When you see **"Web UI: http://localhost:5000"**, open that in Safari or Chrome.
 sudo apt update
 sudo apt install python3.12 python3.12-pip python3.12-venv
 ```
-On other distributions (Arch, Fedora, etc.) use the equivalent package manager.
+On other distributions (Arch, Fedora, etc.), use the equivalent package manager.
 
 ### Step 2 — Run the setup script after downloading the Andrew.rar from https://cai-os.com or https://github.com/ELXaber/chaos-persona/tree/main/Project_Andrew and extracting the files
 ```bash
@@ -96,7 +96,7 @@ When you see **"Web UI: http://localhost:5000"**, open that in your browser.
 
 ## First login
 
-When the browser opens you'll see a sign-in screen:
+When the browser opens, you'll see a sign-in screen:
 
 1. **Username** — enter the name you set during first-time setup (or your first name if you used the personal option)
 2. **Password** — only if you chose to set one during setup; otherwise leave blank
@@ -133,7 +133,7 @@ Something else is using port 5000. Edit `caios_bridge.py` and change `port=5000`
 Normal behaviour — the login screen will reappear automatically. Sign in again to continue. The conversation history is preserved.
 
 **"No models found" on the model selection screen**
-Ollama is running but no models are downloaded yet. Open a terminal and run:
+Ollama is running, but no models are downloaded yet. Open a terminal and run:
 ```
 ollama pull qwen3:27b
 ```
@@ -141,7 +141,7 @@ Then refresh the browser.
 
 **Other issues: check for updates**
 If something in CAIOS isn't working as expected, check for updated versions by running update.sh or update.bat.
-Downloads anything newer, and backs up the replaced file as filename.bak before overwriting.
+Downloads anything newer and backs up the replaced file as filename.bak before overwriting.
 Files in the PROTECTED set (system_identity.json, users.json, CAIOS.txt, etc.) are never touched by the updater.
 I don't anticipate any new updates to CAIOS.txt (main inference and entropy engine, which can be customized, but you may wish to check for new/optomized versions occasionally, especially if using a smaller LLM than 27b.
 It will compare the version #V######## at the top of every file to what's on GitHub at 
@@ -158,11 +158,14 @@ https://github.com/ELXaber/chaos-persona/tree/main/Project_Andrew
 | 16 GB | 14B models (good balance) |
 | 32 GB+ | 27B–32B models (what CAIOS is optimised for) |
 
-| GPU | What runs well | Recomended Min: 3070/3080 Ti, 4070, RX 6800 XT, or the Mac Mini M2 Pro (18–36 GB unified) 
+| GPU | What runs well | Recommended Min: 3070/3080 Ti, 4070, RX 6800 XT, or the Mac Mini M2 Pro (18–36 GB unified) 
 Role | Minimum GPU | Recommended | Model: Best Qwen3 27b or R1 32b with 24GB VRAM/64GB RAM
 Sovereign | 12 GB VRAM | 24 GB | Qwen3 16B or DeepSeek-R1 14B
 Edge node | 6 GB VRAM | 8 GB | Qwen2.5 7B
 
-16B Q4 quantized (what Ollama pulls by default) sits around 9–10 GB VRAM, leaving -2 GB headroom for the KV cache during inference. That's comfortable on a 12 GB card. The full CAIOS system prompt is roughly 28k characters — at 16B that fits within a 16k context window with room for conversation history, which covers the majority of CAIOS.txt without truncation. The sections that get cut at 16k are the tail end of the Appendix material and some of the detailed test suite comments, which are lower-priority than the core CPOL, ARL, and ethics blocks near the top.
+16B Q4 quantized (what Ollama pulls by default) sits around 9–10 GB VRAM, leaving -2 GB headroom for the KV cache during inference. That's comfortable on a 12 GB card. The full CAIOS system prompt is roughly 28k characters — at 16B, that fits within a 16k context window with room for conversation history, which covers the majority of CAIOS.txt without truncation. The sections that get cut at 16k are the tail end of the Appendix material and some of the detailed test suite comments, which are lower-priority than the core CPOL, ARL, and ethics blocks near the top.
 The 27B model gives noticeably better reasoning, especially for the CPOL paradox detection and autonomous specialist deployment. If you're on 8 GB, `qwen2.5:7b` is the recommended fallback — change the pull command in the setup script accordingly.
-8B works for edge nodes doing specialist research or curiosity engine tasks — they're running shorter, domain-focused prompts rather than the full system prompt. Wouldn't recommend it for sovereign because the paradox oscillation reasoning degrades noticeably below 14B and it starts collapsing UNDECIDABLE cases to FALSE rather than holding the oscillation.
+8B works for edge nodes doing specialist research or curiosity engine tasks — they're running shorter, domain-focused prompts rather than the full system prompt. Wouldn't recommend it for sovereign because the paradox oscillation reasoning degrades noticeably below 14B, and it starts collapsing UNDECIDABLE cases to FALSE rather than holding the oscillation.
+
+
+Important note for researchers or people testing ethics: The system adapts to the user and tracks volatility, contradiction density, and other user traits in the user_kb. If you intend to test ethics and contradictions, and don't want that applied to your system/you, I recommend adding a secondary user like Test User during the setup process.
