@@ -1,4 +1,4 @@
-#V06022026
+#V06102026
 # =============================================================================
 # Chaos AI-OS – Hardened Orchestrator (Unified Edition)
 # Combines: V1 Logic + V3 Pipeline + Mesh Encryption + Chatbot Safety
@@ -10,9 +10,10 @@ import hashlib
 import os
 import json
 from datetime import datetime, timezone
-from typing import Optional, Dict
+from typing import Optional, Dict, Any
 
 # Local Kernel Imports
+import re
 import paradox_oscillator as cpol
 from paradox_oscillator import CPOL_Kernel
 import adaptive_reasoning as arl
@@ -732,7 +733,6 @@ def system_step(user_input: str, prompt_complexity: str = "low",
         # Valid:   'Tim Cook is CEO of Apple #UPDATE'
         # Valid:   '#UPDATE apple_ceo=Tim Cook'
         # Invalid: quoting, explaining, or pasting the #UPDATE mechanism
-        import re as _re
         _disqualify = [
             r'parse_update_command',
             r'found\s+#update',
@@ -744,14 +744,14 @@ def system_step(user_input: str, prompt_complexity: str = "low",
             r'the.*#update.*function',
         ]
         _is_meta = any(
-            _re.search(p, user_input, _re.IGNORECASE | _re.DOTALL)
+            re.search(p, user_input, re.IGNORECASE | re.DOTALL)
             for p in _disqualify
         )
         update_result = None
         if not _is_meta:
             _update_lines = [
                 l for l in user_input.splitlines()
-                if _re.search(r'(?<![\w])#UPDATE(?![\w])', l, _re.IGNORECASE)
+                if re.search(r'(?<![\w])#UPDATE(?![\w])', l, re.IGNORECASE)
             ]
             _update_input = ' '.join(_update_lines) if _update_lines else ''
             update_result = axiom_mgr.parse_update_command(_update_input) if _update_input else None
