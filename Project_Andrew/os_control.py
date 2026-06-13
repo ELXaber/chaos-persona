@@ -1,4 +1,4 @@
-#V06022026
+#V06102026
 # =============================================================================
 # Chaos AI-OS — OS Control Layer
 # CPOL-gated system operations with Asimov compliance
@@ -236,6 +236,7 @@ class OSController:
                 return {'status': 'denied', 'reason': 'User denied confirmation'}
 
         try:
+            pathlib.Path(path).parent.mkdir(parents=True, exist_ok=True)
             pathlib.Path(path).write_text(content, encoding='utf-8')
             self._log_action(action, path, 'allowed')
             return {'status': 'success', 'path': path}

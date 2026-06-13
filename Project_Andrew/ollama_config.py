@@ -1,4 +1,4 @@
-#V05282026
+#V06102026
 # =============================================================================
 """
 Ollama Configuration Bridge - CPOL State to Inference Parameters
@@ -154,7 +154,8 @@ def query_with_cpol(
     user_query: str,
     contradiction_density: float = None,
     evidence_score: float = 0.5,
-    config: Optional[Dict] = None
+    config: Optional[Dict] = None,
+    tool_addendum: str = ""
 ) -> str:
     """
     Query Ollama with live CPOL-tuned parameters.
@@ -205,7 +206,7 @@ def query_with_cpol(
     response = ollama.generate(
         model=params['model'],
         prompt=user_query,
-        system=identity_prefix + params['system'],
+        system=identity_prefix + params['system'] + tool_addendum,
         options=params['options']
     )
 

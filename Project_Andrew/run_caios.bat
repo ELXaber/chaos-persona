@@ -1,4 +1,4 @@
-@rem V06062026
+@rem V06122026
 @echo off
 setlocal EnableDelayedExpansion
 title CAIOS — Andrew One Setup
@@ -49,6 +49,7 @@ python -m pip install --quiet numpy pyzmq cryptography flask ollama
 :: Optional packages — failures are non-fatal
 python -m pip install --quiet windows-mcp 2>nul && echo [OK] windows-mcp installed || echo [SKIP] windows-mcp unavailable ^(optional^)
 python -m pip install --quiet pyyaml 2>nul && echo [OK] pyyaml installed || echo [SKIP] pyyaml unavailable ^(optional^)
+python -m pip install --quiet uv 2>nul && echo [OK] uv installed || echo [SKIP] uv unavailable ^(optional^)
 
 echo [OK] Python packages ready
 

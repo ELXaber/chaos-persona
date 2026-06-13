@@ -1158,7 +1158,8 @@ def system_step(user_input: str, prompt_complexity: str = "low",
                 llm_response = query_with_cpol(
                     user_query=enriched_query,
                     contradiction_density=density,
-                    evidence_score=cpol_result.get('confidence', 0.5)
+                    evidence_score=cpol_result.get('confidence', 0.5),
+                    tool_addendum=shared_memory.get('tool_addendum', '')
                 )
             else:
                 # API client path (OpenAI, Anthropic, xAI, Google)

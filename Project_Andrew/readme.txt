@@ -1,4 +1,4 @@
-#V06082026
+#V06122026
 Chaos AI-OS (CAIOS)
 Copyright (c) 2025 Jonathan Schack (X @el_xaber) jon@cai-os.com
 
@@ -91,15 +91,17 @@ Browser actions requiring vision (scrape_image) need opencv-python + numpy + pil
 
 Windows UI Automation (Optional, Windows only):
 pip install windows-mcp
+pip install uv
 or
 python -m pip install windows-mcp
+python -m pip install uv
 #Manual MCP file-server start till bridge is included:
 npm install -g @modelcontextprotocol/server-filesystem
 # Start the filesystem MCP server (Node.js)
 npx @modelcontextprotocol/server-filesystem C:\CAIOS
 # Default stdio transport — add --port 3000 for HTTP transport
 # Start windows-mcp in SSE mode (required for bridge)
-windows-mcp serve --transport sse --host localhost --port 8000
+uvx windows-mcp serve --transport sse --host localhost --port 8000
 # Test MCP connectivity before starting the bridge
 python caios_mcp_client.py
 # Install as a background task that starts at login

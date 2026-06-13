@@ -1,4 +1,4 @@
-#V06052026
+#V06122026
 # =============================================================================
 # caios_mcp_client.py — MCP JSON-RPC client for CAIOS
 #
@@ -10,7 +10,7 @@
 #     Used for: read_file, list_directory, search_files on C:\CAIOS
 #
 #   Server B — windows-mcp (Python, SSE transport)
-#     Start: windows-mcp serve --transport sse --host localhost --port 8000
+#     Start: uvx windows-mcp serve --transport sse --host localhost --port 8000
 #     Used for: PowerShell, Screenshot, Click, Snapshot, Scrape, etc.
 #
 # MCP protocol used here:
@@ -91,7 +91,10 @@ def _jsonrpc_call(base_url: str, method: str, params: Dict,
     body = json.dumps(payload).encode('utf-8')
 
     # Try the standard MCP endpoint first, fall back to /messages
-    endpoints = ['/mcp', '/messages'] if 'localhost:8000' in base_url else ['/mcp']
+    if 'localhost:8000' in base_url:
+        endpoints = ['/mcp', '/messages', '/sse']
+    else:
+        endpoints = ['/mcp']
 
     last_error = None
     for endpoint in endpoints:
@@ -123,7 +126,6 @@ def _jsonrpc_call(base_url: str, method: str, params: Dict,
     return {'jsonrpc': '2.0', 'id': rpc_id,
             'error': {'code': -32000, 'message': last_error or 'Unknown error'}}
 
-
 # =============================================================================
 # MCP Client class
 # =============================================================================
@@ -154,7 +156,17 @@ class MCPClient:
             'capabilities': {},
             'clientInfo': {'name': 'caios-bridge', 'version': '1.0'},
         }, rpc_id=0)
-        return 'error' not in result
+        if 'error' not in result:
+            return True
+        # Fallback: check if the SSE endpoint is reachable
+        try:
+            import urllib.request
+            urllib.request.urlopen(
+                base_url.rstrip('/') + '/sse', timeout=3
+            )
+            return True
+        except Exception:
+            return False
 
     def fs_available(self) -> bool:
         if self._fs_available is None:
@@ -209,7 +221,7 @@ class MCPClient:
         elif tool_lower in WIN_TOOLS:
             if not self.win_available():
                 return _error_result(f"windows-mcp not available at {self.win_url}. "
-                                     f"Start it with: windows-mcp serve --transport sse --host localhost --port 8000")
+                                     f"Start it with: uvx windows-mcp serve --transport sse --host localhost --port 8000")
             base = self.win_url
         else:
             # Unknown tool — try filesystem first, then windows
@@ -376,5 +388,5 @@ if __name__ == '__main__':
     if not status['filesystem_server']:
         print('  npx @modelcontextprotocol/server-filesystem C:\\CAIOS')
     if not status['windows_mcp']:
-        print('  windows-mcp serve --transport sse --host localhost --port 8000')
+        print('  uvx windows-mcp serve --transport sse --host localhost --port 8000')
     print('=' * 60)
