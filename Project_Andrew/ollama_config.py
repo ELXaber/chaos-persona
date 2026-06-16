@@ -1,4 +1,4 @@
-#V06102026
+#V06152026
 # =============================================================================
 """
 Ollama Configuration Bridge - CPOL State to Inference Parameters
@@ -96,7 +96,8 @@ def get_cpol_ollama_params(
     contradiction_density: float = 0.12,
     evidence_score: float = 0.5,
     preferred_model: str = None,
-    config: Optional[Dict] = None
+    config: Optional[Dict] = None,
+    domain: str = None
 ) -> Dict:
     """Map CPOL state to Ollama parameters."""
     if config is None:
@@ -110,6 +111,8 @@ def get_cpol_ollama_params(
         model = available[0]
     elif not model:
         model = "llama3.2"
+    if domain:
+        model = get_model_for_domain(domain, model)
 
     base_temp = 0.85 - (contradiction_density * 0.75)
     temperature = max(0.1, min(0.9, base_temp))
@@ -140,6 +143,26 @@ def get_cpol_ollama_params(
             "seed": -1
         }
     }
+
+
+# Uncomment DOMAIN_MODEL_MAP to route queries to specialist models by domain.
+# Requires sufficient VRAM to load multiple models (see readme.txt hardware notes).
+# Models will hot-swap on domain change — expect 10-30s load penalty per switch.
+# DOMAIN_MODEL_MAP = {
+#     'programming': 'gemma3:12b-it-qat',
+#     'medical':     'meditron:7b',
+#     'legal':       None,   # fall back to default sovereign model
+# }
+
+def get_model_for_domain(domain: str, default_model: str) -> str:
+    """
+    Route to a specialist model based on CPOL-classified domain.
+    Returns default_model if DOMAIN_MODEL_MAP is not defined or domain has no entry.
+    """
+    try:
+        return DOMAIN_MODEL_MAP.get(domain) or default_model
+    except NameError:
+        return default_model  # DOMAIN_MODEL_MAP not uncommented — use default
 
 
 def check_ollama_available() -> bool:

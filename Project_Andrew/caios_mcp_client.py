@@ -34,7 +34,7 @@ from typing import Any, Dict, Optional, List
 # =============================================================================
 
 FS_MCP_URL   = 'http://localhost:3000'   # @modelcontextprotocol/server-filesystem
-WIN_MCP_URL  = 'http://localhost:8000'   # windows-mcp SSE server
+WIN_MCP_URL  = 'http://localhost:8000/sse'   # windows-mcp SSE server
 
 # Timeout for MCP calls (seconds)
 MCP_TIMEOUT  = 15
@@ -90,8 +90,10 @@ def _jsonrpc_call(base_url: str, method: str, params: Dict,
     }
     body = json.dumps(payload).encode('utf-8')
 
-    # Try the standard MCP endpoint first, fall back to /messages
-    if 'localhost:8000' in base_url:
+    # Try the standard MCP endpoint first, fall back to /messages if URL already includes a path (like /sse), use it directly
+    if base_url.endswith('/sse'):
+        endpoints = ['']
+    elif 'localhost:8000' in base_url:
         endpoints = ['/mcp', '/messages', '/sse']
     else:
         endpoints = ['/mcp']

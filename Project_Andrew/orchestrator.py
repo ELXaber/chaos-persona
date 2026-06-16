@@ -1,4 +1,4 @@
-#V06102026
+#V06152026
 # =============================================================================
 # Chaos AI-OS – Hardened Orchestrator (Unified Edition)
 # Combines: V1 Logic + V3 Pipeline + Mesh Encryption + Chatbot Safety
@@ -677,6 +677,29 @@ def system_step(user_input: str, prompt_complexity: str = "low",
             # Load incoming user profile and RAW_Q
             incoming = upkb['load'](user_id)
             if incoming.get('last_raw_q'):
+                kernel = shared_memory.get('cpol_instance')
+                # ... rest of profile load block
+
+    # Load recent conversation history for context continuity
+    # (This comes AFTER the entire user profile block)
+    recent_history = ""
+    try:
+        from caios_chat import load_recent_history
+        history_entries = load_recent_history(n=6, user_id=user_id)
+        if history_entries:
+            history_lines = []
+            for i in range(0, len(history_entries), 2):
+                if i < len(history_entries):
+                    history_lines.append(f"User: {history_entries[i]['content']}")
+                if i+1 < len(history_entries):
+                    history_lines.append(f"Andrew: {history_entries[i+1]['content']}")
+            recent_history = "[RECENT_CONTEXT]\n" + "\n".join(history_lines) + "\n[/RECENT_CONTEXT]\n"
+    except Exception:
+        pass
+
+            # Load incoming user profile and RAW_Q
+            incoming = upkb['load'](user_id)
+            if incoming.get('last_raw_q'):
                 # Pull the kernel from shared memory (the 'manifold_instance' equivalent)
                 kernel = shared_memory.get('cpol_instance')
 
@@ -1150,7 +1173,7 @@ def system_step(user_input: str, prompt_complexity: str = "low",
                 f"{axiom_context}"
             )
 
-            enriched_query = cpol_context + arl_context + user_input
+            enriched_query = cpol_context + arl_context + recent_history + user_input
 
             if OLLAMA_AVAILABLE:
                 from ollama_config import query_with_cpol
