@@ -1,4 +1,4 @@
-#V06062026
+#V06212026
 #!/usr/bin/env bash
 # CAIOS — Andrew One  |  First-Time Setup & Launch
 # Works on macOS (Intel + Apple Silicon) and Linux (Ubuntu/Debian/Arch)
@@ -142,6 +142,11 @@ else
 fi
 
 # ── 8. Launch ────────────────────────────────────────────────
+# Ollama and the MCP filesystem server are now started by caios_bridge.py
+# itself (start_services()), so this works the same whether you launch via
+# this script or run `python3 caios_bridge.py` directly next time — see
+# SETUP.md. windows-mcp is skipped automatically on Mac/Linux since
+# start_services() only starts it when platform.system() == 'Windows'.
 echo ""
 echo "============================================================"
 echo "  Setup complete. Launching CAIOS..."
@@ -151,24 +156,5 @@ echo "  Web UI: http://localhost:5000"
 echo "  Press Ctrl+C to stop."
 echo ""
 
-# Start Ollama if not running
-if ! pgrep -x ollama &>/dev/null; then
-    ollama serve &>/dev/null &
-    OLLAMA_PID=$!
-    sleep 2
-    ok "Ollama started (pid $OLLAMA_PID)"
-else
-    ok "Ollama already running"
-fi
-
-# Start MCP filesystem server if available
-if command -v node &>/dev/null && npm list -g @modelcontextprotocol/server-filesystem &>/dev/null; then
-    npx @modelcontextprotocol/server-filesystem --port 3000 "$(pwd)" &>/dev/null &
-    ok "MCP filesystem server started on port 3000"
-fi
-
-# windows-mcp is Windows-only — skip on Mac/Linux
-# Use playwright/os_control.py for browser automation on these platforms
-
-# Launch bridge (blocking)
 "$PYTHON" caios_bridge.py
+

@@ -1,4 +1,4 @@
-#V06212026
+#V06092026
 # =============================================================================
 # CAIOS Web Bridge — Flask server that connects caios_chat_ui.html to the existing orchestrator/caios_chat.py stack.
 #
@@ -17,9 +17,6 @@ import time
 import hashlib
 import tempfile
 import pathlib
-import subprocess
-import platform
-import atexit
 from datetime import datetime, timezone
 from typing import Dict, Any
 
@@ -88,88 +85,6 @@ _sessions: Dict[str, Dict] = {}
 
 UPLOAD_DIR = pathlib.Path(tempfile.gettempdir()) / 'caios_uploads'
 UPLOAD_DIR.mkdir(exist_ok=True)
-
-# =============================================================================
-# Service Startup — Ollama, MCP filesystem server, windows-mcp
-#
-# Moved here from run_caios.bat/.sh so that BOTH launch paths documented in
-# SETUP.md ("run run_caios.bat" and "run python caios_bridge.py directly")
-# actually bring the same services up. run_caios.bat now only handles
-# one-time environment setup (deps, model pull, first-boot identity) and
-# hands off to this on every launch.
-#
-# Safe to call repeatedly — each service is skipped if already reachable,
-# so it's harmless if ollama is already running as a background service,
-# or if you start the bridge a second time.
-# =============================================================================
-
-_spawned_procs = []
-
-def _wait_until_ready(check_fn, timeout=20, interval=0.5) -> bool:
-    deadline = time.time() + timeout
-    while time.time() < deadline:
-        try:
-            if check_fn():
-                return True
-        except Exception:
-            pass
-        time.sleep(interval)
-    return False
-
-def _start_service(name: str, cmd: str, check_fn, timeout: int = 20) -> None:
-    try:
-        if check_fn():
-            print(f'[BRIDGE] {name} already running')
-            return
-    except Exception:
-        pass  # treat a check failure as "not running yet" and try to start it
-
-    print(f'[BRIDGE] Starting {name}...')
-    proc = subprocess.Popen(
-        cmd, shell=True,
-        stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
-    )
-    _spawned_procs.append(proc)
-
-    if _wait_until_ready(check_fn, timeout=timeout):
-        print(f'[BRIDGE] {name} ready')
-    else:
-        print(f'[BRIDGE] WARNING: {name} did not become ready within {timeout}s '
-              f'— continuing anyway, related features will degrade gracefully')
-
-def start_services() -> None:
-    """Bring up Ollama + MCP servers if they aren't already reachable."""
-    try:
-        import ollama_config
-        _start_service('Ollama', 'ollama serve', ollama_config.check_ollama_available)
-    except ImportError:
-        print('[BRIDGE] ollama_config not found — skipping Ollama auto-start')
-
-    if MCP_AVAILABLE:
-        client = get_mcp_client()
-        _start_service(
-            'MCP filesystem server',
-            f'npx @modelcontextprotocol/server-filesystem --port 3000 "{os.getcwd()}"',
-            client.fs_available
-        )
-        if platform.system() == 'Windows':
-            _start_service(
-                'windows-mcp',
-                'windows-mcp serve --transport sse --host localhost --port 8000',
-                client.win_available
-            )
-    else:
-        print('[BRIDGE] caios_mcp_client.py not found — MCP servers not auto-started')
-
-@atexit.register
-def _cleanup_services() -> None:
-    for p in _spawned_procs:
-        try:
-            p.terminate()
-        except Exception:
-            pass
-    if _spawned_procs:
-        print('[BRIDGE] Spawned services terminated')
 
 # =============================================================================
 # Helpers
@@ -643,5 +558,4 @@ if __name__ == '__main__':
     print('  Open http://localhost:5000 in your browser')
     print('  Ctrl+C to stop')
     print('=' * 60)
-    start_services()
     app.run(host='0.0.0.0', port=5000, debug=False)

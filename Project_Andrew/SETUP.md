@@ -1,4 +1,4 @@
-# V06062026
+# V06212026
 # CAIOS — Andrew  |  Quick Setup Guide
 
 > **What you need before starting:**
@@ -32,8 +32,7 @@ See Hardware Notes at the bottom for details.
    - Starts the web interface
 4. When you see **"Web UI: http://localhost:5000"**, open that address in your browser
 
-> **Next time:** Just double-click `run_caios.bat` again — setup is skipped, and it launches directly.
-> **Alternate Next time:** Open a terminal window and run python caios_bridge.py then open a browser to http://localhost:5000
+> **Next time:** Open a terminal window and run python caios_bridge.py then open a browser to http://localhost:5000
 
 ---
 
@@ -64,7 +63,7 @@ When you see **"Web UI: http://localhost:5000"**, open that in Safari or Chrome.
 
 > **Apple Silicon (M1/M2/M3/M4):** Runs especially well — the unified memory means a 32 GB Mac can run the 27B model comfortably without a separate GPU.
 
-> **Next time:** Just run `./run_caios.sh` from the Project_Andrew folder.
+> **Next time:** Open a terminal window, `cd` into the Project_Andrew folder, and run `python3 caios_bridge.py`, then open a browser to http://localhost:5000.
 
 ---
 
@@ -90,7 +89,7 @@ When you see **"Web UI: http://localhost:5000"**, open that in your browser.
 > **NVIDIA GPU:** Install NVIDIA drivers (525+) and Ollama will use your GPU automatically. No CUDA toolkit needed separately.
 > **AMD GPU:** Supported on Linux via ROCm. Windows AMD GPU acceleration is not yet stable.
 
-> **Next time:** Just run `./run_caios.sh`.
+> **Next time:** Open a terminal window, `cd` into the Project_Andrew folder, and run `python3 caios_bridge.py`, then open a browser to http://localhost:5000.
 
 ---
 

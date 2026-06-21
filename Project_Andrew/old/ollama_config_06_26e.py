@@ -1,4 +1,4 @@
-#V06212026
+#V06152026
 # =============================================================================
 """
 Ollama Configuration Bridge - CPOL State to Inference Parameters
@@ -13,8 +13,7 @@ Imported by orchestrator.py and all subsystems.
 
 import json
 import os
-import urllib.request
-import urllib.error
+import requests
 from typing import Dict, Optional, List
 
 # File paths
@@ -169,8 +168,8 @@ def get_model_for_domain(domain: str, default_model: str) -> str:
 def check_ollama_available() -> bool:
     """Check if Ollama is running."""
     try:
-        with urllib.request.urlopen(OLLAMA_ENDPOINT, timeout=3) as response:
-            return response.status == 200
+        response = requests.get(OLLAMA_ENDPOINT, timeout=3)
+        return response.status_code == 200
     except Exception:
         return False
 

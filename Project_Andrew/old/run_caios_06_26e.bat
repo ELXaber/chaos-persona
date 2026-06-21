@@ -1,4 +1,4 @@
-@rem V06212026
+@rem V06122026
 @echo off
 setlocal EnableDelayedExpansion
 title CAIOS — Andrew One Setup
@@ -120,10 +120,6 @@ if errorlevel 1 (
 )
 
 :: ── 8. Launch ─────────────────────────────────────────────────
-:: Ollama, windows-mcp, and the MCP filesystem server are now started
-:: by caios_bridge.py itself (start_services()), so this works the same
-:: whether you launch via this script or run `python caios_bridge.py`
-:: directly next time — see SETUP.md.
 echo.
 echo ============================================================
 echo   Setup complete. Launching CAIOS...
@@ -133,4 +129,28 @@ echo   Web UI: http://localhost:5000
 echo   Press Ctrl+C to stop.
 echo.
 
+:: Start Ollama in background if not running
+ollama list >nul 2>&1 || start /B ollama serve
+
+:: Start windows-mcp if installed
+windows-mcp --version >nul 2>&1
+if not errorlevel 1 (
+    start /B windows-mcp serve --transport sse --host localhost --port 8000
+    echo [OK] windows-mcp started on port 8000
+)
+
+:: Start MCP filesystem server if Node available
+node --version >nul 2>&1
+if not errorlevel 1 (
+    npm list -g @modelcontextprotocol/server-filesystem >nul 2>&1
+    if not errorlevel 1 (
+        start /B npx @modelcontextprotocol/server-filesystem --port 3000 "%CD%"
+        echo [OK] MCP filesystem server started on port 3000
+    )
+)
+
+:: Small delay to let background services start
+timeout /t 2 /nobreak >nul
+
+:: Launch the bridge (blocking — stays open)
 python caios_bridge.py
