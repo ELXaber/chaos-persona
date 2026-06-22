@@ -1,4 +1,4 @@
-#V06212026
+#V06222026
 # =============================================================================
 # Chaos AI-OS – Hardened Orchestrator (Unified Edition)
 # Combines: V1 Logic + V3 Pipeline + Mesh Encryption + Chatbot Safety
@@ -1179,6 +1179,7 @@ def system_step(user_input: str, prompt_complexity: str = "low",
                 from ollama_config import query_with_cpol
                 print(f"[DEBUG] Sending to Qwen: {enriched_query[:500]}")
                 llm_response = query_with_cpol(
+                    preferred_model=shared_memory.get('preferred_model'),
                     user_query=enriched_query,
                     contradiction_density=density,
                     evidence_score=cpol_result.get('confidence', 0.5),

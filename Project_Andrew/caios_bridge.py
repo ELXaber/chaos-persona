@@ -1,4 +1,4 @@
-#V06212026
+#V06222026
 # =============================================================================
 # CAIOS Web Bridge — Flask server that connects caios_chat_ui.html to the existing orchestrator/caios_chat.py stack.
 #
@@ -468,6 +468,7 @@ def api_chat():
     user_id = sess['user_id']
     provider = sess.get('provider', 'ollama_local')
     ollama_model = sess.get('ollama_model')
+    shared_memory['preferred_model'] = ollama_model
 
     # Prepend attachment context if present
     full_input = user_input

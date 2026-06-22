@@ -211,6 +211,7 @@ def query_with_cpol(
     user_query: str,
     contradiction_density: float = None,
     evidence_score: float = 0.5,
+    preferred_model: str = None,
     config: Optional[Dict] = None,
     tool_addendum: str = ""
 ) -> str:
@@ -241,6 +242,7 @@ def query_with_cpol(
     params = get_cpol_ollama_params(
         contradiction_density=contradiction_density,
         evidence_score=evidence_score,
+        preferred_model=preferred_model,
         config=config
     )
 
