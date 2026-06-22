@@ -1,4 +1,4 @@
-#V06152026
+#V06212026
 # =============================================================================
 # Chaos AI-OS – Hardened Orchestrator (Unified Edition)
 # Combines: V1 Logic + V3 Pipeline + Mesh Encryption + Chatbot Safety
@@ -697,27 +697,27 @@ def system_step(user_input: str, prompt_complexity: str = "low",
     except Exception:
         pass
 
-            # Load incoming user profile and RAW_Q
-            incoming = upkb['load'](user_id)
-            if incoming.get('last_raw_q'):
-                # Pull the kernel from shared memory (the 'manifold_instance' equivalent)
-                kernel = shared_memory.get('cpol_instance')
+        # Load incoming user profile and RAW_Q
+        incoming = upkb['load'](user_id)
+        if incoming.get('last_raw_q'):
+            # Pull the kernel from shared memory (the 'manifold_instance' equivalent)
+            kernel = shared_memory.get('cpol_instance')
 
-                if kernel and hasattr(kernel, 'ratchet'):
-                    # 1. Update the seed to the user's persisted state
-                    kernel.raw_q = incoming['last_raw_q']
+            if kernel and hasattr(kernel, 'ratchet'):
+                # 1. Update the seed to the user's persisted state
+                kernel.raw_q = incoming['last_raw_q']
 
-                    # 2. Ratchet forward (this advances the manifold state)
-                    kernel.ratchet()
+                # 2. Ratchet forward (this advances the manifold state)
+                kernel.ratchet()
 
-                    # 3. Update the session_context so the rest of the OS is in sync
-                    shared_memory['session_context']['RAW_Q'] = kernel.raw_q
+                # 3. Update the session_context so the rest of the OS is in sync
+                shared_memory['session_context']['RAW_Q'] = kernel.raw_q
 
-                    print(f"[CRYPTO] Manifold ratcheted for user: {user_id}")
-                else:
-                    # Fallback: If no kernel exists, update the seed for the next init
-                    shared_memory['session_context']['RAW_Q'] = incoming['last_raw_q']
-                    print(f"[WARNING] No active manifold. RAW_Q queued for next initialization.")
+                print(f"[CRYPTO] Manifold ratcheted for user: {user_id}")
+            else:
+                # Fallback: If no kernel exists, update the seed for the next init
+                shared_memory['session_context']['RAW_Q'] = incoming['last_raw_q']
+                print(f"[WARNING] No active manifold. RAW_Q queued for next initialization.")
 
             # Apply personality weights
             shared_memory['personality_weights'] = \

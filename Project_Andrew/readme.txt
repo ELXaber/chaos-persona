@@ -1,4 +1,4 @@
-#V06122026
+#V06212026
 Chaos AI-OS (CAIOS)
 Copyright (c) 2025 Jonathan Schack (X @el_xaber) jon@cai-os.com
 
@@ -112,7 +112,7 @@ UX Integration after initial setup (master_init):
 
 Startup Sequence after running master_init.
 1. ollama serve (separate terminal, if not already running)
-2. windows-mcp serve --transport sse --host localhost --port 8000
+2. uvx windows-mcp serve --transport sse --host localhost --port 8000
 3. npx @modelcontextprotocol/server-filesystem C:\CAIOS   (optional but needed for mcp_read/list)
 From the Project_Andrew directory:
 4. python caios_bridge.py (replaces caios_chat.py for web UI sessions) leave open/running

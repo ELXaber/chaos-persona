@@ -155,7 +155,7 @@ def start_services() -> None:
         if platform.system() == 'Windows':
             _start_service(
                 'windows-mcp',
-                'windows-mcp serve --transport sse --host localhost --port 8000',
+                'uvx windows-mcp serve --transport sse --host localhost --port 8000',
                 client.win_available
             )
     else:
