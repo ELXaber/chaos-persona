@@ -20,6 +20,7 @@ import pathlib
 import subprocess
 import platform
 import atexit
+import socket
 from datetime import datetime, timezone
 from typing import Dict, Any
 
@@ -105,6 +106,18 @@ UPLOAD_DIR.mkdir(exist_ok=True)
 
 _spawned_procs = []
 
+def _port_in_use(host: str, port: int, timeout: float = 1.0) -> bool:
+    """
+    Raw TCP connect check — works even for SSE/streaming servers that don't
+    respond correctly to JSON-RPC probes (e.g. windows-mcp already running).
+    Returns True if something is listening on that port, regardless of protocol.
+    """
+    try:
+        with socket.create_connection((host, port), timeout=timeout):
+            return True
+    except OSError:
+        return False
+
 def _wait_until_ready(check_fn, timeout=20, interval=0.5) -> bool:
     deadline = time.time() + timeout
     while time.time() < deadline:
@@ -153,11 +166,19 @@ def start_services() -> None:
             client.fs_available
         )
         if platform.system() == 'Windows':
-            _start_service(
-                'windows-mcp',
-                'uvx windows-mcp serve --transport sse --host localhost --port 8000',
-                client.win_available
-            )
+            # windows-mcp uses SSE transport — its endpoint doesn't respond to
+            # JSON-RPC initialize probes, so win_available() returns False even
+            # when it's already running (e.g. survived a terminal close).
+            # Check the port directly first before attempting a new launch.
+            if _port_in_use('localhost', 8000):
+                print('[BRIDGE] windows-mcp already running on port 8000')
+            else:
+                _start_service(
+                    'windows-mcp',
+                    'uvx windows-mcp serve --transport sse --host localhost --port 8000',
+                    lambda: _port_in_use('localhost', 8000),
+                    timeout=15
+                )
     else:
         print('[BRIDGE] caios_mcp_client.py not found — MCP servers not auto-started')
 

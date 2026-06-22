@@ -155,6 +155,16 @@ def get_cpol_ollama_params(
 #     'legal':       None,   # fall back to default sovereign model
 # }
 
+# Uncomment DENSITY_MODEL_MAP to route queries to API by complexity.
+# In get_cpol_ollama_params() — replaces the current single model fallback
+# if contradiction_density < 0.3 and available:
+#     model = available[-1]   # lightest/fastest available (Gemma 4, 7B, etc.)
+# elif contradiction_density < 0.7 and available:
+#     model = preferred_model or available[0]  # your default
+# else:
+#     # High complexity — use heaviest available (Qwen 27b, DeepSeek-R1)
+#     model = preferred_model or available[0]
+
 def get_model_for_domain(domain: str, default_model: str) -> str:
     """
     Route to a specialist model based on CPOL-classified domain.
