@@ -1,4 +1,4 @@
-#V06212026
+#V06222026
 # =============================================================================
 """
 Ollama Configuration Bridge - CPOL State to Inference Parameters
@@ -13,6 +13,7 @@ Imported by orchestrator.py and all subsystems.
 
 import json
 import os
+import re
 import urllib.request
 import urllib.error
 from typing import Dict, Optional, List
@@ -93,6 +94,22 @@ def load_caios_system_prompt(max_chars: int = 12000) -> str:
         return ""
 
 
+def _extract_model_size_b(model_name: str) -> float:
+    """
+    Extract parameter count (in billions) from an Ollama model name string.
+    Handles formats like: qwen3:27b, gemma3:12b-it-qat, llama3.2:3b,
+    deepseek-r1:14b, phi4:14b, mistral:7b-instruct, gemma4:27b etc.
+    Returns the largest numeric value followed by 'b' found in the string,
+    which is always the parameter count (other numbers, e.g. version digits,
+    are smaller and don't end in 'b').
+    Falls back to 7.0 if no match — conservative default.
+    """
+    matches = re.findall(r'(\d+(?:\.\d+)?)\s*[bB]', model_name)
+    if matches:
+        return max(float(m) for m in matches)
+    return 7.0  # safe conservative default
+
+
 def get_cpol_ollama_params(
     contradiction_density: float = 0.12,
     evidence_score: float = 0.5,
@@ -121,16 +138,22 @@ def get_cpol_ollama_params(
     if config.get('node_tier', 1) == 0:
         temperature *= 0.92
 
-    # Adjust system prompt size based on model
-    if '27b' in model or '32b' in model or '70b' in model:
-        prompt_limit = 0        # No truncation for large models
+    # Adjust system prompt size and context window based on extracted parameter count.
+    # Uses regex rather than substring checks so naming variations like qwen3:27b,
+    # gemma4:27b, deepseek-r1:32b etc. all resolve correctly.
+    param_b = _extract_model_size_b(model)
+    if param_b >= 30:
+        prompt_limit = 0        # No truncation — 32b/70b class has the headroom
         num_ctx = 32768         # 32k context
-    elif '14b' in model:
-        prompt_limit = 12000
-        num_ctx = 16384         # 16k context
+    elif param_b >= 20:
+        prompt_limit = 0        # No truncation — 27b class (Qwen 27b, Gemma 4 27b)
+        num_ctx = 32768
+    elif param_b >= 13:
+        prompt_limit = 12000    # 14b class
+        num_ctx = 16384
     else:
-        prompt_limit = 8000
-        num_ctx = 8192          # Conservative for 7b and smaller
+        prompt_limit = 8000     # 7b/4b/3b and smaller — conservative
+        num_ctx = 8192
 
     return {
         "model": model,
