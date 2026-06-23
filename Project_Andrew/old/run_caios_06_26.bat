@@ -101,22 +101,22 @@ if not exist "system_identity.json" (
 
 :: ── 7. Pull model if not present ─────────────────────────────
 echo.
-echo [SETUP] Detecting GPU VRAM...
-for /f %%m in ('python detect_model.py 2^>nul') do set OLLAMA_MODEL=%%m
-
-if not defined OLLAMA_MODEL (
-    echo [WARN] VRAM detection failed. Defaulting to qwen2.5:7b
-    echo        Run 'ollama pull qwen3:27b' manually if you have a 24GB+ card.
-    set OLLAMA_MODEL=qwen2.5:7b
-)
-echo [OK] Selected model: %OLLAMA_MODEL%
-
-ollama list 2>nul | findstr "%OLLAMA_MODEL%" >nul
+echo [SETUP] Checking for Qwen 27B model...
+ollama list 2>nul | findstr "qwen" >nul
 if errorlevel 1 (
-    echo [SETUP] Pulling %OLLAMA_MODEL% — this may take 10-30 minutes.
-    ollama pull %OLLAMA_MODEL%
+    echo.
+    echo   Qwen 27B not found. Pulling now — this is a large download.
+    echo   Progress will appear below. This may take 10-30 minutes
+    echo   depending on your connection.
+    echo.
+    ollama pull qwen3:27b
+    if errorlevel 1 (
+        echo.
+        echo [WARN] qwen3:27b pull failed. Trying smaller fallback...
+        ollama pull qwen2.5:7b
+    )
 ) else (
-    echo [OK] %OLLAMA_MODEL% already downloaded
+    echo [OK] Qwen model already downloaded
 )
 
 :: ── 8. Launch ─────────────────────────────────────────────────

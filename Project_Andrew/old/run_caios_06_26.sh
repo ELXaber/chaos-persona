@@ -127,21 +127,18 @@ fi
 
 # ── 7. Pull model ─────────────────────────────────────────────
 echo ""
-info "Detecting GPU VRAM..."
-OLLAMA_MODEL=$("$PYTHON" detect_model.py 2>/dev/null)
-
-if [[ -z "$OLLAMA_MODEL" ]]; then
-    warn "VRAM detection failed. Defaulting to qwen2.5:7b"
-    warn "Run 'ollama pull qwen3:27b' manually if you have a 24GB+ card."
-    OLLAMA_MODEL="qwen2.5:7b"
-fi
-ok "Selected model: $OLLAMA_MODEL"
-
-if ! ollama list 2>/dev/null | grep -q "$OLLAMA_MODEL"; then
-    echo "  Pulling $OLLAMA_MODEL — may take 10-30 minutes."
-    ollama pull "$OLLAMA_MODEL" || warn "Pull failed — try manually: ollama pull $OLLAMA_MODEL"
+info "Checking for Qwen model..."
+if ! ollama list 2>/dev/null | grep -q "qwen"; then
+    echo ""
+    echo "  Qwen 27B not found. Pulling now."
+    echo "  This is a large download — may take 10-30 minutes."
+    echo ""
+    if ! ollama pull qwen3:27b; then
+        warn "qwen3:27b failed. Trying smaller fallback..."
+        ollama pull qwen2.5:7b || warn "Model pull failed — set one up manually with: ollama pull <model>"
+    fi
 else
-    ok "$OLLAMA_MODEL already downloaded"
+    ok "Qwen model already downloaded"
 fi
 
 # ── 8. Launch ────────────────────────────────────────────────
