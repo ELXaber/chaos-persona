@@ -1,4 +1,4 @@
-#V06222026
+#V06232026
 # =============================================================================
 # Chaos AI-OS – Hardened Orchestrator (Unified Edition)
 # Combines: V1 Logic + V3 Pipeline + Mesh Encryption + Chatbot Safety
@@ -272,6 +272,8 @@ try:
     from tool_dispatcher import create_tool_dispatcher, get_tool_addendum
     shared_memory['tool_dispatcher'] = create_tool_dispatcher(shared_memory)
     shared_memory['tool_addendum'] = get_tool_addendum()
+    from search_engine import create_search_engine
+    shared_memory['searcher'] = create_search_engine(shared_memory)
     print("[BOOT] Tool dispatcher initialized - LLM tool access enabled")
 except ImportError:
     shared_memory['tool_dispatcher'] = None
