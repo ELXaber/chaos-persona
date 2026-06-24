@@ -1,4 +1,4 @@
-#V06092026
+#V06232026
 # =============================================================================
 # PROJECT ANDREW – Tool Dispatcher
 # Intercepts LLM output for structured tool calls and routes them to the
@@ -143,6 +143,14 @@ def _handle_browser(attrs: Dict, controller) -> str:
     elif result['status'] == 'denied':
         return f"[TOOL RESULT] browser({action}): denied by user"
     return f"[TOOL RESULT] browser failed: {result.get('error', result.get('reason', 'unknown'))}"
+
+
+def _handle_web_search(attrs: Dict, shared_memory: Dict) -> str:
+    from search_engine import search, format_results_for_llm
+    query = attrs.get('query', '')
+    n = int(attrs.get('n', 5))
+    payload = search(query, max_results=n, shared_memory=shared_memory)
+    return f"[TOOL RESULT] web_search:\n{format_results_for_llm(payload)}"
 
 
 def _handle_execute_script(attrs: Dict, controller) -> str:
@@ -356,6 +364,9 @@ class ToolDispatcher:
                           'mcp_screenshot'):
             return self._dispatch_mcp(tool_name, attrs)
 
+        # Web search
+        if tool_name == 'web_search':
+            return _handle_web_search(attrs, self.shared_memory)
         return f"[TOOL RESULT] Unknown tool: {tool_name}"
 
     def _dispatch_kb_cleanup(self, tool_name: str, attrs: Dict) -> str:
@@ -458,6 +469,7 @@ AVAILABLE TOOLS:
   [TOOL:fetch_url url="https://example.com" mode="links"]
   [TOOL:browser url="https://example.com" action="scrape"]
   [TOOL:browser url="https://example.com" action="click" selector="button#submit"]
+  [TOOL:web_search query="your search terms" n="5"]
   [TOOL:execute_script script="ls -la /home"]
   [TOOL:kb_write domain="domain_name" type="discovery" summary="what you found" confidence="0.85"]
   [TOOL:kb_read domain="domain_name"]
