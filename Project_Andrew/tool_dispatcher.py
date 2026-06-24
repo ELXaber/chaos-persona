@@ -1,4 +1,4 @@
-#V06232026
+#V06242026
 # =============================================================================
 # PROJECT ANDREW – Tool Dispatcher
 # Intercepts LLM output for structured tool calls and routes them to the
@@ -146,11 +146,35 @@ def _handle_browser(attrs: Dict, controller) -> str:
 
 
 def _handle_web_search(attrs: Dict, shared_memory: Dict) -> str:
-    from search_engine import search, format_results_for_llm
-    query = attrs.get('query', '')
-    n = int(attrs.get('n', 5))
-    payload = search(query, max_results=n, shared_memory=shared_memory)
-    return f"[TOOL RESULT] web_search:\n{format_results_for_llm(payload)}"
+    try:
+        from search_engine import search, format_results_for_llm
+
+        # 1. Protect attribute parsing safely
+        query = attrs.get('query', '').strip()
+        if not query:
+            return "[TOOL RESULT] web_search error: Empty search query provided."
+
+        raw_n = attrs.get('n', '5')
+        try:
+            # Safely scrub and cast digit characters
+            n = int(''.join(filter(str.isdigit, str(raw_n))) or 5)
+        except ValueError:
+            n = 5
+
+        # 2. Extract context carefully or instantiate isolated worker memory to prevent thread contention with the active loop dispatcher
+        search_memory = shared_memory.copy() if shared_memory else {}
+
+        # 3. Fire the execution network payload safely
+        payload = search(query, max_results=n, shared_memory=search_memory)
+
+        if not payload:
+            return f"[TOOL RESULT] web_search: No results found for '{query}'."
+
+        return f"[TOOL RESULT] web_search:\n{format_results_for_llm(payload)}"
+
+    except Exception as e:
+        # Prevent the whole loop from freezing on unhandled subprocess issues
+        return f"[TOOL RESULT] web_search error: {str(e)}"
 
 
 def _handle_execute_script(attrs: Dict, controller) -> str:

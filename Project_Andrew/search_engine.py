@@ -1,4 +1,4 @@
-#V06232026
+#V06242026
 # =============================================================================
 # CAIOS — Search Engine (DuckDuckGo, stdlib only)
 #
@@ -146,30 +146,80 @@ _LITE_RESULT_RE = re.compile(
     re.DOTALL
 )
 
-def _search_lite(query: str, max_results: int) -> List[Dict]:
+def _search_lite(query: str, max_results: int) -> List[Dict[str, str]]:
     """
-    Scrapes lite.duckduckgo.com as a fallback when the API returns thin results.
-    More likely to have current-events and news results.
+    Hardened linear string-scanning fallback parser for lite.duckduckgo.com.
+    Completely eliminates RegEx catastrophic backtracking freezes.
     """
-    data = urllib.parse.urlencode({'q': query}).encode('utf-8')
-    body = _get(DDG_LITE_URL, data=data)
+    payload = urllib.parse.urlencode({'q': query})
+    url = f"{DDG_LITE_URL}?{payload}"
+
+    body = _get(url)
     if not body:
         return []
 
     results = []
-    for m in _LITE_RESULT_RE.finditer(body):
-        if len(results) >= max_results:
+
+    # Linear Scan Architecture: Chop the document step by step
+    current_pos = 0
+    while len(results) < max_results:
+        # 1. Locate the next result link entry point
+        link_idx = body.find('class="result-link"', current_pos)
+        if link_idx == -1:
             break
-        url     = _clean(m.group(1))
-        title   = _clean(m.group(2))
-        snippet = _clean(re.sub(r'<[^>]+>', '', m.group(3)))
-        if url.startswith('http') and title:
-            results.append({
-                'title':   title,
-                'url':     url,
-                'snippet': snippet,
-                'source':  'ddg_lite'
-            })
+
+        # Extract href path safely
+        href_start = body.rfind('href="', 0, link_idx)
+        if href_start == -1:
+            current_pos = link_idx + 20
+            continue
+        href_start += 6
+        href_end = body.find('"', href_start)
+        url_str = body[href_start:href_end]
+
+        # Extract the title safely
+        title_tag_close = body.find('>', link_idx)
+        if title_tag_close == -1:
+            current_pos = link_idx + 20
+            continue
+        title_start = title_tag_close + 1
+        title_end = body.find('</a>', title_start)
+        title_str = html.unescape(body[title_start:title_end].strip())
+
+        # 2. Advance the scanner to look for the matching snippet td block
+        snippet_idx = body.find('class="result-snippet"', title_end)
+        if snippet_idx == -1:
+            break
+
+        # Ensure this snippet belongs to the current result block, not the next one
+        next_link_sanity = body.find('class="result-link"', title_end)
+        if next_link_sanity != -1 and next_link_sanity < snippet_idx:
+            # We skipped a snippet, skip forward to align with the next link
+            current_pos = title_end
+            continue
+
+        snippet_tag_close = body.find('>', snippet_idx)
+        if snippet_tag_close == -1:
+            current_pos = title_end
+            continue
+        snippet_start = snippet_tag_close + 1
+        snippet_end = body.find('</td>', snippet_start)
+
+        # Clean out any trailing raw HTML tags inside the snippet
+        snippet_raw = body[snippet_start:snippet_end]
+        snippet_clean = re.sub(r'<[^>]+>', '', snippet_raw)
+        snippet_str = html.unescape(snippet_clean.strip())
+
+        # Commit structured asset
+        results.append({
+            'title': title_str,
+            'url': url_str,
+            'snippet': snippet_str,
+            'source': 'ddg_lite'
+        })
+
+        # Step forward past this record cleanly
+        current_pos = snippet_end
 
     return results
 
