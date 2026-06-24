@@ -18,6 +18,7 @@
 #   [TOOL:read_file path="readme.txt"]
 #   [TOOL:write_file path="notes.txt" content="Hello world"]
 #   [TOOL:fetch_url url="https://example.com" mode="content"]
+#   [TOOL:web_search query="your search terms" n="5"]
 #   [TOOL:delete_file path="old.txt"]
 #   [TOOL:execute_script script="ls -la"]
 #   [TOOL:kb_write domain="apple_ceo" type="axiom" summary="Tim Cook"]
@@ -43,29 +44,35 @@ except ImportError:
 # Tool Tag Pattern
 # =============================================================================
 
-# Matches: [TOOL:tool_name key="value" key2="value2"]
+# Matches: [TOOL:tool_name ...] robustly, allowing any characters inside before the closing bracket
 TOOL_TAG_PATTERN = re.compile(
-    r'\[TOOL:(\w+)((?:\s+\w+="[^"]*")*)\]',
+    r'\[TOOL:(\w+)([^\]]*)\]',
     re.IGNORECASE
 )
 
-# Matches key="value" pairs inside the tag
-ATTR_PATTERN = re.compile(r'(\w+)="([^"]*)"')
-
+# Matches key="value", key='value', or key=value pairs inside the tag
+ATTR_PATTERN = re.compile(r'(\w+)=(?:"([^"]*)"|\'([^\']*)\'|([^\s\\]+))')
 
 def parse_tool_tags(text: str) -> List[Tuple[str, Dict[str, str], str]]:
     """
-    Find all tool tags in text.
+    Find all tool tags in text with robust attribute extraction.
     Returns list of (tool_name, attrs_dict, full_match_string)
     """
     results = []
     for match in TOOL_TAG_PATTERN.finditer(text):
         tool_name = match.group(1).lower()
         attrs_raw = match.group(2)
-        attrs = dict(ATTR_PATTERN.findall(attrs_raw))
+
+        # Parse attributes handling quotes and raw values
+        attrs = {}
+        for item in ATTR_PATTERN.finditer(attrs_raw):
+            key = item.group(1)
+            # Pick whichever group matched (double, single, or unquoted)
+            val = item.group(2) or item.group(3) or item.group(4) or ''
+            attrs[key] = val
+
         results.append((tool_name, attrs, match.group(0)))
     return results
-
 
 # =============================================================================
 # Individual Tool Handlers

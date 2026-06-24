@@ -1,4 +1,4 @@
-#V06222026
+#V06242026
 # =============================================================================
 """
 Ollama Configuration Bridge - CPOL State to Inference Parameters
@@ -164,7 +164,13 @@ def get_cpol_ollama_params(
             "top_p": 0.92,
             "repeat_penalty": 1.12,
             "num_ctx": num_ctx,
-            "seed": -1
+            "seed": -1,
+            "stop": [
+                "]",
+                "[/TOOL]",
+                "<|im_end|>",
+                "<|endoftext|>"
+            ]
         }
     }
 
