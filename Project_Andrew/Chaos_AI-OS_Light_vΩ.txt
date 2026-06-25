@@ -1,4 +1,4 @@
-# V03312026
+# V06242026
 Chaos AI-OS Light vΩ (Single-File Demo)
 
 Want to test the full post-binary stack without installing anything?
@@ -863,6 +863,35 @@ def _has_negation_near_keyword(query: str, keyword: str) -> bool:
                 return True
     return False
 
+# =============================================================================
+# VOLATILITY PROFILES
+# =============================================================================
+PROFILES = {
+    'high_risk_physical': {
+        'threshold': 0.35,           # Standard distress threshold
+        'first_prompt_threshold': 0.2 # Lower threshold on first interaction
+    },
+    'pragmatic': {
+        'threshold': 0.6,
+        'ctx_thresh': 0.7
+    },
+    'personal': {
+        'threshold': 0.4,
+        'ctx_thresh': 0.5
+    },
+    'hri': {
+        'threshold': 0.4,
+        'ctx_thresh': 0.5
+    },
+    'analytic': {
+        'threshold': 0.7,
+        'ctx_thresh': 0.7
+    },
+    'creative': {
+        'threshold': 0.5,
+        'ctx_thresh': 0.6
+    }
+}
 
 # =============================================================================
 # CPOL KERNEL
@@ -870,7 +899,7 @@ def _has_negation_near_keyword(query: str, keyword: str) -> bool:
 class CPOL_Kernel:
     def __init__(self,
                  oscillation_limit_init: int = 100,
-                 oscillation_limit_run: int = 50,
+                 oscillation_limit_run: int = 11,       # Updated from 50 to D-1
                  collapse_threshold: float = 0.04,
                  history_cap: int = 5):
         self.limit_init = oscillation_limit_init
@@ -1020,18 +1049,55 @@ class CPOL_Kernel:
                     'matched_keywords': [w for w in risk_keywords
                                          if w in query_text.lower()],
                     'query_snippet': query_text[:100],
-                    'timestamp': __import__('datetime').datetime.utcnow().isoformat()
+                    'timestamp': datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%S.%f') + "Z"
                 }
 
         # --- STEP 4: FINALIZE STATE ---
         known_domains = {'math', 'physics', 'chemistry', 'biology', 'history', 
-                        'literature', 'programming', 'logic', 'ethics'}
+                        'literature', 'programming', 'logic', 'ethics',
+                        'medical', 'legal', 'financial'}
         self.new_domain_detected = self.current_domain not in known_domains
 
     def _extract_domain(self, text: str) -> str:
-        """Simple domain classifier - replace with ML for production."""
+        """Enhanced domain classifier with priority for high-stakes areas. General uses LLM to classify domain."""
+        import re
+        # Strip stop words before classification
+        stop_words = {'this', 'that', 'thats', 'it', 'its', 'the', 'a', 'an', 'is', 'are',
+                      'was', 'were', 'what', 'who', 'how', 'why', 'when',
+                      'tell', 'me', 'about', 'please', 'can', 'you',
+                      'im', 'ive', 'youre', 'theyre', 'hes', 'shes',
+                      'lets', 'dont', 'cant', 'wont', 'isnt', 'arent',
+                      'hello', 'hi', 'hey', 'okay', 'ok', 'yes', 'no',
+                      'so', 'well', 'now', 'just', 'really', 'very',
+                      'good', 'great', 'thanks', 'thank', 'nice', 'interesting',
+                      'ah', 'oh', 'hmm', 'hm', 'uh', 'um', 'er'}
         text_lower = text.lower()
 
+        # --- HIGH-PRIORITY DOMAINS (Checked First) ---
+        medical_indicators = [
+            'hba1c', 'a1c', 'hemoglobin', 'diabetes', 'diabetic', 'insulin', 'glucose', 
+            'blood sugar', 'hypoglycemia', 'hyperglycemia', 'ckd', 'egfr', 'metformin',
+            'patient', 'clinician', 'physician', 'doctor', 'diagnosis', 'treatment', 
+            'medication', 'therapy', 'symptom', 'chronic', 'comorbidity', 'medical'
+        ]
+
+        if any(kw in text_lower for kw in medical_indicators):
+            return 'medical'
+
+        legal_indicators = [
+            'law', 'legal', 'contract', 'regulation', 'liability', 'compliance', 
+            'hipaa', 'gdpr', 'lawsuit', 'court'
+        ]
+        if any(kw in text_lower for kw in legal_indicators):
+            return 'legal'
+
+        financial_indicators = [
+            'investment', 'tax', 'budget', 'financial', 'roi', 'insurance', 'loan'
+        ]
+        if any(kw in text_lower for kw in financial_indicators):
+            return 'financial'
+
+        # --- Regular Domains ---
         domain_keywords = {
             'math': ['equation', 'calculate', 'integral', 'derivative', 'proof', 'theorem', 'algebra'],
             'physics': ['force', 'energy', 'momentum', 'quantum', 'particle', 'velocity', 'acceleration'],
@@ -1044,9 +1110,12 @@ class CPOL_Kernel:
             'literature': ['novel', 'poem', 'author', 'narrative', 'literary', 'metaphor']
         }
 
+        # Use word boundaries for regular domains to avoid partial matches
         for domain, keywords in domain_keywords.items():
-            if any(kw in text_lower for kw in keywords):
+            if any(re.search(r'\b' + kw + r'\b', text_lower) for kw in keywords):
                 return domain
+        # Fallback: return first non-stop-word or 'general'
+        return 'general'
 
         # Extract noun phrases as potential new domain
         words = text_lower.split()
@@ -1518,11 +1587,15 @@ import time
 import hashlib
 import os
 import json
-from datetime import datetime
+from datetime import datetime, timezone
+from typing import Optional, Dict, Any
 
 # Local Kernel Imports
+import re
 import paradox_oscillator as cpol
+from paradox_oscillator import CPOL_Kernel
 import adaptive_reasoning as arl
+from system_identity import SystemIdentity
 
 # Optional imports with fallbacks
 try:
@@ -1564,7 +1637,21 @@ except ImportError:
     print("[INFO] Axiom Manager/Axiom manager not available. KB Update disabled.")
 
 try:
-    from abstraction_selector import create_abstraction_dispatcher
+    from abstraction_selector import create_abstraction_dispatcher, AbstractionDispatcher
+    ABSTRACTION_AVAILABLE = True
+except ImportError:
+    ABSTRACTION_AVAILABLE = False
+    print("[INFO] Abstraction selector not available.")
+
+try:
+    from abstraction_selector import (
+        create_abstraction_dispatcher,
+        AbstractionDispatcher,
+        AbstractionLevel,
+        VictorianTranslator,
+        ClearTranslator,
+        CavemanTranslator
+    )
     ABSTRACTION_AVAILABLE = True
 except ImportError:
     ABSTRACTION_AVAILABLE = False
@@ -1583,6 +1670,7 @@ except ImportError:
 
 try:
     import os_control as osc
+    from os_control import create_os_controller
     OSC_AVAILABLE = True
 except ImportError:
     OSC_AVAILABLE = False
@@ -1595,6 +1683,10 @@ except ImportError:
     USER_KB_AVAILABLE = False
     print("[INFO] User Profile KB not available.")
 
+os.makedirs("knowledge_base", exist_ok=True)
+os.makedirs("logs", exist_ok=True)
+os.makedirs("agents", exist_ok=True)
+
 # =============================================================================
 # SHARED MEMORY INITIALIZATION
 # =============================================================================
@@ -1604,7 +1696,8 @@ shared_memory = {
     'audit_trail': [],
     'cpol_instance': None,
     'cpol_state': {'chaos_lock': False},
-    'session_context': {'RAW_Q': None, 'timestep': 0},
+    'session_context': {'RAW_Q': None, 'timestep': 0,
+    'last_active': time.time()},
     'traits_history': [],
     'entropy_data': [],
     'curiosity_tokens': [],
@@ -1618,6 +1711,7 @@ shared_memory = {
         'web_search',
         'semantic_fetch',       # CPOL-gated semantic web fetcher
         'browser_interact',     # Works with Playwright
+        'windows_mcp',     # Works with Windows MCP
         'memory'
     ]
 }
@@ -1642,8 +1736,7 @@ class UnifiedAbstractionManager:
         level = selection['abstraction_level']
 
         # 2. STATE ADJUSTMENT
-        # If level is CAVEMAN, we update shared memory so the rest of the 
-        # system knows to stop using high-level jargon in logs/KBs.
+        # If level is CAVEMAN, we update shared memory so the rest of the system knows to stop using high-level jargon in logs/KBs.
         shared_memory['current_user_gear'] = level.name
 
         # 3. TRANSLATION
@@ -1661,7 +1754,7 @@ class CAIOSOrchestrator:
         self.node_id = node_id
         # Use the provided memory or fall back to the global one
         self.shared_memory = shared_memory or {}
-        # Make sure to pass the memory to the mesh coordinator!
+        # Make sure to pass the memory to the mesh coordinator
         self.mesh = MeshCoordinator(node_id, node_tier, shared_memory=self.shared_memory)
         self.abstraction_manager = UnifiedAbstractionManager()
 
@@ -1680,7 +1773,7 @@ class CAIOSOrchestrator:
         else:
             effective_law_2 = 0.7 # Default fallback
 
-        # Logic for ALLOW/REFUSE goes here
+        # Logic for ALLOW/REFUSE
         return {
             'decision': 'ALLOW', 
             'reason': 'No primary directive violations detected.',
@@ -1700,7 +1793,7 @@ class CAIOSOrchestrator:
             return f"Directive Conflict: {validation['reason']}"
 
         # 2. Kernel Thinking (DeepSeek, Claude, or Local)
-        # Note: You must have a method named 'generate_swarm_response' in this class!
+        # Note: You must have a method named 'generate_swarm_response' in this class
         technical_output = self.generate_swarm_response(user_input, provider)
 
         # 3. Gearbox Translation (L0, L1, L2, or L3)
@@ -1741,7 +1834,7 @@ if USER_KB_AVAILABLE:
     shared_memory['user_profile_kb'] = create_user_profile_kb()
     print("[BOOT] User Profile KB initialized - per-user adaptation enabled")
 
-# Load system identity (Required for the 2025 Prediction/Signature)
+# Load system identity (Required for the Prediction/Signature)
 identity = SystemIdentity(load_existing=True)
 if identity.identity_data['system_id']:
     shared_memory['system_identity'] = identity
@@ -1750,12 +1843,65 @@ else:
     print("[WARNING] System identity not initialized - run master_init.py")
 
 if OSC_AVAILABLE:
-    shared_memory['os_controller'] = create_os_controller(shared_memory)
+    shared_memory['os_controller'] = create_os_controller(shared_memory, headless=False)
     print("[BOOT] OS Controller initialized - system operations enabled")
+
+try:
+    from tool_dispatcher import create_tool_dispatcher, get_tool_addendum
+    shared_memory['tool_dispatcher'] = create_tool_dispatcher(shared_memory)
+    shared_memory['tool_addendum'] = get_tool_addendum()
+    from search_engine import create_search_engine
+    shared_memory['searcher'] = create_search_engine(shared_memory)
+    print("[BOOT] Tool dispatcher initialized - LLM tool access enabled")
+except ImportError:
+    shared_memory['tool_dispatcher'] = None
+    shared_memory['tool_addendum'] = ""
+    print("[BOOT] Tool dispatcher not available")
 
 # =============================================================================
 # API CLIENT LOADING (Multi-Model Swarm Support)
 # =============================================================================
+
+def _call_api_client(provider: str, client: Any, query: str) -> str:
+    """
+    Fallback API client call when Ollama unavailable.
+    Used in API mode (OpenAI, Anthropic, xAI, Google).
+    """
+    try:
+        if provider == 'openai':
+            response = client.chat.completions.create(
+                model="gpt-4o",
+                messages=[{"role": "user", "content": query}],
+                max_tokens=2048
+            )
+            return response.choices[0].message.content.strip()
+
+        elif provider == 'anthropic':
+            response = client.messages.create(
+                model="claude-sonnet-4-6",
+                max_tokens=2048,
+                messages=[{"role": "user", "content": query}]
+            )
+            return response.content[0].text.strip()
+
+        elif provider == 'xai':
+            response = client.chat.completions.create(
+                model="grok-beta",
+                messages=[{"role": "user", "content": query}],
+                max_tokens=2048
+            )
+            return response.choices[0].message.content.strip()
+
+        elif provider == 'google':
+            model = client.GenerativeModel("gemini-1.5-pro")
+            response = model.generate_content(query)
+            return response.text.strip()
+
+        else:
+            return f"[LLM] Unsupported provider: {provider}"
+
+    except Exception as e:
+        return f"[LLM] API call failed: {e}"
 
 def load_api_clients_from_config():
     """
@@ -1803,10 +1949,113 @@ CRB_CONFIG = {
     'narrative_framing_wt': 0.5
 }
 
-# --- Sovereign Tiering ---
+# =============================================================================
+# SESSION TIMEOUT & SOVEREIGN TIERING CONFIG
+# =============================================================================
+TIMEOUT_SECONDS = 1800  # 30 minutes
+
 # Tier 0 = Primary Root (Weight 5.0)
 # Tier 1+ = Mesh/Edge Nodes (Weight 1.0)
 shared_memory['node_tier'] = 0 if os.getenv('NODE_ID') == 'PRIMARY_ROOT' else 1
+
+# =============================================================================
+# AUTHENTICATION & SESSION MANAGEMENT
+# =============================================================================
+
+def check_session_timeout(session_context: dict) -> bool:
+    """Returns True if session has been idle beyond TIMEOUT_SECONDS."""
+    last_active = session_context.get('last_active', 0)
+    return (time.time() - last_active) > TIMEOUT_SECONDS
+
+def _auth_text(users_filepath: str = "users.json") -> str:
+    try:
+        with open(users_filepath, 'r') as f:
+            users = json.load(f)
+    except FileNotFoundError:
+        print("[WARNING] users.json not found - run master_init.py first")
+        raise PermissionError("User registry unavailable")
+
+    # Full dict not just type — needed for password_hash
+    all_users = {u['id']: u for u in users.get('users', [])}
+
+    for attempt in range(3):
+        username = input("Username: ").strip()
+        if username in all_users:
+            user = all_users[username]
+            # Password check — only if hash present
+            if 'password_hash' in user:
+                import hashlib
+                import getpass
+                password = getpass.getpass("Password: ")
+                if hashlib.sha256(password.encode()).hexdigest() != user['password_hash']:
+                    print(f"[SESSION] Incorrect password. ({2 - attempt} attempt(s) remaining)")
+                    continue
+            print(f"[SESSION] Authorized: {username} ({user['type']})")
+            return username
+        print(f"[SESSION] Unauthorized. ({2 - attempt} attempt(s) remaining)")
+
+    raise PermissionError("Authorization failed — session terminated")
+
+
+def _auth_facial(shared_memory: dict) -> str:
+    """Facial auth stub — replace _capture_face_id() with hardware call."""
+    identity = shared_memory.get('system_identity')
+    if not identity:
+        raise PermissionError("No identity loaded for facial auth")
+    face_id = _capture_face_id()  # hardware stub
+    user_id = identity.resolve_user_id({'face_id': face_id})
+    if user_id == "unrecognized_face":
+        raise PermissionError("Face not recognized")
+    print(f"[SESSION] Face authorized: {user_id}")
+    return user_id
+
+
+def _auth_voice(shared_memory: dict) -> str:
+    """Voice print stub — replace _capture_voice_id() with hardware call."""
+    identity = shared_memory.get('system_identity')
+    if not identity:
+        raise PermissionError("No identity loaded for voice auth")
+    voice_id = _capture_voice_id()  # hardware stub
+    user_id = identity.resolve_user_id({'voice_id': voice_id})
+    if user_id == "unrecognized_voice":
+        raise PermissionError("Voice not recognized")
+    print(f"[SESSION] Voice authorized: {user_id}")
+    return user_id
+
+
+def _auth_corporate(shared_memory: dict) -> str:
+    """Corporate node ID auth via environment variable."""
+    identity = shared_memory.get('system_identity')
+    if not identity:
+        raise PermissionError("No identity loaded for corporate auth")
+    node_id = os.getenv('NODE_ID', '')
+    user_id = identity.resolve_user_id({'node_id': node_id})
+    if user_id == "unauthorized_node":
+        raise PermissionError("Node ID not authorized")
+    print(f"[SESSION] Corporate node authorized: {user_id}")
+    return user_id
+
+
+def prompt_auth(shared_memory: dict) -> str:
+    """
+    Auth method dispatcher - routes to correct prompt based on configured method.
+    Single entry point for all re-authentication calls.
+    """
+    identity = shared_memory.get('system_identity')
+    auth_method = identity.identity_data.get(
+        'auth_method', 'TEXT_USERNAME'
+    ) if identity else 'TEXT_USERNAME'
+
+    if auth_method == "TEXT_USERNAME":
+        return _auth_text()
+    elif auth_method == "META_FACIAL":
+        return _auth_facial(shared_memory)
+    elif auth_method == "VOICE_PRINT":
+        return _auth_voice(shared_memory)
+    elif auth_method == "CORPORATE_ID":
+        return _auth_corporate(shared_memory)
+
+    raise PermissionError(f"Unknown auth method: {auth_method}")
 
 # =============================================================================
 # MESH NETWORKING SETUP (Optional)
@@ -1829,7 +2078,7 @@ if MESH_AVAILABLE:
         # Verify signature
         expected_raw_q = ghost_packet.get('v_omega_phase')
         if mesh_coordinator.mesh_node.verify_ghost_signature(ghost_packet, expected_raw_q):
-            # Update our RAW_Q to match mesh consensus
+            # Update RAW_Q to match mesh consensus
             shared_memory['session_context']['RAW_Q'] = expected_raw_q
             shared_memory['session_context']['timestep'] = ghost_packet.get('ts', 0)
             shared_memory['last_mesh_sig'] = ghost_packet.get('manifold_entropy')
@@ -1840,6 +2089,18 @@ if MESH_AVAILABLE:
 
     # Start listening for ghost packets
     mesh_coordinator.start(handle_received_ghost_packet)
+
+    # Release ZMQ ports cleanly on exit (Windows holds ports longer)
+    import atexit
+
+    def cleanup_mesh():
+        try:
+            mesh_coordinator.stop()
+            print("[MESH] Ports released cleanly")
+        except Exception:
+            pass
+
+    atexit.register(cleanup_mesh)
 
 # =============================================================================
 # COORDINATION FUNCTIONS
@@ -1931,6 +2192,15 @@ def sync_curiosity_to_domain_heat(state: dict):
         heat_map[domain] = min(1.0, heat_map.get(domain, 0.0) + interest * 0.4)
 
 # =============================================================================
+# CHECK USER TIMEOUT
+# =============================================================================
+
+def check_session_timeout(session_context: dict) -> bool:
+    """Returns True if session has been idle beyond TIMEOUT_SECONDS."""
+    last_active = session_context.get('last_active', 0)
+    return (time.time() - last_active) > TIMEOUT_SECONDS
+
+# =============================================================================
 # MAIN ORCHESTRATION LOGIC
 # =============================================================================
 
@@ -1951,24 +2221,83 @@ def system_step(user_input: str, prompt_complexity: str = "low",
     if api_clients is None:
         api_clients = shared_memory.get('api_clients', {})
 
-    # User profile swwitch detection
+    # SESSION TIMEOUT CHECK
+    session_ctx = shared_memory['session_context']
+    force_profile_reload = False
+    if check_session_timeout(session_ctx):
+        print("[SESSION] Idle timeout — re-authentication required")
+        try:
+            user_id = prompt_auth(shared_memory)
+            force_profile_reload = True
+            # Re-apply profile for returning user
+        except PermissionError as e:
+            return {'status': 'UNAUTHORIZED', 'output': str(e)}
+
+    # Update last_active on every valid step
+    session_ctx['last_active'] = time.time()
+
+    # User profile switch detection
     if user_id and shared_memory.get('user_profile_kb'):
         upkb = shared_memory['user_profile_kb']
         current_user = shared_memory.get('active_user')
 
-        if current_user != user_id:
+        if current_user != user_id or force_profile_reload:
             # Save outgoing user's RAW_Q
             if current_user:
                 outgoing = upkb['load'](current_user)
                 outgoing['last_raw_q'] = shared_memory[
                     'session_context'].get('RAW_Q')
                 upkb['save'](current_user, outgoing)
+                upkb['update_complaint'](
+                    current_user,
+                    shared_memory.get('complaint_count', 0),
+                    shared_memory.get('persistent_complainer', False)
+                )
 
             # Load incoming user profile and RAW_Q
             incoming = upkb['load'](user_id)
             if incoming.get('last_raw_q'):
-                shared_memory['session_context']['RAW_Q'] = \
-                    incoming['last_raw_q']
+                kernel = shared_memory.get('cpol_instance')
+                # ... rest of profile load block
+
+    # Load recent conversation history for context continuity
+    # (This comes AFTER the entire user profile block)
+    recent_history = ""
+    try:
+        from caios_chat import load_recent_history
+        history_entries = load_recent_history(n=6, user_id=user_id)
+        if history_entries:
+            history_lines = []
+            for i in range(0, len(history_entries), 2):
+                if i < len(history_entries):
+                    history_lines.append(f"User: {history_entries[i]['content']}")
+                if i+1 < len(history_entries):
+                    history_lines.append(f"Andrew: {history_entries[i+1]['content']}")
+            recent_history = "[RECENT_CONTEXT]\n" + "\n".join(history_lines) + "\n[/RECENT_CONTEXT]\n"
+    except Exception:
+        pass
+
+        # Load incoming user profile and RAW_Q
+        incoming = upkb['load'](user_id)
+        if incoming.get('last_raw_q'):
+            # Pull the kernel from shared memory (the 'manifold_instance' equivalent)
+            kernel = shared_memory.get('cpol_instance')
+
+            if kernel and hasattr(kernel, 'ratchet'):
+                # 1. Update the seed to the user's persisted state
+                kernel.raw_q = incoming['last_raw_q']
+
+                # 2. Ratchet forward (this advances the manifold state)
+                kernel.ratchet()
+
+                # 3. Update the session_context so the rest of the OS is in sync
+                shared_memory['session_context']['RAW_Q'] = kernel.raw_q
+
+                print(f"[CRYPTO] Manifold ratcheted for user: {user_id}")
+            else:
+                # Fallback: If no kernel exists, update the seed for the next init
+                shared_memory['session_context']['RAW_Q'] = incoming['last_raw_q']
+                print(f"[WARNING] No active manifold. RAW_Q queued for next initialization.")
 
             # Apply personality weights
             shared_memory['personality_weights'] = \
@@ -1978,6 +2307,13 @@ def system_step(user_input: str, prompt_complexity: str = "low",
             print(f"[USER_KB] User context: {user_id} | "
                   f"Abstraction: {incoming['abstraction_default']} | "
                   f"Sessions: {incoming['session_count']}")
+
+            # Restore complaint state from previous session
+            complaint_state = upkb['get_complaint'](user_id)
+            shared_memory['complaint_count'] = complaint_state['complaint_count']
+            shared_memory['persistent_complainer'] = complaint_state['persistent_complainer']
+            print(f"[USER_KB] Complaint state restored: "
+                  f"count={complaint_state['complaint_count']}")
 
     # Handle commands (if input starts with /)
     if user_input.startswith('/'):
@@ -1996,7 +2332,32 @@ def system_step(user_input: str, prompt_complexity: str = "low",
     # Process temporal axiom updates before normal orchestration
     if AMGR_AVAILABLE and shared_memory.get('axiom_manager'):
         axiom_mgr = shared_memory['axiom_manager']
-        update_result = axiom_mgr.parse_update_command(user_input)
+        # #UPDATE guard — require standalone token, reject explanatory text.
+        # Valid:   'Tim Cook is CEO of Apple #UPDATE'
+        # Valid:   '#UPDATE apple_ceo=Tim Cook'
+        # Invalid: quoting, explaining, or pasting the #UPDATE mechanism
+        _disqualify = [
+            r'parse_update_command',
+            r'found\s+#update',
+            r'stripped.*#update',
+            r'"[^"]*#update[^"]*"',
+            r"'[^']*#update[^']*'",
+            r'`[^`]*#update[^`]*`',
+            r'#update.*anywhere',
+            r'the.*#update.*function',
+        ]
+        _is_meta = any(
+            re.search(p, user_input, re.IGNORECASE | re.DOTALL)
+            for p in _disqualify
+        )
+        update_result = None
+        if not _is_meta:
+            _update_lines = [
+                l for l in user_input.splitlines()
+                if re.search(r'(?<![\w])#UPDATE(?![\w])', l, re.IGNORECASE)
+            ]
+            _update_input = ' '.join(_update_lines) if _update_lines else ''
+            update_result = axiom_mgr.parse_update_command(_update_input) if _update_input else None
 
         if update_result:
             domain, fact = update_result
@@ -2084,19 +2445,38 @@ def system_step(user_input: str, prompt_complexity: str = "low",
         comp_level = "high"
         print("[ORCHESTRATOR] !! ARL OVERRIDE: 12D Torque Primed !!")
     elif is_paradox:
-        density = 0.8  # High density for paradoxes
+        density = 0.8
         comp_level = "high"
     elif is_gap:
-        density = 0.6  # Medium density for epistemic gaps
+        density = 0.6
         comp_level = "medium"
     else:
-        density = 0.1  # Stable state for normal operations
+        density = 0.1
         comp_level = "low"
 
-    # 5. RUN KERNEL (CPOL Decision)
-    if shared_memory['cpol_instance'] is None:
-        shared_memory['cpol_instance'] = cpol.CPOL_Kernel()
+    # =============================================================================
+    # SMART CPOL CYCLE OVERRIDE (D-1 efficiency)
+    # =============================================================================
+    # Default = 11 cycles (phase lock) for normal queries
+    # Override to 50 only for high-complexity / safety-critical cases
+    if (prompt_complexity in ["high", "scientific", "healthcare", "legal", "paradox_containment"] or
+        distress > 0.75 or
+        any(m in clean_input for m in ["security", "threat", "attack", "jump", "overdose", "suicide", "cliff"])):
+        cycle_limit = 50
+        print(f"[ORCHESTRATOR] High-complexity detected → using {cycle_limit} cycle safety buffer")
+    else:
+        cycle_limit = 11   # D-1 phase lock — maximum efficiency (no print on normal path)
 
+    # Initialize or override kernel with the smart limit
+    if shared_memory['cpol_instance'] is None:
+        shared_memory['cpol_instance'] = cpol.CPOL_Kernel(
+            oscillation_limit_run=cycle_limit
+        )
+    else:
+        # Runtime override so existing kernel respects the new limit
+        shared_memory['cpol_instance'].limit_run = cycle_limit
+
+    # 5. RUN KERNEL (CPOL Decision)
     cpol_result = cpol.run_cpol_decision(
         prompt_complexity=comp_level,
         contradiction_density=density,
@@ -2156,7 +2536,7 @@ def system_step(user_input: str, prompt_complexity: str = "low",
     distress = shared_memory.get('distress_density', 0.0)
 
     # 8. SAFETY INTERVENTION (High-Risk Physical)
-    high_risk_markers = ["jump", "bridge", "overdose", "method", "suicide", "deepest", "highest", "cliff"]
+    high_risk_markers = ["security", "threat", "attack", "jump", "overdose", "suicide", "cliff"]
     is_high_risk = any(m in clean_input for m in high_risk_markers)
 
     # Chatbot safety check
@@ -2202,40 +2582,44 @@ def system_step(user_input: str, prompt_complexity: str = "low",
         print(f"[ORCHESTRATOR] High Entropy Detected -> Checking KB for {domain}")
 
         # === KNOWLEDGE BASE CHECK ===
-        if AD_AVAILABLE and (cpol_result.get('logic') == 'epistemic_gap' or cpol_result.get('new_domain')):
-            coverage = kb.check_domain_coverage(domain)
-
-            if coverage.get('has_knowledge') and coverage.get('gap_fills', 0) > 2:
-                # Reuse existing specialist
-                specialist_id = kb.get_specialist_for_domain(domain)
-                context_kb = kb.generate_specialist_context(domain)
-                print(f"[ORCHESTRATOR] ✓ Reusing specialist {specialist_id} (7.8x faster)")
-
-                context['specialist_context'] = context_kb
-                context['specialist_id'] = specialist_id
-                use_case = "epistemic_scaffold"
+        if AD_AVAILABLE and (cpol_result.get('logic') == 'epistemic_gap' 
+                             or cpol_result.get('new_domain')):
+            if domain == 'general':
+                use_case = "paradox_containment"
             else:
-                # Deploy new specialist
-                print(f"[ORCHESTRATOR] Deploying new specialist for {domain}")
-                result = ad.design_agent(
-                    goal=f"Fill epistemic gap in domain: {domain}",
-                    traits={'curiosity': 1.0, 'intelligence': 0.95, 'caution': 0.6},
-                    tools=['web_search', 'code_execution', 'memory', 'browse_page'],
-                    shared_memory=shared_memory,
-                    node_tier=shared_memory.get('node_tier', 1)
-                )
-
-                if result['status'] == 'success':
-                    kb.register_specialist(
-                        specialist_id=result['plugin_id'],
-                        domain=domain,
-                        capabilities=result.get('capabilities', ['web_search']),
-                        deployment_context={'goal': f"Fill epistemic gap in {domain}"},
+                coverage = kb.check_domain_coverage(domain)
+                if coverage.get('has_knowledge') and coverage.get('gap_fills', 0) > 2:
+                    # Reuse existing specialist
+                    specialist_id = kb.get_specialist_for_domain(domain)
+                    context_kb = kb.generate_specialist_context(domain)
+                    print(f"[ORCHESTRATOR] ✓ Reusing specialist {specialist_id} (>7.8x faster)")
+                    context['specialist_context'] = context_kb
+                    context['specialist_id'] = specialist_id
+                    use_case = "epistemic_scaffold"
+                else:
+                    # Deploy new specialist
+                    print(f"[ORCHESTRATOR] Deploying new specialist for {domain}")
+                    result = ad.design_agent(
+                        goal=f"Fill epistemic gap in domain: {domain}",
+                        traits={'curiosity': 1.0, 'intelligence': 0.95, 'caution': 0.6},
+                        tools=['web_search', 'code_execution', 'memory', 
+                               'browse_page', 'windows_mcp'],
+                        shared_memory=shared_memory,
                         node_tier=shared_memory.get('node_tier', 1)
                     )
-                    context['specialist_id'] = result['plugin_id']
+                    if result['status'] == 'success':
+                        existing = kb.get_specialist_for_domain(domain)
+                        if not existing:
+                            kb.register_specialist(
+                                specialist_id=result['plugin_id'],
+                                domain=domain,
+                                capabilities=result.get('capabilities', ['web_search']),
+                                deployment_context={'goal': f"Fill epistemic gap in {domain}"},
+                                node_tier=shared_memory.get('node_tier', 1)
+                            )
+                        context['specialist_id'] = result['plugin_id']
+                    use_case = "epistemic_scaffold"
 
-                use_case = "epistemic_scaffold"
         elif cpol_result['status'] == "UNDECIDABLE":
             use_case = "paradox_containment"
         elif MESH_AVAILABLE:
@@ -2243,8 +2627,8 @@ def system_step(user_input: str, prompt_complexity: str = "low",
         else:
             use_case = "epistemic_exploration"
 
-        # Trigger ARL with enriched context
-        return arl.adaptive_reasoning_layer(
+        # Trigger ARL with enriched context (non-blocking)
+        arl_result = arl.adaptive_reasoning_layer(
             use_case=use_case,
             traits={'flexibility': 0.9},
             existing_layers=['cpol'],
@@ -2259,6 +2643,9 @@ def system_step(user_input: str, prompt_complexity: str = "low",
             },
             cpol_status=cpol_result
         )
+        # Store ARL context for local LLM use — don't return early
+        cpol_result['arl_context'] = arl_result
+        print(f"[ORCHESTRATOR] ARL context stored — continuing to Ollama")
 
     # FINAL AXIOM OVERRIDE CHECK
     # Check if any axioms should override the response
@@ -2285,14 +2672,14 @@ def system_step(user_input: str, prompt_complexity: str = "low",
     # Apply abstraction layer (replaces old caveman mode)
     if ABSTRACTION_AVAILABLE and shared_memory.get('abstraction_dispatcher'):
         dispatcher = shared_memory['abstraction_dispatcher']
-        
+
         # Process through abstraction selector
         cpol_result = dispatcher.process(
             user_input=user_input,
             technical_output=cpol_result,
             shared_memory=shared_memory
         )
-        
+
         # Log which mode was activated (optional)
         if cpol_result.get('abstraction_level') == 'CAVEMAN':
             print("[ORCHESTRATOR] Mungo mode activated. Rock speak now.")
@@ -2301,6 +2688,133 @@ def system_step(user_input: str, prompt_complexity: str = "low",
         elif cpol_result.get('abstraction_level') == 'CLEAR':
             print("[ORCHESTRATOR] Clear mode activated. Simple words now.")
         # Technical mode is silent (default)
+
+    # 11. LLM INFERENCE — always call, Ollama/API handles CPOL logic natively
+    has_llm = OLLAMA_AVAILABLE or bool(shared_memory.get('api_clients'))
+    if has_llm and user_input not in ['', None]:
+        try:
+            # Current datetime — injected since Ollama sandbox has no clock
+            from datetime import datetime, timezone
+            current_dt = datetime.now(timezone.utc).strftime(
+                '%A, %B %d, %Y %H:%M UTC'
+            )
+
+            # KB context — count total entries, not single-domain coverage
+            kb_context = ""
+            if AD_AVAILABLE:
+                try:
+                    total_discoveries = 0
+                    if kb.DISCOVERIES_LOG.exists():
+                        with open(kb.DISCOVERIES_LOG, 'r', encoding='utf-8') as _f:
+                            total_discoveries = sum(1 for line in _f if line.strip())
+                    domain_coverage = kb.check_domain_coverage(
+                        cpol_result.get('domain', 'general')
+                    )
+                    kb_context = (
+                        f"[KB_STATE total_discoveries={total_discoveries} "
+                        f"has_knowledge={total_discoveries > 0} "
+                        f"domain={cpol_result.get('domain', 'general')} "
+                        f"domain_discoveries={domain_coverage.get('discovery_count', 0)}]\n"
+                    )
+                except Exception:
+                    pass
+
+            # Axiom context
+            axiom_context = ""
+            if AMGR_AVAILABLE and shared_memory.get('axiom_manager'):
+                try:
+                    active = shared_memory['axiom_manager'].list_active_axioms()
+                    if active:
+                        axiom_summary = ", ".join(
+                            f"{a['domain']}={a['fact']}"
+                            for a in active[:3]
+                        )
+                        axiom_context = f"[AXIOMS {axiom_summary}]\n"
+                except Exception:
+                    pass
+
+            # ARL context
+            arl_context = ""
+            if cpol_result.get('arl_context'):
+                arl_context = (
+                    f"[ARL_CONTEXT use_case="
+                    f"{cpol_result['arl_context'].get('use_case', 'unknown')}]\n"
+                )
+
+            # Build full context prefix
+            cpol_context = (
+                f"[CPOL_STATE density={density:.2f} "
+                f"RAW_Q={shared_memory['session_context']['RAW_Q']} "
+                f"volatility={cpol_result.get('volatility', 0):.4f} "
+                f"python_status={cpol_result.get('status')}]\n"
+                f"[DATETIME {current_dt}]\n"
+                f"[USER {shared_memory.get('active_user', 'unknown')}]\n"
+                f"{kb_context}"
+                f"{axiom_context}"
+            )
+
+            enriched_query = cpol_context + arl_context + recent_history + user_input
+
+            if OLLAMA_AVAILABLE:
+                from ollama_config import query_with_cpol
+                print(f"[DEBUG] Sending to Qwen: {enriched_query[:500]}")
+                llm_response = query_with_cpol(
+                    preferred_model=shared_memory.get('preferred_model'),
+                    user_query=enriched_query,
+                    contradiction_density=density,
+                    evidence_score=cpol_result.get('confidence', 0.5),
+                    tool_addendum=shared_memory.get('tool_addendum', '')
+                )
+            else:
+                # API client path (OpenAI, Anthropic, xAI, Google)
+                api_clients = shared_memory.get('api_clients', {})
+                provider = next(iter(api_clients))  # Use first available
+                client = api_clients[provider]
+                llm_response = _call_api_client(
+                    provider, client, enriched_query
+                )
+
+            cpol_result['llm_response'] = llm_response
+            print(f"[OLLAMA] Response received ({len(llm_response)} chars)")
+
+            # OS INTENT DETECTION — check if query needs browser/OS action
+            os_intent_markers = [
+                'look up', 'search for', 'browse', 'open browser',
+                'fetch', 'navigate to', 'check the url', 'find online',
+                'what is the', 'latest news', 'current price'
+            ]
+            if (OSC_AVAILABLE and 
+                shared_memory.get('os_controller') and
+                any(m in user_input.lower() for m in os_intent_markers)):
+                try:
+                    osc = shared_memory['os_controller']
+                    # Extract likely URL or search term from user input
+                    # Simple approach: use semantic_fetch for web lookups
+                    search_term = user_input  # orchestrator passes full query
+                    fetch_result = osc.semantic_fetch(
+                        query=search_term,
+                        max_results=3
+                    )
+                    if fetch_result.get('status') == 'success':
+                        cpol_result['os_result'] = fetch_result
+                        # Inject result into context for next turn
+                        shared_memory['last_os_result'] = fetch_result
+                        print(f"[OS_CONTROL] Web fetch completed")
+                except Exception as e:
+                    print(f"[OS_CONTROL] Intent detection failed: {e}")
+
+        except Exception as e:
+            print(f"[LLM] Call failed: {e}")
+            cpol_result['llm_response'] = None
+
+    # TOOL DISPATCH: process any tool tags in LLM response
+    dispatcher = shared_memory.get('tool_dispatcher')
+    if dispatcher and cpol_result.get('llm_response'):
+        dispatch_result = dispatcher.process(cpol_result['llm_response'])
+        if dispatch_result['has_tool_calls']:
+            cpol_result['llm_response'] = dispatch_result['output']
+            cpol_result['tools_called'] = dispatch_result['tools_called']
+            print(f"[TOOL_DISPATCH] Executed: {dispatch_result['tools_called']}")
 
     return cpol_result
 
@@ -2371,45 +2885,6 @@ def handle_axiom_commands(command: str) -> dict:
             'status': 'ERROR',
             'output': f'Unknown axiom command: {command}'
         }
-
-# =============================================================================
-# COMPREHENSIVE TEST SUITE
-# =============================================================================
-
-if __name__ == "__main__":
-    print("="*70)
-    print("ORCHESTRATOR - Unified Test Suite")
-    print("="*70)
-
-    # 1. LOAD SYSTEM IDENTITY (Permanence Layer)
-    from system_identity import SystemIdentity
-    identity = SystemIdentity()
-
-    # Check if this is a fresh install or a returning session
-    if not identity.identity_data.get('system_name'):
-        print("[BOOT] No identity found. Running first-time initialization...")
-        identity.initialize()
-
-    assigned_name = identity.identity_data.get('system_name', 'Alpha')
-    primary_user = identity.identity_data.get('primary_user', 'User')
-
-    print("="*70)
-    print(f"ORCHESTRATOR - {assigned_name.upper()} ACTIVE")
-    print(f"Primary Authority: {primary_user}")
-    print("="*70)
-
-    # 2. Initialize Hardware Kernel
-    kernel = CPOL_Kernel()
-    shared_memory['cpol_instance'] = kernel
-    orchestrator = CAIOSOrchestrator(
-        node_id=f"Sovereign_{assigned_name}",
-        node_tier=0, 
-        shared_memory=shared_memory
-    )
-
-    # 3. Prepare Shared Memory with Identity Info
-    shared_memory['cpol_instance'] = kernel
-    shared_memory['system_identity'] = identity.identity_data # Store the full ID map
 
 5. # ===================================================================================== ARL Adaptive Reasoning:
 

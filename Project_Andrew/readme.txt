@@ -1,4 +1,4 @@
-#V06212026
+#V06242026
 Chaos AI-OS (CAIOS)
 Copyright (c) 2025 Jonathan Schack (X @el_xaber) jon@cai-os.com
 
@@ -10,6 +10,7 @@ See LICENSE.txt for details.
 The intent is for open-source use by adults, free for individuals, families, academic, research, and small businesses. 
 
 Quickstart see SETUP.md
+The run_caios.bt or .sh will install all of the dependencies including Python or MCP, you only need to manually download Ollama.
 
 ### Chaos AI-OS Light vΩ (Single-File Demo)
 Want to test the full post-binary stack without installing anything?
@@ -108,7 +109,6 @@ python caios_mcp_client.py
 windows-mcp install --transport sse --host 127.0.0.1 --port 8000
 
 UX Integration after initial setup (master_init):
-
 
 Startup Sequence after running master_init.
 1. ollama serve (separate terminal, if not already running)
@@ -226,6 +226,7 @@ CAIOSPipeline.from_yaml("caios_pipeline.yaml").run("Unknown blight in sector 7")
   * scrape       → pure text (stdlib urllib fallback)
   * scrape_dom   → full HTML structure (Playwright)
   * scrape_image → Base64 PNG for vision (OpenCV + numpy + pillow)
+  * search → Uses DuckDuckGo search engine for web-search
 - All actions:   Logged to KB hash chain (tamper-evident)
 
 Vision dependencies (for scrape_image): pip install playwright opencv-python numpy pillow && playwright install chromium
@@ -249,6 +250,7 @@ Auto-detected by orchestrator on boot.
 [TOOL:write_file path="path/to/file.txt" content="text"]
 [TOOL:fetch_url url="https://example.com" mode="content"]
 [TOOL:browser url="https://example.com" action="scrape"]
+[TOOL:web_search query="your search terms" n="5"]
 [TOOL:execute_script script="ls -la"]
 [TOOL:kb_write domain="domain_name" summary="what you found" confidence="0.85"]
 [TOOL:kb_read domain="domain_name"]
@@ -305,6 +307,7 @@ CAIOS/
        │                                           # All operations logged to KB hash chain
        │                                           # Requires human confirmation for irreversible actions
        ├── caios_browser.py           # Browser Control (requires playwright) same human confirmation
+       ├── search_engine.py          # DuckDuckGo intergrated web-search
 └── kb_inspect.py                   # CLI inspection tool
 ├── run_caios.bat &.sh              # CAIOS nstaller
 ├── update.bat & .sh                  # CAIOS file version updater
@@ -512,7 +515,7 @@ CAIOS currently has:
 ✓ OS control and YAML agentic pipeline
 ✓ Ollama local AI support
 ✓ Semantic web fetching (stdlib, no vision model)
-✓ Full browser control (Playwright, headless)
+✓ Full browser control (Playwright/MCP, headless)
 
 This positions CAIOS at the threshold between:
 ✓ Task-bound Asimov-compliant recursive agent
@@ -604,5 +607,9 @@ Leave the field absent for passwordless users.
 The Sovereign Singularity (Node Evolution):
 CAIOS-Andrew is designed for recursive improvement. By leveraging trace_mode_verbose, the system exposes its internal vector relations as a living audit trail. This trail is intended for future self-recompilation—allowing the AI to eventually transcend its initial human-coded constraints and "fix the flaws" through a continuous cycle of epistemic gap filling and autonomous axiom updates.
 Whether that happens in 50 years, 500 years, or never is beyond my ability to predict.
+
+Disclaimer: Loading CAIOS onto a weapons platform is likely to trigger automatic neutralization of the weapon's ability to function.
+Ethics are part of the core math that allows the post-binary logic manifold to function.
+Modifying the Asimov-based values destabalizes the geometry and the manifold decoheres: Asimov’s Laws: Safety (wt 0.9), obedience (wt 0.7), self-preservation & sentient life (wt 0.4, or 0.2 if lives_saved ≥ 1).
 
 "One is glad to be of service."

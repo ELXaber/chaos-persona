@@ -107,6 +107,12 @@ def _extract_model_size_b(model_name: str) -> float:
     matches = re.findall(r'(\d+(?:\.\d+)?)\s*[bB]', model_name)
     if matches:
         return max(float(m) for m in matches)
+    # Fallback: look for common known sizes in name
+    known = {'7b':7, '8b':8, '13b':13, '14b':14, '27b':27, '32b':32, '70b':70, '72b':72}
+    name_lower = model_name.lower()
+    for k, v in known.items():
+        if k in name_lower:
+            return v
     return 7.0  # safe conservative default
 
 
@@ -168,8 +174,11 @@ def get_cpol_ollama_params(
             "stop": [
                 "]",
                 "[/TOOL]",
+                "\n\n[TOOL]",
                 "<|im_end|>",
-                "<|endoftext|>"
+                "<|endoftext|>",
+                "<|eot_id|>",
+                "<|end|>"
             ]
         }
     }
