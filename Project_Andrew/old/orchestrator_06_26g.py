@@ -1,4 +1,4 @@
-#V06252026
+#V06232026
 # =============================================================================
 # Chaos AI-OS – Hardened Orchestrator (Unified Edition)
 # Combines: V1 Logic + V3 Pipeline + Mesh Encryption + Chatbot Safety
@@ -680,20 +680,22 @@ def system_step(user_input: str, prompt_complexity: str = "low",
             incoming = upkb['load'](user_id)
             if incoming.get('last_raw_q'):
                 kernel = shared_memory.get('cpol_instance')
+                # ... rest of profile load block
 
-    # Load recent conversation history by domain for context continuity
+    # Load recent conversation history for context continuity
+    # (This comes AFTER the entire user profile block)
     recent_history = ""
     try:
-        if AMGR_AVAILABLE and shared_memory.get('axiom_manager'):
-            axiom_mgr = shared_memory['axiom_manager']
-            detected_domain = cpol_result.get('domain', 'general')
-            hist_turns = axiom_mgr.get_relevant_history(detected_domain, limit=6)
-            if hist_turns:
-                lines = []
-                for turn in hist_turns:
-                    lines.append(f"User: {turn['user'][:300]}")
-                    lines.append(f"Andrew: {turn['assistant'][:300]}")
-                recent_history = "[RECENT_CONTEXT]\n" + "\n".join(lines) + "\n[/RECENT_CONTEXT]\n"
+        from caios_chat import load_recent_history
+        history_entries = load_recent_history(n=6, user_id=user_id)
+        if history_entries:
+            history_lines = []
+            for i in range(0, len(history_entries), 2):
+                if i < len(history_entries):
+                    history_lines.append(f"User: {history_entries[i]['content']}")
+                if i+1 < len(history_entries):
+                    history_lines.append(f"Andrew: {history_entries[i+1]['content']}")
+            recent_history = "[RECENT_CONTEXT]\n" + "\n".join(history_lines) + "\n[/RECENT_CONTEXT]\n"
     except Exception:
         pass
 
@@ -1089,6 +1091,17 @@ def system_step(user_input: str, prompt_complexity: str = "low",
             cpol_result['output'] = overridden_response
             cpol_result['axiom_override'] = True
 
+    # Apply abstraction layer (replaces old caveman mode)
+    if ABSTRACTION_AVAILABLE and shared_memory.get('abstraction_dispatcher'):
+        dispatcher = shared_memory['abstraction_dispatcher']
+
+        # Process through abstraction selector
+        cpol_result = dispatcher.process(
+            user_input=user_input,
+            technical_output=cpol_result,
+            shared_memory=shared_memory
+        )
+
         # Log which mode was activated (optional)
         if cpol_result.get('abstraction_level') == 'CAVEMAN':
             print("[ORCHESTRATOR] Mungo mode activated. Rock speak now.")
@@ -1123,8 +1136,7 @@ def system_step(user_input: str, prompt_complexity: str = "low",
                         f"[KB_STATE total_discoveries={total_discoveries} "
                         f"has_knowledge={total_discoveries > 0} "
                         f"domain={cpol_result.get('domain', 'general')} "
-                        f"domain_kb_entries={domain_coverage.get('discovery_count', 0)} "
-                        f"conversation_turns={len(shared_memory['axiom_manager'].conversation_history) if shared_memory.get('axiom_manager') else 0}]\n"
+                        f"domain_discoveries={domain_coverage.get('discovery_count', 0)}]\n"
                     )
                 except Exception:
                     pass
@@ -1225,37 +1237,6 @@ def system_step(user_input: str, prompt_complexity: str = "low",
             cpol_result['llm_response'] = dispatch_result['output']
             cpol_result['tools_called'] = dispatch_result['tools_called']
             print(f"[TOOL_DISPATCH] Executed: {dispatch_result['tools_called']}")
-
-    # Apply abstraction translation to actual LLM response
-    if ABSTRACTION_AVAILABLE and shared_memory.get('abstraction_dispatcher') and cpol_result.get('llm_response'):
-        dispatcher = shared_memory['abstraction_dispatcher']
-        translated = dispatcher.process(
-            user_input=user_input,
-            technical_output={'output': cpol_result['llm_response']},
-            shared_memory=shared_memory
-        )
-        cpol_result['llm_response'] = translated['output']
-        cpol_result['abstraction_level'] = translated.get('abstraction_level', 'TECHNICAL')
-
-        level = translated.get('abstraction_level', 'TECHNICAL')
-        if level == 'CAVEMAN':
-            print("[ORCHESTRATOR] Mungo mode activated. Rock speak now.")
-        elif level == 'VICTORIAN':
-            print("[ORCHESTRATOR] Victorian mode activated. Fancy words now.")
-        elif level == 'CLEAR':
-            print("[ORCHESTRATOR] Clear mode activated. Simple words now.")
-
-    # Load axiom manager context history
-    if AMGR_AVAILABLE and shared_memory.get('axiom_manager'):
-        shared_memory['axiom_manager'].add_conversation_turn(
-            user_message=user_input,
-            assistant_message=cpol_result.get('llm_response', ''),
-            metadata={
-                'domain': domain,
-                'cpol_status': cpol_result.get('status'),
-                'timestep': ts
-            }
-        )
 
     return cpol_result
 

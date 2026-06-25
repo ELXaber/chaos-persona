@@ -1,4 +1,4 @@
-#V05252026
+#V06252026
 # =============================================================================
 # Chaos AI-OS Paradox Oscillation Layer (CPOL) vΩ
 # Copyright (c) 2025 Jonathan Schack (EL_Xaber) jon@cai-os.com
@@ -57,9 +57,10 @@
 import cmath
 import math
 import hashlib
+import re
 import numpy as np
 from typing import Dict, Any, List, Optional
-import re
+from datetime import datetime, timezone
 
 # Optional KB integration
 try:

@@ -1,4 +1,4 @@
-#V06242026
+#V06252026
 # =============================================================================
 """
 Ollama Configuration Bridge - CPOL State to Inference Parameters
@@ -172,17 +172,15 @@ def get_cpol_ollama_params(
             "num_ctx": num_ctx,
             "seed": -1,
             "stop": [
-                "]",
-                "[/TOOL]",
-                "\n\n[TOOL]",
                 "<|im_end|>",
                 "<|endoftext|>",
                 "<|eot_id|>",
-                "<|end|>"
+                "[/TOOL]",
             ]
         }
     }
 
+# For either doman model mapping multi-LLM in VRAM or API fallback see ollama_subsystem_readme.txt
 
 # Uncomment DOMAIN_MODEL_MAP to route queries to specialist models by domain.
 # Requires sufficient VRAM to load multiple models (see readme.txt hardware notes).
@@ -292,6 +290,8 @@ def query_with_cpol(
         result = response.get('message', {}).get('content', '').strip()
 
     if not result:
+        print(f"[OLLAMA_DEBUG] Raw response keys: {list(response.keys())}")
+        print(f"[OLLAMA_DEBUG] done_reason: {response.get('done_reason')}")
         result = "[LLM] No response generated — query may need rephrasing"
 
     return result

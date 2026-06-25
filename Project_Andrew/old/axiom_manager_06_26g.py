@@ -1,4 +1,4 @@
-#V06252026
+#V05282026
 # =============================================================================
 # PROJECT ANDREW – Axiom Manager & Temporal Update Pipeline
 # Purpose: Enable local knowledge updates that override model training data without retraining. Kills the data center requirement.
@@ -102,34 +102,10 @@ class AxiomManager:
     - Instead of retraining model (gigabytes + GPU cluster)
     """
 
-    CONV_HISTORY_PATH = "knowledge_base/conversation_history.json"
-
     def __init__(self):
-        self.domain_cache = {}
+        self.domain_cache = {}  # In-memory cache for fast lookups
         self.last_refresh = None
-        self.conversation_history = []
-        self.max_history_turns = 50
-        self._load_conversation_history()
 
-    def _load_conversation_history(self):
-        """Load persisted conversation history on init."""
-        try:
-            if os.path.exists(CONV_HISTORY_PATH):
-                with open(CONV_HISTORY_PATH, 'r', encoding='utf-8') as f:
-                    self.conversation_history = json.load(f)
-                print(f"[AXIOM] Loaded {len(self.conversation_history)} conversation turns")
-        except Exception as e:
-            print(f"[AXIOM] Could not load conversation history: {e}")
-            self.conversation_history = []
-
-    def _save_conversation_history(self):
-        """Persist conversation history after each turn."""
-        try:
-            os.makedirs(os.path.dirname(CONV_HISTORY_PATH), exist_ok=True)
-            with open(CONV_HISTORY_PATH, 'w', encoding='utf-8') as f:
-                json.dump(self.conversation_history[-self.max_history_turns:], f, indent=2)
-        except Exception as e:
-            print(f"[AXIOM] Could not save conversation history: {e}")
 
     def add_axiom(
         self,
@@ -341,83 +317,6 @@ class AxiomManager:
 
         return list(seen_domains.values())
 
-    # =========================================================================
-    # Conversation Memory
-    # =========================================================================
-
-    def add_conversation_turn(self, user_message: str, assistant_message: str, 
-                             metadata: Optional[Dict] = None) -> None:
-        """
-        Store a conversation turn for context continuity.
-        Used by orchestrator to retain history across sessions.
-
-        Args:
-            user_message: User's input
-            assistant_message: System/Andrew's response
-            metadata: Optional metadata (domain, cpol_status, timestep)
-        """
-        if not hasattr(self, 'conversation_history'):
-            self.conversation_history = []
-
-        turn = {
-            'user': user_message,
-            'assistant': assistant_message,
-            'metadata': metadata or {},
-            'timestamp': datetime.now(timezone.utc).isoformat() + "Z"
-        }
-
-        self.conversation_history.append(turn)
-        self._save_conversation_history()
-
-        # Keep last 100 turns (configurable)
-        max_turns = 100
-        if len(self.conversation_history) > max_turns:
-            self.conversation_history = self.conversation_history[-max_turns:]
-        self._save_conversation_history()
-
-        # Optionally persist to disk (for cross-session memory)
-        try:
-            hist_path = Path("knowledge_base/conversation_history.json")
-            hist_path.parent.mkdir(parents=True, exist_ok=True)
-            # Only write latest 50 turns to avoid bloat
-            recent = self.conversation_history[-50:]
-            with open(hist_path, 'w') as f:
-                json.dump(recent, f, indent=2)
-        except Exception:
-            pass  # Silent fail — memory-only is fine
-
-    def get_relevant_history(self, domain: str = None, limit: int = 6) -> List[Dict]:
-        """
-        Retrieve recent conversation history, optionally filtered by domain.
-        Args:
-            domain: Optional domain filter (e.g., 'apple_ceo')
-            limit: Number of turns to return
-        Returns:
-            List of recent conversation turns (dicts with user/assistant/metadata)
-        """
-        if not hasattr(self, 'conversation_history'):
-            self.conversation_history = []
-
-        if domain:
-            # Filter by domain in metadata
-            filtered = [
-                t for t in self.conversation_history
-                if t.get('metadata', {}).get('domain') == domain
-            ]
-            return filtered[-limit:]
-
-        return self.conversation_history[-limit:]
-
-    def clear_history(self):
-        """Clear the conversation history (for new sessions)."""
-        if hasattr(self, 'conversation_history'):
-            self.conversation_history = []
-        try:
-            hist_path = Path("knowledge_base/conversation_history.json")
-            if hist_path.exists():
-                hist_path.unlink()
-        except Exception:
-            pass
 
     # Private helper methods
 
