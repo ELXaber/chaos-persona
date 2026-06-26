@@ -1,4 +1,4 @@
-#V06222026
+#V06252026
 # =============================================================================
 # CAIOS Web Bridge — Flask server that connects caios_chat_ui.html to the existing orchestrator/caios_chat.py stack.
 #
@@ -160,25 +160,17 @@ def start_services() -> None:
 
     if MCP_AVAILABLE:
         client = get_mcp_client()
-        _start_service(
-            'MCP filesystem server',
-            f'npx @modelcontextprotocol/server-filesystem --port 3000 "{os.getcwd()}"',
-            client.fs_available
-        )
         if platform.system() == 'Windows':
-            # windows-mcp uses SSE transport — its endpoint doesn't respond to
-            # JSON-RPC initialize probes, so win_available() returns False even
-            # when it's already running (e.g. survived a terminal close).
-            # Check the port directly first before attempting a new launch.
             if _port_in_use('localhost', 8000):
                 print('[BRIDGE] windows-mcp already running on port 8000')
             else:
                 _start_service(
                     'windows-mcp',
-                    'uvx windows-mcp serve --transport sse --host localhost --port 8000',
+                    'uvx windows-mcp serve --transport streamable-http --host localhost --port 8000',
                     lambda: _port_in_use('localhost', 8000),
                     timeout=15
                 )
+        client.reset_availability_cache()
     else:
         print('[BRIDGE] caios_mcp_client.py not found — MCP servers not auto-started')
 

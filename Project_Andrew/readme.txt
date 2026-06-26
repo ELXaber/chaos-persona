@@ -101,8 +101,8 @@ npm install -g @modelcontextprotocol/server-filesystem
 # Start the filesystem MCP server (Node.js)
 npx @modelcontextprotocol/server-filesystem C:\CAIOS
 # Default stdio transport — add --port 3000 for HTTP transport
-# Start windows-mcp in SSE mode (required for bridge)
-uvx windows-mcp serve --transport sse --host localhost --port 8000
+# Start windows-mcp (required for bridge)
+uvx windows-mcp serve --transport streamable-http --host localhost --port 8000
 # Test MCP connectivity before starting the bridge
 python caios_mcp_client.py
 # Install as a background task that starts at login

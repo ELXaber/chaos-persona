@@ -1,4 +1,4 @@
-#V06122026
+#V06252026
 # =============================================================================
 # caios_mcp_client.py — MCP JSON-RPC client for CAIOS
 #
@@ -34,7 +34,7 @@ from typing import Any, Dict, Optional, List
 # =============================================================================
 
 FS_MCP_URL   = 'http://localhost:3000'   # @modelcontextprotocol/server-filesystem
-WIN_MCP_URL  = 'http://localhost:8000/sse'   # windows-mcp SSE server
+WIN_MCP_URL  = 'http://localhost:8000'   # windows-mcp
 
 # Timeout for MCP calls (seconds)
 MCP_TIMEOUT  = 15
@@ -94,7 +94,7 @@ def _jsonrpc_call(base_url: str, method: str, params: Dict,
     if base_url.endswith('/sse'):
         endpoints = ['']
     elif 'localhost:8000' in base_url:
-        endpoints = ['/mcp', '/messages', '/sse']
+        endpoints = ['/mcp', '/messages']
     else:
         endpoints = ['/mcp']
 
@@ -106,7 +106,7 @@ def _jsonrpc_call(base_url: str, method: str, params: Dict,
             data=body,
             headers={
                 'Content-Type': 'application/json',
-                'Accept': 'application/json',
+                'Accept': 'application/json, text/event-stream',
             },
             method='POST',
         )
@@ -144,7 +144,7 @@ class MCPClient:
         self.fs_url  = fs_url
         self.win_url = win_url
         self._id = 0
-        self._fs_available  = None  # lazy-checked
+        self._fs_available  = None
         self._win_available = None
 
     def _next_id(self) -> int:
@@ -178,11 +178,17 @@ class MCPClient:
                 self._fs_available = False
         return self._fs_available
 
+    def reset_availability_cache(self):
+        self._fs_available = None
+        self._win_available = None
+
     def win_available(self) -> bool:
         if self._win_available is None:
             try:
-                self._win_available = self._check_server(self.win_url)
-            except Exception:
+                import socket
+                with socket.create_connection(('localhost', 8000), timeout=2):
+                    self._win_available = True
+            except OSError:
                 self._win_available = False
         return self._win_available
 
@@ -354,6 +360,18 @@ if __name__ == '__main__':
 
     client = MCPClient()
     status = client.status()
+
+    import socket
+    try:
+        with socket.create_connection(('localhost', 8000), timeout=2):
+            win_up = True
+    except OSError:
+        win_up = False
+
+    print(f"\nFilesystem MCP ({status['fs_url']}): "
+          f"{'✓ connected' if status['filesystem_server'] else '✗ not running'}")
+    print(f"Windows MCP   (http://localhost:8000/sse): "
+          f"{'✓ connected' if win_up else '✗ not running'}")
 
     print(f"\nFilesystem MCP ({status['fs_url']}): "
           f"{'✓ connected' if status['filesystem_server'] else '✗ not running'}")
