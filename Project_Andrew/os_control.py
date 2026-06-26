@@ -1,4 +1,4 @@
-#V06102026
+#V06262026
 # =============================================================================
 # Chaos AI-OS — OS Control Layer
 # CPOL-gated system operations with Asimov compliance
@@ -11,6 +11,7 @@ import subprocess
 import pathlib
 from typing import Dict, Any, Optional
 from paradox_oscillator import CPOL_Kernel, run_cpol_decision
+from datetime import datetime, timezone
 
 # Irreversibility classifier
 IRREVERSIBLE_ACTIONS = {

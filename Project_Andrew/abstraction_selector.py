@@ -1,4 +1,4 @@
-#V05292026
+#V06252026
 # =============================================================================
 # PROJECT ANDREW – Abstraction Selector
 # Purpose: Dynamically detect user comprehension level and select appropriate explanation layer (Technical, Victorian, Clear, Caveman)
@@ -16,8 +16,9 @@ class AbstractionLevel(Enum):
     TECHNICAL = 0      # Full technical jargon (researchers, experts)
     VICTORIAN = 1      # Polished professional prose (educated laypersons)
     CLEAR = 2          # Plain, accessible language (curious novices)
-    CHILD = 3           # Simple + warm + age-appropriate
     CAVEMAN = 3        # Rocks and fire (confused users)
+    CHILD = 4           # Simple + warm + age-appropriate
+
 
 
 # =============================================================================
@@ -40,16 +41,16 @@ EXPLICIT_TRIGGERS = {
         r'\beasy explanation\b', r'\bfor dummies\b', r'\bbreak it down\b',
         r'\bclarify\b', r'\bmake it simple\b', r'\bunderstandable\b'
     ],
+    AbstractionLevel.CAVEMAN: [
+        r'\bbro what\b', r'\bdumb it down\b', r'\bcaveman\b', r'\brocks\b',
+        r'\bexplain like i\'m 5\b', r'\bexplain like im 5\b', r'\btoo complicated\b',
+        r'\bmy brain hurts\b', r'\bwhat\?{2,}\b', r'\bhuh\?{2,}\b', r'\bmungo\b',
+        r'\bfor real?\b', r'\btoo hard\b', r'\bsimplify\b'
+    ],
     AbstractionLevel.CHILD: [
         r'\bkid mode\b', r'\bexplain like im a kid\b',
         r'\bexplain for children\b', r'\bsimple please\b',
         r'\bchild mode\b', r'\bfor kids\b'
-    ],
-    AbstractionLevel.CAVEMAN: [
-        r'\bbro what\b', r'\bdumb it down\b', r'\bcaveman\b', r'\brocks\b',
-        r'\bexplain like i\'m 5\b', r'\bexplain like im 5\b', r'\btoo complicated\b',
-        r'\bmy brain hurts\b', r'\bwhat\?{2,}\b', r'\bhuh\?{2,}\b', r'\bmunga\b',
-        r'\bfor real?\b', r'\btoo hard\b', r'\bsimplify\b'
     ]
 }
 
@@ -120,9 +121,6 @@ class AbstractionSelector:
                 return AbstractionLevel.CHILD
         except ImportError:
             pass  # Standalone mode, no profile
-
-        # 1. Check explicit triggers (highest priority after profile)
-        explicit_level = self._check_explicit_triggers(user_input)
 
         # 1. Check explicit triggers (highest priority)
         explicit_level = self._check_explicit_triggers(user_input)
@@ -430,7 +428,7 @@ class CavemanTranslator(BaseTranslator):
         return "Mungo explain:\n\n" + translated + "\n\nMungo glad help. 🪨"
 
 # =============================================================================
-# Child Translator (L3)
+# Child Translator (L4)
 # =============================================================================
 class ChildTranslator:
     """
@@ -522,8 +520,8 @@ class AbstractionDispatcher:
             AbstractionLevel.TECHNICAL: TechnicalTranslator(),
             AbstractionLevel.VICTORIAN: VictorianTranslator(),
             AbstractionLevel.CLEAR: ClearTranslator(),
-            AbstractionLevel.CHILD: ChildTranslator(),
-            AbstractionLevel.CAVEMAN: CavemanTranslator()
+            AbstractionLevel.CAVEMAN: CavemanTranslator(),
+            AbstractionLevel.CHILD: ChildTranslator()
         }
 
     def process(
@@ -574,8 +572,8 @@ class AbstractionDispatcher:
                 AbstractionLevel.TECHNICAL: AbstractionLevel.CLEAR,      # Expert confused → plain language
                 AbstractionLevel.CLEAR: AbstractionLevel.VICTORIAN,      # Plain not landing → more structured
                 AbstractionLevel.VICTORIAN: AbstractionLevel.CAVEMAN,    # Formal not working → simplify hard
-                AbstractionLevel.CHILD: AbstractionLevel.CLEAR,          # Smart child → move up
-                AbstractionLevel.CAVEMAN: AbstractionLevel.VICTORIAN     # Full circle → try structured again
+                AbstractionLevel.CAVEMAN: AbstractionLevel.VICTORIAN,     # Full circle → try structured again
+                AbstractionLevel.CHILD: AbstractionLevel.CLEAR          # Smart child → move up
             }
 
             # Persistent complainer override (3+ complaints)

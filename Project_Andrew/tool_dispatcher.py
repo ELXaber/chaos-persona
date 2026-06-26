@@ -1,4 +1,4 @@
-#V06252026
+#V06262026
 # =============================================================================
 # PROJECT ANDREW – Tool Dispatcher
 # Intercepts LLM output for structured tool calls and routes them to the
@@ -425,14 +425,28 @@ class ToolDispatcher:
             return f'[TOOL RESULT] {tool_name} error: {e}'
 
     def _dispatch_mcp(self, tool_name: str, attrs: Dict) -> str:
-        """Route [TOOL:mcp_*] tags to caios_mcp_client."""
+        """Route [TOOL:mcp_*] tags to caios_mcp_client or fallback to os_controller."""
+
+        # === Special cases that fallback to os_controller / PowerShell ===
+        if tool_name == 'mcp_read':
+            path = attrs.get('path', '')
+            controller = self._get_controller()
+            if controller:
+                return _handle_read_file({'path': path}, controller)
+            return '[TOOL RESULT] mcp_read: os_control not available'
+
+        if tool_name == 'mcp_list':
+            path = attrs.get('path', 'C:/CAIOS')
+            cmd = f'Get-ChildItem "{path}" | Select-Object Name, Length, LastWriteTime'
+            # Route list through mcp_powershell (cleanest approach)
+            return self._dispatch_mcp('mcp_powershell', {'command': cmd})
+
+        # === Normal MCP tools (require caios_mcp_client) ===
         if not MCP_AVAILABLE:
             return '[TOOL RESULT] MCP unavailable — caios_mcp_client.py not found'
 
-        # Map tag names to (mcp_tool_name, required_arg)
+        # Map only tools that call _mcp_call
         route_map = {
-            'mcp_read':       None,          # → os_control.read_file
-            'mcp_list':       None,          # → os_control (not implemented, use powershell)
             'mcp_write':      ('write_file',     'path'),
             'mcp_search':     ('search_files',   'path'),
             'mcp_powershell': ('powershell',     'command'),
@@ -445,53 +459,42 @@ class ToolDispatcher:
 
         mcp_name, required_arg = route_map[tool_name]
 
-        # Build arguments dict from tag attrs
-        mcp_args = dict(attrs)  # pass all attrs through
+        mcp_args = dict(attrs)
+
         if required_arg and required_arg not in mcp_args:
             return f'[TOOL RESULT] {tool_name}: missing required attr "{required_arg}"'
 
-        # mcp_read
-        if tool_name == 'mcp_read':
-            path = attrs.get('path', '')
-            controller = self._get_controller()
-            if controller:
-                return _handle_read_file({'path': path}, controller)
-            return '[TOOL RESULT] mcp_read: os_control not available'
-
-        # mcp_list
-        if tool_name == 'mcp_list':
-            cmd = f'Get-ChildItem "{attrs.get("path", "C:/CAIOS")}" | Select-Object Name'
-            return _handle_mcp_win({'command': cmd}, 'mcp_powershell')
-
-        # mcp_write needs content attr too
         if tool_name == 'mcp_write' and 'content' not in mcp_args:
             return '[TOOL RESULT] mcp_write: missing required attr "content"'
 
-        # mcp_search needs pattern attr
         if tool_name == 'mcp_search' and 'pattern' not in mcp_args:
-            mcp_args['pattern'] = '*'  # default to all files
+            mcp_args['pattern'] = '*'
 
         result = _mcp_call(mcp_name, mcp_args)
 
         if result['ok']:
             content = result['content']
-            if len(content) > 4000:
+            if isinstance(content, str) and len(content) > 4000:
                 content = content[:4000] + f'\n... [truncated, {len(result["content"])} chars total]'
-            return f'[TOOL RESULT] {tool_name}({attrs.get(required_arg or "", "")}):\n{content}'
+            arg_preview = attrs.get(required_arg or "", "")
+            return f'[TOOL RESULT] {tool_name}({arg_preview}):\n{content}'
         else:
-            return f'[TOOL RESULT] {tool_name} failed: {result["content"]}'
+            return f'[TOOL RESULT] {tool_name} failed: {result.get("content", "unknown error")}'
 
     def _log_dispatch(self, tool_name: str, attrs: Dict, result: str):
         """Log tool call to shared memory audit trail."""
-        entry = {
-            'ts': datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%S.%f') + 'Z',
-            'event': 'TOOL_DISPATCH',
-            'tool': tool_name,
-            'attrs': attrs,
-            'result_preview': result[:100]
-        }
-        self.dispatch_log.append(entry)
-        self.shared_memory.setdefault('audit_trail', []).append(entry)
+        try:
+            entry = {
+                'ts': datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%S.%f') + 'Z',
+                'event': 'TOOL_DISPATCH',
+                'tool': tool_name,
+                'attrs': attrs,
+                'result_preview': result[:100] if result else ''
+            }
+            self.dispatch_log.append(entry)
+            self.shared_memory.setdefault('audit_trail', []).append(entry)
+        except Exception as e:
+            print(f"[TOOL_DISPATCHER] Warning: Failed to log dispatch: {e}")
 
 
 # =============================================================================

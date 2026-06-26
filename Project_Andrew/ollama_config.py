@@ -1,4 +1,4 @@
-#V06252026
+#V06262026
 # =============================================================================
 """
 Ollama Configuration Bridge - CPOL State to Inference Parameters
@@ -283,15 +283,15 @@ def query_with_cpol(
     )
 
     # if response is entirely in <think> block
-    result = response.get('response', '').strip()
+    result = response.response.strip() if hasattr(response, 'response') else ''
 
     if not result:
         # Fallback: check alternate response fields
-        result = response.get('message', {}).get('content', '').strip()
+        msg = getattr(response, 'message', None)
+        result = msg.content.strip() if msg and hasattr(msg, 'content') else ''
 
     if not result:
-        print(f"[OLLAMA_DEBUG] Raw response keys: {list(response.keys())}")
-        print(f"[OLLAMA_DEBUG] done_reason: {response.get('done_reason')}")
+        print(f"[OLLAMA_DEBUG] done_reason: {getattr(response, 'done_reason', 'unknown')}")
         result = "[LLM] No response generated — query may need rephrasing"
 
     return result

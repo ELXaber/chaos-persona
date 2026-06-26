@@ -1,4 +1,4 @@
-#V06252026
+#V06262026
 # =============================================================================
 # Chaos AI-OS – Hardened Orchestrator (Unified Edition)
 # Combines: V1 Logic + V3 Pipeline + Mesh Encryption + Chatbot Safety
@@ -218,7 +218,7 @@ class CAIOSOrchestrator:
         # Note: You must have a method named 'generate_swarm_response' in this class
         technical_output = self.generate_swarm_response(user_input, provider)
 
-        # 3. Gearbox Translation (L0, L1, L2, or L3)
+        # 3. Gearbox Translation (L0, L1, L2, L3, or L4)
         final_text = self.abstraction_manager.get_response(
             user_input, 
             technical_output, 
@@ -686,7 +686,7 @@ def system_step(user_input: str, prompt_complexity: str = "low",
     try:
         if AMGR_AVAILABLE and shared_memory.get('axiom_manager'):
             axiom_mgr = shared_memory['axiom_manager']
-            detected_domain = cpol_result.get('domain', 'general')
+            detected_domain = shared_memory.get('last_cpol_result', {}).get('domain', 'general')
             hist_turns = axiom_mgr.get_relevant_history(detected_domain, limit=6)
             if hist_turns:
                 lines = []
@@ -1227,15 +1227,18 @@ def system_step(user_input: str, prompt_complexity: str = "low",
             print(f"[TOOL_DISPATCH] Executed: {dispatch_result['tools_called']}")
 
     # Apply abstraction translation to actual LLM response
-    if ABSTRACTION_AVAILABLE and shared_memory.get('abstraction_dispatcher') and cpol_result.get('llm_response'):
+    if ABSTRACTION_AVAILABLE and shared_memory.get('abstraction_dispatcher'):
         dispatcher = shared_memory['abstraction_dispatcher']
-        translated = dispatcher.process(
+        # Preserve raw tool results — don't run the lexicon substitution over code/file content
+        raw_llm = cpol_result.get('llm_response', '')
+        cpol_result = dispatcher.process(
             user_input=user_input,
-            technical_output={'output': cpol_result['llm_response']},
+            technical_output=cpol_result,
             shared_memory=shared_memory
         )
-        cpol_result['llm_response'] = translated['output']
-        cpol_result['abstraction_level'] = translated.get('abstraction_level', 'TECHNICAL')
+        # Restore unmangled llm_response; only the 'output' field needs translation
+        if raw_llm:
+            cpol_result['llm_response'] = raw_llm
 
         level = translated.get('abstraction_level', 'TECHNICAL')
         if level == 'CAVEMAN':
@@ -1244,6 +1247,9 @@ def system_step(user_input: str, prompt_complexity: str = "low",
             print("[ORCHESTRATOR] Victorian mode activated. Fancy words now.")
         elif level == 'CLEAR':
             print("[ORCHESTRATOR] Clear mode activated. Simple words now.")
+        if level == 'CHILD':
+            print("[ORCHESTRATOR] Child mode activated. Friendly simple responses.")
+        print(f"[ABSTRACTION_DEBUG] Level: {level} | Output start: {cpol_result['llm_response'][:80]}")
 
     # Load axiom manager context history
     if AMGR_AVAILABLE and shared_memory.get('axiom_manager'):

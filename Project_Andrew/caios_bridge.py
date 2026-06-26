@@ -1,4 +1,4 @@
-#V06252026
+#V06262026
 # =============================================================================
 # CAIOS Web Bridge — Flask server that connects caios_chat_ui.html to the existing orchestrator/caios_chat.py stack.
 #
@@ -168,7 +168,7 @@ def start_services() -> None:
                     'windows-mcp',
                     'uvx windows-mcp serve --transport streamable-http --host localhost --port 8000',
                     lambda: _port_in_use('localhost', 8000),
-                    timeout=15
+                    timeout=30
                 )
         client.reset_availability_cache()
     else:
@@ -497,6 +497,8 @@ def api_chat():
             else:
                 response_text = str(result)
         except Exception as e:
+            import traceback
+            traceback.print_exc()
             response_text = f'[ORCHESTRATOR ERROR] {e}'
 
     # --- Fallback: direct Ollama ---

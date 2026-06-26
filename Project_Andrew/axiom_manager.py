@@ -1,4 +1,4 @@
-#V06252026
+#V06262026
 # =============================================================================
 # PROJECT ANDREW – Axiom Manager & Temporal Update Pipeline
 # Purpose: Enable local knowledge updates that override model training data without retraining. Kills the data center requirement.
@@ -7,8 +7,10 @@
 
 import json
 import re
+import os
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
+CONV_HISTORY_PATH = "knowledge_base/conversation_history.json"
 from typing import Dict, Optional, List, Tuple
 
 # Import KB for sovereign discovery logging
@@ -18,7 +20,6 @@ try:
 except ImportError:
     HAS_KB = False
     print("[WARNING] knowledge_base not found - axioms will not persist")
-
 
 # =============================================================================
 # Axiom Configuration
@@ -101,8 +102,6 @@ class AxiomManager:
     - Update a JSONL file (kilobytes)
     - Instead of retraining model (gigabytes + GPU cluster)
     """
-
-    CONV_HISTORY_PATH = "knowledge_base/conversation_history.json"
 
     def __init__(self):
         self.domain_cache = {}

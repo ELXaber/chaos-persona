@@ -1,4 +1,4 @@
-#V06252026
+#V06262026
 # =============================================================================
 # caios_mcp_client.py — MCP JSON-RPC client for CAIOS
 #
@@ -369,13 +369,8 @@ if __name__ == '__main__':
 
     print(f"\nFilesystem MCP ({status['fs_url']}): "
           f"{'✓ connected' if status['filesystem_server'] else '✗ not running'}")
-    print(f"Windows MCP   (http://localhost:8000/sse): "
+    print(f"Windows MCP   (http://localhost:8000): "
           f"{'✓ connected' if win_up else '✗ not running'}")
-
-    print(f"\nFilesystem MCP ({status['fs_url']}): "
-          f"{'✓ connected' if status['filesystem_server'] else '✗ not running'}")
-    print(f"Windows MCP   ({status['win_url']}): "
-          f"{'✓ connected' if status['windows_mcp'] else '✗ not running'}")
 
     if status['filesystem_server']:
         print('\n--- Listing C:\\CAIOS ---')
@@ -407,5 +402,5 @@ if __name__ == '__main__':
     if not status['filesystem_server']:
         print('  npx @modelcontextprotocol/server-filesystem C:\\CAIOS')
     if not status['windows_mcp']:
-        print('  uvx windows-mcp serve --transport sse --host localhost --port 8000')
+        print('  uvx windows-mcp serve --transport streamable-http --host localhost --port 8000')
     print('=' * 60)
