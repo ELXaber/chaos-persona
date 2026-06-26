@@ -221,19 +221,19 @@ class MCPClient:
         tool_lower = tool_name.lower()
 
         # Route to correct server
-        if tool_lower in FS_TOOLS:
-            if not self.fs_available():
-                return _error_result(f"Filesystem MCP server not available at {self.fs_url}. "
-                                     f"Start it with: npx @modelcontextprotocol/server-filesystem C:\\CAIOS")
-            base = self.fs_url
-        elif tool_lower in WIN_TOOLS:
+        if tool_lower in WIN_TOOLS:
             if not self.win_available():
-                return _error_result(f"windows-mcp not available at {self.win_url}. "
-                                     f"Start it with: uvx windows-mcp serve --transport sse --host localhost --port 8000")
+                return _error_result(
+                    f"windows-mcp not available at {self.win_url}. "
+                    f"Start it with: uvx windows-mcp serve --transport streamable-http --host localhost --port 8000"
+                )
             base = self.win_url
         else:
-            # Unknown tool — try filesystem first, then windows
-            base = self.fs_url if self.fs_available() else self.win_url
+            # FS_TOOLS and unknown tools — not handled by MCP
+            return _error_result(
+                f"Tool '{tool_name}' is not a windows-mcp tool. "
+                f"File operations are handled by os_control.py via [TOOL:read_file] etc."
+            )
 
         rpc_result = _jsonrpc_call(
             base,
@@ -241,7 +241,6 @@ class MCPClient:
             {'name': tool_name, 'arguments': arguments},
             self._next_id(),
         )
-
         return _parse_mcp_result(rpc_result)
 
     # ── Convenience wrappers for common filesystem operations ──

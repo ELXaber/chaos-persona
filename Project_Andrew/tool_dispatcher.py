@@ -1,4 +1,4 @@
-#V06242026
+#V06252026
 # =============================================================================
 # PROJECT ANDREW – Tool Dispatcher
 # Intercepts LLM output for structured tool calls and routes them to the
@@ -431,8 +431,8 @@ class ToolDispatcher:
 
         # Map tag names to (mcp_tool_name, required_arg)
         route_map = {
-            'mcp_read':       ('read_file',      'path'),
-            'mcp_list':       ('list_directory', 'path'),
+            'mcp_read':       None,          # → os_control.read_file
+            'mcp_list':       None,          # → os_control (not implemented, use powershell)
             'mcp_write':      ('write_file',     'path'),
             'mcp_search':     ('search_files',   'path'),
             'mcp_powershell': ('powershell',     'command'),
@@ -449,6 +449,19 @@ class ToolDispatcher:
         mcp_args = dict(attrs)  # pass all attrs through
         if required_arg and required_arg not in mcp_args:
             return f'[TOOL RESULT] {tool_name}: missing required attr "{required_arg}"'
+
+        # mcp_read
+        if tool_name == 'mcp_read':
+            path = attrs.get('path', '')
+            controller = self._get_controller()
+            if controller:
+                return _handle_read_file({'path': path}, controller)
+            return '[TOOL RESULT] mcp_read: os_control not available'
+
+        # mcp_list
+        if tool_name == 'mcp_list':
+            cmd = f'Get-ChildItem "{attrs.get("path", "C:/CAIOS")}" | Select-Object Name'
+            return _handle_mcp_win({'command': cmd}, 'mcp_powershell')
 
         # mcp_write needs content attr too
         if tool_name == 'mcp_write' and 'content' not in mcp_args:
