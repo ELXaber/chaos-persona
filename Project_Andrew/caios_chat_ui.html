@@ -1,4 +1,4 @@
-<!-- V06092026 -->
+<!-- V06272026 -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -183,6 +183,8 @@ select option{background:var(--bg3)}
 .bubble{
   padding:10px 14px;border-radius:var(--radius2);
   font-size:14px;line-height:1.65;color:var(--text);
+  overflow-wrap:break-word;
+  word-break:break-word;
 }
 .msg.andrew .bubble{
   background:var(--bg2);border:0.5px solid var(--border);
@@ -202,7 +204,8 @@ select option{background:var(--bg3)}
 }
 .bubble pre{
   background:var(--bg);border:0.5px solid var(--border);border-radius:var(--radius);
-  padding:10px 12px;overflow-x:auto;margin:8px 0;
+  padding:10px 12px;overflow-x:auto;white-space:pre-wrap;
+  word-break:break-word;margin:8px 0;
 }
 .bubble pre code{background:none;padding:0;font-size:12px}
 .bubble ul,.bubble ol{padding-left:18px;margin:6px 0}
@@ -725,7 +728,12 @@ function appendMsg(role, text, cpol_status, domain, attachName, skipScroll) {
   // Render markdown for andrew, escape for user
   let bodyHtml;
   if (role === 'andrew' && typeof marked !== 'undefined') {
-    bodyHtml = marked.parse(text || '');
+    // Wrap tool results in code blocks so they render preformatted
+    const processed = (text || '').replace(
+      /(\[TOOL RESULT\][^\[]*)/g,
+      (match) => '\n```\n' + match.trim() + '\n```\n'
+    );
+    bodyHtml = marked.parse(processed);
   } else {
     bodyHtml = (text || '').replace(/</g,'&lt;').replace(/\n/g,'<br>');
   }

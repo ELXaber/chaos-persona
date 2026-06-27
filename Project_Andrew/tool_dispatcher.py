@@ -1,4 +1,4 @@
-#V06262026
+#V06272026
 # =============================================================================
 # PROJECT ANDREW – Tool Dispatcher
 # Intercepts LLM output for structured tool calls and routes them to the
@@ -86,8 +86,8 @@ def _handle_read_file(attrs: Dict, controller) -> str:
     if result['status'] == 'success':
         content = result['content']
         # Truncate long files
-        if len(content) > 3000:
-            content = content[:3000] + f"\n... [truncated, {len(result['content'])} chars total]"
+        if len(content) > 8000:
+            content = content[:8000] + f"\n... [truncated, {len(result['content'])} chars total]"
         return f"[TOOL RESULT] read_file({path}):\n{content}"
     return f"[TOOL RESULT] read_file failed: {result.get('error', result.get('reason', 'unknown'))}"
 
@@ -474,8 +474,8 @@ class ToolDispatcher:
 
         if result['ok']:
             content = result['content']
-            if isinstance(content, str) and len(content) > 4000:
-                content = content[:4000] + f'\n... [truncated, {len(result["content"])} chars total]'
+            if isinstance(content, str) and len(content) > 8000:
+                content = content[:8000] + f'\n... [truncated, {len(result["content"])} chars total]'
             arg_preview = attrs.get(required_arg or "", "")
             return f'[TOOL RESULT] {tool_name}({arg_preview}):\n{content}'
         else:

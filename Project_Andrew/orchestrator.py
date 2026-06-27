@@ -1,4 +1,4 @@
-#V06262026
+#V06272026
 # =============================================================================
 # Chaos AI-OS – Hardened Orchestrator (Unified Edition)
 # Combines: V1 Logic + V3 Pipeline + Mesh Encryption + Chatbot Safety
@@ -1240,7 +1240,7 @@ def system_step(user_input: str, prompt_complexity: str = "low",
         if raw_llm:
             cpol_result['llm_response'] = raw_llm
 
-        level = translated.get('abstraction_level', 'TECHNICAL')
+        level = cpol_result.get('abstraction_level', 'TECHNICAL')
         if level == 'CAVEMAN':
             print("[ORCHESTRATOR] Mungo mode activated. Rock speak now.")
         elif level == 'VICTORIAN':
