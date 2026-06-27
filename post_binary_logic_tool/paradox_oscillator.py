@@ -1,4 +1,4 @@
-#V06262026
+#V06272026
 # =============================================================================
 # Chaos AI-OS Paradox Oscillation Layer (CPOL with gating and modes).
 # Copyright (c) 2025 Jonathan Schack (EL_Xaber) jon@cai-os.com
@@ -59,6 +59,16 @@ import re
 import numpy as np
 from typing import Dict, Any, List, Optional
 from datetime import datetime, timezone
+
+# =============================================================================
+# OPTIONAL KB INTEGRATION
+# =============================================================================
+try:
+    import knowledge_base as kb
+    KB_AVAILABLE = True
+except ImportError:
+    KB_AVAILABLE = False
+    print("[INFO] knowledge_base not available. Running without KB persistence.")
 
 # =============================================================================
 # UTILITY FUNCTIONS
@@ -311,11 +321,20 @@ class CPOL_Kernel:
             if any(re.search(r'\b' + kw + r'\b', text_lower) for kw in keywords):
                 return domain
 
-        # Extract noun phrases as potential new domain
-        words = text_lower.split()
-        if len(words) > 2:
-            return words[0]  # First word as proxy
+        # If no domain matches, return "general" (orchestrator will override in full system)
         return "general"
+
+# =========================================================================
+# UNCOMMENT BELOW FOR ORCHESTRATOR INTEGRATION:
+# The full CAIOS orchestrator overrides this with LLM-based domain
+# classification. The first-word proxy is a placeholder for that flow.
+# =========================================================================
+#
+#       # Extract noun phrases as potential new domain
+#        words = text_lower.split()
+#        if len(words) > 2:
+#            return words[0]  # First word as proxy
+#        return "general"
 
     def _score_evidence(self, text: str) -> float:
         """Score query for factual evidence/grounding."""
@@ -656,7 +675,6 @@ def run_cpol_chatbot(query_text: str,
     shared_mem = session_state if session_state else {'distress_density': 0.0}
     result = kernel.run_cpol_decision(
         contradiction_density=density,
-        kernel=kernel,
         query_text=query_text,
         shared_memory=shared_mem
     )
