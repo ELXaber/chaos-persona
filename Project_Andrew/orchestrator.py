@@ -1159,6 +1159,8 @@ def system_step(user_input: str, prompt_complexity: str = "low",
                 f"python_status={cpol_result.get('status')}]\n"
                 f"[DATETIME {current_dt}]\n"
                 f"[USER {shared_memory.get('active_user', 'unknown')}]\n"
+                f"[ABSTRACTION_LEVEL {shared_memory.get('current_abstraction_level', 'CLEAR')}]\n"
+                f"[INSTRUCTION: Do NOT pre-translate or adopt a persona. Respond in plain technical prose. The abstraction layer will translate your output automatically.]\n"
                 f"{kb_context}"
                 f"{axiom_context}"
             )

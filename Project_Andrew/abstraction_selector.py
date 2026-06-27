@@ -1,4 +1,4 @@
-#V06252026
+#V06272026
 # =============================================================================
 # PROJECT ANDREW – Abstraction Selector
 # Purpose: Dynamically detect user comprehension level and select appropriate explanation layer (Technical, Victorian, Clear, Caveman)
@@ -405,6 +405,13 @@ class CavemanTranslator(BaseTranslator):
             "volatility": "rock wobble",
             "prune": "throw away bad rock",
             "hallucination": "rock see thing not there",
+            "logical paradox": "rock that breaks thinking",
+            "self-referential": "rock that points at itself",
+            "contradiction": "rock no fit",
+            "binary logic": "yes-or-no rock",
+            "infinite recursion": "cave with no end",
+            "persistent": "rock not go away",
+            "no consistent resolution": "Mungo no know, Mungo no guess",
             "UNDECIDABLE": "Mungo no know, Mungo no guess",
             "RAW_Q": "first rock seed",
             "12D": "12 caves",
