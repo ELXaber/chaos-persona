@@ -113,7 +113,11 @@ def _detect_backend() -> str:
         return 'llamacpp'
     except Exception:
         return 'none'
-Then in query_with_cpol, branch on backend:
+
+# =============================================================================
+# Then in query_with_cpol, branch on backend:
+# =============================================================================
+
 pythonbackend = _detect_backend()
 
 if backend == 'ollama':
