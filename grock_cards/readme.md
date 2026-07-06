@@ -166,3 +166,7 @@ https://github.com/ELXaber/chaos-persona/blob/main/AdaptiveAI-EthicsLab/readme.m
 Jonathan Schack
 xaber.csr2@gmail.com
 On X @el_xaber
+
+06/27/2026: Shadowbanned again for posting about patent-pending technology; US applications filed (19/390,493 and 19/433,771), post-binary logic, and the entropy engine in CAIOS.
+Elon Musk and his companies hate open-source competition.
+<img width="1919" height="1034" alt="image" src="https://github.com/user-attachments/assets/b0299b5f-dc22-4122-bb78-78aa805e4040" />
