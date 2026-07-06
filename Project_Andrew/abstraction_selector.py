@@ -1,4 +1,4 @@
-#V06272026
+#V07022026
 # =============================================================================
 # PROJECT ANDREW – Abstraction Selector
 # Purpose: Dynamically detect user comprehension level and select appropriate explanation layer (Technical, Victorian, Clear, Caveman)
@@ -42,10 +42,10 @@ EXPLICIT_TRIGGERS = {
         r'\bclarify\b', r'\bmake it simple\b', r'\bunderstandable\b'
     ],
     AbstractionLevel.CAVEMAN: [
-        r'\bbro what\b', r'\bdumb it down\b', r'\bcaveman\b', r'\brocks\b',
+        r'\bbro what\b', r'\bdumb it down\b',
         r'\bexplain like i\'m 5\b', r'\bexplain like im 5\b', r'\btoo complicated\b',
         r'\bmy brain hurts\b', r'\bwhat\?{2,}\b', r'\bhuh\?{2,}\b', r'\bmungo\b',
-        r'\bfor real?\b', r'\btoo hard\b', r'\bsimplify\b'
+        r'\bfor real?\b', r'\btoo hard\b'
     ],
     AbstractionLevel.CHILD: [
         r'\bkid mode\b', r'\bexplain like im a kid\b',
@@ -166,6 +166,7 @@ class AbstractionSelector:
         for level, patterns in EXPLICIT_TRIGGERS.items():
             for pattern in patterns:
                 if re.search(pattern, input_lower):
+                    print(f"[ABSTRACTION_DEBUG] Trigger match: {pattern} → {level}")
                     return level
         return None
 
@@ -604,11 +605,10 @@ class AbstractionDispatcher:
         translator = self.translators[level]
 
         # Extract text to translate
-        output_text = technical_output.get('output', '')
-        if not output_text:
-            output_text = technical_output.get('response', '')
-        if not output_text:
-            output_text = str(technical_output)
+        output_text = (technical_output.get('llm_response', '')
+               or technical_output.get('output', '')
+               or technical_output.get('response', '')
+               or str(technical_output))
 
         # Build context
         context = {
@@ -626,6 +626,7 @@ class AbstractionDispatcher:
         # Update output
         result = technical_output.copy()
         result['output'] = translated
+        result['llm_response'] = translated
         result['abstraction_level'] = level.name
         result['translator'] = translator.name()
         result['complaint_elevation'] = shared_memory.get(

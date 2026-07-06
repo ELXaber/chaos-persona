@@ -1,4 +1,4 @@
-#V06272026
+#V07022026
 # =============================================================================
 # Chaos AI-OS – Hardened Orchestrator (Unified Edition)
 # Combines: V1 Logic + V3 Pipeline + Mesh Encryption + Chatbot Safety
@@ -1233,13 +1233,14 @@ def system_step(user_input: str, prompt_complexity: str = "low",
         dispatcher = shared_memory['abstraction_dispatcher']
         # Preserve raw tool results — don't run the lexicon substitution over code/file content
         raw_llm = cpol_result.get('llm_response', '')
+        had_tool_calls = bool(cpol_result.get('tools_called'))
         cpol_result = dispatcher.process(
             user_input=user_input,
             technical_output=cpol_result,
             shared_memory=shared_memory
         )
-        # Restore unmangled llm_response; only the 'output' field needs translation
-        if raw_llm:
+        # Restore unmangled llm_response only when tools were called
+        if raw_llm and had_tool_calls:
             cpol_result['llm_response'] = raw_llm
 
         level = cpol_result.get('abstraction_level', 'TECHNICAL')
