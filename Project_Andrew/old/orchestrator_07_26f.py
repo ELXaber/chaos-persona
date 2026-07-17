@@ -1,4 +1,4 @@
-#V07162026
+#V07022026
 # =============================================================================
 # Chaos AI-OS – Hardened Orchestrator (Unified Edition)
 # Combines: V1 Logic + V3 Pipeline + Mesh Encryption + Chatbot Safety
@@ -1102,19 +1102,6 @@ def system_step(user_input: str, prompt_complexity: str = "low",
     has_llm = OLLAMA_AVAILABLE or bool(shared_memory.get('api_clients'))
     if has_llm and user_input not in ['', None]:
         try:
-            # Detect abstraction level BEFORE generation so style
-            # reaches Qwen in the same inference pass
-            try:
-                if ABSTRACTION_AVAILABLE and shared_memory.get('abstraction_dispatcher'):
-                    dispatcher = shared_memory['abstraction_dispatcher']
-                    detected_level = dispatcher.detect_level(user_input, shared_memory)
-                    level_name = detected_level.name
-                    style_prompt = dispatcher.get_style_prompt(detected_level)
-                else:
-                    level_name, style_prompt = 'CLEAR', ''
-            except Exception:
-                level_name, style_prompt = 'CLEAR', ''
-
             # Current datetime — injected since Ollama sandbox has no clock
             from datetime import datetime, timezone
             current_dt = datetime.now(timezone.utc).strftime(
@@ -1172,8 +1159,7 @@ def system_step(user_input: str, prompt_complexity: str = "low",
                 f"python_status={cpol_result.get('status')}]\n"
                 f"[DATETIME {current_dt}]\n"
                 f"[USER {shared_memory.get('active_user', 'unknown')}]\n"
-                f"[ABSTRACTION_LEVEL {level_name}]\n"
-                f"[STYLE: {style_prompt}]\n"
+                f"[ABSTRACTION_LEVEL {shared_memory.get('current_abstraction_level', 'CLEAR')}]\n"
                 f"[INSTRUCTION: Do NOT pre-translate or adopt a persona. Respond in plain technical prose. The abstraction layer will translate your output automatically.]\n"
                 f"{kb_context}"
                 f"{axiom_context}"
@@ -1253,7 +1239,6 @@ def system_step(user_input: str, prompt_complexity: str = "low",
             technical_output=cpol_result,
             shared_memory=shared_memory
         )
-
         # Restore unmangled llm_response only when tools were called
         if raw_llm and had_tool_calls:
             cpol_result['llm_response'] = raw_llm

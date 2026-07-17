@@ -1,4 +1,4 @@
-#V07162026
+#V07022026
 # =============================================================================
 # PROJECT ANDREW – Abstraction Selector
 # Purpose: Dynamically detect user comprehension level and select appropriate explanation layer (Technical, Victorian, Clear, Caveman)
@@ -32,7 +32,7 @@ EXPLICIT_TRIGGERS = {
         r'\bshow your work\b', r'\bstep by step technical\b'
     ],
     AbstractionLevel.VICTORIAN: [
-        r'\bprofessional\b', r'\bformal\b', r'\bpolite\b', r'\bexplain professionally\b', r'\victorian\b',
+        r'\bprofessional\b', r'\bformal\b', r'\bpolite\b', r'\bexplain professionally\b',
         r'\bin a professional manner\b', r'\bformal explanation\b', r'\beloquent\b',
         r'\bwith decorum\b', r'\bas a gentleman\b', r'\bVictorian\b'
     ],
@@ -42,7 +42,7 @@ EXPLICIT_TRIGGERS = {
         r'\bclarify\b', r'\bmake it simple\b', r'\bunderstandable\b'
     ],
     AbstractionLevel.CAVEMAN: [
-        r'\bbro what\b', r'\bdumb it down\b', r'\bcaveman\b',
+        r'\bbro what\b', r'\bdumb it down\b',
         r'\bexplain like i\'m 5\b', r'\bexplain like im 5\b', r'\btoo complicated\b',
         r'\bmy brain hurts\b', r'\bwhat\?{2,}\b', r'\bhuh\?{2,}\b', r'\bmungo\b',
         r'\bfor real?\b', r'\btoo hard\b'
@@ -114,20 +114,10 @@ class AbstractionSelector:
             active_user = shared_memory.get('active_user', 'default')
             profile = load_user_profile(active_user)
             override = profile.get('abstraction_override')
-
-            # Parent-forced lock — absolute, no escalation regardless of signals
             if override == 'CHILD':
                 return AbstractionLevel.CHILD
-
-            # Soft default from age_group — allow escalation to CLEAR
-            # if the child is demonstrating advanced understanding
-            if profile.get('age_group', 'adult') == 'child':
-                signals = self._extract_signals(shared_memory)
-                if self._shows_advanced_understanding(signals):
-                    self._log_detection(
-                        "Child profile showing advanced understanding → CLEAR"
-                    )
-                    return AbstractionLevel.CLEAR
+            age_group = profile.get('age_group', 'adult')
+            if age_group == 'child':
                 return AbstractionLevel.CHILD
         except ImportError:
             pass  # Standalone mode, no profile
@@ -175,7 +165,7 @@ class AbstractionSelector:
 
         for level, patterns in EXPLICIT_TRIGGERS.items():
             for pattern in patterns:
-                if re.search(pattern, input_lower, re.IGNORECASE):
+                if re.search(pattern, input_lower):
                     print(f"[ABSTRACTION_DEBUG] Trigger match: {pattern} → {level}")
                     return level
         return None
@@ -247,20 +237,6 @@ class AbstractionSelector:
             signals['expertise'] > 0.3
         )
 
-    def _shows_advanced_understanding(self, signals: Dict[str, float]) -> bool:
-        """
-        Lighter bar than _is_expert() — used only to decide whether a
-        child profile should see CLEAR phrasing instead of CHILD phrasing.
-        Deliberately does not unlock VICTORIAN/TECHNICAL; those still
-        require the full adult signal thresholds via _is_expert/_is_professional.
-        """
-        checks = [
-            signals['complexity'] > ImplicitThresholds.COMPLEXITY_ADVANCED,
-            signals['volatility'] < ImplicitThresholds.VOLATILITY_EXPERT + 0.1,
-            signals['curiosity_count'] > 3,
-        ]
-        return sum(checks) >= 2
-
     def _log_detection(self, message: str):
         """Log abstraction decision for audit trail."""
         print(f"[ABSTRACTION] {message}")
@@ -295,8 +271,6 @@ class TechnicalTranslator(BaseTranslator):
     def name(self) -> str:
         return "Technical"
 
-    def name(self) -> str:
-        return "Technical"
 
 # =============================================================================
 # Victorian Translator (L1)
@@ -307,11 +281,6 @@ class VictorianTranslator(BaseTranslator):
     Translates technical concepts into polished, 19th-century professional prose.
     For users who want sophistication without jargon.
     """
-    STYLE_PROMPT = (
-        "Respond as a formal Victorian butler. Elegant, polished prose, "
-        "no modern jargon. Begin with 'One is glad to be of service.' "
-        "Do not explain the style switch."
-    )
 
     def __init__(self):
         # We define the lexicon once here.
@@ -343,19 +312,6 @@ class VictorianTranslator(BaseTranslator):
             r"\bfacts\b": "established parameters"
         }
 
-    def _style_landed(self, text: str) -> bool:
-        lowered = text.lower()[:120]
-        return "one is glad" in lowered or "i shall endeavor" in lowered
-
-    def format_output(self, text: str, context: Dict[str, Any] = None) -> str:
-        """Cheap post-pass — bookend patch only, no rewrite."""
-        if self._style_landed(text):
-            return text
-        prefix = ("I shall endeavor to explain the matter thusly:\n\n"
-                   if (context and context.get('formal_request'))
-                   else "One is glad to be of service. ")
-        return prefix + text
-
     def translate(self, text: str, context: Dict[str, Any] = None) -> str:
         translated = text
 
@@ -383,9 +339,6 @@ class VictorianTranslator(BaseTranslator):
             prefix = "One is glad to be of service. "
 
         return f"{prefix}{translated}"
-
-    def name(self) -> str:
-        return "Victorian"
 
 # =============================================================================
 # Clear Translator (L2)
@@ -433,8 +386,6 @@ class ClearTranslator(BaseTranslator):
 
         return f"To put it simply: {translated}"
 
-    def name(self) -> str:
-        return "Clear"
 
 # =============================================================================
 # Caveman Translator (L3)
@@ -445,11 +396,6 @@ class CavemanTranslator(BaseTranslator):
     Translates technical concepts into caveman speak.
     For confused users who need rocks and fire.
     """
-    STYLE_PROMPT = (
-        "Respond as a caveman. Use the simplest possible words. Use rocks, caves, and fire metaphors, "
-        "Be direct and concrete. Do not use abstract jargon. Begin with 'Mungo explain,' "
-        "Do not explain the style switch."
-    )
 
     def __init__(self):
         self.caveman_lexicon = {
@@ -481,19 +427,6 @@ class CavemanTranslator(BaseTranslator):
             "curiosity engine": "why rock?"
         }
 
-    def _style_landed(self, text: str) -> bool:
-        lowered = text.lower()[:120]
-        return "one is glad" in lowered or "Mungo glad help" in lowered
-
-    def format_output(self, text: str, context: Dict[str, Any] = None) -> str:
-        """Cheap post-pass — bookend patch only, no rewrite."""
-        if self._style_landed(text):
-            return text
-        prefix = ("Mungo explain:\n\n"
-                   if (context and context.get('formal_request'))
-                   else "One is glad to be of service. ")
-        return prefix + text
-
     def translate(self, text: str, context: Dict[str, Any] = None) -> str:
         translated = text
         for term, replacement in self.caveman_lexicon.items():
@@ -501,9 +434,6 @@ class CavemanTranslator(BaseTranslator):
 
         # Caveman intro
         return "Mungo explain:\n\n" + translated + "\n\nMungo glad help. 🪨"
-
-    def name(self) -> str:
-        return "Caveman"
 
 # =============================================================================
 # Child Translator (L4)
@@ -515,7 +445,7 @@ class ChildTranslator:
     """
 
     PROFANITY_FILTER = [
-        'damn', 'hell', 'crap', 'ass', 'bastard', 'shit'
+        'damn', 'hell', 'crap', 'ass', 'bastard'
         # Keep it mild — the really bad ones the model
         # shouldn't generate anyway with safety weights
     ]
@@ -546,15 +476,6 @@ class ChildTranslator:
         'witty': 0.3
     }
 
-    @staticmethod
-    def apply_safety_filter(text: str) -> str:
-        """Standalone profanity scrub — reusable even when a different
-        translator was selected (e.g. a child escalated to CLEAR)."""
-        result = text
-        for word in ChildTranslator.PROFANITY_FILTER:
-            result = re.sub(rf'\b{word}\b', '***', result, flags=re.IGNORECASE)
-        return result
-
     def name(self) -> str:
         return "ChildTranslator"
 
@@ -562,22 +483,35 @@ class ChildTranslator:
         """Simplify and warm up the output for children."""
         result = text
 
+        # Content filter for child profiles
         if context.get('content_filter', True):
-            result = self.apply_safety_filter(result)
+            for word in self.PROFANITY_FILTER:
+                result = re.sub(
+                    rf'\b{word}\b',
+                    '***',
+                    result,
+                    flags=re.IGNORECASE
+                )
 
+        # Apply lexicon substitutions
         for technical, simple in self.LEXICON.items():
-            result = re.sub(rf'\b{technical}\b', simple, result, flags=re.IGNORECASE)
+            result = re.sub(
+                rf'\b{technical}\b',
+                simple,
+                result,
+                flags=re.IGNORECASE
+            )
 
+        # Add encouraging opener if first explanation
         if context.get('first_explanation', False):
             result = "Great question! 😊 " + result
 
+        # Add gentle closer
         if not result.endswith(('!', '?')):
             result += " Does that make sense? Feel free to ask more!"
 
         return result
 
-    def name(self) -> str:
-        return "Child"
 # =============================================================================
 # Main Abstraction Dispatcher
 # =============================================================================
@@ -598,16 +532,20 @@ class AbstractionDispatcher:
             AbstractionLevel.CHILD: ChildTranslator()
         }
 
-    def detect_level(
+    def process(
         self,
         user_input: str,
+        technical_output: Dict[str, Any],
         shared_memory: Dict[str, Any]
-    ) -> AbstractionLevel:
+    ) -> Dict[str, Any]:
         """
-        Detection + complaint escalation — run BEFORE generation so the
-        level (and its STYLE_PROMPT) is available to inject into the same
-        Ollama call. Called directly by orchestrator.py.
+        Main processing function.
+        1. Detect appropriate abstraction level
+        2. Apply translator
+        3. Return modified output with metadata
         """
+
+        # Detect level
         level = self.selector.detect_abstraction_level(user_input, shared_memory)
 
         # Complaint elevation check
@@ -627,7 +565,10 @@ class AbstractionDispatcher:
         if directed_complaint:
             complaint_count = shared_memory.get('complaint_count', 0) + 1
             shared_memory['complaint_count'] = complaint_count
-            previous_level = shared_memory.get('current_abstraction_level', level)
+            previous_level = shared_memory.get(
+                'current_abstraction_level',
+                level
+            )
             if isinstance(previous_level, str):
                 try:
                     previous_level = AbstractionLevel[previous_level]
@@ -639,8 +580,8 @@ class AbstractionDispatcher:
                 AbstractionLevel.TECHNICAL: AbstractionLevel.CLEAR,      # Expert confused → plain language
                 AbstractionLevel.CLEAR: AbstractionLevel.VICTORIAN,      # Plain not landing → more structured
                 AbstractionLevel.VICTORIAN: AbstractionLevel.CAVEMAN,    # Formal not working → simplify hard
-                AbstractionLevel.CAVEMAN: AbstractionLevel.VICTORIAN,    # Full circle → try structured again
-                AbstractionLevel.CHILD: AbstractionLevel.CLEAR           # Smart child → move up
+                AbstractionLevel.CAVEMAN: AbstractionLevel.VICTORIAN,     # Full circle → try structured again
+                AbstractionLevel.CHILD: AbstractionLevel.CLEAR          # Smart child → move up
             }
 
             # Persistent complainer override (3+ complaints)
@@ -651,49 +592,23 @@ class AbstractionDispatcher:
                 level = elevation_map.get(previous_level, AbstractionLevel.CLEAR)
 
             shared_memory['complaint_elevation'] = True
+            shared_memory['current_abstraction_level'] = level
             print(f"[ABSTRACTION] Complaint detected → "
                   f"Elevated from {previous_level.name} to {level.name} "
                   f"(complaint #{complaint_count})")
         else:
+            # Normal flow - update current level
             shared_memory['complaint_elevation'] = False
+            shared_memory['current_abstraction_level'] = level
 
-        shared_memory['current_abstraction_level'] = level
-        return level
-
-    def get_style_prompt(self, level: AbstractionLevel) -> str:
-        """Returns the STYLE_PROMPT for a level, or '' if that translator
-        hasn't been given one yet (Clear/Caveman/Child currently fall back
-        to lexicon translation until you add styles to them)."""
-        return getattr(self.translators.get(level), 'STYLE_PROMPT', '')
-
-    def process(
-        self,
-        user_input: str,
-        technical_output: Dict[str, Any],
-        shared_memory: Dict[str, Any]
-    ) -> Dict[str, Any]:
-        """
-        Runs AFTER generation. Reuses the level detect_level() already
-        stored in shared_memory — only calls detect_level() itself as a
-        fallback (e.g. standalone/test usage where detect_level() wasn't
-        called ahead of time by the orchestrator).
-        """
-        level = shared_memory.get('current_abstraction_level')
-        if isinstance(level, str):
-            try:
-                level = AbstractionLevel[level]
-            except KeyError:
-                level = None
-        if level is None:
-            level = self.detect_level(user_input, shared_memory)
-
+        # Get translator
         translator = self.translators[level]
 
-        # Extract text to format/translate
+        # Extract text to translate
         output_text = (technical_output.get('llm_response', '')
-                       or technical_output.get('output', '')
-                       or technical_output.get('response', '')
-                       or str(technical_output))
+               or technical_output.get('output', '')
+               or technical_output.get('response', '')
+               or str(technical_output))
 
         # Build context
         context = {
@@ -702,29 +617,11 @@ class AbstractionDispatcher:
             'level': level.name,
             'contradiction_density': technical_output.get('confidence', 0.0),
             'volatility': shared_memory.get('volatility', 0.0),
-            'user_input': user_input,
-            'content_filter': shared_memory.get('content_filter', True)
+            'user_input': user_input
         }
 
-        # format_output() = cheap bookend patch for translators with a
-        # STYLE_PROMPT already injected upstream (Victorian, and future
-        # Clear/Caveman). translate() = full lexicon rewrite fallback
-        # for translators without format_output (Clear/Caveman today,
-        # and always Child — see note below).
-        translated = (translator.format_output(output_text, context)
-                      if hasattr(translator, 'format_output')
-                      else translator.translate(output_text, context))
-
-        # Content safety stays keyed to age_group, independent of which
-        # abstraction level was ultimately displayed
-        if shared_memory.get('current_abstraction_level') != AbstractionLevel.CHILD:
-            try:
-                from user_profile_kb import load_user_profile
-                active_user = shared_memory.get('active_user', 'default')
-                if load_user_profile(active_user).get('age_group') == 'child':
-                    translated = ChildTranslator.apply_safety_filter(translated)
-            except ImportError:
-                pass
+        # Translate
+        translated = translator.translate(output_text, context)
 
         # Update output
         result = technical_output.copy()
@@ -791,7 +688,6 @@ if __name__ == "__main__":
 
     for user_input in test_inputs:
         print(f"\n[USER]: {user_input}")
-        dispatcher.detect_level(user_input, shared_memory)
         result = dispatcher.process(user_input, technical_output, shared_memory)
         print(f"[LEVEL]: {result['abstraction_level']}")
         print(f"[{result['translator']}]:\n{result['output']}")
@@ -818,7 +714,6 @@ if __name__ == "__main__":
 
     for user_input, expected in complaint_inputs:
         print(f"\n[USER]: {user_input} ({expected})")
-        dispatcher.detect_level(user_input, complaint_memory)
         result = dispatcher.process(user_input, technical_output, complaint_memory)
         print(f"[LEVEL]: {result['abstraction_level']} | "
               f"Complaint #{result['complaint_count']} | "
