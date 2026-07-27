@@ -1,4 +1,4 @@
-#V07262026
+#V07162026
 # =============================================================================
 # PROJECT ANDREW – Abstraction Selector
 # Purpose: Dynamically detect user comprehension level and select appropriate explanation layer (Technical, Victorian, Clear, Caveman)
@@ -396,58 +396,40 @@ class ClearTranslator(BaseTranslator):
     Translates technical concepts into plain, accessible language.
     Focuses on functional analogies and everyday clarity.
     """
+
     def __init__(self):
-        # Each value is (singular_replacement, plural_replacement).
-        # Use None for plural_replacement when the term isn't a countable noun
-        # (e.g. "volatility") — singular form gets reused either way.
         self.clear_lexicon = {
-            "oscillation": ("checking both sides of the argument", None),
-            "contradiction_density": ("the amount of conflicting information", None),
-            "manifold": ("a map of all possible outcomes", "maps of all possible outcomes"),
-            "axiom ratcheting": ("building on things we know are true", None),
-            "volatility": ("how uncertain the answer is right now", None),
-            "prune": ("ignore ideas that don't make sense", None),
-            # Compound phrases MUST come before the bare "hallucination" entry below —
-            # dict iteration order matters since the first match wins.
-            "hallucination cascade": ("chain of made-up answers", "chains of made-up answers"),
-            "hallucination drift": ("confusion drift", None),
-            "hallucination rate": ("how often it makes things up", None),
-            "hallucination frequency": ("how often it makes things up", None),
-            "hallucination": ("a mistake where the system makes things up",
-                              "mistakes where the system makes things up"),
-            "UNDECIDABLE": ("I can't be sure with the current information", None),
-            "RAW_Q": ("the starting point of the logic", None),
-            "12D": ("multi-angled", None),
-            "CPOL": ("the logic-checking system", None),
-            "ARL": ("the learning layer", None),
-            "Asimov": ("the core safety rules", None),
-            "Law 1": ("the rule against hurting people", None),
-            "Law 2": ("the rule to follow instructions", None),
-            "Law 3": ("the rule to stay functional", None),
-            "epistemic gap": ("a hole in our knowledge", "holes in our knowledge"),
-            "knowledge base": ("the system's library", None),
-            "curiosity engine": ("the part that asks 'why?'", None),
-            r"\bI can't\b": ("I'm not able to", None),
-            r"\bfacts\b": ("verified information", None),
-            r"\bproblem\b": ("issue", "issues"),
+            "oscillation": "checking both sides of the argument",
+            "contradiction_density": "the amount of conflicting information",
+            "manifold": "a map of all possible outcomes",
+            "axiom ratcheting": "building on things we know are true",
+            "volatility": "how uncertain the answer is right now",
+            "prune": "ignore ideas that don't make sense",
+            "hallucination": "a mistake where the system makes things up",
+            "UNDECIDABLE": "I can't be sure with the current information",
+            "RAW_Q": "the starting point of the logic",
+            "12D": "multi-angled",
+            "CPOL": "the logic-checking system",
+            "ARL": "the learning layer",
+            "Asimov": "the core safety rules",
+            "Law 1": "the rule against hurting people",
+            "Law 2": "the rule to follow instructions",
+            "Law 3": "the rule to stay functional",
+            "epistemic gap": "a hole in our knowledge",
+            "knowledge base": "the system's library",
+            "curiosity engine": " the part that asks 'why?'",
+            r"\bI can't\b": "I'm not able to",
+            r"\bfacts\b": "verified information",
+            r"\bproblem\b": "issue"
         }
 
     def translate(self, text: str, context: Dict[str, Any] = None) -> str:
         translated = text
-        for term, repl in self.clear_lexicon.items():
+        for term, replacement in self.clear_lexicon.items():
             if term.startswith(r'\b'):
-                singular_repl = repl[0] if isinstance(repl, tuple) else repl
-                translated = re.sub(term, singular_repl, translated, flags=re.IGNORECASE)
-                continue
-
-            singular_repl, plural_repl = repl
-            plural_repl = plural_repl or singular_repl
-            pattern = r'\b' + re.escape(term) + r'(s|es)?\b'
-
-            def _repl(m, s=singular_repl, p=plural_repl):
-                return p if m.group(1) else s
-
-            translated = re.sub(pattern, _repl, translated, flags=re.IGNORECASE)
+                translated = re.sub(term, replacement, translated, flags=re.IGNORECASE)
+            else:
+                translated = translated.replace(term, replacement)
 
         return f"To put it simply: {translated}"
 
@@ -470,68 +452,54 @@ class CavemanTranslator(BaseTranslator):
     )
 
     def __init__(self):
-        # Each value is (singular_replacement, plural_replacement).
-        # None reuses the singular form when the phrase isn't a countable noun.
         self.caveman_lexicon = {
-            "oscillation": ("rock wobble back and forth", None),
-            "contradiction_density": ("how much rock no fit", None),
-            "manifold": ("many caves to check", None),
-            "axiom ratcheting": ("rock truth lock in", None),
-            "volatility": ("rock wobble", None),
-            "prune": ("throw away bad rock", None),
-            # Compound phrases before the bare "hallucination" entry —
-            # first match in dict order wins, same reasoning as Clear.
-            "hallucination cascade": ("big pile of rock lies", "big piles of rock lies"),
-            "hallucination drift": ("rock brain wander from truth", None),
-            "hallucination rate": ("how much rock see thing not there", None),
-            "hallucination": ("rock see thing not there", "rock see things not there"),
-            "logical paradox": ("rock that breaks thinking", "rocks that break thinking"),
-            "self-referential": ("rock that points at itself", None),
-            "contradiction": ("rock no fit", "rocks no fit"),
-            "binary logic": ("yes-or-no rock", None),
-            "infinite recursion": ("cave with no end", None),
-            "persistent": ("rock not go away", None),
-            "no consistent resolution": ("Mungo no know, Mungo no guess", None),
-            "UNDECIDABLE": ("Mungo no know, Mungo no guess", None),
-            "RAW_Q": ("first rock seed", None),
-            "12D": ("12 caves", None),
-            "CPOL": ("smart rock spin", None),
-            "ARL": ("rock that learn", None),
-            "Asimov": ("rock rules", None),
-            "Law 1": ("no hurt caveman", None),
-            "Law 2": ("do what caveman say (but only if no hurt)", None),
-            "Law 3": ("rock no break self", None),
-            "epistemic gap": ("thing Mungo no know yet", "things Mungo no know yet"),
-            "knowledge base": ("cave memory rock", None),
-            "curiosity engine": ("why rock?", None),
+            "oscillation": "rock wobble back and forth",
+            "contradiction_density": "how much rock no fit",
+            "manifold": "many caves to check",
+            "axiom ratcheting": "rock truth lock in",
+            "volatility": "rock wobble",
+            "prune": "throw away bad rock",
+            "hallucination": "rock see thing not there",
+            "logical paradox": "rock that breaks thinking",
+            "self-referential": "rock that points at itself",
+            "contradiction": "rock no fit",
+            "binary logic": "yes-or-no rock",
+            "infinite recursion": "cave with no end",
+            "persistent": "rock not go away",
+            "no consistent resolution": "Mungo no know, Mungo no guess",
+            "UNDECIDABLE": "Mungo no know, Mungo no guess",
+            "RAW_Q": "first rock seed",
+            "12D": "12 caves",
+            "CPOL": "smart rock spin",
+            "ARL": "rock that learn",
+            "Asimov": "rock rules",
+            "Law 1": "no hurt caveman",
+            "Law 2": "do what caveman say (but only if no hurt)",
+            "Law 3": "rock no break self",
+            "epistemic gap": "thing Mungo no know yet",
+            "knowledge base": "cave memory rock",
+            "curiosity engine": "why rock?"
         }
 
     def _style_landed(self, text: str) -> bool:
-        """Checks the OPENING for Caveman's own marker, not Victorian's."""
-        return "mungo" in text.lower()[:60]
+        lowered = text.lower()[:120]
+        return "one is glad" in lowered or "Mungo glad help" in lowered
 
     def format_output(self, text: str, context: Dict[str, Any] = None) -> str:
-        """Bookend patch — checks opener and closer independently,
-        since they land in different places in the text."""
-        result = text
-        if not self._style_landed(result):
-            result = "Mungo explain:\n\n" + result
-        if "mungo glad help" not in result.lower()[-80:]:
-            result = result.rstrip() + "\n\nMungo glad help. 🪨"
-        return result
+        """Cheap post-pass — bookend patch only, no rewrite."""
+        if self._style_landed(text):
+            return text
+        prefix = ("Mungo explain:\n\n"
+                   if (context and context.get('formal_request'))
+                   else "One is glad to be of service. ")
+        return prefix + text
 
     def translate(self, text: str, context: Dict[str, Any] = None) -> str:
         translated = text
-        for term, repl in self.caveman_lexicon.items():
-            singular_repl, plural_repl = repl
-            plural_repl = plural_repl or singular_repl
-            pattern = r'\b' + re.escape(term) + r'(s|es)?\b'
+        for term, replacement in self.caveman_lexicon.items():
+            translated = translated.replace(term, replacement)
 
-            def _repl(m, s=singular_repl, p=plural_repl):
-                return p if m.group(1) else s
-
-            translated = re.sub(pattern, _repl, translated, flags=re.IGNORECASE)
-
+        # Caveman intro
         return "Mungo explain:\n\n" + translated + "\n\nMungo glad help. 🪨"
 
     def name(self) -> str:

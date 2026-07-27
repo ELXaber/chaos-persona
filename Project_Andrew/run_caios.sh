@@ -1,4 +1,4 @@
-#V06212026
+#V07262026
 #!/usr/bin/env bash
 # CAIOS — Andrew One  |  First-Time Setup & Launch
 # Works on macOS (Intel + Apple Silicon) and Linux (Ubuntu/Debian/Arch)
@@ -90,6 +90,29 @@ info "Installing Python packages..."
     && ok "playwright + chromium" \
     || warn "playwright unavailable (optional — needed for browser tools)"
 
+# Tesseract OCR (optional — for image-to-text on attached screenshots/documents)
+# Note for Linux sudo: If apt install -y tesseract-ocr prompts for a password mid-script and nothing's there to answer it (e.g. someone runs run_caios.sh non-interactively, or piped from something), it'll just hang rather than fail cleanly.
+echo ""
+info "Installing Tesseract OCR (optional)..."
+if [[ "$OS" == "mac" ]]; then
+    if command -v brew &>/dev/null; then
+        brew install tesseract 2>/dev/null && ok "tesseract" || warn "tesseract install failed (optional)"
+    else
+        warn "Homebrew not found — skipping tesseract (optional, needed for image OCR)"
+    fi
+elif [[ "$OS" == "linux" ]]; then
+    if command -v apt &>/dev/null; then
+        sudo apt install -y tesseract-ocr 2>/dev/null && ok "tesseract-ocr" || warn "tesseract-ocr install failed (optional)"
+    elif command -v pacman &>/dev/null; then
+        sudo pacman -S --noconfirm tesseract 2>/dev/null && ok "tesseract" || warn "tesseract install failed (optional)"
+    elif command -v dnf &>/dev/null; then
+        sudo dnf install -y tesseract 2>/dev/null && ok "tesseract" || warn "tesseract install failed (optional)"
+    else
+        warn "Unknown package manager — skipping tesseract (optional, needed for image OCR)"
+    fi
+fi
+"$PYTHON" -m pip install --quiet pytesseract pillow 2>/dev/null && ok "pytesseract" || warn "pytesseract unavailable (optional)"
+
 ok "Python packages ready"
 
 # ── 4. Check Node.js ─────────────────────────────────────────
@@ -127,21 +150,18 @@ fi
 
 # ── 7. Pull model ─────────────────────────────────────────────
 echo ""
-info "Detecting GPU VRAM..."
-OLLAMA_MODEL=$("$PYTHON" detect_model.py 2>/dev/null)
-
-if [[ -z "$OLLAMA_MODEL" ]]; then
-    warn "VRAM detection failed. Defaulting to qwen2.5:7b"
-    warn "Run 'ollama pull qwen3:27b' manually if you have a 24GB+ card."
-    OLLAMA_MODEL="qwen2.5:7b"
-fi
-ok "Selected model: $OLLAMA_MODEL"
-
-if ! ollama list 2>/dev/null | grep -q "$OLLAMA_MODEL"; then
-    echo "  Pulling $OLLAMA_MODEL — may take 10-30 minutes."
-    ollama pull "$OLLAMA_MODEL" || warn "Pull failed — try manually: ollama pull $OLLAMA_MODEL"
+info "Checking for Qwen model..."
+if ! ollama list 2>/dev/null | grep -q "qwen"; then
+    echo ""
+    echo "  Qwen 27B not found. Pulling now."
+    echo "  This is a large download — may take 10-30 minutes."
+    echo ""
+    if ! ollama pull qwen3:27b; then
+        warn "qwen3:27b failed. Trying smaller fallback..."
+        ollama pull qwen2.5:7b || warn "Model pull failed — set one up manually with: ollama pull <model>"
+    fi
 else
-    ok "$OLLAMA_MODEL already downloaded"
+    ok "Qwen model already downloaded"
 fi
 
 # ── 8. Launch ────────────────────────────────────────────────

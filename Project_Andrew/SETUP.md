@@ -1,4 +1,4 @@
-# V06212026
+# V07262026
 # CAIOS — Andrew  |  Quick Setup Guide
 
 > **What you need before starting:**
@@ -82,6 +82,8 @@ cd /path/to/Project_Andrew
 chmod +x run_caios.sh
 ./run_caios.sh
 ```
+Note for Linux sudo installing from run_caios.sh: If apt install -y tesseract-ocr prompts for a password mid-script and nothing's there to answer it (e.g. someone runs run_caios.sh non-interactively, or piped from something), it'll just hang rather than fail cleanly.
+
 The script installs Ollama via the official install script, downloads the model, and starts the interface.
 
 When you see **"Web UI: http://localhost:5000"**, open that in your browser.

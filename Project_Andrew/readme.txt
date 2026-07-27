@@ -1,4 +1,4 @@
-#V06242026
+#V07262026
 Chaos AI-OS (CAIOS)
 Copyright (c) 2025 Jonathan Schack (X @el_xaber) jon@cai-os.com
 
@@ -90,6 +90,10 @@ Note: Not required for basic web fetching.
 semantic_fetch (stdlib only) handles most agent web tasks without Playwright.
 Browser actions requiring vision (scrape_image) need opencv-python + numpy + pillow.
 
+Mac/Linux Optional OCR:
+# Note for Linux sudo installing from run_caios.sh: If apt install -y tesseract-ocr prompts for a password mid-script and nothing's there to answer it (e.g. someone runs run_caios.sh non-interactively, or piped from something), it'll just hang rather than fail cleanly.
+pip install pytesseract
+
 Windows UI Automation (Optional, Windows only):
 pip install windows-mcp
 pip install uv
@@ -107,6 +111,9 @@ uvx windows-mcp serve --transport streamable-http --host localhost --port 8000
 python caios_mcp_client.py
 # Install as a background task that starts at login
 windows-mcp install --transport sse --host 127.0.0.1 --port 8000
+
+OCR Image attachments:
+pip install winocr[cv2]
 
 UX Integration after initial setup (master_init):
 

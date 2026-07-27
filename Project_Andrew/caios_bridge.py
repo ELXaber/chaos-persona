@@ -1,4 +1,4 @@
-#V06262026
+#V06272026
 # =============================================================================
 # CAIOS Web Bridge — Flask server that connects caios_chat_ui.html to the existing orchestrator/caios_chat.py stack.
 #
@@ -39,6 +39,22 @@ except ImportError:
     def mcp_tool(tool, args): return {'ok': False, 'content': '[MCP] caios_mcp_client.py not found'}
 
 app = Flask(__name__, static_folder='.', static_url_path='')
+
+# OCR client for image attachments
+try:
+    import cv2
+    from winocr import recognize_cv2_sync
+    WINOCR_AVAILABLE = True
+except ImportError:
+    WINOCR_AVAILABLE = False
+    print('[BRIDGE] winocr not found — image OCR disabled (Windows-only feature)')
+
+try:
+    import pytesseract
+    from PIL import Image
+    PYTESSERACT_AVAILABLE = True
+except ImportError:
+    PYTESSERACT_AVAILABLE = False
 
 # =============================================================================
 # Bootstrap — same logic as caios_chat.py load_shared_memory()
@@ -274,6 +290,32 @@ def _log_exchange(user_input: str, response: str,
         f.write(json.dumps(entry) + '\n')
 
 
+def _ocr_image(path: str) -> str:
+    """Extract text from an image. Tries Windows' native OCR (winocr) first,
+    falls back to Tesseract (pytesseract) if available. Returns '' if
+    neither backend is installed or no text is found."""
+    if WINOCR_AVAILABLE:
+        try:
+            img = cv2.imread(path)
+            if img is not None:
+                result = recognize_cv2_sync(img)
+                text = (result.get('text') or '').strip()
+                if text:
+                    return text
+        except Exception as e:
+            print(f'[OCR] winocr failed: {e}')
+
+    if PYTESSERACT_AVAILABLE:
+        try:
+            text = pytesseract.image_to_string(Image.open(path)).strip()
+            if text:
+                return text
+        except Exception as e:
+            print(f'[OCR] pytesseract failed: {e}')
+
+    return ''
+
+
 # =============================================================================
 # Routes — startup / static
 # =============================================================================
@@ -465,17 +507,45 @@ def api_chat():
     # Prepend attachment context if present
     full_input = user_input
     if attachment_path and pathlib.Path(attachment_path).exists():
-        try:
-            content = pathlib.Path(attachment_path).read_text(encoding='utf-8', errors='replace')
-            truncated = content[:8000]
-            full_input = (
-                f"[ATTACHED FILE: {pathlib.Path(attachment_path).name}]\n"
-                f"{truncated}\n"
-                f"[END OF FILE]\n\n"
-                f"{user_input}"
-            )
-        except Exception:
-            pass
+        path_obj = pathlib.Path(attachment_path)
+        IMAGE_EXTENSIONS = {'.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp', '.jfif'}
+        ext = path_obj.suffix.lower()
+
+        if ext in IMAGE_EXTENSIONS:
+            extracted = _ocr_image(str(path_obj))
+            if extracted:
+                full_input = (
+                    f"[ATTACHED IMAGE — OCR TEXT EXTRACTED FROM {path_obj.name}]\n"
+                    f"{extracted[:4000]}\n"
+                    f"[END OF OCR TEXT — note: this is text extraction only, not a "
+                    f"visual description of the image]\n\n"
+                    f"{user_input}"
+                )
+            else:
+                reason = ("no readable text was found in it"
+                           if (WINOCR_AVAILABLE or PYTESSERACT_AVAILABLE)
+                           else "CAIOS does not currently have OCR enabled on this system")
+                full_input = (
+                    f"[ATTACHMENT NOTICE: {path_obj.name} is an image file, and {reason}. "
+                    f"Describe the image in text, or attach a text-based file instead.]\n\n"
+                    f"{user_input}"
+                )
+        else:
+            try:
+                content = path_obj.read_text(encoding='utf-8', errors='strict')
+                truncated = content[:8000]
+                full_input = (
+                    f"[ATTACHED FILE: {path_obj.name}]\n"
+                    f"{truncated}\n"
+                    f"[END OF FILE]\n\n"
+                    f"{user_input}"
+                )
+            except UnicodeDecodeError:
+                full_input = (
+                    f"[ATTACHMENT NOTICE: {path_obj.name} could not be read as text "
+                    f"(binary or unsupported encoding). Attachment skipped.]\n\n"
+                    f"{user_input}"
+                )
 
     # --- Route through orchestrator if available ---
     cpol_status = 'unknown'
