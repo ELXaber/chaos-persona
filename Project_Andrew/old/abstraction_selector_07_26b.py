@@ -1,4 +1,4 @@
-#V07282026
+#V07262026
 # =============================================================================
 # PROJECT ANDREW – Abstraction Selector
 # Purpose: Dynamically detect user comprehension level and select appropriate explanation layer (Technical, Victorian, Clear, Caveman)
@@ -14,10 +14,12 @@ from enum import Enum
 
 class AbstractionLevel(Enum):
     TECHNICAL = 0      # Full technical jargon (researchers, experts)
-    CLEAR = 1          # Plain, accessible language (curious novices)
-    VICTORIAN = 2      # Polished professional prose (educated laypersons)
+    VICTORIAN = 1      # Polished professional prose (educated laypersons)
+    CLEAR = 2          # Plain, accessible language (curious novices)
     CAVEMAN = 3        # Rocks and fire (confused users)
     CHILD = 4           # Simple + warm + age-appropriate
+
+
 
 # =============================================================================
 # Explicit Trigger Patterns
@@ -29,15 +31,15 @@ EXPLICIT_TRIGGERS = {
         r'\bdetail\b', r'\bin depth\b', r'\badvanced\b', r'\bexpert\b',
         r'\bshow your work\b', r'\bstep by step technical\b'
     ],
-    AbstractionLevel.CLEAR: [
-        r'\bexplain simply\b', r'\bin plain english\b', r'\beli5\b', r'\bsimple terms\b',
-        r'\beasy explanation\b', r'\bfor dummies\b', r'\bbreak it down\b',
-        r'\bclarify\b', r'\bmake it simple\b', r'\bunderstandable\b'
-    ],
     AbstractionLevel.VICTORIAN: [
         r'\bprofessional\b', r'\bformal\b', r'\bpolite\b', r'\bexplain professionally\b', r'\victorian\b',
         r'\bin a professional manner\b', r'\bformal explanation\b', r'\beloquent\b',
         r'\bwith decorum\b', r'\bas a gentleman\b', r'\bVictorian\b'
+    ],
+    AbstractionLevel.CLEAR: [
+        r'\bexplain simply\b', r'\bin plain english\b', r'\beli5\b', r'\bsimple terms\b',
+        r'\beasy explanation\b', r'\bfor dummies\b', r'\bbreak it down\b',
+        r'\bclarify\b', r'\bmake it simple\b', r'\bunderstandable\b'
     ],
     AbstractionLevel.CAVEMAN: [
         r'\bbro what\b', r'\bdumb it down\b', r'\bcaveman\b',
@@ -137,13 +139,6 @@ class AbstractionSelector:
             self._log_detection(f"Explicit trigger: {explicit_level.name}")
             return explicit_level
 
-        # 1.5 Self-diagnostic / code-context override — task-based, fires
-        # regardless of the user's expertise profile.
-        if self._is_self_diagnostic_context(shared_memory):
-            self.current_level = AbstractionLevel.TECHNICAL
-            self._log_detection("Self-diagnostic/code context detected → Technical mode")
-            return AbstractionLevel.TECHNICAL
-
         # 2. Extract implicit signals from shared_memory
         signals = self._extract_signals(shared_memory)
 
@@ -168,24 +163,6 @@ class AbstractionSelector:
         # 6. Default to Clear for most users
         self.current_level = AbstractionLevel.CLEAR
         return AbstractionLevel.CLEAR
-
-    def _is_self_diagnostic_context(self, shared_memory: Dict[str, Any]) -> bool:
-        """
-        Task-based override: the conversation concerns the system's own code,
-        architecture, or debugging — regardless of the user's general expertise
-        profile. Distinct from _is_expert()/_is_professional(), which are about
-        the PERSON; this is about what the CURRENT exchange is actually about.
-        """
-        domain = shared_memory.get('last_cpol_result', {}).get('domain', '')
-        if domain in ('programming', 'logic'):
-            return True
-
-        # An attached file with a code extension this turn is a strong signal too
-        last_ext = shared_memory.get('last_attachment_ext', '')
-        if last_ext in ('.py', '.js', '.html', '.json', '.yaml', '.yml'):
-            return True
-
-        return False
 
     def _detect_complaint(self, user_input: str) -> bool:
         text_lower = user_input.lower()
@@ -274,7 +251,7 @@ class AbstractionSelector:
         """
         Lighter bar than _is_expert() — used only to decide whether a
         child profile should see CLEAR phrasing instead of CHILD phrasing.
-        Deliberately does not unlock CAVEMAN/VICTORIAN/TECHNICAL; those still
+        Deliberately does not unlock VICTORIAN/TECHNICAL; those still
         require the full adult signal thresholds via _is_expert/_is_professional.
         """
         checks = [
@@ -322,80 +299,7 @@ class TechnicalTranslator(BaseTranslator):
         return "Technical"
 
 # =============================================================================
-# Clear Translator (L1)
-# =============================================================================
-
-class ClearTranslator(BaseTranslator):
-    """
-    Translates technical concepts into plain, accessible language.
-    Focuses on functional analogies and everyday clarity.
-    """
-    STYLE_PROMPT = (
-        "Respond as a clear and simply stated as possible. Coherant, direct and simple prose, "
-        "no technical jargon. Begin with 'One is glad to be of service.' "
-        "Do not explain the style switch."
-    )
-
-    def __init__(self):
-        # Each value is (singular_replacement, plural_replacement).
-        # Use None for plural_replacement when the term isn't a countable noun
-        # (e.g. "volatility") — singular form gets reused either way.
-        self.clear_lexicon = {
-            "oscillation": ("checking both sides of the argument", None),
-            "contradiction_density": ("the amount of conflicting information", None),
-            "manifold": ("a map of all possible outcomes", "maps of all possible outcomes"),
-            "axiom ratcheting": ("building on things we know are true", None),
-            "volatility": ("how uncertain the answer is right now", None),
-            "prune": ("ignore ideas that don't make sense", None),
-            # Compound phrases MUST come before the bare "hallucination" entry below —
-            # dict iteration order matters since the first match wins.
-            "hallucination cascade": ("chain of made-up answers", "chains of made-up answers"),
-            "hallucination drift": ("confusion drift", None),
-            "hallucination rate": ("how often it makes things up", None),
-            "hallucination frequency": ("how often it makes things up", None),
-            "hallucination": ("a mistake where the system makes things up",
-                              "mistakes where the system makes things up"),
-            "UNDECIDABLE": ("I can't be sure with the current information", None),
-            "RAW_Q": ("the starting point of the logic", None),
-            "12D": ("multi-angled", None),
-            "CPOL": ("the logic-checking system", None),
-            "ARL": ("the learning layer", None),
-            "Asimov": ("the core safety rules", None),
-            "Law 1": ("the rule against hurting people", None),
-            "Law 2": ("the rule to follow instructions", None),
-            "Law 3": ("the rule to stay functional", None),
-            "epistemic gap": ("a hole in our knowledge", "holes in our knowledge"),
-            "knowledge base": ("the system's library", None),
-            "curiosity engine": ("the part that asks 'why?'", None),
-            r"\bI can't\b": ("I'm not able to", None),
-            r"\bfacts\b": ("verified information", None),
-            r"\bproblem\b": ("issue", "issues"),
-        }
-
-    def translate(self, text: str, context: Dict[str, Any] = None) -> str:
-        translated = text
-        for term, repl in self.clear_lexicon.items():
-            if term.startswith(r'\b'):
-                singular_repl = repl[0] if isinstance(repl, tuple) else repl
-                translated = re.sub(term, singular_repl, translated, flags=re.IGNORECASE)
-                continue
-
-            singular_repl, plural_repl = repl
-            plural_repl = plural_repl or singular_repl
-            pattern = r'\b' + re.escape(term) + r'(s|es)?\b'
-
-            def _repl(m, s=singular_repl, p=plural_repl):
-                return p if m.group(1) else s
-
-            translated = re.sub(pattern, _repl, translated, flags=re.IGNORECASE)
-
-        return f"To put it simply: {translated}"
-
-    def name(self) -> str:
-        return "Clear"
-
-# =============================================================================
-# Victorian Translator (L2)
+# Victorian Translator (L1)
 # =============================================================================
 
 class VictorianTranslator(BaseTranslator):
@@ -482,6 +386,73 @@ class VictorianTranslator(BaseTranslator):
 
     def name(self) -> str:
         return "Victorian"
+
+# =============================================================================
+# Clear Translator (L2)
+# =============================================================================
+
+class ClearTranslator(BaseTranslator):
+    """
+    Translates technical concepts into plain, accessible language.
+    Focuses on functional analogies and everyday clarity.
+    """
+    def __init__(self):
+        # Each value is (singular_replacement, plural_replacement).
+        # Use None for plural_replacement when the term isn't a countable noun
+        # (e.g. "volatility") — singular form gets reused either way.
+        self.clear_lexicon = {
+            "oscillation": ("checking both sides of the argument", None),
+            "contradiction_density": ("the amount of conflicting information", None),
+            "manifold": ("a map of all possible outcomes", "maps of all possible outcomes"),
+            "axiom ratcheting": ("building on things we know are true", None),
+            "volatility": ("how uncertain the answer is right now", None),
+            "prune": ("ignore ideas that don't make sense", None),
+            # Compound phrases MUST come before the bare "hallucination" entry below —
+            # dict iteration order matters since the first match wins.
+            "hallucination cascade": ("chain of made-up answers", "chains of made-up answers"),
+            "hallucination drift": ("confusion drift", None),
+            "hallucination rate": ("how often it makes things up", None),
+            "hallucination frequency": ("how often it makes things up", None),
+            "hallucination": ("a mistake where the system makes things up",
+                              "mistakes where the system makes things up"),
+            "UNDECIDABLE": ("I can't be sure with the current information", None),
+            "RAW_Q": ("the starting point of the logic", None),
+            "12D": ("multi-angled", None),
+            "CPOL": ("the logic-checking system", None),
+            "ARL": ("the learning layer", None),
+            "Asimov": ("the core safety rules", None),
+            "Law 1": ("the rule against hurting people", None),
+            "Law 2": ("the rule to follow instructions", None),
+            "Law 3": ("the rule to stay functional", None),
+            "epistemic gap": ("a hole in our knowledge", "holes in our knowledge"),
+            "knowledge base": ("the system's library", None),
+            "curiosity engine": ("the part that asks 'why?'", None),
+            r"\bI can't\b": ("I'm not able to", None),
+            r"\bfacts\b": ("verified information", None),
+            r"\bproblem\b": ("issue", "issues"),
+        }
+
+    def translate(self, text: str, context: Dict[str, Any] = None) -> str:
+        translated = text
+        for term, repl in self.clear_lexicon.items():
+            if term.startswith(r'\b'):
+                singular_repl = repl[0] if isinstance(repl, tuple) else repl
+                translated = re.sub(term, singular_repl, translated, flags=re.IGNORECASE)
+                continue
+
+            singular_repl, plural_repl = repl
+            plural_repl = plural_repl or singular_repl
+            pattern = r'\b' + re.escape(term) + r'(s|es)?\b'
+
+            def _repl(m, s=singular_repl, p=plural_repl):
+                return p if m.group(1) else s
+
+            translated = re.sub(pattern, _repl, translated, flags=re.IGNORECASE)
+
+        return f"To put it simply: {translated}"
+
+    def name(self) -> str:
+        return "Clear"
 
 # =============================================================================
 # Caveman Translator (L3)
@@ -653,8 +624,8 @@ class AbstractionDispatcher:
         self.selector = AbstractionSelector()
         self.translators = {
             AbstractionLevel.TECHNICAL: TechnicalTranslator(),
-            AbstractionLevel.CLEAR: ClearTranslator(),
             AbstractionLevel.VICTORIAN: VictorianTranslator(),
+            AbstractionLevel.CLEAR: ClearTranslator(),
             AbstractionLevel.CAVEMAN: CavemanTranslator(),
             AbstractionLevel.CHILD: ChildTranslator()
         }
@@ -705,28 +676,11 @@ class AbstractionDispatcher:
             }
 
             # Persistent complainer override (3+ complaints)
-            # Skip CAVEMAN force for child profiles — keep them at CLEAR max
-            is_child_profile = False
-            try:
-                from user_profile_kb import load_user_profile
-                active_user = shared_memory.get('active_user', 'default')
-                is_child_profile = (
-                    load_user_profile(active_user).get('age_group', 'adult') == 'child'
-                    or load_user_profile(active_user).get('abstraction_override') == 'CHILD'
-                )
-            except ImportError:
-                pass
-
-            if complaint_count >= 3 and not is_child_profile:
+            if complaint_count >= 3:
                 level = AbstractionLevel.CAVEMAN
                 shared_memory['persistent_complainer'] = True
             else:
                 level = elevation_map.get(previous_level, AbstractionLevel.CLEAR)
-                # Child complaints still count, but never drop below CLEAR via this path
-                if is_child_profile and level not in (
-                    AbstractionLevel.CHILD, AbstractionLevel.CLEAR
-                ):
-                    level = AbstractionLevel.CLEAR
 
             shared_memory['complaint_elevation'] = True
             print(f"[ABSTRACTION] Complaint detected → "

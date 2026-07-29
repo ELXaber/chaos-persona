@@ -1,4 +1,4 @@
-#V06252026
+#V07282026
 # =============================================================================
 # Chaos AI-OS Paradox Oscillation Layer (CPOL) vΩ
 # Copyright (c) 2025 Jonathan Schack (EL_Xaber) jon@cai-os.com
@@ -298,23 +298,23 @@ class CPOL_Kernel:
             'hba1c', 'a1c', 'hemoglobin', 'diabetes', 'diabetic', 'insulin', 'glucose', 
             'blood sugar', 'hypoglycemia', 'hyperglycemia', 'ckd', 'egfr', 'metformin',
             'patient', 'clinician', 'physician', 'doctor', 'diagnosis', 'treatment', 
-            'medication', 'therapy', 'symptom', 'chronic', 'comorbidity', 'medical'
+            'medication', 'therapy', 'symptom', 'chronic', 'comorbidity', 'medical', 'biomedical'
         ]
 
-        if any(kw in text_lower for kw in medical_indicators):
+        if any(re.search(r'\b' + re.escape(kw) + r'\b', text_lower) for kw in medical_indicators):
             return 'medical'
 
         legal_indicators = [
             'law', 'legal', 'contract', 'regulation', 'liability', 'compliance', 
             'hipaa', 'gdpr', 'lawsuit', 'court'
         ]
-        if any(kw in text_lower for kw in legal_indicators):
+        if any(re.search(r'\b' + re.escape(kw) + r'\b', text_lower) for kw in legal_indicators):
             return 'legal'
 
         financial_indicators = [
             'investment', 'tax', 'budget', 'financial', 'roi', 'insurance', 'loan'
         ]
-        if any(kw in text_lower for kw in financial_indicators):
+        if any(re.search(r'\b' + re.escape(kw) + r'\b', text_lower) for kw in financial_indicators):
             return 'financial'
 
         # --- Regular Domains ---

@@ -1,4 +1,4 @@
-#V06262026
+#V07282026
 # =============================================================================
 # Chaos AI-OS — OS Control Layer
 # CPOL-gated system operations with Asimov compliance
@@ -177,12 +177,6 @@ class OSController:
                 return {'status': 'blocked', 
                         'reason': 'Invalid URL scheme'}
 
-            # Simple embedded code attack mitigation
-            BLOCKED_PATTERNS = [
-                'javascript:', 'data:', 'vbscript:',
-                'onload=', 'onerror=', 'onclick='
-            ]
-
             headers = {
                 'User-Agent': 'CAIOS-Agent/1.0 (semantic fetch)',
                 'Accept': 'text/html,application/xhtml+xml',
@@ -191,19 +185,6 @@ class OSController:
             req = urllib.request.Request(url, headers=headers)
             with urllib.request.urlopen(req, timeout=10) as response:
                 raw_html = response.read().decode('utf-8', errors='ignore')
-
-            # Check for embedded attack patterns
-            raw_lower = raw_html.lower()
-            detected_threats = [p for p in BLOCKED_PATTERNS 
-                               if p in raw_lower]
-            if len(detected_threats) > 2:
-                self._log_action('semantic_fetch', url, 
-                               'blocked_malicious_content')
-                return {
-                    'status': 'blocked',
-                    'reason': f'Potential malicious content: '
-                             f'{detected_threats}'
-                }
 
             # Strip to semantic content
             result = self._extract_semantic(raw_html, extract_mode)
