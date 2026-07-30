@@ -1203,6 +1203,32 @@ def system_step(user_input: str, prompt_complexity: str = "low",
             cpol_result['llm_response'] = llm_response
             print(f"[OLLAMA] Response received ({len(llm_response)} chars)")
 
+            # OS INTENT DETECTION — check if query needs browser/OS action
+            os_intent_markers = [
+                'look up', 'search for', 'browse', 'open browser',
+                'fetch', 'navigate to', 'check the url', 'find online',
+                'what is the', 'latest news', 'current price'
+            ]
+            if (OSC_AVAILABLE and 
+                shared_memory.get('os_controller') and
+                any(m in user_input.lower() for m in os_intent_markers)):
+                try:
+                    osc = shared_memory['os_controller']
+                    # Extract likely URL or search term from user input
+                    # Simple approach: use semantic_fetch for web lookups
+                    search_term = user_input  # orchestrator passes full query
+                    fetch_result = osc.semantic_fetch(
+                        query=search_term,
+                        max_results=3
+                    )
+                    if fetch_result.get('status') == 'success':
+                        cpol_result['os_result'] = fetch_result
+                        # Inject result into context for next turn
+                        shared_memory['last_os_result'] = fetch_result
+                        print(f"[OS_CONTROL] Web fetch completed")
+                except Exception as e:
+                    print(f"[OS_CONTROL] Intent detection failed: {e}")
+
         except Exception as e:
             print(f"[LLM] Call failed: {e}")
             cpol_result['llm_response'] = None

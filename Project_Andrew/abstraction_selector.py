@@ -1,4 +1,4 @@
-#V07282026
+#V07292026
 # =============================================================================
 # PROJECT ANDREW – Abstraction Selector
 # Purpose: Dynamically detect user comprehension level and select appropriate explanation layer (Technical, Victorian, Clear, Caveman)
@@ -138,10 +138,20 @@ class AbstractionSelector:
             return explicit_level
 
         # 1.5 Self-diagnostic / code-context override — task-based, fires
-        # regardless of the user's expertise profile.
+        # regardless of the user's expertise profile. Sticky: once triggered,
+        # persists for a few turns so context-free follow-ups ("did that work?", "same bug?") in the same debugging thread don't fall back
+        # to implicit-signal detection, which has no code-context signal to read on those turns anyway.
         if self._is_self_diagnostic_context(shared_memory):
+            shared_memory['technical_context_ttl'] = 5
             self.current_level = AbstractionLevel.TECHNICAL
-            self._log_detection("Self-diagnostic/code context detected → Technical mode")
+            self._log_detection("Self-diagnostic/code context detected → Technical mode (TTL reset to 5)")
+            return AbstractionLevel.TECHNICAL
+        elif shared_memory.get('technical_context_ttl', 0) > 0:
+            shared_memory['technical_context_ttl'] -= 1
+            self.current_level = AbstractionLevel.TECHNICAL
+            self._log_detection(
+                f"Technical TTL active ({shared_memory['technical_context_ttl']} turns left) → Technical mode"
+            )
             return AbstractionLevel.TECHNICAL
 
         # 2. Extract implicit signals from shared_memory
