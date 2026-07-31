@@ -1,4 +1,4 @@
-#V07282026
+#V07302026
 # =============================================================================
 # Chaos AI-OS Paradox Oscillation Layer (CPOL) vΩ
 # Copyright (c) 2025 Jonathan Schack (EL_Xaber) jon@cai-os.com
@@ -469,10 +469,11 @@ class CPOL_Kernel:
             # Apply the 12D pull to the z-state
             # Average of the 12-element manifold signature to warp the phase
             avg_pull = sum(manifold_data["sig"]) / 12  # 12 elements / 12 = average
-            self.z *= complex(math.cos(avg_pull), math.sin(avg_pull))
+            z *= complex(math.cos(avg_pull), math.sin(avg_pull))
 
             z = self._entropy_knower(z)
-            z *= self.decay
+            effective_decay = 0.98 if self.contradiction_density > 0.6 else self.decay
+            z *= effective_decay
             self.z = z
 
             # History Management
