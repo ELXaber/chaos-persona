@@ -1,4 +1,4 @@
-#V07292026
+#V07312026
 # =============================================================================
 # Chaos AI-OS – Hardened Orchestrator (Unified Edition)
 # Combines: V1 Logic + V3 Pipeline + Mesh Encryption + Chatbot Safety
@@ -628,7 +628,7 @@ def check_session_timeout(session_context: dict) -> bool:
 
 def system_step(user_input: str, prompt_complexity: str = "low", 
                 response_stream=None, api_clients=None,
-                user_id: str = None):
+                user_id: str = None, enable_thinking: Optional[bool] = None):
     """
     Main orchestration function for unified system.
     Args:
@@ -1189,7 +1189,8 @@ def system_step(user_input: str, prompt_complexity: str = "low",
                     user_query=enriched_query,
                     contradiction_density=density,
                     evidence_score=cpol_result.get('confidence', 0.5),
-                    tool_addendum=shared_memory.get('tool_addendum', '')
+                    tool_addendum=shared_memory.get('tool_addendum', ''),
+                    enable_thinking=enable_thinking
                 )
             else:
                 # API client path (OpenAI, Anthropic, xAI, Google)

@@ -1,4 +1,4 @@
-<!-- V07272026 -->
+<!-- V07312026 -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -361,6 +361,7 @@ label.compose-btn{cursor:pointer}
         <span id="kb-label">KB</span>
       </div>
       <button class="tb-icon" id="btn-whoami" title="/whoami">⊕</button>
+      <button class="tb-icon" id="btn-think" title="Toggle thinking mode (currently: Auto)">T</button>
     </div>
   </div>
 
@@ -424,6 +425,7 @@ const COMMANDS = [
   '/mungo-stats','/invert_idx','/design_agent','/regen_raw_q',
   '/rotate axioms',
   '/kb_sweep','/kb_validate','/kb_purge','/kb_list_bad',
+  '/think on','/think off','/think auto',
 ];
 
 // ── DOM shortcuts ──
@@ -942,6 +944,28 @@ async function sendMessage() {
 function handleLocalCommand(text) {
   const cmd = text.toLowerCase();
 
+  if (cmd.startsWith('/think')) {
+    const parts = cmd.split(' ');
+    const mode = parts[1] || 'auto';
+    if (!['on', 'off', 'auto'].includes(mode)) {
+      appendMsg('andrew', `Usage: /think on | /think off | /think auto`, 'RESOLVED', 'system');
+      return true;
+    }
+    fetch('/api/set_thinking', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({token: S.token, mode}),
+    })
+      .then(r => r.json())
+      .then(d => {
+        const label = mode === 'auto'
+          ? 'Auto (CPOL density decides)'
+          : mode === 'on' ? 'Always on' : 'Always off';
+        appendMsg('andrew', `**Thinking mode:** ${label}`, 'RESOLVED', 'system');
+      });
+    return true;
+  }
+
   if (cmd === '/whoami') {
     const id = bootData.system_id || 'Unknown';
     const owner = bootData.primary_user || 'Unknown';
@@ -957,8 +981,10 @@ function handleLocalCommand(text) {
     fetch(`/api/status?token=${S.token}`)
       .then(r => r.json())
       .then(d => {
+        const thinkLabel = d.thinking === null || d.thinking === undefined
+          ? 'Auto' : (d.thinking ? 'On' : 'Off');
         appendMsg('andrew',
-          `**CPOL:** ${d.cpol}  \n**Model:** ${d.model} (${d.provider})  \n**User:** ${d.user}  \n**KB:** ${d.kb.total_discoveries} discoveries · ${d.kb.active_axioms} axioms`,
+          `**CPOL:** ${d.cpol}  \n**Model:** ${d.model} (${d.provider})  \n**User:** ${d.user}  \n**Thinking:** ${thinkLabel}  \n**KB:** ${d.kb.total_discoveries} discoveries · ${d.kb.active_axioms} axioms`,
           d.cpol, 'system');
         updateKB(d.kb);
         updateCPOL(d.cpol);
@@ -997,9 +1023,38 @@ $('btn-whoami').addEventListener('click', () => {
   sendMessage();
 });
 
+// Local UI state for the three-way cycle
+S.thinkMode = 'auto';
+
+function updateThinkButton() {
+  const btn = $('btn-think');
+  const labels = {auto: 'Auto', on: 'On', off: 'Off'};
+  const icons = {auto: 'T', on: 'T✓', off: 'T✗'};
+  btn.textContent = icons[S.thinkMode];
+  btn.title = `Thinking mode: ${labels[S.thinkMode]} (click to cycle)`;
+}
+
+$('btn-think').addEventListener('click', () => {
+  const cycle = {auto: 'on', on: 'off', off: 'auto'};
+  S.thinkMode = cycle[S.thinkMode];
+
+  fetch('/api/set_thinking', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({token: S.token, mode: S.thinkMode}),
+  })
+    .then(r => r.json())
+    .then(() => updateThinkButton())
+    .catch(() => {
+      const revert = {on: 'auto', off: 'on', auto: 'off'};
+      S.thinkMode = revert[S.thinkMode];
+    });
+});
+
+updateThinkButton();
+
 $('btn-new').addEventListener('click', () => {
-  messages.innerHTML = '';
-  const identity = bootData.system_id || 'Andrew';
+
   appendMsg('andrew', `New conversation started. How can I help you, ${S.display}?`, 'RESOLVED', 'general');
 });
 

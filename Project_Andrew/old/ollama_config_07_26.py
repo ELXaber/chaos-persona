@@ -1,4 +1,4 @@
-#V07312026
+#V06262026
 # =============================================================================
 """
 Ollama Configuration Bridge - CPOL State to Inference Parameters
@@ -166,7 +166,7 @@ def get_cpol_ollama_params(
         "system": load_caios_system_prompt(max_chars=prompt_limit),
         "options": {
             "temperature": round(temperature, 2),
-            "num_predict": 8192,
+            "num_predict": 4096,
             "top_p": 0.92,
             "repeat_penalty": 1.12,
             "num_ctx": num_ctx,
@@ -226,8 +226,7 @@ def query_with_cpol(
     evidence_score: float = 0.5,
     preferred_model: str = None,
     config: Optional[Dict] = None,
-    tool_addendum: str = "",
-    enable_thinking: Optional[bool] = None
+    tool_addendum: str = ""
 ) -> str:
     """
     Query Ollama with live CPOL-tuned parameters.
@@ -238,7 +237,6 @@ def query_with_cpol(
         contradiction_density: From paradox_oscillator (auto-detected if None)
         evidence_score: From query analysis (0.0-1.0)
         config: System config (auto-loaded if None)
-        enable_thinking: Force thinking on/off. None = auto from density.
 
     Returns:
         Model response string
@@ -253,9 +251,6 @@ def query_with_cpol(
             contradiction_density = oscillator.detect_contradiction(user_query)
         except ImportError:
             contradiction_density = 0.12  # Default stable state
-
-    if enable_thinking is None:
-        enable_thinking = contradiction_density > 0.3
 
     params = get_cpol_ollama_params(
         contradiction_density=contradiction_density,
@@ -284,29 +279,20 @@ def query_with_cpol(
         model=params['model'],
         prompt=user_query,
         system=identity_prefix + params['system'] + tool_addendum,
-        options=params['options'],
-        think=enable_thinking
+        options=params['options']
     )
 
-    # ---- safe extraction (no scoping surprises) ----
-    raw = getattr(response, 'response', None) or ''
-    thinking = getattr(response, 'thinking', None) or ''
-    msg = getattr(response, 'message', None)
-
-    result = (raw or '').strip()
-
-    if not result and msg is not None:
-        result = (getattr(msg, 'content', None) or '').strip()
+    # if response is entirely in <think> block
+    result = response.response.strip() if hasattr(response, 'response') else ''
 
     if not result:
-        if thinking:
-            print(f"[OLLAMA_DEBUG] thinking present but response empty "
-                  f"(len={len(thinking)}), done_reason={getattr(response, 'done_reason', 'unknown')}")
-            result = "[LLM] Model finished reasoning but produced no final answer — retry or raise num_predict"
-        else:
-            print(f"[OLLAMA_DEBUG] done_reason: {getattr(response, 'done_reason', 'unknown')}")
-            print(f"[OLLAMA_DEBUG] raw={raw!r} thinking={thinking!r}")
-            result = "[LLM] No response generated — query may need rephrasing"
+        # Fallback: check alternate response fields
+        msg = getattr(response, 'message', None)
+        result = msg.content.strip() if msg and hasattr(msg, 'content') else ''
+
+    if not result:
+        print(f"[OLLAMA_DEBUG] done_reason: {getattr(response, 'done_reason', 'unknown')}")
+        result = "[LLM] No response generated — query may need rephrasing"
 
     return result
 

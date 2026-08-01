@@ -1,4 +1,4 @@
-#V06272026
+#V07312026
 # =============================================================================
 # CAIOS Web Bridge — Flask server that connects caios_chat_ui.html to the existing orchestrator/caios_chat.py stack.
 #
@@ -460,6 +460,31 @@ def api_select_model():
 
 
 # =============================================================================
+# Route — POST /api/thinking
+# Enables thinking mode
+# =============================================================================
+
+@app.route('/api/set_thinking', methods=['POST'])
+def api_set_thinking():
+    body = request.get_json(silent=True) or {}
+    token = body.get('token', '')
+    mode = body.get('mode', 'auto')  # 'auto' | 'on' | 'off'
+
+    sess = _sessions.get(token)
+    if sess is None:
+        return jsonify({'error': 'Invalid session'}), 401
+
+    if mode == 'on':
+        sess['enable_thinking'] = True
+    elif mode == 'off':
+        sess['enable_thinking'] = False
+    else:
+        sess['enable_thinking'] = None  # auto — density-based decision
+
+    return jsonify({'ok': True, 'enable_thinking': sess['enable_thinking']})
+
+
+# =============================================================================
 # Route — POST /api/upload
 # Saves attached file, returns a reference path.
 # =============================================================================
@@ -498,6 +523,8 @@ def api_chat():
         return jsonify({'error': 'Invalid session'}), 401
     if not user_input:
         return jsonify({'error': 'Empty message'}), 400
+
+    enable_thinking = sess.get('enable_thinking')
 
     user_id = sess['user_id']
     provider = sess.get('provider', 'ollama_local')
@@ -559,6 +586,7 @@ def api_chat():
                 prompt_complexity='medium',
                 api_clients=shared_memory.get('api_clients'),
                 user_id=user_id,
+                enable_thinking=enable_thinking,
             )
             if isinstance(result, dict):
                 response_text = result.get('llm_response') or result.get('output', '')
@@ -580,11 +608,12 @@ def api_chat():
             history = load_recent_history(n=6)
             conv = [{'role': 'system', 'content': sys_prompt}] + history
             conv.append({'role': 'user', 'content': full_input})
-
             from ollama_config import get_cpol_ollama_params
             params = get_cpol_ollama_params(preferred_model=ollama_model)
             resp = ollama.chat(model=params['model'], messages=conv,
-                               options=params['options'])
+                               options=params['options'],
+                               think=enable_thinking if enable_thinking is not None
+                                     else False)
             response_text = resp.get('message', {}).get('content', '').strip()
             cpol_status = 'RESOLVED'
         except Exception as e:
@@ -636,6 +665,7 @@ def api_status():
         'model': sess.get('ollama_model', 'none'),
         'provider': sess.get('provider', 'none'),
         'user': sess.get('user_id', 'guest'),
+        'thinking': sess.get('enable_thinking'),
     })
 
 

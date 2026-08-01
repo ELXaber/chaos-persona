@@ -1,4 +1,4 @@
-#V07292026
+#V07312026
 # =============================================================================
 # PROJECT ANDREW – Abstraction Selector
 # Purpose: Dynamically detect user comprehension level and select appropriate explanation layer (Technical, Victorian, Clear, Caveman)
@@ -188,6 +188,13 @@ class AbstractionSelector:
         """
         domain = shared_memory.get('last_cpol_result', {}).get('domain', '')
         if domain in ('programming', 'logic'):
+            return True
+
+    # Also treat high-density ethics / self-reference about the system as diagnostic
+        cpol = shared_memory.get('last_cpol_result', {})
+        if (domain == 'ethics'
+                and cpol.get('contradiction_density', 0) > 0.7
+                and cpol.get('status') == 'UNDECIDABLE'):
             return True
 
         # An attached file with a code extension this turn is a strong signal too
