@@ -180,7 +180,7 @@ def get_cpol_ollama_params(
         }
     }
 
-# For either doman model mapping multi-LLM in VRAM or API fallback see ollama_subsystem_readme.txt
+# For either domain model mapping multi-LLM in VRAM or API fallback, see ollama_subsystem_readme.txt
 
 # Uncomment DOMAIN_MODEL_MAP to route queries to specialist models by domain.
 # Requires sufficient VRAM to load multiple models (see readme.txt hardware notes).
