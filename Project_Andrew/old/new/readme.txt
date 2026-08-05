@@ -91,6 +91,8 @@ A human could still type AI-generated content they copied. You acknowledged this
 The killer feature:
 Every post is permanently tied to a specific physical device + human identity + manifold state at time of posting. There's no anonymity, but there's also no central authority that can revoke your identity or ban your node. Your identity IS your node. The network can't deplatform you without deplatforming your hardware.
 
+The _sign_post method should include the previous_raw_q or a hash of it, not just the current one, to ensure chain continuity. This prevents "rewind" attacks where an attacker tries to insert posts into older manifold states if they can guess previous seeds.
+
 # =============================================================================
 # CAIOS Mesh Social Layer (BBS/Fediverse-style)
 # =============================================================================
