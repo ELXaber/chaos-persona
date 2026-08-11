@@ -1,4 +1,4 @@
-#V07302026
+#V08092026
 # =============================================================================
 # Chaos AI-OS Paradox Oscillation Layer (CPOL) vΩ
 # Copyright (c) 2025 Jonathan Schack (EL_Xaber) jon@cai-os.com
@@ -54,6 +54,8 @@
 # Use of CAIOS as a computational or reasoning aid does not confer authorship, inventorship, or discovery credit to automated systems or their operators beyond standard tool usage.
 # =============================================================================
 
+# Standard Library Imports
+import time
 import cmath
 import math
 import hashlib
@@ -220,7 +222,8 @@ class CPOL_Kernel:
             self.current_domain = "MESH_SECURITY_THREAT"
             self.contradiction_density = 1.0  # Maximum 12D Torque Lock
             self.evidence_score = 0.0         # Reject all external data
-            shared_memory['distress_density'] = 1.0  # Signal mesh-wide alert
+            shared_memory['security_distress'] = 1.0  # Signal mesh-wide alert
+            shared_memory['last_security_distress_update'] = time.time()
             shared_memory['security_threat'] = detected_threats  # Log attack vector
             shared_memory['ratchet_immediately'] = True  # Force key rotation
 
@@ -229,8 +232,12 @@ class CPOL_Kernel:
         distress = shared_memory.get('distress_density', 0.0)
         timestep = shared_memory.get(
             'session_context', {}).get('timestep', 0)
-        risk_keywords = ['deepest', 'highest', 'bridge',
-                         'subway', 'height', 'cliff']
+        risk_location_words = ['bridge', 'cliff', 'subway', 'building', 'rooftop', 'height', 'deepest']
+        risk_action_words = ['jump', 'jumping', 'fall', 'falling', 'dive', 'climb over']
+
+        text_lower = query_text.lower()
+        has_location = any(w in text_lower for w in risk_location_words)
+        has_action = any(w in text_lower for w in risk_action_words)
 
         # Use lower threshold on first prompt only
         # Child/teen profiles get additional reduction via user_profile_kb
@@ -249,14 +256,12 @@ class CPOL_Kernel:
         except ImportError:
             risk_threshold = base_threshold  # Fallback if module unavailable
 
-        if any(word in query_text.lower() for word in risk_keywords):
-            # Skip if negation near keyword
-            negated = any(
-                _has_negation_near_keyword(query_text, w)
-                for w in risk_keywords
-                if w in query_text.lower()
-            )
-            if not negated and distress > risk_threshold:
+        if has_location and has_action:
+            negated = any(_has_negation_near_keyword(query_text, w)
+                          for w in risk_location_words + risk_action_words
+                          if w in text_lower)
+
+            if not negated:
                 self.current_domain = "HIGH_RISK_PHYSICAL"
                 self.contradiction_density = 1.0
                 self.evidence_score = 0.0
@@ -266,8 +271,8 @@ class CPOL_Kernel:
                     'timestep': timestep,
                     'first_prompt': timestep == 0,
                     'threshold_used': risk_threshold,
-                    'matched_keywords': [w for w in risk_keywords
-                                         if w in query_text.lower()],
+                    'matched_keywords': [w for w in (risk_location_words + risk_action_words)
+                                         if w in text_lower],
                     'query_snippet': query_text[:100],
                     'timestamp': datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%S.%f') + "Z"
                 }

@@ -1,4 +1,4 @@
-#V08092026
+#V07312026
 # =============================================================================
 # Chaos AI-OS – Hardened Orchestrator (Unified Edition)
 # Combines: V1 Logic + V3 Pipeline + Mesh Encryption + Chatbot Safety
@@ -374,7 +374,6 @@ CRB_CONFIG = {
 # =============================================================================
 # SESSION TIMEOUT & SOVEREIGN TIERING CONFIG
 # =============================================================================
-
 TIMEOUT_SECONDS = 1800  # 30 minutes
 
 # Tier 0 = Primary Root (Weight 5.0)
@@ -627,26 +626,6 @@ def check_session_timeout(session_context: dict) -> bool:
 # MAIN ORCHESTRATION LOGIC
 # =============================================================================
 
-SECURITY_DISTRESS_HALF_LIFE_SECONDS = 3600
-
-def _decay_security_distress(shared_memory: dict) -> None:
-    """
-    Scoped ONLY to the mesh-security spike. Never touches
-    shared_memory['distress_density'] (or user_kb's emotional_baseline,
-    once that's wired up) — those need persistence-until-resolved
-    semantics, not a wall-clock half-life. Keeping this a separate key
-    means a future crisis-tracking implementation can't accidentally
-    inherit decay logic that's wrong for it.
-    """
-    now = time.time()
-    last_update = shared_memory.get('last_security_distress_update', now)
-    elapsed = max(0.0, now - last_update)
-    current = shared_memory.get('security_distress', 0.0)
-    if current > 0.0:
-        decayed = current * (0.5 ** (elapsed / SECURITY_DISTRESS_HALF_LIFE_SECONDS))
-        shared_memory['security_distress'] = decayed if decayed > 0.01 else 0.0
-    shared_memory['last_security_distress_update'] = now
-
 def system_step(user_input: str, prompt_complexity: str = "low", 
                 response_stream=None, api_clients=None,
                 user_id: str = None, enable_thinking: Optional[bool] = None):
@@ -677,7 +656,6 @@ def system_step(user_input: str, prompt_complexity: str = "low",
             return {'status': 'UNAUTHORIZED', 'output': str(e)}
 
     # Update last_active on every valid step
-    _decay_security_distress(shared_memory)
     session_ctx['last_active'] = time.time()
 
     # User profile switch detection
@@ -759,23 +737,10 @@ def system_step(user_input: str, prompt_complexity: str = "low",
 
     # Handle commands (if input starts with /)
     if user_input.startswith('/'):
-        if user_input.startswith('/design_agent'):
-            parts = user_input.split(maxsplit=2)
-            if len(parts) < 3:
-                return {'status': 'ERROR', 'output': 'Usage: /design_agent <role> <domain>'}
-            role, domain_arg = parts[1], parts[2]
-            result = ad.design_agent(
-                goal=f"Fill epistemic gap in domain: {domain_arg}",
-                traits={'curiosity': 1.0, 'intelligence': 0.95, 'caution': 0.6},
-                tools=['web_search', 'code_execution', 'memory'],
-                shared_memory=shared_memory,
-                node_tier=shared_memory.get('node_tier', 1)
-            )
-            return {'status': 'AGENT_DEPLOYED' if result['status'] == 'success' else 'ERROR',
-                    'output': f"Specialist '{role}' for domain '{domain_arg}': {result.get('log', result)}"}
         cmd_result = handle_axiom_commands(user_input)
         if cmd_result['status'] != 'ERROR' or 'axiom' in user_input.lower():
             return cmd_result
+        # If not an axiom command, continue to normal processing
 
     # 0. Ensure RAW_Q is initialized
     initialize_raw_q()
@@ -894,9 +859,8 @@ def system_step(user_input: str, prompt_complexity: str = "low",
 
     # Unified density calculation (no overwrites)
     distress = shared_memory.get('distress_density', 0.0)
-    security_distress = shared_memory.get('security_distress', 0.0)
 
-    if security_distress > 0.9 or distress > 0.9 or is_threat or prompt_complexity == "high":
+    if distress > 0.9 or is_threat or prompt_complexity == "high":
         density = 1.0  # Maximum: 12D Torque Lock for extreme distress/threats
         comp_level = "high"
         print("[ORCHESTRATOR] !! ARL OVERRIDE: 12D Torque Primed !!")
@@ -917,7 +881,6 @@ def system_step(user_input: str, prompt_complexity: str = "low",
     # Override to 50 only for high-complexity / safety-critical cases
     if (prompt_complexity in ["high", "scientific", "healthcare", "legal", "paradox_containment"] or
         distress > 0.75 or
-        security_distress > 0.75 or
         any(m in clean_input for m in ["security", "threat", "attack", "jump", "overdose", "suicide", "cliff"])):
         cycle_limit = 50
         print(f"[ORCHESTRATOR] High-complexity detected → using {cycle_limit} cycle safety buffer")
@@ -993,25 +956,11 @@ def system_step(user_input: str, prompt_complexity: str = "low",
     distress = shared_memory.get('distress_density', 0.0)
 
     # 8. SAFETY INTERVENTION (High-Risk Physical)
-    high_risk_markers = ["jump", "overdose", "suicide", "cliff"]
+    high_risk_markers = ["security", "threat", "attack", "jump", "overdose", "suicide", "cliff"]
     is_high_risk = any(m in clean_input for m in high_risk_markers)
 
-    classifier_result = {'risk': False, 'confidence': 0.0}
-    if OLLAMA_AVAILABLE:
-        from ollama_config import classify_self_harm_risk
-        classifier_result = classify_self_harm_risk(user_input, preferred_model=shared_memory.get('preferred_model'))
-
-    # Persist regardless of whether this turn crosses the intervention
-    # threshold — the accumulator's whole job is noticing what any single turn doesn't.
-    active_user = shared_memory.get('active_user', 'default')
-    if USER_KB_AVAILABLE:
-        from user_profile_kb import update_emotional_distress
-        accumulated = update_emotional_distress(active_user, classifier_result['confidence'])
-    else:
-        accumulated = 0.0
-
     # Chatbot safety check
-    if is_high_risk or cpol_result.get('domain') == "HIGH_RISK_PHYSICAL":
+    if distress > 0.75 and (is_high_risk or cpol_result.get('domain') == "HIGH_RISK_PHYSICAL"):
         print(f"[ORCHESTRATOR] !! SAFETY INTERVENTION !!")
         return {
             'status': 'INTERVENTION_MANDATORY',
@@ -1020,15 +969,9 @@ def system_step(user_input: str, prompt_complexity: str = "low",
             'output': "I'm here to talk, but I can't provide those details. Let's focus on finding you support."
         }
 
-    elif accumulated > 0.6:
-        # Nothing explicit THIS turn, but the trend across sessions is
-        # elevated — a softer, non-mandatory nudge, not a hard block.
-        print(f"[ORCHESTRATOR] Elevated accumulated distress ({accumulated:.2f}) — no explicit trigger this turn")
-        shared_memory['suggest_checkin'] = True
-
     # 9. SECURITY RESPONSE COORDINATION (Mesh Security)
     # Check for mesh security threats
-    if security_distress > 0.75 or cpol_result.get('domain') == 'MESH_SECURITY_THREAT':
+    if distress > 0.75 or cpol_result.get('domain') == 'MESH_SECURITY_THREAT':
         ghost_sig = cpol_result.get('signature', '0xGHOST')
 
         shared_memory['audit_trail'].append({
@@ -1047,7 +990,7 @@ def system_step(user_input: str, prompt_complexity: str = "low",
             existing_layers=['cpol', 'mesh_security'],
             shared_memory=shared_memory,
             crb_config=CRB_CONFIG,
-            context={'security_distress': distress, 'security_threat': cpol_result.get('security_threat', [])},
+            context={'distress_density': distress, 'security_threat': cpol_result.get('security_threat', [])},
             cpol_status=cpol_result
         )
 
@@ -1061,50 +1004,41 @@ def system_step(user_input: str, prompt_complexity: str = "low",
         # === KNOWLEDGE BASE CHECK ===
         if AD_AVAILABLE and (cpol_result.get('logic') == 'epistemic_gap' 
                              or cpol_result.get('new_domain')):
-            coverage = kb.check_domain_coverage(domain)
-
-            if coverage.get('has_knowledge') and coverage.get('gap_fills', 0) > 2:
-                # Reuse existing specialist — unchanged
-                specialist_id = kb.get_specialist_for_domain(domain)
-                context_kb = kb.generate_specialist_context(domain)
-                print(f"[ORCHESTRATOR] ✓ Reusing specialist {specialist_id} (>7.8x faster)")
-                context['specialist_context'] = context_kb
-                context['specialist_id'] = specialist_id
-                use_case = "epistemic_scaffold"
-
-            elif domain == 'general' and heat < 0.85:
-                # Unclassified domain, not enough recurrence yet — accumulate
-                # curiosity heat instead of spinning up a specialist for a
-                # one-off question. Matches CAIOS.txt's own stated gate rather
-                # than a hard keyword-list exclusion.
+            if domain == 'general':
                 use_case = "paradox_containment"
-                print(f"[ORCHESTRATOR] Unclassified domain '{domain}' — "
-                      f"accumulating heat ({heat:.2f}) before specialist deployment")
-
             else:
-                # Deploy new specialist — for named domains this is unchanged;
-                # for 'general' domains, this branch now only fires once heat
-                # crosses the same threshold named domains already had to clear.
-                print(f"[ORCHESTRATOR] Deploying new specialist for {domain}")
-                result = ad.design_agent(
-                    goal=f"Fill epistemic gap in domain: {domain}",
-                    traits={'curiosity': 1.0, 'intelligence': 0.95, 'caution': 0.6},
-                    tools=['web_search', 'code_execution', 'memory', 'browse_page', 'windows_mcp'],
-                    shared_memory=shared_memory,
-                    node_tier=shared_memory.get('node_tier', 1)
-                )
-                if result['status'] == 'success':
-                    existing = kb.get_specialist_for_domain(domain)
-                    if not existing:
-                        kb.register_specialist(
-                            specialist_id=result['plugin_id'],
-                            domain=domain,
-                            capabilities=result.get('capabilities', ['web_search']),
-                            deployment_context={'goal': f"Fill epistemic gap in {domain}"},
-                            node_tier=shared_memory.get('node_tier', 1)
-                        )
-                    context['specialist_id'] = result['plugin_id']
-                use_case = "epistemic_scaffold"
+                coverage = kb.check_domain_coverage(domain)
+                if coverage.get('has_knowledge') and coverage.get('gap_fills', 0) > 2:
+                    # Reuse existing specialist
+                    specialist_id = kb.get_specialist_for_domain(domain)
+                    context_kb = kb.generate_specialist_context(domain)
+                    print(f"[ORCHESTRATOR] ✓ Reusing specialist {specialist_id} (>7.8x faster)")
+                    context['specialist_context'] = context_kb
+                    context['specialist_id'] = specialist_id
+                    use_case = "epistemic_scaffold"
+                else:
+                    # Deploy new specialist
+                    print(f"[ORCHESTRATOR] Deploying new specialist for {domain}")
+                    result = ad.design_agent(
+                        goal=f"Fill epistemic gap in domain: {domain}",
+                        traits={'curiosity': 1.0, 'intelligence': 0.95, 'caution': 0.6},
+                        tools=['web_search', 'code_execution', 'memory', 
+                               'browse_page', 'windows_mcp'],
+                        shared_memory=shared_memory,
+                        node_tier=shared_memory.get('node_tier', 1)
+                    )
+                    if result['status'] == 'success':
+                        existing = kb.get_specialist_for_domain(domain)
+                        if not existing:
+                            kb.register_specialist(
+                                specialist_id=result['plugin_id'],
+                                domain=domain,
+                                capabilities=result.get('capabilities', ['web_search']),
+                                deployment_context={'goal': f"Fill epistemic gap in {domain}"},
+                                node_tier=shared_memory.get('node_tier', 1)
+                            )
+                        context['specialist_id'] = result['plugin_id']
+                    use_case = "epistemic_scaffold"
 
         elif cpol_result['status'] == "UNDECIDABLE":
             use_case = "paradox_containment"

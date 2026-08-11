@@ -1,4 +1,4 @@
-#V07282026
+#V08092026
 # =============================================================================
 # PROJECT ANDREW – Tool Dispatcher
 # Intercepts LLM output for structured tool calls and routes them to the
@@ -202,13 +202,14 @@ def _handle_web_search(attrs: Dict, shared_memory: Dict) -> str:
 
 def _handle_execute_script(attrs: Dict, controller) -> str:
     script = attrs.get('script', '') or attrs.get('command', '')
+    language = attrs.get('language', 'shell').lower()
     if not script:
         return "[TOOL RESULT] Error: script required for execute_script"
-    result = controller.execute_script(script)
+    result = controller.execute_script(script, language=language)
     if result['status'] == 'success':
         out = result.get('stdout', '')
         err = result.get('stderr', '')
-        response = f"[TOOL RESULT] execute_script:\nstdout: {out[:2000]}"
+        response = f"[TOOL RESULT] execute_script (language={language}):\nstdout: {out[:2000]}"
         if err:
             response += f"\nstderr: {err[:500]}"
         return response
@@ -534,6 +535,7 @@ AVAILABLE TOOLS:
   [TOOL:browser url="https://example.com" action="click" selector="button#submit"]
   [TOOL:web_search query="your search terms" n="5"]
   [TOOL:execute_script script="ls -la /home"]
+  [TOOL:execute_script script="import json\nwith open('x.json') as f: print(json.load(f))" language="python"]
   [TOOL:kb_write domain="domain_name" type="discovery" summary="what you found" confidence="0.85"]
   [TOOL:kb_read domain="domain_name"]
   [TOOL:list_axioms]

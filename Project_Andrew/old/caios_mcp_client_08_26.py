@@ -228,16 +228,11 @@ class MCPClient:
                     f"Start it with: uvx windows-mcp serve --transport streamable-http --host localhost --port 8000"
                 )
             base = self.win_url
-        elif tool_lower in FS_TOOLS:
-            if not self.fs_available():
-                return _error_result(
-                    f"Filesystem MCP not available at {self.fs_url}. "
-                    f"Start it with: npx @modelcontextprotocol/server-filesystem C:\\CAIOS"
-                )
-            base = self.fs_url
         else:
+            # FS_TOOLS and unknown tools — not handled by MCP
             return _error_result(
-                f"Tool '{tool_name}' is not recognized by either MCP server."
+                f"Tool '{tool_name}' is not a windows-mcp tool. "
+                f"File operations are handled by os_control.py via [TOOL:read_file] etc."
             )
 
         rpc_result = _jsonrpc_call(

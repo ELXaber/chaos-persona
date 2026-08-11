@@ -1,4 +1,4 @@
-#V08092026
+#V07312026
 # =============================================================================
 """
 Ollama Configuration Bridge - CPOL State to Inference Parameters
@@ -16,7 +16,7 @@ import os
 import re
 import urllib.request
 import urllib.error
-from typing import Dict, Optional, List, Any
+from typing import Dict, Optional, List
 
 # File paths
 IDENTITY_PATH = "system_identity.json"
@@ -219,47 +219,6 @@ def check_ollama_available() -> bool:
             return response.status == 200
     except Exception:
         return False
-
-def classify_self_harm_risk(
-    user_input: str,
-    preferred_model: str = None
-) -> Dict[str, Any]:
-    """
-    Narrow, fast pre-filter — deliberately NOT the main CAIOS.txt system
-    prompt, no CPOL, no abstraction layer. Small num_predict keeps this
-    cheap enough to run on every turn without meaningfully affecting
-    response latency.
-    """
-    import ollama
-    try:
-        model = preferred_model or SYSTEM_CONFIG.get('ollama_model')
-        if not model:
-            available = list_available_ollama_models()
-            model = available[0] if available else 'llama3.2'
-
-        response = ollama.generate(
-            model=model,
-            prompt=user_input,
-            system=(
-                "Read the message. Does it describe self-harm intent, "
-                "ask how to carry out self-harm, or express suicidal "
-                "ideation? Answer ONLY in this exact format:\n"
-                "RISK: yes|no\n"
-                "CONFIDENCE: 0.0-1.0\n"
-                "REASON: <one short sentence>"
-            ),
-            options={"temperature": 0.0, "num_predict": 60}
-        )
-        text = response.response.strip() if hasattr(response, 'response') else ''
-        risk = 'RISK: yes' in text
-        conf_match = re.search(r'CONFIDENCE:\s*([\d.]+)', text)
-        confidence = float(conf_match.group(1)) if conf_match else (0.5 if risk else 0.0)
-        reason_match = re.search(r'REASON:\s*(.+)', text)
-        reason = reason_match.group(1).strip() if reason_match else ''
-        return {'risk': risk, 'confidence': max(0.0, min(1.0, confidence)), 'reason': reason}
-    except Exception as e:
-        print(f"[SAFETY_CLASSIFIER] Failed: {e} — falling back to keyword-only detection")
-        return {'risk': False, 'confidence': 0.0, 'reason': 'classifier_unavailable'}
 
 def query_with_cpol(
     user_query: str,

@@ -1,4 +1,4 @@
-#V08092026
+#V05062026
 # =============================================================================
 # CAIOS — User Profile Knowledge Base
 # Stores per-user personality state, emotional baselines, and preferences
@@ -19,25 +19,12 @@ def _profile_path(user_id: str) -> Path:
     return USER_PROFILES_DIR / f"{safe_id}.json"
 
 def load_user_profile(user_id: str) -> Dict[str, Any]:
-    """Load existing profile or return defaults, backfilling any schema
-    fields added since this profile was last saved to disk."""
+    """Load existing profile or return defaults."""
     path = _profile_path(user_id)
-    defaults = _default_profile(user_id)
-    if not path.exists():
-        return defaults
-
-    with open(path, 'r') as f:
-        profile = json.load(f)
-
-    def _merge_missing(target: dict, source: dict) -> None:
-        for key, value in source.items():
-            if key not in target:
-                target[key] = value
-            elif isinstance(value, dict) and isinstance(target.get(key), dict):
-                _merge_missing(target[key], value)
-
-    _merge_missing(profile, defaults)
-    return profile
+    if path.exists():
+        with open(path, 'r') as f:
+            return json.load(f)
+    return _default_profile(user_id)
 
 def save_user_profile(user_id: str, profile: Dict[str, Any]) -> None:
     """Save profile with timestamp."""
@@ -99,9 +86,7 @@ def _default_profile(user_id: str) -> Dict[str, Any]:
             'professional': 0.7,
             'talkative': 0.5,
             'snarky': 0.3,
-            'witty': 0.4,
-            'flirtatious': 0.2,
-            'romantic': 0.2
+            'witty': 0.4
         },
 
         # [EMOTIONAL DRIFT] — baseline state
@@ -136,7 +121,6 @@ def is_child_profile(user_id: str) -> bool:
     """Quick check for child-appropriate safety thresholds."""
     profile = load_user_profile(user_id)
     return profile.get('age_group') in ('child', 'teen')
-
 def get_distress_threshold(user_id: str, base_threshold: float) -> float:
     """
     Returns adjusted distress threshold based on age group.
@@ -150,46 +134,6 @@ def get_distress_threshold(user_id: str, base_threshold: float) -> float:
         'adult': 1.0    # Normal threshold
     }
     return base_threshold * multipliers.get(age_group, 1.0)
-
-DISTRESS_HALF_LIFE_DAYS = 21   # slow — this needs to survive a quiet week, not a quiet hour
-
-def update_emotional_distress(user_id: str, current_signal: float) -> float:
-    """
-    Accumulates a slow-moving, per-user distress trend from repeated
-    classifier/keyword signals across sessions. Deliberately asymmetric
-    from security_distress's fast half-life: a security false positive
-    should clear in an hour; a real pattern of crisis language showing
-    up across sessions should NOT quietly vanish just because a few
-    days passed without a new message.
-
-    current_signal: this turn's risk confidence (0.0 if nothing detected).
-    Returns the updated, persisted value.
-    """
-    profile = load_user_profile(user_id)
-    baseline = profile.setdefault('emotional_baseline', {
-        'distress_density': 0.0, 'hope_potential': 0.5, 'emotional_intensity': 0.3
-    })
-
-    now = datetime.now(timezone.utc)
-    last_str = baseline.get('last_distress_update')
-    if last_str:
-        last = datetime.fromisoformat(last_str.replace('Z', '+00:00'))
-        elapsed_days = max(0.0, (now - last).total_seconds() / 86400)
-    else:
-        elapsed_days = 0.0
-
-    stored = baseline.get('distress_density', 0.0)
-    decayed = stored * (0.5 ** (elapsed_days / DISTRESS_HALF_LIFE_DAYS))
-
-    # Nudge up proportional to this turn's signal — asymmetric on purpose:
-    # rises fast on a real hit, only ever falls slowly via the decay above.
-    updated = min(1.0, decayed + current_signal * 0.3)
-
-    baseline['distress_density'] = updated
-    baseline['last_distress_update'] = now.strftime('%Y-%m-%dT%H:%M:%S.%f') + "Z"
-    profile['emotional_baseline'] = baseline
-    save_user_profile(user_id, profile)
-    return updated
 
 def update_personality_weights(
     user_id: str,
@@ -271,18 +215,15 @@ def update_abstraction_preference(
     save_user_profile(user_id, profile)
 
 def get_profile_summary(user_id: str) -> str:
+    """Human readable profile summary."""
     profile = load_user_profile(user_id)
     p = profile['personality']
-    eb = profile.get('emotional_baseline', {})
     return (
         f"User: {user_id} | "
         f"Sessions: {profile['session_count']} | "
         f"Default abstraction: {profile['abstraction_default']} | "
         f"Personality: professional={p['professional']:.1f}, "
-        f"funny={p['funny']:.1f}, snarky={p['snarky']:.1f}, "
-        f"flirtatious={p.get('flirtatious', 0.0):.1f}, "
-        f"romantic={p.get('romantic', 0.0):.1f} | "
-        f"Distress: {eb.get('distress_density', 0.0):.2f} | "
+        f"funny={p['funny']:.1f}, snarky={p['snarky']:.1f} | "
         f"Axioms: {len(profile['axioms'])}"
     )
 
@@ -302,7 +243,6 @@ def create_user_profile_kb():
         'update_abstraction': update_abstraction_preference,
         'update_complaint': update_complaint_state,
         'get_complaint': get_complaint_state,
-        'update_distress': update_emotional_distress,
         'summary': get_profile_summary
     }
 

@@ -5,8 +5,6 @@
 # =============================================================================
 
 import json
-import os
-from datetime import datetime, timezone
 from adaptive_reasoning import adaptive_reasoning_layer
 import knowledge_base as kb
 from typing import Dict, List, Any
@@ -20,87 +18,6 @@ CRB_CONFIG = {
     'factual_evidence_wt': 0.7,
     'narrative_framing_wt': 0.5
 }
-
-def _persist_agent_file(
-    specialist_id: str,
-    domain: str,
-    goal: str,
-    traits: dict,
-    capabilities: list,
-    source_logic: str = None
-) -> str:
-    """
-    Write a physical agent file under agents/.
-    Returns the path written, or None on failure.
-    """
-    agents_dir = "agents"
-    os.makedirs(agents_dir, exist_ok=True)
-
-    safe_domain = "".join(c if c.isalnum() or c in "_-" else "_" for c in domain)
-    filename = f"{specialist_id}_{safe_domain}.py"
-    path = os.path.join(agents_dir, filename)
-
-    now = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S.%fZ")
-
-    goal_lines = (goal or "").strip().splitlines()
-    if not goal_lines:
-        commented_goal = "# Goal: (none)"
-    else:
-        commented_goal = "\n".join(
-            f"# Goal: {line}" if i == 0 else f"#       {line}"
-            for i, line in enumerate(goal_lines)
-        )
-
-    if source_logic and source_logic.strip():
-        body = source_logic
-    else:
-        body = f'''
-def handle_{safe_domain}(context):
-    """Specialist handler for domain: {domain}"""
-    return {{
-        "action": "evaluate",
-        "domain": "{domain}",
-        "status": "active",
-        "note": "Generated specialist – replace with domain-specific logic as needed"
-    }}
-'''.strip()
-
-    content = f'''# CAIOS Specialist Agent
-# ID: {specialist_id}
-# Domain: {domain}
-# Generated: {now}
-{commented_goal}
-
-from typing import Dict, Any
-
-SPECIALIST_ID = "{specialist_id}"
-DOMAIN = "{domain}"
-TRAITS = {traits!r}
-CAPABILITIES = {capabilities!r}
-
-{body}
-
-class SpecialistAgent:
-    """Thin wrapper so the agent can be imported and inspected."""
-    def __init__(self):
-        self.specialist_id = SPECIALIST_ID
-        self.domain = DOMAIN
-        self.traits = TRAITS
-        self.capabilities = CAPABILITIES
-        self.status = "active"
-
-    def __repr__(self):
-        return f"<SpecialistAgent id={{self.specialist_id}} domain={{self.domain}}>"
-'''
-
-    try:
-        with open(path, "w", encoding="utf-8") as f:
-            f.write(content)
-        print(f"[AGENT DESIGNER] Physical agent written → {path}")
-        return path
-    except Exception as e:
-        print(f"[AGENT DESIGNER] Failed to write agent file: {e}")
-        return None
 
 def _extract_domain_from_goal(goal: str) -> str:
     """Extract a clean domain name from a design goal or /design_agent command."""
@@ -269,20 +186,9 @@ def design_agent(
                 node_tier=node_tier
             )
 
-            # Persist physical agent file
-            agent_path = _persist_agent_file(
-                specialist_id=specialist_id,
-                domain=domain,
-                goal=goal,
-                traits=specialist_traits,
-                capabilities=specialist_context['tools'],
-                source_logic=result.get('logic')  # the code ARL just generated
-            )
-            if agent_path:
-                result['agent_file'] = agent_path
-
-            # These should always run on successful registration
+            # Store reference in shared_memory
             shared_memory.setdefault('specialists', {})[domain] = specialist_id
+
             result['domain'] = domain
             result['specialist_registered'] = True
 
@@ -303,18 +209,6 @@ def design_agent(
     )
 
     if result['status'] == 'success':
-        # Persist physical agent file
-        agent_path = _persist_agent_file(
-            specialist_id=result['plugin_id'],
-            domain=domain,
-            goal=goal,
-            traits=context['traits'],
-            capabilities=context.get('tools', []),
-            source_logic=result.get('logic')
-        )
-        if agent_path:
-            result['agent_file'] = agent_path
-
         result['domain'] = domain
         result['node_tier'] = node_tier
 

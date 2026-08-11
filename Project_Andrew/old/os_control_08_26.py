@@ -1,4 +1,4 @@
-#V08092026
+#V07282026
 # =============================================================================
 # Chaos AI-OS — OS Control Layer
 # CPOL-gated system operations with Asimov compliance
@@ -242,34 +242,25 @@ class OSController:
         except Exception as e:
             return {'status': 'error', 'error': str(e)}
 
-    def execute_script(self, script: str, language: str = 'shell',
+    def execute_script(self, script: str, 
                        timeout: int = 30) -> Dict[str, Any]:
-        """Execute script - high risk, always requires confirmation.
-        language: 'shell' (default) or 'python'."""
+        """Execute script - high risk, always requires confirmation."""
         gate = self._gate_action('execute_script', script[:50])
+
         if gate['decision'] == 'block':
             self._log_action('execute_script', script[:50], 'blocked')
             return {'status': 'blocked', 'reason': gate['reason']}
+
         if self.require_confirmation:
             if not self._confirm('execute_script', script[:100]):
                 self._log_action('execute_script', script[:50], 'denied_by_user')
                 return {'status': 'denied', 'reason': 'User denied confirmation'}
+
         try:
-            if language == 'python':
-                import sys, tempfile
-                with tempfile.NamedTemporaryFile(mode='w', suffix='.py',
-                                                  delete=False, encoding='utf-8') as f:
-                    f.write(script)
-                    tmp_path = f.name
-                result = subprocess.run(
-                    [sys.executable, tmp_path], capture_output=True,
-                    text=True, timeout=timeout
-                )
-            else:
-                result = subprocess.run(
-                    script, shell=True, capture_output=True,
-                    text=True, timeout=timeout
-                )
+            result = subprocess.run(
+                script, shell=True, capture_output=True,
+                text=True, timeout=timeout
+            )
             self._log_action('execute_script', script[:50], 'executed')
             return {
                 'status': 'success',

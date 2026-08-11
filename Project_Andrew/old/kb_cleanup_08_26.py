@@ -1,24 +1,20 @@
-#V08102026
+#V06082026
 #!/usr/bin/env python3
 # =============================================================================
 # kb_cleanup.py — CAIOS Knowledge Base Cleanup & Validation Tool
 #
+# Three levels (as Andrew described):
+#   1. Automated integrity sweep — detects and quarantines malformed entries
+#   2. Authority-tier purge commands — targeted removal by pattern or ID
+#   3. Entropy-based flagging — marks axioms whose content looks like noise
+#
 # Usage:
-#  python kb_cleanup.py sweep                    Scan for bad entries (report only)
-#  python kb_cleanup.py sweep --fix              Scan and quarantine bad entries
-#  python kb_cleanup.py purge <id>               Remove entry by discovery_id
-#  python kb_cleanup.py purge --pattern X        Remove entries matching domain pattern
-#  python kb_cleanup.py purge-specialist <id>    Remove specialist by ID
-#  python kb_cleanup.py purge-specialist --domain X   Remove specialist(s) by domain
-#  python kb_cleanup.py validate                 Full validation report
-#  python kb_cleanup.py list-bad                 List flagged entries without changes
-
-# Examples:
-#  python kb_cleanup.py purge 8e9118581890b09d
-#  python kb_cleanup.py purge --pattern "yay_progress"
-#  python kb_cleanup.py purge-specialist 730ae895
-#  python kb_cleanup.py purge-specialist --domain pokemon_singles_strategy
-#  python kb_cleanup.py sweep --fix
+#   python kb_cleanup.py sweep          # scan and report problems
+#   python kb_cleanup.py sweep --fix    # scan and quarantine bad entries
+#   python kb_cleanup.py purge <id>     # remove entry by discovery_id
+#   python kb_cleanup.py purge --pattern "yay_progress"  # remove by domain pattern
+#   python kb_cleanup.py validate       # full validation report
+#   python kb_cleanup.py list-bad       # list flagged entries without removing
 # =============================================================================
 
 import sys
@@ -117,21 +113,6 @@ def append_quarantine(entry: Dict, reason: str) -> None:
     with open(QUARANTINE, 'a', encoding='utf-8') as f:
         f.write(json.dumps(record) + '\n')
 
-
-def load_specialist_registry() -> Dict:
-    if not SPECIALIST_REG.exists():
-        return {}
-    with open(SPECIALIST_REG, 'r', encoding='utf-8') as f:
-        return json.load(f)
-
-
-def save_specialist_registry(registry: Dict) -> None:
-    backup = SPECIALIST_REG.with_suffix('.json.bak')
-    if SPECIALIST_REG.exists():
-        shutil.copy2(str(SPECIALIST_REG), str(backup))
-    with open(SPECIALIST_REG, 'w', encoding='utf-8') as f:
-        json.dump(registry, f, indent=2)
-    print(f"  Backup saved: {backup.name}")
 
 # ── Detection logic ───────────────────────────────────────────
 
@@ -386,50 +367,6 @@ def cmd_list_bad() -> int:
     return 0
 
 
-def cmd_purge_specialist(target: str, by_domain: bool = False) -> int:
-    """Remove a specialist by ID or by domain name."""
-    registry = load_specialist_registry()
-    if not registry:
-        print("Specialist registry is empty.")
-        return 0
-
-    to_remove = []
-    if by_domain:
-        to_remove = [sid for sid, info in registry.items()
-                     if info.get('domain', '') == target]
-    else:
-        if target in registry:
-            to_remove = [target]
-
-    if not to_remove:
-        print(f"No specialist found matching: {target}")
-        return 0
-
-    print(f"\nSpecialists to remove ({len(to_remove)}):")
-    for sid in to_remove:
-        info = registry[sid]
-        print(f"  {sid} | domain={info.get('domain')} | status={info.get('status')}")
-
-    confirm = input("\nConfirm removal? (yes/no): ").strip().lower()
-    if confirm not in ('yes', 'y'):
-        print("Cancelled.")
-        return 0
-
-    for sid in to_remove:
-        # Optional: also remove the physical .py file if it exists
-        domain = registry[sid].get('domain', 'unknown')
-        safe_domain = "".join(c if c.isalnum() or c in "_-" else "_" for c in domain)
-        agent_file = Path('agents') / f"{sid}_{safe_domain}.py"
-        if agent_file.exists():
-            agent_file.unlink()
-            print(f"  Deleted agent file: {agent_file}")
-
-        del registry[sid]
-
-    save_specialist_registry(registry)
-    print(f"Removed {len(to_remove)} specialist(s).")
-    return 1
-
 # ── CLI ───────────────────────────────────────────────────────
 
 def usage():
@@ -482,19 +419,6 @@ def main():
 
     elif cmd in ('list-bad', 'list_bad'):
         return cmd_list_bad()
-
-    elif cmd == 'purge-specialist':
-        if '--domain' in args:
-            idx = args.index('--domain')
-            if idx + 1 >= len(args):
-                print("Error: --domain requires a value")
-                return 1
-            return cmd_purge_specialist(args[idx + 1], by_domain=True)
-        elif len(args) > 1:
-            return cmd_purge_specialist(args[1], by_domain=False)
-        else:
-            print("Error: purge-specialist requires an id or --domain")
-            return 1
 
     else:
         print(f"Unknown command: {cmd}")
