@@ -1,0 +1,930 @@
+1
+Play! Pokémon
+Tournament Rules Handbook
+ENGLISH VERSION
+LAST REVISION: May 21, 2026
+2
+1 Introduction & Using This Handbook ..........................................................................................4
+1.1 Supporting Materials ........................................................................................................4
+1.2 Recommended Sections & Audiences ................................................................................4
+1.3 Participant Responsibility..................................................................................................5
+2 Participation Fundamentals .....................................................................................................6
+2.1 Event Eligibility .................................................................................................................6
+2.2 Pokémon Trainer Central Accounts & Player IDs ..................................................................8
+2.3 Publishing Tournament Information....................................................................................9
+2.4 Badged Events ............................................................................................................... 10
+3 Event Expectations ................................................................................................................ 11
+3.1 General Expectations for Play! Pokémon Events ................................................................ 11
+3.2 Prohibitions ................................................................................................................... 11
+3.3 Roles & Responsibilities .................................................................................................. 13
+4 Tournament Policies .............................................................................................................. 18
+4.1 Tournament Scheduling .................................................................................................. 18
+4.2 Tournament Entry........................................................................................................... 20
+4.3 Tournament Integrity ...................................................................................................... 20
+4.4 Reporting Tournament Results......................................................................................... 23
+4.5 Streamed Matches ......................................................................................................... 23
+4.6 Prizing ........................................................................................................................... 25
+5 Tournament Operations & Specifics ........................................................................................ 27
+5.1 Definitions..................................................................................................................... 27
+5.2 Tournament Requirements .............................................................................................. 28
+5.3 Match Records & Ranking................................................................................................ 29
+5.4 Concessions & Intentional Draws..................................................................................... 31
+5.5 Play! Pokémon Tournament Styles ................................................................................... 32
+5.6 Pairings ......................................................................................................................... 40
+5.7 Dropping from Tournament Play....................................................................................... 41
+6 Tournament Rules per Product................................................................................................ 41
+3
+7 Rules Violations & Penalties ................................................................................................... 42
+7.1 Philosophy .................................................................................................................... 42
+7.2 Penalties ....................................................................................................................... 42
+7.3 Application .................................................................................................................... 43
+7.4 Base Infractions, Standard Penalties & Deviations ............................................................. 44
+7.5 Reporting ...................................................................................................................... 44
+7.6 Post-Event Disciplinary Action ......................................................................................... 44
+8 Summary of Changes............................................................................................................. 46
+Appendix A: Rating Zones ............................................................................................................. 47
+4
+1 Introduction & Using This Handbook
+Play! Pokémon is dedicated to running fun, fast, and fair tournaments. Whether you’re playing in a Friendly Tournament at your local League or competing in one of our Championship Series events, upholding the information in this document is paramount to ensuring the integrity of a tournament. It is the responsibility of any participant in a tournament, from spectators and competitors to Judges and Tournament Organizers, to read and follow the information presented in the Play! Pokémon Tournament Rules Handbook.
+1.1 Supporting Materials
+This handbook should be read in conjunction with the Play! Pokémon Standards of Conduct, the Play! Pokémon Terms of Use, the Play! Pokémon Inclusion Policy, the Play! Pokémon Accessibility Policy, and any appropriate guidelines for the tournament type in which you take part (Pokémon Trading Card Game, Pokémon video games, Pokémon GO, or Pokémon UNITE). These additional documents can be found on the Play! Pokémon Rules and Resources page.
+This document and the supporting materials are reviewed on a quarterly basis, so we highly recommend reviewing the documents for changes each quarter. Changes are recorded in the last main section of the resource, under “Summary of Changes.”
+1.2 Recommended Sections & Audiences
+While we suggest reading every section of the Tournament Rules Handbook at least once, certain sections are more pertinent for specific participants. Below is a chart of participant types and the sections most recommended for them to read prior to a Play! Pokémon event. Audience Recommended Sections Page Numbers
+Pokémon Professors: Judges
+The Entire Document
+— Pokémon Professors: Tournament Organizers & Administrators 2 3 4 5 7 5 10 17 26 40
+Competitors
+2
+3
+7
+5
+10
+40 Parents of Competitors 2 3 7 5 10 40
+Spectators / General Participants
+2
+3
+5
+1.3 Participant Responsibility
+By entering or remaining at a Play! Pokémon event, all participants agree to adhere to the rules outlined in this handbook.
+We are all responsible for the success of Play! Pokémon events, so make sure to read these guidelines carefully. Failure to do so can result in penalties during a tournament and disciplinary action post-event. The type of penalty or disciplinary action is dependent upon the number of incidents and the severity of those incidents. This includes but is not limited to being removed from any tournament in which you are participating, being asked to leave the event venue, disqualification, and suspension from the Play! Pokémon program. For more information, see the section below titled “Rules Violations & Penalties.”
+If you see or experience anything that conflicts with the information presented in this document and any supporting documentation, please report the issue to a member of tournament staff. In addition to reporting to tournament staff, we always recommend submitting a ticket with information regarding the incident to the Play! Pokémon program through our customer support portal. When submitting reports, try to provide as much detail as possible, such as the names of anyone involved, the location or tournament where the incident took place, and any supporting documentation, like photos, videos, screenshots, etc. We encourage others that may have been present or involved to reach out with their own reports as well!
+6
+2 Participation Fundamentals
+In this section, we will cover who is allowed to participate in Play! Pokémon events, behaviors and items that are not allowed, and the roles and expectations of event participants.
+Competitors, spectators, and Professors must familiarize themselves with the information provided in this section to ensure they are eligible to participate in, organize, or staff Play! Pokémon events.
+2.1 Event Eligibility
+Eligibility to participate in Play! Pokémon tournaments are dependent upon several factors which may bar certain participants from engaging in specific tournament types. Eligibility to participate in Play! Pokémon tournaments may also be revoked due to violations of our rules and guidelines.
+Age rating requirements for Play! Pokémon games vary by country and region, as set by local regulatory agencies. If you do not meet the minimum age requirement for a game in the location where a tournament is held, you will not be permitted to participate in that tournament. Because these requirements differ by location, it is each competitor's responsibility to review the age ratings and local laws in the area where they plan to compete before registering for any event.
+Please read the below eligibility requirements below carefully to ensure you are eligible to participate in an event.
+2.1.1 All Play! Pokémon Tournaments
+Play! Pokémon tournaments are open to all who have a Player ID and are in good standing with the program, with the exceptions found below:
+•
+Those who have an active suspension outlined in a Notice of Disciplinary Action from the Play! Pokémon program
+•
+Tournament staff members of the event, including the Organizer, Judges, Scorekeepers, and any casters
+•
+Those who have restrictions limiting their location and proximity to children or other individuals, which may prohibit their ability to participate in a community with said individuals
+2.1.2 Championship Series Events (All Levels)
+The following are ineligible to participate in Play! Pokémon tournaments in which Championship Points can be earned.
+•
+Those listed in Section 2.1.1
+•
+Competitors below 6 years of age
+7
+•
+Current employees of The Pokémon Company and any of its current subsidiary companies, including but not limited to The Pokémon Company International, The Pokémon Company International Ireland, The Pokémon Company International Mexico, Pokémon Korea, Pokémon Singapore, Pokémon Shanghai, and Millennium Print Group
+o
+This includes former employees of any of these companies within 60 days of their final day of employment
+•
+Current employees of GAME FREAK Inc. or Creatures Inc.
+o
+This includes former employees of GAME FREAK Inc. or Creatures Inc. within 60 days of their final day of employment
+•
+Immediate family members and members of the same household of employees of The Pokémon Company and its subsidiary companies, as listed above
+•
+Full-time contractors of TPCi or contingent workers at TPCi who are directly involved in the support and implementation of Play! Pokémon programs or whose role affords them early access to products supported by Play! Pokémon
+o
+This includes the immediate family members and members of the same household of the above individuals
+o
+This includes former contractors of any of these companies within 60 days of their final day of employment
+•
+Store owners of the retail locations where the tournaments take place
+2.1.3 Video Game Championship Series Events
+The following are ineligible to participate in Pokémon Video Game Championship tournaments in which Championship Points can be earned.
+•
+Those listed in sections 2.1.1 and 2.1.2
+•
+Current employees of Nintendo
+o
+This includes former employees of Nintendo within 60 days of their final day of employment
+•
+Program members who are selected to review a Pokémon video game product prior to its official US release date are prohibited from participating in Play! Pokémon Video Game Championship tournaments for 60 days following that product’s official US release date
+o
+Where the program member elects to compete in tournaments after this date, they may not use any video game product obtained prior to its official US release date
+2.1.4 Pokémon GO Championship Series Events
+The following are ineligible to participate in Pokémon GO tournaments in which Championship Points can be earned.
+•
+Those listed in section 2.1.1 and 2.1.2
+•
+Current employees of Niantic
+8
+o
+This includes former employees of Niantic within 60 days of their final day of employment
+•
+Current employees of Scopely
+o
+This includes former employees of Scopely within 60 days of their final day of employment
+2.1.5 Pokémon UNITE Championship Series Events
+The following are ineligible to participate in Pokémon UNITE tournaments in which Championship Points can be earned.
+•
+Those listed in section 2.1.1 and 2.1.2
+•
+Current employees of TiMi Studio Group
+o
+This includes former employees of TiMi Studio Group within 60 days of their final day of employment
+2.1.6 Other Tournaments and Activations
+Play! Pokémon, at its sole discretion, reserves the right to hold tournaments and other activations for its games and products not listed in the above sections. The following are ineligible to participate in these Play! Pokémon tournaments.
+•
+Those listed in 2.1.1
+•
+Employees of The Pokémon Company or any of its affiliates, contractors of the aforementioned entities, or organizations that supported development, publication, or maintenance of products related to these tournaments, including former employees of the aforementioned entities within 60 days of their final day of employment
+2.1.7 Questions on Tournament and Activation Eligibility
+Should you have any questions regarding the above information on eligibility for any of our tournaments or activations, please contact Play! Pokémon customer support.
+2.2 Pokémon Trainer Central Accounts & Player IDs
+A Pokémon Trainer Central (PTC) account is a great way to track your progress and start accruing Play! Points from Play! Pokémon activities and Championship Points (CP) from our Championship Series events. Without a PTC account, you can’t take advantage of everything Play! Pokémon has to offer. If you are 13 or older, follow these steps to create an account:
+1.
+Visit Pokemon.com.
+2.
+Click on the “Log In” button on the sidebar to the left of the page.
+3.
+Click on the “Create an Account” button on the log-in page.
+9
+4.
+Follow the instructions using true and accurate information to complete your profile.
+If you are the guardian of a child under 13 years old, you will need to follow the steps above using your information (not your child’s), then complete the following steps:
+1.
+Log in to your PTC account.
+2.
+Open the profile menu by selecting the three dots icon next to your name.
+3.
+Select Add a Child. This will take you to the identity verification page. Please note: You are only required to verify your identity the first time you add a child.
+4.
+Verify your identity by filling out the requested fields.
+5.
+Create your child’s account using true and accurate information.
+If you want to participate in a Play! Pokémon tournament, you will need a Player ID. This can be created before you attend your first event, or an Organizer can generate a Player ID for you at the event itself. It is recommended that you come prepared with a Player ID that you generated through your PTC account. To generate a Player ID from your PTC account, follow these steps:
+1.
+Log in to your PTC account.
+2.
+Using the menu on the left side of the page, select the Play! Pokémon option.
+3.
+When the Play! Pokémon section appears, select Create a Play! Pokémon Account.
+4.
+Follow the on-screen instructions and provide all required information so you can progress to the Enter Your Player ID step.
+5.
+If you have already been given a Player ID at an in-person event or through a support ticket, select I have a Player ID, then select Continue. You’ll be prompted to enter your Player ID and a corresponding PIN.
+6.
+If you do not already have a Player ID, select I do not have a Player ID, then select Continue.
+7.
+Congratulations! You should now see a Player ID displayed under your name when you view your Pokémon Trainer Central account.
+You can follow the same instructions as above to add a Player ID to a newly created or established child’s account so long as it does not already have an attached Player ID.
+Please Note: If you want to be added to the rankings board or receive Play! Pokémon prizing and awards, you must opt in to the Play! Pokémon program and have a true and accurate address and personal information registered to your account. If we can’t verify your information or address, we cannot release prizing to you.
+2.3 Publishing Tournament Information
+Play! Pokémon reserves the right to publish tournament information, including but not limited to deck lists, team lists, transcripts, audio and/or video recordings or other recounts, competitor penalties, awards, or any other resultant information from tournaments.
+Organizers, Judges, competitors, and spectators are also free to publish details of play and/or the results of a tournament, subject to local, state, and national laws. It is your responsibility to understand and follow local, state, and national laws.
+10
+Attendance at Play! Pokémon events may lead to participants being photographed and video-recorded by or on behalf of The Pokémon Company International (TPCi).
+By entering or remaining at Play! Pokémon events, participants grant permission for TPCi, its affiliates, and media organizations to publish their name, image, likeness, team or deck composition, methods of play, and written and oral statements in connection with any still photograph, live or recorded video display, or other transmission or reproduction of the event, in whole or in part.
+2.3.1 Publishing Deck/Team Lists
+The contents of any competitor’s deck or team may be published by the Organizer at any time once the event has begun, provided that this information is publicly accessible and that the publication of such data is part of an initiative that provides additional value to those attending or watching the event. For example, this includes broadcasting a match via livestream or publishing an article about the event.
+Otherwise, this data should be kept confidential throughout the duration of the tournament, unless otherwise noted.
+More information regarding deck and team lists can be found in Sections 4, 5, and 6 of this handbook.
+2.4 Badged Events
+Our larger events (such as events at the level of Regional Championships, Special Championships, and above) are badged events that require a prepurchased pass to enter. You are required to wear your badge in a visible location during the entirety of your participation in or attendance at the event and other badged locations. Should a member of the tournament staff request to see your badge, you must present it for review.
+While the event is in progress, this badge is the property of Play! Pokémon and The Pokémon Company International. Once the event has completed, the participant maintains ownership of the badge.
+If a participant is removed from an event, the badge must be surrendered to a member of the tournament staff upon removal. Failure to surrender the badge can result in additional disciplinary action.
+11
+3 Event Expectations
+When attending Play! Pokémon events, you are expected to understand and adhere to the rules outlined in this document as well as any other accompanying documents that are applicable to your role(s) in the tournament in which you are participating.
+Play! Pokémon events are designed to be fun and exciting, but interruptions to tournament function or integrity are taken seriously and can result in your removal from a Play! Pokémon event.
+3.1 General Expectations for Play! Pokémon Events
+All participants are expected to adhere to the following points:
+•
+Meet the registration and/or entry requirements of the event, including the purchase of a pass or badge where necessary
+•
+Be free from the influence of mind-altering substances, including alcohol
+•
+Refrain from the use of inappropriate language and/or the discussion of inflammatory topics
+•
+Follow the direction of tournament staff
+•
+Be respectful and courteous to all
+If you fail to follow any of the above, it can be grounds for immediate removal from a Play! Pokémon event (this includes any activations related to an event, even outside the event venue). It is the responsibility of the Tournament Organizer and tournament staff to determine whether a participant should be permitted to remain at an event. A gross violation of any of our standards or guidelines may require immediate removal from the premises without the ability to return.
+It is expected that all participants will read through the Play! Pokémon Standards of Conduct for additional information on acceptable behavior at Play! Pokémon events.
+3.2 Prohibitions
+Creating a welcoming and comfortable environment for all our participants is paramount at Play! Pokémon events. To support this, we prohibit the following behaviors:
+•
+The sale or consumption of mind-altering substances other than alcohol
+•
+The sale or use of alcohol in the play area(s)
+•
+Wagering or gambling on the results of a game, portion of a game, match, or number of matches
+•
+Offering or accepting any form of compensation with intent to alter the results of a game, portion of a game, match, or number of matches; bribery
+•
+All weapons, including mock weapons that could reasonably be mistaken for such
+12
+Any participant discovered to be in breach of the above should be removed from the tournament site, and the incident should be reported to Play! Pokémon.
+Participants must also ensure they are wearing reasonable attire for a Play! Pokémon tournament setting. As such, the following attire is prohibited from Play! Pokémon events:
+•
+Attire and accessories that violate the Play! Pokémon Standards of Conduct or Inclusion Policy or otherwise do not align with Play! Pokémon tournament environments
+•
+Any attire that may cause confusion regarding a participant’s staffing status (such as wearing a Judge uniform or shirt when not actively on staff)
+•
+Utilizing rolling luggage or hard cases in tournament areas that are larger than the venue size allotment
+•
+Wearing cosplay or costumes that have full face or head coverings
+Individuals are also required to maintain a socially acceptable level of hygiene during the event.
+Depending on the attire or level of hygiene, the Tournament Organizer may allow for a tournament participant to change or update their personal hygiene and attire and return to the venue. If the participant is in compliance with the request, the participant should be allowed to continue their time at the tournament or activations. If a participant refuses to comply with tournament staff’s requests, this is grounds for removal from the tournament and venue, and the participant must relinquish their badge to tournament staff.
+If the issue is considered a gross violation of Play! Pokémon’s rules and guidelines, the participant may be removed from the venue immediately.
+Refusing to comply with tournament staff may result in post-event disciplinary action.
+For more information regarding attire and hygiene, please see our Play! Pokémon Attire and Cosplay Policy.
+3.2.1 During Tournament Play
+Competitors must refrain from the following behavior during matches in progress, unless explicitly given permission by tournament staff:
+•
+Receiving information from an outside source regarding their match or the matches of others
+•
+Taking a phone call or using a cellular device
+o
+This includes using a cellular device to record matches in progress, for calculator functions, or to stream music or videos
+•
+Wearing ear/headphones, unless the competitor is participating in a Pokémon video game tournament (such as VGC, Pokémon GO, or Pokémon UNITE) and the ear/headphones are visibly jacked into their own game system; use of headsets (headphones with an attached mic) is also prohibited, except during Pokémon UNITE tournaments
+o
+Should competitors need sound dampeners as part of an accessibility request, please see more information in our Accessibility Policy
+In addition, the following items are not allowed on the play surface:
+13
+•
+Food and beverages
+o
+Water bottles may be kept on the floor near the competitor; if food or water is required for medical reasons, please follow instructions in our Accessibility Policy for requesting a reasonable accommodation
+•
+Prewritten information, such as a turn sequence, notes from a previous match, type charts, etc., both physical and digital
+o
+Competitors are permitted to utilize a preconstructed outline for note-taking, which must be blank at the start of a match and can consist of only lines and simple shapes (no words or symbols)
+o Use of preconstructed outlines is up to the discretion of the Tournament Organizer, and competitors must follow any instruction regarding preconstructed outlines for note taking. If bringing a notepad or other paper implement to a match, sheets must be free of writing, and a competitor should not refer to old notes from a previous match during their current match.
+3.3 Roles & Responsibilities
+Running a tournament requires several key positions to ensure tournament integrity and a steady pace of play. Not only are members of our tournament staff key to the success of a tournament but so are you! Without competitors and staff alike, we wouldn’t be able to create tournaments that make the Pokémon community special, and Trainers like you wouldn’t be able to test your skills against others all over the world.
+Below is a list of specific roles at events and the expectations for each of those roles. Remember, failure to follow our tournament rules and guidelines can result in removal from the tournament as well as post-event disciplinary action.
+3.3.1 Competitors
+A competitor is an active player in any Play! Pokémon tournament or event. Competitors who drop voluntarily or are eliminated from the tournament or event become spectators. Competitors who are dropped or eliminated in this way keep their competitor badge.
+3.3.1.1 Competitor Responsibilities
+Competitors are responsible for the following:
+•
+Understanding the tournament format, when and how their table numbers are assigned per match, and how the round timer applies to their specific match
+•
+Presenting themselves for play in their matches on time
+•
+Double-checking their match record and standings as pairings are posted each round, and reporting any discrepancies to the appropriate tournament staff immediately
+14
+If any of the information above is unclear to a competitor, it is their responsibility to confirm these details with the Tournament Organizer or a member of tournament staff.
+Competitors must also provide the following prior to the start of the first round unless otherwise specified in separate tournament rules and conditions:
+•
+A valid Player ID
+•
+A deck or team that meets the format restrictions for the tournament
+•
+A legible and accurate list of the cards that comprise the competitor’s deck (deck list) or the Pokémon on a competitor’s team (team list)
+o
+If competing in an event at the level of Regional Championships or above, the deck or team list must be submitted in the appropriate web client by the posted deadline as outlined in the list submission guidelines for each event, available on the Tournament Organizer’s website
+o
+If competing in a Special Championship, follow the requirements for deck and team list submissions as outlined by the Tournament Organizer
+•
+Any implements necessary to play, track, and maintain game information; this includes but is not limited to items such as the following:
+o
+Damage counters
+o
+Special Condition markers
+o
+Randomizers
+o
+Video game system in good working order (with original, proprietary hardware and software)
+o
+Genuine Game Card or digital game in good working order (with no third-party modifications or content in the game)
+o
+Your own device for mobile app tournaments where the Organizer does not provide devices, or any personal device needed for authentication to facilitate logging in to an Organizer-provided device
+3.3.2 Spectators
+Spectators are those who are present at a Play! Pokémon event but are not actively participating in any of the main competitive events. Competitors who have dropped or been eliminated from their main competitive event become spectators.
+3.3.2.1 Spectator Responsibilities
+All spectators must do the following:
+•
+Maintain a reasonable distance from matches in progress to avoid distracting the competitors or interfering with Judges and other tournament staff
+•
+Refrain from discussing matches in progress within earshot of the table
+•
+Avoid interfering with a match in any way
+15
+Should a spectator disrupt tournament proceedings or cause tournament integrity issues, that spectator may be subject to penalties, up to and including removal from the venue and a suspension from Play! Pokémon events.
+If a competitor requires a spectator (a parent, guardian, or chaperone) to accompany them and one is unavailable to be responsible for the competitor (such as being removed from the venue due to disruption or integrity issues), the competitor will be dropped from the tournament without penalty.
+3.3.3 Organizers
+The Organizer of a tournament is the Professor with the corresponding certifications who originally sanctions the tournament. Tournament Organizers can be an individual Professor, such as League Owners sanctioning a League Event, or they may technically be a larger group of individuals running events at the level of Regional Championships, Special Championships, and above.
+Tournament Organizers are responsible for ensuring that the tournament is run according to the Play! Pokémon rules and regulations. Failure to uphold tournament integrity can result in the invalidation of a tournament or event.
+Organizers are also required to notify competitors of the following information at an appropriate time:
+•
+Tournament type (Swiss, Swiss plus single-elimination top cut, etc.)
+•
+Tournament format (Standard, Expanded, etc.)
+•
+Number of rounds
+•
+Number of minutes per round
+•
+Match format (single game or best of three)
+•
+Start time for the tournament and any delays that may impact the start time
+•
+For two-phase tournaments, any updates on the number of rounds played per day or structure to each phase of the tournament
+The tournament format and type should be announced far enough in advance of the tournament that competitors can prepare for the tournament before arriving.
+The number of rounds, minutes per round, top cut, tournament staff, and breaks should be announced prior to the start of the first round.
+3.3.4 Judges
+Judges are expected to administer impartial rulings and assist the Tournament Organizer and Head Judge in running a fun, fast, and fair tournament. Play! Pokémon supports the rulings of its Judges where those rulings are made impartially and are in the best interests of the Spirit of the Game.
+16
+3.3.4.1 Judge Responsibilities
+All Judges must do the following:
+•
+Be free from bias toward or against any competitor
+•
+Avoid judging a match where there may be a potential conflict of interest (e.g., matches involving family, close friends, teammates, or business partners), where possible
+•
+Exemplify and encourage good sporting behavior
+3.3.4.2 Head Judge Responsibilities
+In addition to holding the responsibilities of a Judge, the Head Judge serves as the final arbiter of all rulings and rules interpretations for a tournament and is ultimately responsible for making sure that all participants abide by the rules set forth in this document.
+The Head Judge must do the following:
+•
+Ensure the Judges remain active and on task
+•
+Complete and submit the Penalty Summary form for the tournament
+•
+Complete and submit a Disqualification Report for each disqualification (with the exception of no-shows)
+In tournaments or events where there is only a Tournament Organizer and no other staff, the Organizer is also the Head Judge for the purposes of these responsibilities. If a tournament or event also has Judge staff, the Organizer is responsible for designating a Head Judge for the event.
+3.3.5 Scorekeepers
+The Scorekeeper is a tournament staff member who is responsible for the accurate recording of match results and generation of pairings as a tournament progresses on behalf of the Organizer. The Scorekeeper role is one that can be fulfilled by a Professor, Judge, the Tournament Organizer, or another person who is tasked specifically with the role, but this person must hold the appropriate certification to operate tournament software.
+3.3.5.1 Scorekeeper Responsibilities
+•
+Ensure tournament integrity by generating correct pairings for each round and entering accurate results for each of those rounds
+•
+Resolve any scorekeeping issues that may occur in coordination with the Organizer; in determining the best course of action, the Organizer will have the final say in how to correct these issues as they arise
+•
+Generate standings after the final round of Swiss rounds and for any additional preceding rounds as requested by the Head Judge and/or Organizer of the tournament
+•
+Ensure all information in the tournament file is accurate and finalized for upload by the Organizer after all matches are complete
+17
+3.3.6 Competitor & Professor Eligibility
+It is the responsibility of the Tournament Organizer to confirm that competitors and staff engaging in their events are eligible to participate in Play! Pokémon events and, where applicable, that the staff have the appropriate certifications to fulfill their roles.
+3.3.6.1 Competitor Eligibility
+The information on a competitor’s eligibility is located in the Organizer Information tab in an Organizer’s Pokémon Trainer Central account. Allowing competitors to participate in Play! Pokémon events while they are ineligible can result in disruption to events, invalidation of tournaments, and potential disciplinary action. Please refer to this information often to ensure the integrity of your events.
+3.3.6.2 Professor Eligibility
+The information on a Professor’s eligibility is located in the Player Information tab in your Pokémon Trainer Central account. Allowing ineligible Professors to staff events can result in disruptions, invalidation of tournaments, and potential disciplinary action. Please refer to this information often to ensure the integrity of your events.
+18
+4 Tournament Policies
+This section outlines and explains the standards and policies that Play! Pokémon expects Organizers to respect when scheduling and reporting any Play! Pokémon tournament, including information about the following:
+•
+Where tournaments may be held, including scheduling rules and restrictions
+•
+How results must be reported following a tournament’s conclusion
+4.1 Tournament Scheduling
+4.1.1 Allowable Venues
+Play! Pokémon prefers all sanctioned events to be run at an approved Pokémon League hosted at a game store. However, we acknowledge that these venues may not always be available and therefore permit non-League events to be run in other public locations, such as community centers, libraries, or rented event halls.
+Play! Pokémon League events must be held at their approved League venue.
+Leagues may request to hold League Challenges and League Cups in a larger venue if needed by completing an alternate venue request form. To learn more about the requirements and restrictions of alternate venues, please refer to this article.
+For both non-League events and alternate venue requests for League Challenges or League Cups, the Organizer must ensure that any potential tournament venue adheres to the following points:
+•
+Is clean, safe, and open to the public, and will remain so throughout the duration of the tournament
+•
+Welcomes participants of any background, belief, or personal circumstance
+•
+Satisfies any applicable local laws
+•
+Is not a convention, fair, or similar venue type
+Play! Pokémon and The Pokémon Company International reserve the right to hold sanctioned events or activations at certain venues, such as conventions, at their sole discretion.
+4.1.2 Sanctioning
+To best support your community, we offer multiple event types for tournaments, from entry-style events—such as Friendly Tournaments and Prereleases—to more competitive Championship Series events. These events are held at local Leagues near you, and our larger Championship Series events are held in locations all over the world!
+When a tournament is created in Play! Tools, it is “sanctioned.” Any tournament that uses Play! Tools and the Play! Pokémon Tournament Operations Manager (TOM) is considered a “sanctioned event” and should utilize the
+19
+guidelines outlined in this handbook and the applicable game handbook (TCG, VG, GO, UNITE) when running the tournament.
+For larger tournaments, such as Regional Championships, Special Championships, International Championships, and World Championships, third-party programs may be used to run and manage tournament operations. Tournaments run in this way are still sanctioned events and must utilize the same guidelines outlined in the paragraph above.
+4.1.2.1 Leagues
+Play! Pokémon Leagues can run Friendly Tournaments as part of League sessions. These tournaments can be reported using Play! Tools, and if held during League sessions, individuals who participate are able to be listed on a League’s roster for that reporting season.
+Local Leagues are also able to run League Challenges, League Cups, and Prereleases, which become available to them after certain criteria are met. League Challenges and League Cups award Championship Points (CP), which can be accrued to receive an invitation to the Play! Pokémon World Championships event. League Challenges and League Cups are considered Championship Series events, explained in further detail below.
+For more information on League events, see the Play! Pokémon League Handbook and the Play! Pokémon League Challenges, Cups, and Prerelease Guide.
+4.1.2.2 Championship Series Events
+A Championship Series event is a special type of sanctioned Play! Pokémon tournament that occurs as part of the Play! Pokémon Championship Series and awards Championship Points to those who place highly in the final standings.
+Championship Series events may not be sanctioned without the use of a special tool that Organizers must be granted access to use. Sanctioning these tournaments without the use of this tool is likely to result in the invalidation of that tournament.
+In addition to this document, Organizers should also pay close attention to any supplementary guidelines they receive when they become eligible to run each type of Championship Series event.
+4.1.2.3 Sanctioning Timelines
+Play! Pokémon requires Professors to sanction their Championship Series events at least 14 days in advance of the date on which the event is scheduled to take place. This ensures that competitors have adequate opportunity to find the tournament using the Event Locator tool.
+Play! Pokémon strongly encourages League-sanctioned tournaments that are not a Championship Series event (such as Friendly Tournaments and Prerelease events) to be sanctioned as early as possible to allow competitors
+20
+the opportunity to participate in the tournament. However, these events are not required to be sanctioned 14 days in advance of the tournament date. For more information on League tournament sanctioning, please see section 5.1 of the Play! Pokémon League Handbook as well as our Play! Pokémon League Challenges, Cups, and Prerelease Guide.
+To ensure the integrity of sanctioned tournaments, a tournament must not be retroactively sanctioned after the event has completed. Failure to follow the sanctioning timelines above may result in a tournament being invalidated.
+4.2 Tournament Entry
+Play! Pokémon tournaments should be open to all who meet the participation eligibility requirements set out by Play! Pokémon, though the following exceptions may be made:
+•
+Organizers may choose to offer prioritized registration to competitors who regularly attend Pokémon League sessions at an associated League location
+o
+If utilizing a preregistration system with prioritized registration for those that regularly attend League sessions, it is highly recommended this prioritization is communicated to competitors as soon as possible
+•
+Organizers may choose to disallow entry to any competitor they feel to be a threat to the safety or enjoyment of others or whose presence has previously proven detrimental to the event location for any other reason
+o
+If a competitor has engaged in behavior that would cause an Organizer to disallow entry and they have not been previously reported to the Play! Pokémon program, it is highly recommended that the Organizer or store owner submit a report for review regarding the competitor’s previous behavioral issues
+4.2.1 Entry Fees
+Organizers may charge a fee to participate in tournaments.
+Play! Pokémon makes no recommendation regarding entry fees beyond the stipulation that Organizers must follow all local legal requirements that may apply when deciding if, how, and what to charge. It is the Organizer’s sole responsibility to understand and follow applicable laws.
+4.3 Tournament Integrity
+It is imperative that Championship Series events are operated to the highest standard, and every effort should be taken to avoid all possible threats to tournament integrity. Although every sanctioned Play! Pokémon tournament is recommended to consider the below, the information described in this section is compulsory for all Championship Series events.
+21
+4.3.1 Legality Checks
+Deck lists and team lists must always be collected at Championship Series events, and checks for legality can be performed at any time during any phase of the tournament.
+Play! Pokémon expects that legality checks will be performed on at least 10 percent of decks or teams and recommends that tournament staff strive to complete as many as is reasonable without loss of quality or disrupting tournament proceedings.
+4.3.2 Staffing
+4.3.2.1 Organizer Presence
+The Organizer is ultimately responsible for ensuring that the tournament is run according to the rules and procedures laid out in this and our other core rules documentation. Because of this, the Organizer must be present at the tournament while it is taking place.
+In exceptional circumstances, Play! Pokémon may allow for the responsibility of a tournament to be passed from one Organizer to another. Should these circumstances apply, the current Organizer should submit a request through the Play! Pokémon customer support team.
+Each request is considered individually on a case-by-case basis.
+4.3.2.2 Judges
+Play! Pokémon strongly recommends that all tournaments—but particularly Championship Series events—be attended by Professors who hold a relevant Professor certification. A Judge presence helps to ensure that ruling queries are resolved as efficiently as possible. The presence of multiple Judges helps to ensure that competitors will not have to wait for an extended period before receiving attention.
+Having Judges assist at tournaments also makes it easier for legality checks to be conducted.
+4.3.2.3 Remuneration of Staff
+Play! Pokémon makes no recommendation regarding the remuneration of tournament staff, beyond the reminder that Tournament Organizers must follow all local legal requirements that may apply and that Judges and other volunteers contribute an added value to the tournament experience and should be made to feel appreciated.
+22
+Professors that staff events will receive Professor Points, which they may use at the Pokémon Professor store for different program-related items. Play! Pokémon Store Staff will also receive staff promos for helping to support events. Directions on how to distribute these promos are provided to Play! Pokémon Store Owners.
+4.3.3 Appeals to the Head Judge
+Should a competitor be dissatisfied with a ruling they have received, they may appeal that ruling to the Head Judge. Staff at large Championship Series events, such as Regionals, Internationals, or World Championships, may include additional Assistant Head Judges who are also able to hear appeals.
+A competitor may not appeal before the initial ruling is given in full. Competitors are also not permitted to request that a specific Judge hear their appeal.
+Rulings made by the Head Judge are always considered final. Rulings made by an Assistant Head Judge following an appeal are also considered final.
+If a competitor remains dissatisfied following an appeal, they may contact Play! Pokémon via the Play! Pokémon customer support team once the event has concluded. No further appeal path is available on-site.
+4.3.4 Paper Records
+Paper records, such as standings, pairings, and match slips, may be retained until the end of a tournament to aid with solving any potential discrepancies that may arise. They should then be immediately destroyed.
+4.3.4.1 Paper Match Slips
+A match slip serves as a written record of the result from any one match. Match slips must always be used at Pokémon TCG and video game Championship Series events as well as at Pokémon GO League Challenges and League Cups.
+At the end of each match, the competitors should record the result as appropriate on the slip. Then, both competitors should initial the slip to indicate that they agree with the result.
+Once a match slip has been signed, that result is considered final. It is then the responsibility of the winner of the match to turn in the slip as directed by the Organizer.
+In exceedingly rare situations, The Pokémon Company International may be required to supersede the signed match slip when tournament integrity is at risk or a severe disregard for tournament policy has occurred.
+23
+4.3.4.2 Digital Match Slips
+Digital match slips function similarly to paper match slips in that they serve as a record of the results from any one match. Digital match slips may be used at events at the level of Regional Championships and above as well as at any other tournaments held during these Championship events.
+Where competitors sign paper match slips to finalize the results of the match, competitors must submit a digital match slip through an online client. Only one person from the match is required to submit the digital match slip (the winner of the match is the suggested competitor).
+Once the match slip has been submitted through the online client, the results of the match are considered final (except as outlined in section 4.3.4.1). If there is a discrepancy for any reason, the individuals competing in the match will need to find a member of tournament staff to assist with the discrepancy.
+4.3.4.3 Standings
+At the conclusion of each phase of a tournament (such as moving from Swiss rounds to top cut or moving from phase one to phase two), the Tournament Organizer or Scorekeeper should post standings for competitors to review. For tournaments that only utilize Swiss rounds, the tournament standings must be posted at the conclusion of the tournament.
+4.4 Reporting Tournament Results
+It is the responsibility of the Tournament Organizer to submit the results of a tournament within seven days of that tournament’s conclusion. These results are to be reported online at the official Pokémon website.
+Any tournaments that do not have results submitted by this time are considered delinquent and may jeopardize the Organizer’s eligibility to host future Championship Series events.
+4.4.1 Player ID Discrepancies
+Competitors should reach out to the Organizer of the relevant tournament in the event they discover their Player ID has been incorrectly recorded.
+Any issues discovered after a tournament is completed should be reported by the Organizer to the Play! Pokémon customer support team for assistance.
+4.5 Streamed Matches
+While attending a Play! Pokémon tournament, some competitors may be instructed to play a match that will be featured, projected, or broadcast (streamed) live to a large audience and/or to online viewers. Competitors must comply with the Organizer’s directions regarding the location of the match.
+24
+In addition, these matches may require additional equipment or considerations, such as new card sleeves, playmats, apparel, or the use of noise-cancelling headphones. Competitors are expected to abide by these considerations.
+4.5.1 Featured Events
+Featured matches showcase competitors in designated areas of the Tournament Zone. These matches and their designated areas are denoted by signage and TV screens displaying the match in progress to the audience. Like streamed matches, competitors may be instructed to play a match in the Featured Match area.
+In some instances, these matches may also be streamed to a live, large audience or to online viewers, but this is not guaranteed for all featured matches.
+As outlined in section 2.3 of the Standards of Conduct, featured matches may be filmed by spectators, unlike other matches in the Tournament Zone.
+4.5.2 Participating in Streamed Matches
+Competitors are reminded that by entering or remaining at a sanctioned Play! Pokémon event, they agree to abide by the information stipulated under the Publishing Tournament Information section (2.3) of this document. Competitors are not permitted to voluntarily decline participating in a streamed match.
+In exceptional circumstances, the Organizer may, at their own discretion, decide that it is in the best interests of all involved that the chosen match not be streamed. However, it should be noted that this consideration is reserved for truly uncommon circumstances, wherein a serious detriment may occur to the competitors’ ability to participate fully in that match.
+Where competitors believe that their individual circumstances may make it prohibitively difficult for them to appear on stream, they should make every effort to inform the Organizer prior to the day of the event.
+4.5.3 Rules Infractions in Streamed Matches
+Rules infractions committed during streamed matches that are not immediately addressed may be identified and penalized upon subsequent review of match footage.
+Additionally, certain kinds of penalties, especially those related to unacceptable behavior or language, may be escalated when the infraction occurs during a streamed match.
+4.5.4 Personal Time Between Streamed Matches
+Streamed matches have strict time constraints, so competitors must comply with instructions from tournament staff when instructed to play a match on stream or between matches being broadcast to keep on schedule. Within
+25
+these time constraints, competitors may take personal time between matches. The following guidance must be followed for personal time between streamed matches:
+1.
+All competitors may take a five-minute break between streamed matches (either between completing a match on the show floor and moving to stream or between streamed matches on the main stage)
+a.
+If a competitor requires additional personal time, they must alert a member of tournament staff immediately to see if this accommodation can be met
+2.
+Competitors are responsible for being “camera ready” by the end of their personal time; if they choose to waive any personal time, they should be prepared to play any streamed match uninterrupted
+a.
+Competitors should have used the restroom, have ensured any logos are approved prior to going on stream, and have any materials with them that are required for their match
+3.
+Any delays to the tournament or tournament integrity issues that occur as part of this personal time are subject to the appropriate penalty. Examples include the following:
+a.
+Delaying the stream by taking longer than five minutes without requesting additional personal time from tournament staff
+b.
+Interrupting a match to leave the stage for any reason
+c.
+Requesting personal time between streamed matches to utilize outside information or resources for your next match
+4.5.5 Sponsorship & Logo Appearances
+Competitors and teams wishing to acquire a sponsorship and wear, use, or otherwise promote a sponsor’s logo in appearances at Play! Pokémon events must request approval via our Sponsorship Release Form available via customer support.
+The approval request must meet our sponsorship requirements below and must be received at least three weeks prior to the event in which the sponsor’s logo will be displayed. All approvals are at the sole discretion of TPCi, and TPCi reserves the right to refuse any request.
+The Premier Events Sponsorship Policy can be found here: https://www.pokemon.com/us/play-pokemon/about/premier-events-sponsorship-policy.
+4.6 Prizing
+All prizes provided for use at specific Play! Pokémon tournaments must be used as stipulated wherever possible. Unless otherwise specified, Organizers are always free to supplement any prize support provided by Play! Pokémon. Play! Pokémon makes no recommendation regarding this supplemental prizing beyond the stipulation that Organizers must follow all local legal requirements that may apply.
+26
+4.6.1 Earning Prizes
+To be eligible to receive certain prizes, competitors must ensure that they have indicated their intention to participate in Play! Pokémon—thereby accepting all conditions of participation as noted in this document—via their Pokémon Trainer Central account. This option is found under the “Play! Pokémon Settings” heading, located in the left-hand navigation bar underneath “My Profile.”
+Competitors who have not selected the option to participate in Play! Pokémon will be ineligible to receive prizes, including Championship Points, event invitations, or awards for travel.
+4.6.2 Effects of Competitor Disqualification on Prize Distribution
+Competitors are ineligible to receive prizes from any Play! Pokémon event from which they have been disqualified.
+Should competitors be disqualified, the standings of the tournament will not change unless under extraordinary circumstances. If standings do change because of a disqualification, competitors will be alerted.
+Should a change in standings occur, physical prizes will not be provided to a competitor that becomes eligible for prizing after the conclusion of the event. Competitors who have a change in standing will not be awarded additional physical prizes after already receiving physical prizes. However, competitors may be eligible for any nonphysical prizes, such as Championship Points, awards for travel, etc.
+4.6.3 Promotional Product
+Promotional product intended for use at Play! Pokémon events, including as part of the Pokémon League program, must be distributed as directed wherever possible.
+Beginning 30 days after the event or final League session at which this material was intended to be distributed, the remainder may be used in conjunction with additional Play! Pokémon events at the Organizer’s discretion. Otherwise, it must be destroyed.
+Such promotional material may not be sold by any Organizer in any capacity.
+For more information regarding League promotional material, see section 3.3 of the Play! Pokémon League Handbook.
+4.6.4 Unclaimed Prizes
+Promotional product or other prizing that remains unclaimed after the conclusion of a tournament is considered forfeited by the competitor. Competitors should not expect that they will remain entitled to any prizes should they not be present at the tournament to receive them.
+27
+4.6.5 Play! Points
+The Play! Pokémon program will track Play! Points as a tiebreaking tool. This tiebreaking tool may be used in exceptional circumstances to break Championship Point ties, for example, when Play! Pokémon is determining Travel Awards. More information can be found on the Play! Points page.
+5 Tournament Operations & Specifics
+This section outlines and explains the specifics of tournament play. You should read this section if you are interested in the following:
+•
+Basic rules for all Play! Pokémon tournaments
+•
+Different types of tournament structures
+•
+How competitors are paired and ranked
+•
+How a competitor’s final placement is calculated
+5.1 Definitions
+5.1.1 Match
+A match is defined as a game or series of games played against a single opponent as part of a tournament.
+Matches can consist of a single game, but most are played in a best-of-three format (or any number of rounds increasing in odd numbers). If best-of-three (or more) matches will be present at any point in a tournament, the Organizer should state when they will occur before the first round begins.
+5.1.2 Round
+The group of matches being played at any one time during a tournament is referred to as a round. The number of rounds that will be played depends on the number of competitors in attendance as well as the style of tournament that is being run.
+5.1.3 Age Divisions
+Play! Pokémon, where applicable, separates competitors into three age divisions: Junior, Senior, and Masters.
+28
+The age division that competitors participate in is set at the beginning of the tournament season based on that competitor’s year of birth and does not change over the course of that season. This allows competitors to compete against the same pool of opponents over the course of the entire season.
+The tournament season begins each year on September 1 at 00:00 UTC, meaning the age divisions change over on this date. 2026 Championship Season Age Divisions
+Junior Division
+Competitors born in 2014 or later Senior Division Competitors born between 2010 and 2013, inclusive
+Masters Division
+Competitors born in 2009 or earlier
+5.2 Tournament Requirements
+A sanctioned Play! Pokémon tournament must abide by the following criteria:
+•
+At least four competitors are required to participate in a tournament
+•
+Competitors must complete three full rounds
+•
+Each competitor must compete against a valid opponent
+o
+A valid opponent is defined as any opponent the competitor has not already played before completing the third round
+o
+Should a number of competitors drop from the tournament that would not allow a competitor to play a valid opponent before the third round, the tournament will be invalid
+If any of the above criteria are not met, the Organizer should report the tournament as “Cancelled.”
+Competitors who receive a random bye or a bye assigned according to other Play! Pokémon procedures are considered to have played a valid opponent. Byes assigned for any other purpose damage the integrity of the tournament and may cause it to be invalidated.
+5.2.1 Age-Combined Play
+Age-combined play (or age-modified Swiss) is used when there are less than six competitors in any age division. Competitors are combined into mixed-age-division pods for the Swiss rounds but are separated by age division for single-elimination rounds.
+The software will first look at Juniors, and if there are less than six competitors, they will be combined with Seniors. If there are still less than six, both Juniors and Seniors will be combined with Masters. If there are at least six Juniors but less than six Seniors, the Seniors will be combined with Masters. If only the Masters division has less than six competitors, the Masters will be combined with Seniors. Tournaments may be run with as few as four competitors even though the minimum for an age-separated pod is six.
+29
+Combined-age-division pods only share Swiss round pairings. Each age division has its own standings and, if applicable, single-elimination top cut.
+5.2.2 Late Arrivals
+If the Organizer feels that the addition of a late competitor creates an issue with the integrity of the event, they may choose to refuse event entry to that competitor. It is recommended that competitors not be added after the third round of the tournament is completed. Otherwise, the competitor may be added to the tournament and will be paired in the following round. That competitor will receive losses for the current round and any round that has already completed.
+Competitors who are added to a tournament after the first round has been paired will not contribute to the number of rounds that tournament will feature.
+5.2.2.1 Late Arrivals at Championship Series Events
+Competitors should not be added to Championship Series events after the third round is completed.
+5.3 Match Records & Ranking
+5.3.1 Match Record
+A competitor’s match record is the representation of the number of matches they have won, lost, or tied during the tournament. It is presented as a ratio in the format “W/L/T.” For example, a competitor who has won four games, lost three games, and tied one game will have a match record of 4/3/1.
+Match records are printed and displayed each round on the pairings and match slips alongside each competitor’s name and should be checked for accuracy by competitors as soon as they are made available.
+5.3.1.1 Match Record Errors
+It is at the Organizer’s discretion to re-pair a round if a competitor’s match record is found to be incorrect.
+The Organizer can fix the error before the round starts and re-pair the minimum number of competitors to have a valid pairing or wait until the round starts before fixing the match record. In either case, the competitor’s pairing in the next round will be correct.
+Match records cannot be altered after the second subsequent round is paired. For example, match records for round one cannot be altered after round three is paired.
+30
+Changing a match record one round after the mistake has occurred affects the tournament similarly to a random pair-up or pair-down. However, changing a match record many rounds later has a much greater effect on the tournament and can result in a competitor facing opponents with lower match records for much of the tournament before a change in their own match record places them in the top standings.
+Please Note: During events at the level of Regional Championships and above, Pokémon GO competitors are responsible for checking their bracket standings before the start of their next match, as round pairings cannot be changed after a new set of matches commences.
+5.3.2 Match Points
+Match points are accumulated as competitors progress through a tournament. The number of match points a competitor has at any one time is determined by their match record. Match Point Distribution
+Win
+3 Match Points Loss 0 Match Points
+Tie
+1 Match Point
+Competitors receive three match points for a win, zero for a loss, and one for a tie. So, if a competitor’s match record is 4/3/1, they have 13 match points. This is the same as a competitor whose match record is 3/1/4.
+Match points are printed and displayed each round on the pairings and match slips next to each competitor’s match record. They are shown as a number in parentheses; in the case of the previous example, “(13)” would be displayed.
+5.3.3 (Opponents’) Win Percentage
+A competitor’s opponents’ win percentage—abbreviated to “Op Win %” on tournament documentation—is the average of the win percentages of all opponents played during a given set of rounds.
+5.3.3.1 Calculating Win Percentage
+The total number of rounds an opponent completes determines how their win percentage is calculated.
+Please Note: In calculating the opponents’ win percentage, rounds in which a competitor received a random bye do not count as a win for that competitor.
+If a competitor completes the tournament, their win percentage will be the number of wins divided by the total number of rounds in the tournament, with a minimum win percentage of 25% and a maximum win percentage of 100%. The table below illustrates a few examples:
+31
+Competitor Completed the Tournament
+Minimum win percentage: 25%
+Maximum win percentage: 100%
+Examples Total Number of Wins Total Number of Rounds Win %
+1
+5
+25% 3 5 60%
+5
+5
+100%
+If the competitor dropped from the event before it was completed, their win percentage is the number of wins divided by the number of rounds in which they participated, with a minimum win percentage of 25% and a maximum win percentage of 75%. The table below illustrates a few examples: Competitor Drops Before Tournament Is Complete
+Minimum win percentage: 25%
+Maximum win percentage: 75%
+Examples Total Number of Wins Total Number of Rounds Win %
+1
+5
+25% 3 5 60%
+5
+5
+75%
+Once a competitor’s opponents’ win percentages are calculated, they are averaged, resulting in the final figure that is displayed.
+5.4 Concessions & Intentional Draws
+Matches should be decided by gameplay alone, so competitors may not decide the outcome of a match prior to the start of the match by using informal agreements. Bribery with prizing or money is a violation of our policies. Both are considered match-fixing and may result in a penalty as outlined in section 7 of this document.
+However, competitors are permitted to concede to their opponent for any reason or (in the case of Pokémon TCG tournaments only) to make a single offer to draw the game during the match. Play! Pokémon and tournament staff do not enforce or recognize any such agreements between competitors during their match, so competitors concede or intentionally draw accepting the potential outcomes of these decisions.
+With the above in mind, once a match result has been recorded on a signed match slip, unless otherwise noted, the result is considered final and cannot be changed. As stated in section 4.3.4.1, in exceedingly rare situations, The Pokémon Company International may be required to supersede the signed match slip when tournament integrity is at risk or a severe disregard for tournament policy has occurred.
+32
+Competitors are also prohibited from doing the following:
+•
+Asking their opponent to concede
+•
+Asking again for an intentional draw once their opponent has made it clear that they do not wish to do so
+•
+Bribing, coercing, or otherwise pressuring their opponent into any match result
+•
+Referring to tournament standings or waiting for other matches in progress to resolve before deciding to concede or draw
+•
+Using information outside of the current game or match (including taking illegal game actions to access additional information) to decide the results of the match
+•
+Deciding the result of the match through random means (e.g., by coin flip or dice roll) or through any other choosing method
+Any attempt at match-fixing or artificially determining the final standings of a tournament are considered a severe violation of Play! Pokémon standards and tournament integrity and may incur the appropriate penalties as outlined in the Play! Pokémon Penalty Guidelines.
+5.5 Play! Pokémon Tournament Styles
+Sanctioned Pokémon TCG and VG tournaments may be run as Swiss, single-elimination, or Swiss-plus-single-elimination events. Sanctioned Pokémon GO events are run as Swiss-plus-single-elimination tournaments, and Pokémon GO Regional Championships, International Championships, and World Championships are run as double-elimination tournaments. Depending on the number of participants, Pokémon GO events may be run in two phases: a group stage and a finals bracket.
+Other tournament styles may be used only with express written permission from Play! Pokémon and should be clearly communicated to competitors when competitors register for the event.
+5.5.1 Swiss
+Most Championship Series events use this tournament style, either alone or in conjunction with single-elimination rounds.
+The intent of the Swiss pairing method is to determine a single winner by pairing competitors with the same or similar match records against each other until there is only one undefeated competitor.
+Tournaments run using the Swiss pairing method allow every competitor attending the tournament to play in every round, regardless of how well they do over the course of the event.
+Swiss tournaments progress as follows: Round One
+33
+Competitors are paired randomly for the first round of play. If there is an odd number of participants, the competitor without an opponent is given a bye, which counts as a win but is not included when calculating tiebreakers. Round Two
+Competitors in the 1-0 bracket (1 win, 0 losses) are randomly paired against each other; competitors in the 0-1 bracket (0 wins, 1 loss) are paired in the same manner.
+If there is an odd number of competitors, one of the competitors in the 1-0 bracket is paired randomly with one of the competitors in the 0-1 bracket (as long as they did not play each other in a previous round). If this leaves an odd number of competitors in the 0-1 bracket, one competitor from this round is assigned a bye, as above. All Subsequent Rounds
+Competitors continue to be paired randomly by match record until the specified number of rounds have concluded.
+The competitor listed at the top of the standings at this point is the champion. If there is an odd number of competitors, pairings continue as in round two, pairing down from the highest bracket (most wins) to the lowest bracket (fewest wins), assigning a bye randomly to one competitor in the lowest bracket.
+5.5.1.1 Final Placement in Swiss Standings
+After the final round of Swiss, the only undefeated competitor—or competitor with the highest number of match points and the best tiebreakers—is the winner of the tournament. All other competitors are ranked based on their final records at the event.
+Because competitors often have a similar number of match points, Play! Pokémon uses tiebreakers to determine the final ranking of each competitor. After competitors are ranked by final match points, tiebreakers are applied in the following order.
+Once the criteria for one tiebreaker is met, no further tiebreakers are applied. First Tiebreaker Opponents’ Win Percentage
+Competitors who are tied are ranked in order of their Op Win %, from highest to lowest. Second Tiebreaker Opponents’ Opponents’ Win Percentage
+Competitors who remain tied are now ranked in order of their Op Op Win %, from highest to lowest.
+A competitor’s opponents’ opponents’ win percentage (Op Op Win %) is the average of the Op Win % of all that competitor’s opponents. Final Tiebreaker Head-to-Head
+If exactly two competitors are tied in the final standings and those competitors played each other during the tournament, then the winner of that match is ranked higher than the loser.
+If exactly two competitors are tied in the final standings and those competitors did not play each other during the tournament, then the order in which they appear will be randomly determined.
+34
+If more than two competitors are tied in the final standings, then the order in which they appear will be randomly determined.
+5.5.2 Single Elimination
+Single-elimination tournaments determine the winner of the event by eliminating competitors from the tournament after they lose one match. The number of competitors in each round will be half the number of competitors in the previous round (with the possible exception of the first round). The tournament ends when only one competitor remains undefeated. That competitor is the winner of the tournament. Single-elimination tournaments progress as follows: Round One
+Competitors are assigned seeds at random and then paired based on the standard single-elimination brackets. The winner of each match moves on to the next round, while the loser is eliminated from the tournament. All Subsequent Rounds
+Competitors continue to be paired along the brackets, with the winner of a match moving on to the next round and the loser being eliminated from the tournament.
+Ultimately, only two competitors will remain. The winner of that match becomes the winner of the tournament.
+5.5.2.1 Single-Elimination Brackets
+If the number of competitors in the event is not a power of 2 (8, 16, 32, 64, 128, 256, etc.) then the highest-seeded competitors receive byes. The number of competitors who receive byes is based on the difference between the actual attendance and closest power of 2 that is greater than the actual attendance.
+For example, if the actual attendance is 53, the closest power of 2 that is greater than 53 is 64. The difference between 64 and 53 is 11, so the top 11 seeded competitors (who were seeded randomly) would receive first-round byes.
+5.5.2.2 Final Placement in Single-Elimination Standings
+After the final round of single elimination, the only remaining competitor is the winner of the tournament. All other competitors are ranked based on the final record of the opponent who knocked them out of the event.
+For example, a competitor who was eliminated in the first round by the winner of that tournament will be ranked higher than any other competitor who was eliminated in the first round.
+35
+5.5.2.3 Placement Playoffs
+The Organizer may have the competitors who lose in the Top 4 play off for 3rd and 4th place instead of using tiebreakers to determine the 3rd- and 4th-place final standings. If this will be the case, the Organizer must make this clear at the beginning of the tournament.
+5.5.3 Swiss + Single Elimination
+The purpose of this format is to run a number of Swiss rounds appropriate for the number of competitors in attendance, after which the top-ranked competitors are seeded into single-elimination brackets and play until only one competitor remains. That competitor is the winner of the tournament.
+Most Pokémon TCG and VG Championship Series events and some Pokémon GO events use a variation of this tournament style.
+The following sections illustrate which Championship Series events use which variant and the details and differences of each of those variants.
+Play! Pokémon reserves the right to approve alterations to the tournament format of an event at any time for any reason.
+Organizers should note that competitors who are added to a tournament after the first round has been paired will not contribute to the number of rounds that tournament will feature.
+5.5.4 Championship Series Event Tournament Structures Championship Series Event Tournament Structures Game Championship Series Event Tournament Mode Tournament Structure VG League Challenge and League Cups TOM VGC Premier Event Variant #1: VG Single Day VG Regional Championships TOM Two-Phase Championship Variant #5: Two-Phase Championship Format VG International Championships TCG League Challenge TCG League Challenge Variant #2: TCG Rounds Swiss Only TCG League Cup TCG League Cup Variant #3: TCG Single Day
+TCG
+Regional Championships
+TOM Two Phase Championship
+Variant #5: Two-Phase Championship Format
+TCG
+International Championships GO League Challenge and League Cup GO Cups and Challenges Variant #4: GO Single Day
+36
+GO GO Regional Championships International Championships Variable Tournament Structure, announced at registration Double Elimination, Variant #4, or Variant #5, dependent upon tournament
+5.5.4.1 Single Day Tournament Structures
+The number of competitors participating in the tournament directly affects how many Swiss and single-elimination rounds will be played. The tables below illustrate this relationship: Variant #1: VG Single Day Competitors per Age Division Swiss Rounds Single-Elimination Rounds Total Length (in Rounds) 4–7 3 0 3 8 3 1 4 9–16 4 2 6 17–32 5 3 8 33–64 6 3 9 65–128 7 3 10 129–226 8 3 11 227–256 8 4 12 257–409 9 4 13 410–512 9 5 14 513+ 10 5 15
+Variant #2: TCG Swiss Rounds Only Competitors per Age Division Swiss Rounds Single-Elimination Rounds Total Length (in Rounds) 4–8 3 0 3 9–16 4 0 4 17–32 5 0 5 33–64 6 0 6 65–128 7 0 7 129–256 8 0 8 257–512 9 0 9 513+ 10 0 10
+Variant #3: TCG Single Day Competitors per Age Division Swiss Rounds Single-Elimination Rounds Total Length (in Rounds) 4–8 3 0 3 9–12 4 2 6
+37
+13–20 5 2 7 21–32 5 3 8 33–64 6 3 9 65–128 7 3 10 129–226 8 3 11 227–409 9 3 12 410+ 10 3 13 Variant #4: GO Single Day Competitors per Age Division Swiss Rounds Single-Elimination Rounds Total Length (in Rounds) 4–7 3 0 3 8 3 1 4 9–16 4 2 6 17–32 5 3 8 33–64 6 3 9 65–128 7 3 10 129–226 8 3 11 227–256 8 4 12 257–409 9 4 13 410–512 9 5 14 513+ 10 5 15
+5.5.4.2 Two Phase Tournament Structure
+Larger Championship Series events may run over two or three days, with a portion of the highest-ranking competitors advancing to a second phase of Swiss rounds.
+Match point thresholds for Swiss phase-two qualification—as well as the number of Swiss phase-two rounds to be held—depend on the number of competitors per age division, detailed in the table below. Note that the red line indicates the point at which a second phase of Swiss rounds is required. Variant #5: Two Phase 2026 Championship Format Competitors per Age Division Total Swiss Rounds Swiss Phase One Phase Two Match Point Threshold Swiss Phase Two Top Cut Notes
+4–8
+3
+3
+N/A
+0
+N/A
+Natural Swiss 9–16 4 4 N/A 0 Asymmetrical Top 2 Natural Swiss
+17–32
+6
+6
+N/A
+0
+Asymmetrical Top 4
+Natural Swiss +1 33–64 7 7 N/A 0 Asymmetrical Top 6 Natural Swiss +1
+38
+65–128
+9
+7
+13
+2
+Asymmetrical Top 8
+Natural Swiss +2 129–256 10 8 16 2 Asymmetrical Top 8 Natural Swiss +2
+257–512
+11
+8
+16
+3
+Asymmetrical Top 8
+Natural Swiss +2 513–1,024 12 8 16 4 Asymmetrical Top 8 Natural Swiss +2
+1,025–2,048
+13
+8
+16
+5
+Asymmetrical Top 8
+Natural Swiss +2 2,049–4,096 14 8 16 6 Asymmetrical Top 8 Natural Swiss +2
+4,097–8,192
+15
+9
+19
+6
+Asymmetrical Top 8
+Natural Swiss +2
+The maximum number of competitors in an asymmetrical top cut is 16.
+5.5.5 Double Elimination
+Some Pokémon GO events, such as those at the level of Regional Championships and above, use the double-elimination format.
+This format features two brackets, one for undefeated competitors (winners bracket) and one for competitors who have lost one match (losers bracket). Competitors are eliminated from the tournament once they have lost two matches. Both brackets are played to completion. The champions of each bracket are then paired together in a Grand Final.
+A competitor who reaches the Grand Final must receive their second loss of the tournament in the Grand Final in order to be eliminated from the tournament. Should the winners bracket champion defeat the losers bracket champion in the Grand Final, the winners bracket champion wins the tournament immediately.
+However, should the losers bracket champion defeat the winners bracket champion, a “bracket reset” occurs, and play must continue until either competitor receives their second loss of the tournament. In this case, the competitor with a single loss wins the tournament.
+5.5.5.1 Pools for Pokémon GO Tournaments
+Pokémon GO events with a large number of competitors may begin with a pools phase. In this case, competitors are separated into “pools,” and they compete with each other within their pool. The top two competitors from each pool then progress to a final phase, where the winner of the tournament is determined.
+The number of pools is determined as follows: Pokémon GO Double-Elimination Pools
+39
+Number of Competitors Number of Pools Resulting Number of Final Phase Competitors
+1–32
+1
+No Final Phase 33–64 2 4
+65–128
+4
+8 129–256 8 16
+257–512
+16
+32
+5.5.5.2 Bracket Seeding
+Brackets may be seeded at the Organizer’s discretion. This seeding must obtain explicit approval from TPCi before it may be used in a tournament.
+When applied, seeding is always determined according to quantitative performance data rather than any subjective criteria. The current methodology for seeding utilizes competitor performance data from the 2025 and 2026 Pokémon GO Championship Series seasons.
+5.5.5.3 Round-Robin
+Round-robin may be used at the discretion of the Organizer only when there are six or fewer competitors in the tournament for events at the level of Regional Championships and above.
+During a round-robin tournament, every competitor is paired against every other competitor until no pairings remain that have not yet played.
+5.5.6 Championship Series Event Round Structure
+Swiss rounds at Championship Series events may use single-game or best-of-three matches. This decision is at the discretion of the Organizer, though Play! Pokémon strongly recommends that events at the level of Regional Championships and above use best-of-three matches. It is strongly suggested that all Pokémon GO events are run best-of-three, regardless of level.
+Single-elimination rounds at Championship Series events using the Swiss + single-elimination tournament structure must use best-of-three matches.
+Championship Series event rounds must be allowed the following minimum amounts of time to complete:
+•
+Single game: 30 minutes
+•
+Best-of-three: 50 minutes
+The time remaining in the round is considered public knowledge for all competitors. Play! Pokémon recommends that round time be publicly displayed at all Championship Series events.
+40
+Competitors may ask Judges to provide a time check, which should be accurate to the nearest minute according to the best information the Judge has available.
+5.5.7 Final Placement in Swiss + Single-Elimination Standings
+Following the completion of Swiss rounds, competitors will be ranked based on their performance and Swiss tiebreakers. A number of the highest-ranking competitors will then be seeded into single-elimination brackets, equal to the number of slots available in the bracket.
+Matches are then played according to single-elimination rules, with the winner moving on to the next bracket and the loser being eliminated. Eventually, only one competitor will remain. This competitor is the winner of the tournament.
+The tiebreaker to determine final placement of the competitors in the single-elimination portion of the tournament is simply each competitor’s final Swiss ranking.
+After each round of single elimination, eliminated competitors are ranked according to their final Swiss ranking, with the highest-seeded competitor taking the highest rank available for that bracket, followed by the second-highest-seeded competitor, and so on.
+5.6 Pairings
+After each round of the tournament completes, the Organizer should pair the next round and post the pairings. Competitors should be given a reasonable amount of time to report any errors with their standings and find their seats before a Scorekeeper clicks the “Start Round” button in Tournament Operations Manager (TOM). Per 5.3.1.1, Pokémon GO competitors are responsible for checking their bracket before the start of the next round, as Pokémon GO does not use TOM at the Regional Championships level and above.
+Note that once a round is started, no pairings can be changed.
+5.6.1 Random Byes
+Throughout the course of a tournament, competitors may be assigned byes. This occurs when there is an odd number of competitors.
+A bye counts as a win for that competitor’s match record but does not count as a round played when calculating that competitor’s win percentage.
+Where byes are inevitable, they will always be awarded to the competitor with the worst match record if at all possible. However, no competitor will ever receive more than one bye over the course of a tournament.
+41
+5.7 Dropping from Tournament Play
+Competitors who decide that they no longer wish to continue playing in a tournament in progress must drop. Competitors may decide to drop from tournament play for any reason, although competitors may not drop from a match in progress without first conceding or completing that match.
+The Organizer may require competitors to complete a form or slip to confirm that they wish to drop, or to report their desire to drop to a specific member of the tournament staff. While this may change from event to event, the following information regarding drops remains true for all Play! Pokémon tournaments.
+5.7.1 Incomplete Matches
+Competitors who wish to drop from the tournament before their current match is complete will receive a loss for all their games that have yet to resolve. If a competitor wishes to avoid receiving these losses, they should ensure that their match is complete and the result has been recorded before they follow the procedure to drop.
+Once the current round is complete, the competitor will be dropped from the tournament and will not be paired in any subsequent rounds.
+5.7.2 Dropped Competitors’ Final Standing
+Competitors who drop from a tournament before it is completed will still be recorded in the final standings. Any Pokémon GO competitors who drop from the bracket during tournaments at the level of Regional Championships and above will receive Match Losses until they have lost two rounds, at which point they will be eliminated from the bracket.
+5.7.3 Disqualified Competitors’ Final Standing
+If a competitor is disqualified from a tournament, they are removed from the standings completely and are ineligible to receive any prizes their match record may otherwise have entitled them to.
+6 Tournament Rules per Product
+Given the diverse range of products and tournaments you can compete in, specific rules and formats guides are available as separate documents for each of our products:
+•
+Pokémon Trading Card Game
+•
+Pokémon Scarlet and Pokémon Violet (referred to as “video games” or “VGC”)
+•
+Pokémon GO
+•
+Pokémon UNITE
+42
+Each of these documents is reviewed on a quarterly cycle, so we highly recommend reviewing the documentation for the tournaments you are entering each quarter to make sure you don’t miss any policy and guideline updates!
+7 Rules Violations & Penalties
+Whether intentional or not, errors and infractions can happen during a tournament. While we may not be excited to give a penalty, it is everyone’s responsibility to protect the integrity of each game, match, and tournament. It may be required that members of tournament staff (Judges and Organizers) take corrective action regarding base infractions and their effects on a match’s game state.
+Given the complexity of our products and tournaments, detailed instructions about rules violations and penalties can be found in our Play! Pokémon Penalty Guidelines. Information in that document supersedes any information outlined below, so it is highly recommended that Professors and competitors thoroughly read through the Play! Pokémon Penalty Guidelines.
+The rest of this section is a brief overview of core concepts and our penalty philosophy.
+7.1 Philosophy
+Play! Pokémon focuses on two primary concepts when considering our penalty philosophy: base infractions and game state.
+Base infractions represent the most common issues seen at tournaments and act as references for assessing what penalties should be applied for the infraction. Base infractions include procedural errors, arriving late to a match, or unsportsmanlike behavior.
+The game state encompasses all parts of the game currently in play, such as competitors’ hands, the cards in play, current Pokémon on a competitor’s team (including their moves and held items), etc.
+Judges must consider what infractions occurred and their total effect on the game state to determine the correct penalty for the situation.
+7.2 Penalties
+Currently, Play! Pokémon utilizes the following penalties across our tournaments:
+1.
+Caution
+The most basic of assigned penalties; this is verbal and not reported to Play! Pokémon
+2.
+Warning
+A reported penalty that denotes a minor penalty; similar to Caution
+3.
+Double Prize Card Penalty (Pokémon TCG Only)
+A competitor needs to take two fewer Prize cards to win their game
+43
+4.
+Quadruple Prize Card Penalty (Pokémon TCG Only)
+A competitor needs to take four fewer Prize cards to win their game
+5.
+Game Loss
+Applied when a mistake severely impacts the integrity of the game state. The game is recorded as a loss for the competitor receiving the penalty. In extreme cases where significant errors have been made by both competitors in a game, a Game Loss penalty may be issued to both competitors simultaneously.
+6.
+Match Loss
+More severe than a Game Loss, a Match Loss is applied when an action impacts the integrity of the entire match. The match immediately ends and is recorded as a loss for the offending competitor. In extreme cases where significant errors have been made by both competitors in a match, a Match Loss penalty may be issued to both competitors simultaneously.
+7.
+Disqualification
+The most severe penalty, applied when a competitor’s actions significantly and negatively impact the integrity of the entire event. The offending competitor’s match ends immediately, they are removed from the tournament standings, and they become ineligible to receive prizes. This can result in removal from the event.
+7.3 Application
+After determining the nature of the base infraction and assessing its impact on the game state, Judges must determine if a penalty should be applied. This may include a recommended starting penalty, which is the common penalty for the base infraction and its effect on the game state. Applications may deviate from standard when the base infraction’s effect on the game state is either more or less severe than that which is standard. Judges make the determination to deviate from standard application after reviewing the base infraction and its effect on the game state.
+Depending on the timing of the penalty being applied, the game or match may end immediately.
+Some base infractions and their effects on the game state may be reversible, which means that the game state can be corrected to a point prior to when the infraction occurred. While this may lessen the penalty from its standard application, it does not always mean that a penalty won’t be applied.
+Other conditions (repeated infractions, age, experience level, etc.) may also help to determine if a deviation from standard should occur when applying a penalty.
+7.3.1 Delivering Penalties
+Whenever a penalty is assessed and delivered, that delivery should include the following:
+•
+An explanation of how the competitor’s actions are not allowed
+•
+An explanation of the base infraction and severity of that infraction to the competitor
+44
+o
+Cite the specific section or category for the base infraction
+•
+How the assessed penalty will impact the competitor’s tournament
+•
+A reminder that the competitor may appeal this or any other penalty to the Head Judge
+Judges should also treat information pertaining to penalties with sensitivity to prevent potential embarrassment to competitors involved. For this reason, and because Judges may lack complete information regarding penalties they were not involved in, Judges should refrain from commenting publicly on penalties with which they were not directly involved.
+Should a Judge use a specific situation for training purposes, the issue should be sufficiently anonymized.
+7.4 Base Infractions, Standard Penalties & Deviations
+Given the complex nature of base infractions and their effects on the game state, all information regarding base infractions, standard penalties, and any deviations from standard can be found in the Play! Pokémon Penalty Guidelines.
+7.5 Reporting
+Play! Pokémon tracks each competitor’s penalty history to differentiate intentional repetition of infractions from unintentional occurrences and to determine if disciplinary action is necessary.
+It is the Organizer’s responsibility to provide Tournament Penalty Summaries to the Play! Pokémon program within seven days of an event concluding. An example document can be found at the end of the Play! Pokémon Penalty Guidelines.
+For any disqualification, the Head Judge is responsible for providing a Disqualification Report. These reports must be provided to the Play! Pokémon program within seven days of an event concluding. Select “Disqualification Report” from the relevant drop-down menu in the Play! Pokémon customer support portal.
+7.6 Post-Event Disciplinary Action
+Post-event disciplinary actions occur when a competitor receives a penalty at an event that calls into question the suitability of the competitor to remain a part of the Play! Pokémon community (such as cheating or a gross violation of our inclusion policy). Penalties are evaluated by an internal team. Should the team confirm that a post-event disciplinary action is necessary, the competitor will receive a notice of disciplinary action. Play! Pokémon urges you to understand that our events are for everyone; actions and behaviors at our events that threaten the inclusivity, enjoyment, and integrity of our events may have additional consequences.
+Play! Pokémon reserves the right to take disciplinary action against any competitor for rules infractions. Disciplinary action is determined by severity and whether the occurrence is repeated. Such action may include a
+45
+suspension from the program. In these cases, the suspended competitors will be notified, and their names and Player IDs will be made available to Organizers.
+A suspended competitor is not allowed to participate in or attend any Play! Pokémon events as a spectator, competitor, Judge, or in any other capacity. If a suspended competitor disrupts an event by trying to participate and refusing to leave, the incident should be reported to Play! Pokémon. An extension to the existing suspension may then be applied.
+46
+8 Summary of Changes
+Date of previous issue: April 7, 2026
+Date of current issue: May 21, 2026
+1 Using This Handbook Section Page # Change
+2 Participation Fundamentals Section Page # Change
+2.2
+Updated instructions to reflect new workflows for Pokémon Trainer Central.
+3 Event Expectations Section Page # Change
+3.2.1
+Updated language for note-taking.
+4 Tournament Policies Section Page # Change
+4.1.1
+Fixed a broken link.
+5 Tournament Operations & Specifics Section Page # Change
+5.1.3
+Added clarification for when the competitive season begins each year.
+6 Tournament Rules per Product Section Page # Change
+7 Rules Violations & Penalties Section Page # Change
+47
+Appendix A: Rating Zones
+Play! Pokémon uses different rating zones for various activations at their events during each season. The following is a list of all territories whose competitors can earn Championship Points during a season. Territories that are eligible to organize Play! Pokémon events are noted in each list by an asterisk (*). These rating zones also determine the legality of card language for each rating zone as outlined in section 2.3 of the Pokémon TCG Tournament Handbook. Rating Zone Countries & Regions Included US and Canada Canada*, United States*, Puerto Rico* Latin America Anguilla, Antigua and Barbuda, Argentina*, Aruba, Bahamas, Barbados, Belize, Bolivia*, Brazil*, Cayman Islands, Chile*, Colombia*, Costa Rica*, Curacao, Dominica, Dominican Republic*, Ecuador*, El Salvador*, French Guiana, Grenada, Guadeloupe, Guatemala*, Guyana, Haiti, Honduras, Jamaica, Martinique, Mexico*, Montserrat, Netherlands Antilles, Nicaragua*, Panama*, Paraguay*, Peru*, Saint Kitts and Nevis, Saint Lucia, Saint Vincent and the Grenadines, Saint Martin, Suriname, Trinidad and Tobago*, Turks and Caicos Islands, Uruguay*, Venezuela, Virgin Islands (British), Virgin Islands (U.S.) Europe Albania, Andorra, Austria*, Belarus, Belgium*, Bermuda, Bosnia and Herzegovina, Bulgaria*, Croatia, Cyprus, Czech Republic*, Denmark*, Estonia, Finland*, France*, Germany*, Gibraltar, Greece*, Greenland, Guernsey*, Hungary*, Iceland, Ireland*, Isle of Man*, Italy*, Jersey*, Latvia, Liechtenstein, Lithuania, Luxembourg*, Macedonia (Republic of), Malta*, Moldova (Republic of), Monaco, Montenegro, Netherlands*, Norway*, Poland*, Portugal*, Romania*, San Marino, Serbia*, Serbia and Kosovo, Slovakia (Slovak Republic)*, Slovenia, Spain*, Sweden*, Switzerland*, Turkey, Ukraine, United Kingdom (Great Britain)*, Vatican City
+48
+Oceania American Samoa, Australia*, Cook Islands, Fiji, Guam, Kiribati, Nauru, New Zealand*, Samoa, Tonga, Vanuatu Middle East and South Africa Algeria, Angola, Armenia, Azerbaijan, Bahrain, Benin, Botswana, Brunei Darussalam, Burkina Faso, Burundi, Cameroon, Cape Verde, Central African Republic, Chad, Comoros, Congo, Cote d’Ivoire, Djibouti, Egypt, Equatorial Guinea, Eritrea, Ethiopia, Gabon, Gambia, Georgia, Ghana, Guinea, Guinea-Bissau, Israel, Jordan, Kazakhstan, Kenya, Kuwait, Kyrgyzstan, Lebanon, Lesotho, Madagascar, Malawi, Mali, Mauritania, Mauritius, Morocco, Mozambique, Namibia, Niger, Nigeria, Oman, Qatar, Rwanda, Sao Tome and Principe, Saudi Arabia, Senegal, Seychelles, Sierra Leone, Somalia, South Africa*, Sudan, Swaziland, Tajikistan, Tanzania (United Republic of), Togo, Tunisia, Turkmenistan, Uganda, United Arab Emirates*, Uzbekistan, Yemen, Zambia, Zimbabwe Russia Russian Federation
+*Denotes territories that can organize Play! Pokémon events.
+The following countries’ Play! Pokémon equivalent is administered by The Pokémon Company and not The Pokémon Company International or Play! Pokémon. Competitors from these countries can participate in Championship Series events held by Play! Pokémon and earn prizes but cannot earn Championship Points. Competitors in these territories can earn invitations to the Play! Pokémon World Championships by winning a Play! Pokémon Regional Championships or Special Championships or by placing in the Top 4 at a Play! Pokémon International Championships. Rating Zone Countries & Regions Included TPC-Administered Japan, Taiwan, Hong Kong, Macau, Thailand, Indonesia, Singapore, Malaysia, Philippines PKI-Administered Republic of Korea
+49
+PSH- Administered Chinese mainland (excluding Hong Kong, Macao, and Taiwan)

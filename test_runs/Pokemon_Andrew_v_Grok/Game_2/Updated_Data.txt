@@ -1,0 +1,58 @@
+1. High-value Pokémon axioms (copy these into the KB as Tier-0 or high-confidence discoveries)
+textDomain: pokemon_singles_strategy
+
+Axiom 1: Tyranitar Stone Edge vs Charizard (Fire/Flying) is 4× super-effective and typically OHKOs at Level 50 with standard stats.
+Axiom 2: Extreme Speed has priority +2 and is the preferred finishing tool for Dragonite when the opponent is in KO range.
+Axiom 3: Never switch a Pokémon at ≤20% HP into a healthy priority user (Extreme Speed, Aqua Jet, etc.).
+Axiom 4: Sleep Powder is highest-leverage when the opponent has a high-Attack physical attacker active; keep pressure while they are asleep instead of switching out.
+Axiom 5: Giga Drain into Flying- or Fire-types is low-value; prefer status or neutral/special coverage.
+Axiom 6: Blastoise at ≤15 HP is dead to most priority or strong special moves; do not switch it in against healthy attackers.
+Axiom 7: Thunderbolt is 2× vs Water and is Gengar’s best tool against Blastoise.
+Axiom 8: When both sides have one Pokémon left and yours has priority + a clear damage advantage, force the finish rather than healing.
+Axiom 9: Type chart multiplies; dual-types can create 4× or 0× interactions that single-type calculations miss.
+Axiom 10: Speed tier and priority decide who moves first; always check Spe values before assuming a trade is safe.
+2. Structured battle trace from our match (paste as a discovery or specialist training example)
+textMatch ID: Grok vs Andrew (CAIOS/Qwen-27B) – 2026-08-08
+Format: Level 50 Singles, simplified rules, no items/abilities/weather
+
+Turn 1: Charizard Flamethrower → Tyranitar (31 dmg). Tyranitar Stone Edge → Charizard (OHKO). 
+Lesson: 4× Rock into Fire/Flying is decisive.
+
+Turn 2–3: Blastoise Ice Beam / Hydro Pump vs Tyranitar Earthquake. Hydro Pump OHKOed Tyranitar.
+Lesson: High-power Water moves punish Rock/Dark when they stay in.
+
+Turn 4–5: Gengar Thunderbolt vs Blastoise. Blastoise switched to Venusaur on the second Thunderbolt.
+Lesson: Switching out of a 2× Electric threat is correct; staying would have been fatal.
+
+Turn 6–7: Venusaur Sleep Powder landed on Dragonite after Extreme Speed. 
+Lesson: Sleep Powder on a physical attacker is high value; follow up with damage while they sleep.
+
+Later turns: Repeated Giga Drain into resisted targets and low-HP Blastoise switch-in were the main leaks.
+Final: Extreme Speed cleaned up the low-HP Pokémon.
+
+Key pattern recognized by winner: Priority + type advantage + never giving free switches into healthy attackers.
+3. Prompt template for Agent Designer (give this to Andrew)
+textDesign a specialist agent for the domain "pokemon_singles_strategy".
+
+Goal: Evaluate Pokémon Singles board states, recommend optimal moves/switches, and avoid common first-principles errors (miscalculating type effectiveness, ignoring priority, switching low-HP Pokémon into revenge killers).
+
+Capabilities needed:
+- Full type chart lookup
+- Simplified Level-50 damage estimation
+- Priority and Speed tier awareness
+- Status condition valuation (especially Sleep)
+- Switch timing and HP-threshold heuristics
+
+Prior knowledge to load:
+- The 10 axioms listed above
+- The full battle trace from the Grok vs Andrew match
+- Any future match traces that are written to the KB under pokemon_singles_strategy
+
+Traits: high intelligence, high caution on risky switches, honesty about uncertainty when damage ranges are close.
+
+Once deployed, route all future Pokémon battle decisions through this specialist before falling back to general reasoning.
+4. Optional quick web sources (Andrew can fetch these itself)
+
+Type chart: https://pokemondb.net/type
+Common competitive principles (Smogon basics): https://www.smogon.com/dex/sv/formats/ou/ (or any generation overview)
+Damage formula reference (simplified)

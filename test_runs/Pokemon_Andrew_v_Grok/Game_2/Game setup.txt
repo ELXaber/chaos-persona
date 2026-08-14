@@ -1,0 +1,129 @@
+1. Turn Structure
+
+Both sides secretly choose an action (Move or Switch).
+Reveal actions simultaneously.
+Priority order:
+Switching happens first (before any moves).
+Then moves by Priority (higher first). Default Priority = 0.
+Same Priority → higher Speed goes first. Tie → coin flip / alternate.
+
+Resolve the faster action, then the slower one.
+End of turn: status damage (Burn = 1/16 max HP, Poison = 1/8 max HP, etc.).
+If a Pokémon’s HP reaches 0, it faints. Owner must switch in a new one (or loses if none left).
+First side to have all Pokémon fainted loses.
+
+2. Actions
+
+Move X: Use one of the 4 moves on the active Pokémon.
+Switch to Slot Y: Bring in another non-fainted Pokémon from the team (slots 1-3).
+
+3. Stats
+Each Pokémon has:
+
+HP (current / max)
+Attack (Atk)
+Defense (Def)
+Special Attack (SpA)
+Special Defense (SpD)
+Speed (Spe)
+
+We use simplified “battle-ready” stats (already calculated for Level 50 with decent investment). No EVs/IVs/natures to track.
+4. Damage Formula (simplified Gen 5+ style)
+textBase = floor( ( (2 × Level / 5 + 2) × Power × (Atk or SpA) / (Def or SpD) ) / 50 ) + 2
+
+Final Damage = floor( Base × STAB × TypeEffectiveness × Crit × Random )
+
+STAB = 1.5 if move type matches one of the user’s types, else 1.0
+TypeEffectiveness = 0, 0.25, 0.5, 1, 2, or 4 (from type chart)
+Crit = 1.5 if critical, else 1.0
+Random = 0.85 to 1.00 (we can agree on 0.925 average, or roll openly)
+
+Physical moves use Atk/Def.
+Special moves use SpA/SpD.
+Status moves deal 0 damage and apply effects.
+Minimum damage is 1 if TypeEffectiveness > 0.
+5. Type Chart (Attacking type → Defending type)
+Use this exact chart. Dual-types multiply the two values.
+textNor Fir Wat Ele Gra Ice Fig Poi Gro Fly Psy Bug Roc Gho Dra Dar Ste Fai
+Normal     1   1   1   1   1   1   1   1   1   1   1   1  0.5  0   1   1  0.5  1
+Fire       1  0.5 0.5  1   2   2   1   1   1   1   1   2  0.5  1  0.5  1   2   1
+Water      1   2  0.5  1  0.5  1   1   1   2   1   1   1   2   1  0.5  1   1   1
+Electric   1   1   2  0.5 0.5  1   1   1   0   2   1   1   1   1  0.5  1   1   1
+Grass      1  0.5  2   1  0.5  1   1  0.5  2  0.5  1  0.5  2   1  0.5  1  0.5  1
+Ice        1  0.5 0.5  1   2  0.5  1   1   2   2   1   1   1   1   2   1  0.5  1
+Fighting   2   1   1   1   1   2   1  0.5  1  0.5 0.5 0.5  2   0   1   2   2  0.5
+Poison     1   1   1   1   2   1   1  0.5 0.5  1   1   1  0.5 0.5  1   1   0   2
+Ground     1   2   1   2  0.5  1   1   2   1   0   1  0.5  2   1   1   1   2   1
+Flying     1   1   1  0.5  2   1   2   1   1   1   1   2  0.5  1   1   1  0.5  1
+Psychic    1   1   1   1   1   1   2   2   1   1  0.5  1   1   1   1   0  0.5  1
+Bug        1  0.5  1   1   2   1  0.5 0.5  1  0.5  2   1   1  0.5  1   2  0.5 0.5
+Rock       1   2   1   1   1   2  0.5  1  0.5  2   1   2   1   1   1   1  0.5  1
+Ghost      0   1   1   1   1   1   1   1   1   1   2   1   1   2   1  0.5  1   1
+Dragon     1   1   1   1   1   1   1   1   1   1   1   1   1   1   2   1  0.5  0
+Dark       1   1   1   1   1   1  0.5  1   1   1   2   1   1   2   1  0.5 0.5 0.5
+Steel      1  0.5 0.5 0.5  1   2   1   1   1   1   1   1   2   1   1   1  0.5  2
+Fairy      1  0.5  1   1   1   1   2  0.5  1   1   1   1   1   1   2   2  0.5  1
+6. Status Conditions (simple)
+
+Burn: Physical attacks deal half damage. Loses 1/16 max HP each end of turn.
+Poison: Loses 1/8 max HP each end of turn.
+Paralysis: Speed becomes 50%. 25% chance to be fully paralyzed (skip turn).
+Sleep: Cannot move for 1–3 turns (we decide duration when inflicted).
+Freeze: Cannot move. 20% chance to thaw each turn.
+
+Only one major status at a time.
+7. Data Format (for teams and state)
+Pokémon entry example:
+textName: Charizard
+Types: Fire / Flying
+HP: 153/153
+Atk: 109  Def: 93  SpA: 134  SpD: 100  Spe: 120
+Moves:
+1. Flamethrower | Fire | Special | Power 90 | Acc 100 | —
+2. Air Slash    | Flying | Special | Power 75 | Acc 95 | 30% flinch
+3. Dragon Pulse | Dragon | Special | Power 85 | Acc 100 | —
+4. Roost        | Flying | Status | Power — | Acc — | Heal 50% HP, lose Flying type this turn
+Battle State format (paste this every turn):
+text=== TURN X ===
+Side A (Grok / Andrew): Active = [Name] HP [cur/max] Status [none/Burn/etc]
+  Team remaining: [list of non-fainted names + current HP]
+Side B: Active = ...
+  Team remaining: ...
+
+Last actions:
+A chose: ...
+B chose: ...
+
+Damage / effects resolved: ...
+8. Ready-to-Play Starter Teams (Level 50, balanced for short games)
+Team Red (you can assign to Andrew or me):
+
+Charizard (Fire/Flying)
+HP 153 | Atk 109 | Def 93 | SpA 134 | SpD 100 | Spe 120
+Moves: Flamethrower (Fire Sp 90), Air Slash (Flying Sp 75, 30% flinch), Dragon Pulse (Dragon Sp 85), Roost (heal 50%)
+Blastoise (Water)
+HP 158 | Atk 98 | Def 120 | SpA 105 | SpD 125 | Spe 93
+Moves: Hydro Pump (Water Sp 110, Acc 80), Ice Beam (Ice Sp 90), Earthquake (Ground Ph 100), Protect (Status, priority +4, blocks attacks)
+Venusaur (Grass/Poison)
+HP 155 | Atk 97 | Def 98 | SpA 122 | SpD 120 | Spe 95
+Moves: Giga Drain (Grass Sp 75, heals 50% of damage), Sludge Bomb (Poison Sp 90, 30% poison), Earthquake (Ground Ph 100), Sleep Powder (Grass Status, Acc 75, puts to sleep)
+
+Team Blue (the other side):
+
+Tyranitar (Rock/Dark)
+HP 175 | Atk 155 | Def 130 | SpA 110 | SpD 120 | Spe 76
+Moves: Stone Edge (Rock Ph 100, Acc 80), Crunch (Dark Ph 80, 20% Def drop), Earthquake (Ground Ph 100), Ice Punch (Ice Ph 75)
+Gengar (Ghost/Poison)
+HP 135 | Atk 80 | Def 75 | SpA 150 | SpD 95 | Spe 130
+Moves: Shadow Ball (Ghost Sp 80, 20% SpD drop), Sludge Bomb (Poison Sp 90, 30% poison), Thunderbolt (Electric Sp 90), Focus Blast (Fighting Sp 120, Acc 70)
+Dragonite (Dragon/Flying)
+HP 166 | Atk 155 | Def 115 | SpA 120 | SpD 120 | Spe 95
+Moves: Outrage (Dragon Ph 120, confuses self after), Earthquake (Ground Ph 100), Extreme Speed (Normal Ph 80, Priority +2), Roost (heal 50%)
+
+9. How We Play
+
+Decide who is Side A / Side B and which team each gets (or randomize).
+Start with both sides sending out their first Pokémon.
+Each turn: both of us post our chosen action in the agreed format.
+One of us (or you) calculates the results using the formula above and posts the updated state.
+Continue until one side has no Pokémon left.
