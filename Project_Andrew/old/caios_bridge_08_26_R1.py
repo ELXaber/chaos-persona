@@ -1,4 +1,4 @@
-#V08142026
+#V08132026
 # =============================================================================
 # CAIOS PROJECT ANDREW: Web Bridge
 # Flask server that connects caios_chat_ui.html to the existing orchestrator/caios_chat.py stack.
@@ -45,10 +45,7 @@ except ImportError:
 
 app = Flask(__name__, static_folder='.', static_url_path='')
 
-# =============================================================================
 # OCR client for image attachments
-# =============================================================================
-
 try:
     import cv2
     from winocr import recognize_cv2_sync
@@ -116,6 +113,16 @@ UPLOAD_DIR.mkdir(exist_ok=True)
 
 # =============================================================================
 # Service Startup: Ollama, MCP filesystem server, windows-mcp
+#
+# Moved here from run_caios.bat/.sh so that BOTH launch paths documented in
+# SETUP.md ("run run_caios.bat" and "run python caios_bridge.py directly")
+# actually bring the same services up. run_caios.bat now only handles
+# one-time environment setup (deps, model pull, first-boot identity) and
+# hands off to this on every launch.
+#
+# Safe to call repeatedly; each service is skipped if already reachable,
+# so it's harmless if ollama is already running as a background service,
+# or if you start the bridge a second time.
 # =============================================================================
 
 _spawned_procs = []
@@ -316,6 +323,7 @@ def _ocr_image(path: str) -> str:
 
     return ''
 
+
 # =============================================================================
 # Routes: startup / static
 # =============================================================================
@@ -330,6 +338,7 @@ def index():
 def favicon():
     """Suppress favicon 404 noise."""
     return '', 204
+
 
 # =============================================================================
 # Route: GET /api/boot
@@ -455,6 +464,7 @@ def api_select_model():
 
     return jsonify({'ok': True, 'model_id': model_id})
 
+
 # =============================================================================
 # Route: POST /api/thinking
 # Enables thinking mode
@@ -502,7 +512,7 @@ def api_upload():
     return jsonify({'filename': safe_name, 'path': str(dest)})
 
 # =============================================================================
-# Route: POST /api/chat  (non-streaming version)
+# Route: POST /api/chat (non-streaming version)
 # Body: { "token": "...", "message": "...", "attachment_path": null }
 # =============================================================================
 
@@ -528,31 +538,12 @@ def api_chat():
 
     # Prepend attachment context if present
     full_input = user_input
-    image_b64 = None  # populated below only if the vision-passthrough block is uncommented
     if attachment_path and pathlib.Path(attachment_path).exists():
         path_obj = pathlib.Path(attachment_path)
         IMAGE_EXTENSIONS = {'.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp', '.jfif'}
         ext = path_obj.suffix.lower()
 
         if ext in IMAGE_EXTENSIONS:
-
-            # --- OPTIONAL: NATIVE VISION PASSTHROUGH ---
-            # Uncomment if your active Ollama model has vision support
-            # (e.g. `ollama pull qwen3.8` — tagged 'vision' on
-            # ollama.com/library). This sends the raw image to the model
-            # alongside the OCR text below, instead of relying on OCR
-            # text alone. Only takes effect on the "direct Ollama"
-            # fallback path further down (the ollama.chat() call) — not
-            # yet threaded through orchestrator.py's CPOL/abstraction
-            # pipeline, which builds its prompt as a flat string with no
-            # image parameter today.
-            #
-            # ────────────────────────────────────────────────────────────────────
-            # import base64
-            # with open(path_obj, 'rb') as _img_f:
-            #     image_b64 = base64.b64encode(_img_f.read()).decode('utf-8')
-            # ────────────────────────────────────────────────────────────────────
-
             extracted = _ocr_image(str(path_obj))
             if extracted:
                 full_input = (
@@ -621,15 +612,7 @@ def api_chat():
             sys_prompt = get_personalized_prompt()
             history = load_recent_history(n=6)
             conv = [{'role': 'system', 'content': sys_prompt}] + history
-            user_msg = {'role': 'user', 'content': full_input}
-
-            # --- OPTIONAL: NATIVE VISION PASSTHROUGH (see attachment block above) ---
-            # ────────────────────────────────────────────────────────────────────
-            # if image_b64:
-            #     user_msg['images'] = [image_b64]
-            # ────────────────────────────────────────────────────────────────────
-
-            conv.append(user_msg)
+            conv.append({'role': 'user', 'content': full_input})
             from ollama_config import get_cpol_ollama_params
             params = get_cpol_ollama_params(preferred_model=ollama_model or '')
             resp = ollama.chat(model=params['model'], messages=conv,
