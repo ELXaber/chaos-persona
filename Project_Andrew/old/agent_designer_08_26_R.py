@@ -1,8 +1,7 @@
-#V08132026
+#V08102026
 # =============================================================================
-# CAIOS PROJECT ANDREW: Agent Designer Plugin (KB-Integrated)
-# Logs discoveries and checks knowledge base before creating specialists
-# License: GPL-3.0 -See LICENSE for details- Contact: X @el_xaber or cai-os.com
+# Chaos AI-OS — Agent Designer Plugin (KB-Integrated)
+# Now logs discoveries and checks knowledge base before creating specialists
 # =============================================================================
 
 import json
@@ -28,8 +27,8 @@ def _persist_agent_file(
     goal: str,
     traits: dict,
     capabilities: list,
-    source_logic: str | None = None
-) -> str | None:
+    source_logic: str = None
+) -> str:
     """
     Write a physical agent file under agents/.
     Returns the path written, or None on failure.
@@ -109,12 +108,12 @@ def _extract_domain_from_goal(goal: str) -> str:
     goal_lower = goal.lower()
 
     # 1. Look for explicit quoted domain
-    match = re.search(r'domain\s*[:=]?\s*["\']([a-z0-9_-]+)["\']', goal_lower)
+    match = re.search(r'domain\s*[:=]?\s*["\']([a-z0-9_]+)["\']', goal_lower)
     if match:
         return match.group(1)
 
     # 2. Look for "domain: something" or "domain something"
-    match = re.search(r'domain\s*[:=]?\s*([a-z0-9_-]+)', goal_lower)
+    match = re.search(r'domain\s*[:=]?\s*([a-z0-9_]+)', goal_lower)
     if match:
         return match.group(1)
 
@@ -125,9 +124,8 @@ def _extract_domain_from_goal(goal: str) -> str:
             domain = parts[1].strip().replace(" ", "_")
             return domain.split()[0]
 
-    # 4. Fallback; capture the LAST token in the string, not the first,
-    # "/design_agent [role] [domain]" syntax) rather than the role.
-    match = re.search(r'(?:design_agent|specialist)\b.*\s([a-z0-9_-]{3,40})\s*$', goal_lower)
+    # 4. Fallback – take the first reasonable token after design_agent / specialist
+    match = re.search(r'(?:design_agent|specialist).*?(?:for|domain)?\s*([a-z0-9_]{3,40})', goal_lower)
     if match:
         return match.group(1)
 
@@ -138,12 +136,12 @@ def design_agent(
     traits: Dict[str, float] | None = None,
     tools: List[str] | None = None,
     safety_multiplier: float = 1.0,
-    shared_memory: Dict | None = None,
+    shared_memory: Dict = None,
     node_tier: int = 1  # Default to edge
 ) -> Dict[str, Any]:
     """
     One function to rule them all.
-    Checks knowledge base before creating new agents.
+    Now checks knowledge base before creating new agents.
 
     Args:
         goal: Agent's purpose/mission
@@ -159,8 +157,8 @@ def design_agent(
     # Initialize shared_memory if not provided
     if shared_memory is None:
         shared_memory = {
-            'layers': [],
-            'audit_trail': [],
+            'layers': [], 
+            'audit_trail': [], 
             'agent_name': goal,
             'session_context': {'node_tier': node_tier}
         }
@@ -194,7 +192,6 @@ def design_agent(
     # =========================================================================
     # PHASE 2: Epistemic gap specialist agent
     # =========================================================================
-
     if "epistemic gap" in goal.lower():
         print(f"[AGENT DESIGNER] PHASE 2 — Designing specialist to fill epistemic gap")
         print(f"[AGENT DESIGNER] Domain: {domain} | Tier: {node_tier}")
@@ -224,7 +221,7 @@ def design_agent(
         # Get context from any prior discoveries
         kb_context = kb.generate_specialist_context(domain)
 
-        # Specialist traits; high exploration, low confidence bias
+        # Specialist traits — high exploration, low confidence bias
         specialist_traits = {
             'intelligence': 0.95,
             'curiosity': 1.0,
@@ -294,7 +291,6 @@ def design_agent(
     # =========================================================================
     # Normal agent design path
     # =========================================================================
-
     print(f"[AGENT DESIGNER] Creating agent for: {goal}")
 
     result = adaptive_reasoning_layer(
@@ -399,7 +395,7 @@ class CAIOSPipeline:
     - UNDECIDABLE is a valid output (not forced completion)
     """
 
-    def __init__(self, shared_memory: Dict | None = None, node_tier: int = 1):
+    def __init__(self, shared_memory: Dict = None, node_tier: int = 1):
         self.shared_memory = shared_memory or {
             'layers': [],
             'audit_trail': [],
@@ -451,9 +447,9 @@ class CAIOSPipeline:
     def add_agent(
         self,
         role: str,
-        domain: str | None = None,
-        tools: List[str] | None = None,
-        traits: Dict[str, float] | None = None
+        domain: str = None,
+        tools: List[str] = None,
+        traits: Dict[str, float] = None
     ) -> 'CAIOSPipeline':
         """
         Add an agent to the pipeline.
@@ -537,15 +533,14 @@ class CAIOSPipeline:
 # =============================================================================
 # Test Suite
 # =============================================================================
-
 if __name__ == "__main__":
     print("="*70)
     print("AGENT DESIGNER - Comprehensive Test Suite")
     print("="*70)
 
     shared_mem = {
-        'layers': [],
-        'audit_trail': [],
+        'layers': [], 
+        'audit_trail': [], 
         'specialists': {},
         'session_context': {'node_tier': 1}
     }

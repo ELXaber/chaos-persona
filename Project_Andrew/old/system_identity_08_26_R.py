@@ -1,8 +1,7 @@
-#V08132026
+#V05062026
 # =============================================================================
-# CAIOS PROJECT ANDREW: System Identity & Authority Initialization
+# PROJECT ANDREW – System Identity & Authority Initialization
 # Purpose: Enable embodied systems (robots, IoT) to establish identity and authority hierarchy for conflict resolution in multi-user environments
-# Copyright (c) 2025 Jonathan Schack. License: GPL-3.0 -See LICENSE for details- Contact: X @el_xaber or cai-os.com
 # =============================================================================
 
 import json
@@ -18,6 +17,7 @@ try:
 except ImportError:
     HAS_KB = False
     print("[WARNING] knowledge_base not found - identity will not persist to KB")
+
 
 # =============================================================================
 # Identity Configuration
@@ -344,6 +344,7 @@ class SystemIdentity:
         except Exception as e:
             print(f"[IDENTITY] Failed to log to KB: {e}")
 
+
 # =============================================================================
 # Integration with Asimov Validation
 # =============================================================================
@@ -386,6 +387,7 @@ def get_effective_asimov_weight(
         user_adjustment = identity.get_user_authority_weight(user_id)
 
     return base_weight + user_adjustment
+
 
 # =============================================================================
 # Example Usage / Test

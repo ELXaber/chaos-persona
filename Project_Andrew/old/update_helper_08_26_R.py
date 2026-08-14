@@ -1,13 +1,12 @@
-#V08132026
+#!/usr/bin/env python3
+#V06062026
 # =============================================================================
-# CAIOS PROJECT ANDREW: GitHub update checker
+# update_helper.py — CAIOS GitHub update checker
 # Called by update.bat and update.sh
 # Compares local #V date tags against GitHub, downloads newer files.
 #
 # Version format: #V06062026  (DDMMYYYY — day/month/year, no separators)
 # Exits: 0 = up to date, 1 = updates applied, 2 = errors occurred
-#
-# Copyright (c) 2025 Jonathan Schack. License: GPL-3.0 -See LICENSE for details- Contact: X @el_xaber or cai-os.com
 # =============================================================================
 
 import sys
@@ -16,16 +15,13 @@ import re
 import shutil
 import urllib.request
 import urllib.error
-from datetime import datetime, timezone
+from datetime import datetime
 from pathlib import Path
 
 REPO_RAW = sys.argv[1] if len(sys.argv) > 1 else \
     'https://raw.githubusercontent.com/ELXaber/chaos-persona/main/Project_Andrew'
 
-# =========================================================================
-# File manifest
-# =========================================================================
-
+# ── File manifest ─────────────────────────────────────────────
 # Add new files here as they're created in the repo.
 # Paths are relative to the directory containing this script.
 MANIFEST = [
@@ -62,11 +58,9 @@ MANIFEST = [
     'run_caios.sh',
     'update.bat',
     'update.sh',
-    'update_helper.py',
     # Docs
     'readme.txt',
     'SETUP.md',
-    'LICENSE.txt',
 ]
 
 # Files to never overwrite automatically (user-configured)
@@ -77,9 +71,7 @@ PROTECTED = {
     'CAIOS.txt',          # User may have custom edits
 }
 
-# =========================================================================
-# Version parsing
-# =========================================================================
+# ── Version parsing ───────────────────────────────────────────
 
 VERSION_PATTERN = re.compile(
     r'^(?:#|rem|<!--)\s*V?(\d{2})(\d{2})(\d{4})',
@@ -103,9 +95,7 @@ def version_str(v: tuple) -> str:
         return 'no version tag'
     return f"{v[2]:02d}/{v[1]:02d}/{v[0]}"
 
-# =========================================================================
-# File fetching
-# =========================================================================
+# ── File fetching ─────────────────────────────────────────────
 
 def fetch_remote(filename: str) -> tuple[str | None, str]:
     """
@@ -126,9 +116,7 @@ def fetch_remote(filename: str) -> tuple[str | None, str]:
     except Exception as e:
         return None, str(e)
 
-# =========================================================================
-# Main
-# =========================================================================
+# ── Main ──────────────────────────────────────────────────────
 
 def main():
     script_dir = Path(__file__).parent

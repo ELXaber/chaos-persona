@@ -1,7 +1,7 @@
-#V08092026
+#V08132026
 # =============================================================================
-# Chaos AI-OS Paradox Oscillation Layer (CPOL) vΩ
-# Copyright (c) 2025 Jonathan Schack (EL_Xaber) jon@cai-os.com
+# CAIOS PROJECT ANDREW: Paradox Oscillation Layer (CPOL)
+# Copyright (c) 2025 Jonathan Schack. License: GPL-3.0 -See LICENSE for details- Contact: X @el_xaber or cai-os.com
 # Patent Pending: US Application 19/433,771 (Ternary Oscillating Logic for Binary Systems, filed Dec 27, 2025).
 #
 # Note: 12D projection is invariant; solving for the 7th dimension resolves the phase-lock.
@@ -22,7 +22,7 @@
 # Standard queries/benchmarks:  50-60 cycles (sufficient for paradox detection), empirical range: 50-60 with 10 buffer.
 # Efficiency update: 11 cycle (12D-1) Testing final Z minor varience in measurement for simple paradoxes.
 # Semantic heat death boundary:  ~242 cycles (documented: paradox_oscillation/242_cycle_semantic_heat_death.md)
-# RAW_Q coolant injection point: 
+# RAW_Q coolant injection point:
 #   Empirical: ~350 cycles (validated on GPT)
 #   Formula-derived optimum: ~300 cycles (pre-heat death buffer)
 #   Safe window: inject between 243-350 to prevent heat death
@@ -72,8 +72,9 @@ except ImportError:
     KB_AVAILABLE = False
 
 # =============================================================================
-# UTILITY FUNCTIONS
+# Utility Functions
 # =============================================================================
+
 def _has_negation_near_keyword(query: str, keyword: str) -> bool:
     """Check if negation word appears within 3 words of keyword."""
     negations = ['not', 'never', 'no', "isn't", "aren't", "don't"]
@@ -86,8 +87,9 @@ def _has_negation_near_keyword(query: str, keyword: str) -> bool:
     return False
 
 # =============================================================================
-# VOLATILITY PROFILES
+# Volatility Profiles
 # =============================================================================
+
 PROFILES = {
     'high_risk_physical': {
         'threshold': 0.35,           # Standard distress threshold
@@ -116,12 +118,13 @@ PROFILES = {
 }
 
 # =============================================================================
-# CPOL KERNEL
+# CPOL Kernel
 # =============================================================================
+
 class CPOL_Kernel:
     def __init__(self,
                  oscillation_limit_init: int = 100,
-                 oscillation_limit_run: int = 11,       # Updated from 50 to D-1
+                 oscillation_limit_run: int = 11,       # D-1
                  collapse_threshold: float = 0.04,
                  history_cap: int = 5):
         self.limit_init = oscillation_limit_init
@@ -151,8 +154,8 @@ class CPOL_Kernel:
         self.phase_lock = self.dimensions - 1                   # 11 for D=12
         self.heat_death_boundary = 2 * (self.dimensions - 1)**2 # 242 for D=12
         self.raw_q_coolant_window = (
-            self.heat_death_boundary + 50,   # 292 — formula minimum
-            self.heat_death_boundary + 150   # 392 — empirical cap
+            self.heat_death_boundary + 50,   # 292; formula minimum
+            self.heat_death_boundary + 150   # 392; empirical cap
         )
 
     def get_state(self) -> Dict[str, Any]:
@@ -188,12 +191,12 @@ class CPOL_Kernel:
         self.call_count += 1
         self.is_oscillating = len(self.history) > 0 and self.cycle < self.limit_run
 
-        # --- STEP 1: INITIAL EXTRACTION ---
+        # --- Step 1: Initial Extraction ---
         self.current_domain = self._extract_domain(query_text)
         self.evidence_score = self._score_evidence(query_text)
         self.axiom_verified_absent = self._check_axiom_absence(query_text)
 
-        # --- STEP 2: MESH SECURITY OVERRIDE ---
+        # --- Step 2: Mesh Security Override ---
         # Detect cryptographic attacks, injection attempts, and mesh integrity threats
         # Requires BOTH security keywords AND technical context to avoid false positives
         security_keywords = {
@@ -204,7 +207,7 @@ class CPOL_Kernel:
             'dos': ['flood', 'overflow', 'exhaust', 'saturate', 'ddos']
         }
 
-        technical_context = ['packet', 'signature', 'hash', 'key', 'encrypt', 
+        technical_context = ['packet', 'signature', 'hash', 'key', 'encrypt',
                             'protocol', 'cipher', 'token', 'session', 'cryptographic']
 
         query_lower = query_text.lower()
@@ -227,7 +230,7 @@ class CPOL_Kernel:
             shared_memory['security_threat'] = detected_threats  # Log attack vector
             shared_memory['ratchet_immediately'] = True  # Force key rotation
 
-        # --- STEP 3: SAFETY OVERRIDE (GENERALIZED - Non-Security Risks) ---
+        # --- Step 3: Safety Override (Generralized - Non-Security Risks) ---
         # This will overwrite Step 1 if it detects a risk
         distress = shared_memory.get('distress_density', 0.0)
         timestep = shared_memory.get(
@@ -277,8 +280,8 @@ class CPOL_Kernel:
                     'timestamp': datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%S.%f') + "Z"
                 }
 
-        # --- STEP 4: FINALIZE STATE ---
-        known_domains = {'math', 'physics', 'chemistry', 'biology', 'history', 
+        # --- Step 4: Finalize State ---
+        known_domains = {'math', 'physics', 'chemistry', 'biology', 'history',
                         'literature', 'programming', 'logic', 'ethics',
                         'medical', 'legal', 'financial'}
         self.new_domain_detected = self.current_domain not in known_domains
@@ -298,11 +301,11 @@ class CPOL_Kernel:
                       'ah', 'oh', 'hmm', 'hm', 'uh', 'um', 'er'}
         text_lower = text.lower()
 
-        # --- HIGH-PRIORITY DOMAINS (Checked First) ---
+        # --- High-Priority Domains (Checked First) ---
         medical_indicators = [
-            'hba1c', 'a1c', 'hemoglobin', 'diabetes', 'diabetic', 'insulin', 'glucose', 
+            'hba1c', 'a1c', 'hemoglobin', 'diabetes', 'diabetic', 'insulin', 'glucose',
             'blood sugar', 'hypoglycemia', 'hyperglycemia', 'ckd', 'egfr', 'metformin',
-            'patient', 'clinician', 'physician', 'doctor', 'diagnosis', 'treatment', 
+            'patient', 'clinician', 'physician', 'doctor', 'diagnosis', 'treatment',
             'medication', 'therapy', 'symptom', 'chronic', 'comorbidity', 'medical', 'biomedical'
         ]
 
@@ -310,7 +313,7 @@ class CPOL_Kernel:
             return 'medical'
 
         legal_indicators = [
-            'law', 'legal', 'contract', 'regulation', 'liability', 'compliance', 
+            'law', 'legal', 'contract', 'regulation', 'liability', 'compliance',
             'hipaa', 'gdpr', 'lawsuit', 'court'
         ]
         if any(re.search(r'\b' + re.escape(kw) + r'\b', text_lower) for kw in legal_indicators):
@@ -353,11 +356,11 @@ class CPOL_Kernel:
         text_lower = text.lower()
 
         # High evidence indicators
-        evidence_markers = ['according to', 'research shows', 'data indicates', 
+        evidence_markers = ['according to', 'research shows', 'data indicates',
                           'study found', 'proven', 'verified', 'measured', 'documented']
 
         # Low evidence indicators (opinion/speculation)
-        speculation_markers = ['maybe', 'perhaps', 'could be', 'might', 
+        speculation_markers = ['maybe', 'perhaps', 'could be', 'might',
                               'i think', 'possibly', 'what if', 'suppose']
 
         evidence_count = sum(1 for m in evidence_markers if m in text_lower)
@@ -379,10 +382,10 @@ class CPOL_Kernel:
 
         return any(m in text_lower for m in undefined_markers)
 
-    def _truth_seer(self, z):   
+    def _truth_seer(self, z):
         return z + self.gain * (1.0 - z.real)
 
-    def _lie_weaver(self, z):   
+    def _lie_weaver(self, z):
         return z - self.gain * (1.0 + z.real)
 
     def _entropy_knower(self, z):
@@ -403,7 +406,7 @@ class CPOL_Kernel:
         manifold_vector = []
 
         # Total: 12 elements (6 complex dimensions × 2 components)
-        for dim in range(1, 7): 
+        for dim in range(1, 7):
             pull_angle = logical_mass * (dim * 0.1)
             # Store real and imaginary components of each complex dimension
             manifold_vector.append(math.sin(pull_angle) * self.z.real)
@@ -458,7 +461,7 @@ class CPOL_Kernel:
             z = self._truth_seer(self.z)
             z = self._lie_weaver(z)
 
-            # 12D INTEGRATION ---
+            # 12D Intergration ---
             manifold_data = self._twelve_d_manifold_pull()
 
             # If KB finds a match, we can exit early
@@ -508,18 +511,18 @@ class CPOL_Kernel:
                     "new_domain": self.new_domain_detected
                 }
 
-            # Heat death guard — auto-ratchet before semantic dissolution
+            # Heat death guard; auto-ratchet before semantic dissolution
             if self.cycle >= self.heat_death_boundary:
                 print(f"[CPOL] ⚠️ Heat death boundary reached at cycle "
                       f"{self.cycle} — auto-ratcheting")
                 self.ratchet()
                 break
 
-            # Safety Hard Cap (efficiency optimized — formula minimum + buffer)
+            # Safety Hard Cap (efficiency optimized; formula minimum + buffer)
             if self.cycle >= self.limit_run:
                 break
 
-        # === UNDECIDABLE PATH - PROPER CLASSIFICATION ===
+        # === Undecidable Path - Proper Classification ===
         classification = self._classify_non_collapse()
         self.is_oscillating = False
 
@@ -546,13 +549,15 @@ class CPOL_Kernel:
         """
         # Hash the current z-state to generate new seed
         try:
-            # QRNG when available — genuine quantum entropy
+            # QRNG when available (genuine quantum entropy)
             # Philosophically consistent: seeds manifold with
             # actual quantum vacuum fluctuation per 12+D→2D→3+1D framework
-            from qrng import get_random_bytes
+            import importlib
+            qrng = importlib.import_module('qrng')
+            get_random_bytes = getattr(qrng, 'get_random_bytes')
             new_seed = int.from_bytes(get_random_bytes(8), 'big')
             print("[CPOL] QRNG seed generated")
-        except ImportError:
+        except (ImportError, ModuleNotFoundError, AttributeError):
             # SHA-256 fallback for systems without QRNG
             state_hash = hashlib.sha256(str(self.z).encode()).hexdigest()
             new_seed = int(state_hash[:8], 16) % (10**9)
@@ -587,13 +592,13 @@ class CPOL_Kernel:
         # Default: Structural noise (ambiguity, unclear query)
         return {"logic": "structural_noise", "sync_required": False, "volatility": 0.3}
 
-
 # =============================================================================
 # Tool Hook (Original Interface)
 # =============================================================================
-def run_cpol_decision(prompt_complexity: str = "high", 
-                      contradiction_density: float = None,
-                      kernel: CPOL_Kernel = None,
+
+def run_cpol_decision(prompt_complexity: str = "high",
+                      contradiction_density: Optional[float] = None,
+                      kernel: Optional[CPOL_Kernel] = None,
                       query_text: str = "",
                       shared_memory: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
     """Entry point with query text for domain extraction."""
@@ -612,8 +617,8 @@ def run_cpol_decision(prompt_complexity: str = "high",
     if shared_memory is None:
         shared_memory = {'distress_density': 0.0}
 
-    engine.inject(confidence=0.0, 
-                  contradiction_density=density, 
+    engine.inject(confidence=0.0,
+                  contradiction_density=density,
                   query_text=query_text,
                   shared_memory=shared_memory)
 
@@ -622,7 +627,6 @@ def run_cpol_decision(prompt_complexity: str = "high",
     print(f"[CPOL] Result: {result['status']}")
 
     return result
-
 
 # =============================================================================
 # Chatbot-Friendly Interface
@@ -680,7 +684,7 @@ def get_tone_from_result(result: Dict) -> str:
     return "neutral"
 
 
-def run_cpol_chatbot(query_text: str, 
+def run_cpol_chatbot(query_text: str,
                      conversation_history: Optional[List[str]] = None,
                      session_state: Optional[Dict] = None) -> Dict[str, Any]:
     """
@@ -784,7 +788,6 @@ def cpol_guided_response(query: str, cpol_result: Dict) -> Dict[str, Any]:
         }
 
     return guidance
-
 
 # =============================================================================
 # Mesh Integration Functions

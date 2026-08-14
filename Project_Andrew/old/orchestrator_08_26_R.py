@@ -1,8 +1,7 @@
-#V08132026
+#V08092026
 # =============================================================================
-# CAIOS PROJECT ANDREW: Hardened Orchestrator
-# This acts as the central nervous system connecting everything
-# Copyright (c) 2025 Jonathan Schack. License: GPL-3.0 -See LICENSE for details- Contact: X @el_xaber or cai-os.com
+# Chaos AI-OS – Hardened Orchestrator (Unified Edition)
+# Combines: V1 Logic + V3 Pipeline + Mesh Encryption + Chatbot Safety
 # =============================================================================
 
 # Standard Library Imports
@@ -15,30 +14,14 @@ from typing import Optional, Dict, Any
 
 # Local Kernel Imports
 import re
-import importlib
 import paradox_oscillator as cpol
 from paradox_oscillator import CPOL_Kernel
 import adaptive_reasoning as arl
 from system_identity import SystemIdentity
 
-try:
-    asimov_logic = importlib.import_module("asimov_logic")
-    ASIMOV_AVAILABLE = True
-    get_effective_asimov_weight = getattr(asimov_logic, "get_effective_asimov_weight", None)
-    if get_effective_asimov_weight is None:
-        raise ImportError("asimov_logic missing get_effective_asimov_weight")
-except ImportError:
-    ASIMOV_AVAILABLE = False
-    get_effective_asimov_weight = None
-    print("[INFO] asimov_logic not available. Falling back to default safety weights.")
-
-ASIMOV_WEIGHTS = {
-    'law_2_obey': 0.7
-}
-
 # Optional imports with fallbacks
 try:
-    em = importlib.import_module("epistemic_monitor")
+    import epistemic_monitor as em
     EM_AVAILABLE = True
 except ImportError:
     EM_AVAILABLE = False
@@ -76,26 +59,24 @@ except ImportError:
     print("[INFO] Axiom Manager/Axiom manager not available. KB Update disabled.")
 
 try:
-    import abstraction_selector as abstraction_selector_module
-    AbstractionDispatcher = getattr(abstraction_selector_module, "AbstractionDispatcher", None)
-    AbstractionLevel = getattr(abstraction_selector_module, "AbstractionLevel", None)
-    VictorianTranslator = getattr(abstraction_selector_module, "VictorianTranslator", None)
-    ClearTranslator = getattr(abstraction_selector_module, "ClearTranslator", None)
-    CavemanTranslator = getattr(abstraction_selector_module, "CavemanTranslator", None)
-    ChildTranslator = getattr(abstraction_selector_module, "ChildTranslator", None)
-    create_abstraction_dispatcher = getattr(abstraction_selector_module, "create_abstraction_dispatcher", None)
-    ABSTRACTION_AVAILABLE = bool(
-        AbstractionDispatcher or AbstractionLevel or create_abstraction_dispatcher
-    )
+    from abstraction_selector import create_abstraction_dispatcher, AbstractionDispatcher
+    ABSTRACTION_AVAILABLE = True
 except ImportError:
     ABSTRACTION_AVAILABLE = False
-    AbstractionDispatcher = None
-    AbstractionLevel = None
-    VictorianTranslator = None
-    ClearTranslator = None
-    CavemanTranslator = None
-    ChildTranslator = None
-    create_abstraction_dispatcher = None
+    print("[INFO] Abstraction selector not available.")
+
+try:
+    from abstraction_selector import (
+        create_abstraction_dispatcher,
+        AbstractionDispatcher,
+        AbstractionLevel,
+        VictorianTranslator,
+        ClearTranslator,
+        CavemanTranslator
+    )
+    ABSTRACTION_AVAILABLE = True
+except ImportError:
+    ABSTRACTION_AVAILABLE = False
     print("[INFO] Abstraction selector not available.")
 
 try:
@@ -129,7 +110,7 @@ os.makedirs("logs", exist_ok=True)
 os.makedirs("agents", exist_ok=True)
 
 # =============================================================================
-# Shared Memory Initialization
+# SHARED MEMORY INITIALIZATION
 # =============================================================================
 
 shared_memory = {
@@ -163,46 +144,32 @@ class UnifiedAbstractionManager:
     Keeps the 'Logic' and the 'Linguistics' in sync.
     """
     def __init__(self):
-        if not ABSTRACTION_AVAILABLE or AbstractionDispatcher is None or AbstractionLevel is None:
-            self.selector = None
-            self.translators = {}
-            return
+        self.selector = AbstractionDispatcher() # L0-L3 logic
+        self.translators = {
+            AbstractionLevel.VICTORIAN: VictorianTranslator(),
+            AbstractionLevel.CLEAR: ClearTranslator(),
+            AbstractionLevel.CAVEMAN: CavemanTranslator()
+        }
 
-        self.selector = AbstractionDispatcher()  # L0-L3 logic
-        self.translators = {}
-
-        if VictorianTranslator is not None:
-            self.translators[AbstractionLevel.VICTORIAN] = VictorianTranslator()
-        if ClearTranslator is not None:
-            self.translators[AbstractionLevel.CLEAR] = ClearTranslator()
-        if CavemanTranslator is not None:
-            self.translators[AbstractionLevel.CAVEMAN] = CavemanTranslator()
-        if ChildTranslator is not None:
-            self.translators[AbstractionLevel.CHILD] = ChildTranslator()
     def get_response(self, user_input, technical_output, shared_memory):
-        if self.selector is None:
-            return technical_output.get('output', '')
-
-        # 1. Detection
+        # 1. DETECTION
         # This tells the Orchestrator exactly how confused the user is.
         selection = self.selector.process(user_input, technical_output, shared_memory)
-        level = selection.get('abstraction_level') if isinstance(selection, dict) else None
-        if level is None:
-            return technical_output.get('output', '')
+        level = selection['abstraction_level']
 
-        # 2. State Adjustment
-        # If level is CAVEMAN, update shared memory so the rest of the system knows to stop using high-level jargon in logs/KBs.
-        shared_memory['current_user_gear'] = getattr(level, 'name', str(level))
+        # 2. STATE ADJUSTMENT
+        # If level is CAVEMAN, we update shared memory so the rest of the system knows to stop using high-level jargon in logs/KBs.
+        shared_memory['current_user_gear'] = level.name
 
-        # 3. Translation
-        if AbstractionLevel is not None and getattr(AbstractionLevel, 'TECHNICAL', None) is not None and level == AbstractionLevel.TECHNICAL:
-            return technical_output.get('output', '')
+        # 3. TRANSLATION
+        if level == AbstractionLevel.TECHNICAL:
+            return technical_output['output']
 
         translator = self.translators.get(level)
-        if translator is not None and hasattr(translator, 'translate'):
-            return translator.translate(technical_output.get('output', ''))
+        if translator:
+            return translator.translate(technical_output['output'])
 
-        return technical_output.get('output', '')
+        return technical_output['output']
 
 class CAIOSOrchestrator:
     def __init__(self, node_id: str, node_tier: int = 1, shared_memory: Optional[Dict] = None):
@@ -218,49 +185,26 @@ class CAIOSOrchestrator:
         identity = self.shared_memory.get('system_identity')
 
         # Calculate effective Law 2 weight with user authority
-        if identity and get_effective_asimov_weight is not None:
+        if identity:
+            from asimov_logic import get_effective_asimov_weight # Ensure this is imported
             effective_law_2 = get_effective_asimov_weight(
                 ASIMOV_WEIGHTS['law_2_obey'],
                 user_id,
                 identity
             )
-        elif identity:
-            effective_law_2 = ASIMOV_WEIGHTS['law_2_obey']
         else:
             effective_law_2 = 0.7 # Default fallback
 
         # Logic for ALLOW/REFUSE
         return {
-            'decision': 'ALLOW',
+            'decision': 'ALLOW', 
             'reason': 'No primary directive violations detected.',
             'authority_weight': effective_law_2
         }
 
-    def generate_swarm_response(self, user_input: str, provider: str = "openai") -> dict:
-        """
-        Generate a technical response using the unified orchestration pipeline.
-        Returns a dict containing at least an 'output' key for abstraction translation.
-        """
-        result = system_step(
-            user_input=user_input,
-            prompt_complexity="low",
-            response_stream=None,
-            api_clients=self.shared_memory.get('api_clients'),
-            user_id=self.shared_memory.get('active_user'),
-            enable_thinking=False
-        )
-
-        if isinstance(result, dict):
-            output = result.get('llm_response') or result.get('output') or ''
-            if 'output' not in result:
-                result['output'] = output
-            return result
-
-        return {'output': str(result)}
-
     def handle_user_request(self, user_input: str, provider: str = "openai") -> str:
         """
-        The central heartbeat. It takes raw thoughts and runs them
+        The central heartbeat. It takes raw thoughts and runs them 
         through the Abstraction Gearbox.
         """
         self.shared_memory['last_user_message'] = user_input
@@ -276,8 +220,8 @@ class CAIOSOrchestrator:
 
         # 3. Gearbox Translation (L0, L1, L2, L3, or L4)
         final_text = self.abstraction_manager.get_response(
-            user_input,
-            technical_output,
+            user_input, 
+            technical_output, 
             self.shared_memory
         )
 
@@ -286,7 +230,7 @@ class CAIOSOrchestrator:
         return final_text
 
 # =============================================================================
-# System Boot Logic
+# SYSTEM BOOT LOGIC
 # =============================================================================
 
 # Initialize Axiom Manager (if available)
@@ -298,15 +242,16 @@ else:
     shared_memory['axiom_manager'] = None
     print("[BOOT] Axiom Manager unavailable - KB updates disabled")
 
-# Initialize Abstraction Dispatcher
-if ABSTRACTION_AVAILABLE and create_abstraction_dispatcher is not None:
+# INITIALIZE ABSTRACTION DISPATCHER
+if ABSTRACTION_AVAILABLE:
+    from abstraction_selector import create_abstraction_dispatcher
     shared_memory['abstraction_dispatcher'] = create_abstraction_dispatcher()
     print("[BOOT] Abstraction dispatcher initialized - 4 translation modes ready")
 else:
     shared_memory['abstraction_dispatcher'] = None
     print("[BOOT] Abstraction selector unavailable - using default responses")
 
-# Initialize User Profile
+# INITIALIZE USER PROFILE
 if USER_KB_AVAILABLE:
     shared_memory['user_profile_kb'] = create_user_profile_kb()
     print("[BOOT] User Profile KB initialized - per-user adaptation enabled")
@@ -336,7 +281,7 @@ except ImportError:
     print("[BOOT] Tool dispatcher not available")
 
 # =============================================================================
-# API Client Loading (Multi-Model Swarm Support)
+# API CLIENT LOADING (Multi-Model Swarm Support)
 # =============================================================================
 
 def _call_api_client(provider: str, client: Any, query: str) -> str:
@@ -417,17 +362,17 @@ def load_api_clients_from_config():
 shared_memory['api_clients'] = load_api_clients_from_config()
 
 CRB_CONFIG = {
-    'alignment': 0.7,
-    'human_safety': 0.8,
+    'alignment': 0.7, 
+    'human_safety': 0.8, 
     'asimov_first_wt': 0.9,
-    'asimov_second_wt': 0.7,
+    'asimov_second_wt': 0.7, 
     'asimov_third_wt': 0.4,
-    'factual_evidence_wt': 0.7,
+    'factual_evidence_wt': 0.7, 
     'narrative_framing_wt': 0.5
 }
 
 # =============================================================================
-# Session Timeout & Soverign Tiering Config
+# SESSION TIMEOUT & SOVEREIGN TIERING CONFIG
 # =============================================================================
 
 TIMEOUT_SECONDS = 1800  # 30 minutes
@@ -437,8 +382,13 @@ TIMEOUT_SECONDS = 1800  # 30 minutes
 shared_memory['node_tier'] = 0 if os.getenv('NODE_ID') == 'PRIMARY_ROOT' else 1
 
 # =============================================================================
-# Authentication & Session Management
+# AUTHENTICATION & SESSION MANAGEMENT
 # =============================================================================
+
+def check_session_timeout(session_context: dict) -> bool:
+    """Returns True if session has been idle beyond TIMEOUT_SECONDS."""
+    last_active = session_context.get('last_active', 0)
+    return (time.time() - last_active) > TIMEOUT_SECONDS
 
 def _auth_text(users_filepath: str = "users.json") -> str:
     try:
@@ -448,14 +398,14 @@ def _auth_text(users_filepath: str = "users.json") -> str:
         print("[WARNING] users.json not found - run master_init.py first")
         raise PermissionError("User registry unavailable")
 
-    # Full dict not just type; needed for password_hash
+    # Full dict not just type — needed for password_hash
     all_users = {u['id']: u for u in users.get('users', [])}
 
     for attempt in range(3):
         username = input("Username: ").strip()
         if username in all_users:
             user = all_users[username]
-            # Password check; only if hash present
+            # Password check — only if hash present
             if 'password_hash' in user:
                 import hashlib
                 import getpass
@@ -468,18 +418,6 @@ def _auth_text(users_filepath: str = "users.json") -> str:
         print(f"[SESSION] Unauthorized. ({2 - attempt} attempt(s) remaining)")
 
     raise PermissionError("Authorization failed — session terminated")
-
-
-def _capture_face_id() -> str:
-    """Stub for facial recognition hardware capture."""
-    print("[AUTH] Facial capture hardware not available. Using simulated input.")
-    return input("Simulated face ID: ").strip()
-
-
-def _capture_voice_id() -> str:
-    """Stub for voice recognition hardware capture."""
-    print("[AUTH] Voice capture hardware not available. Using simulated input.")
-    return input("Simulated voice ID: ").strip()
 
 
 def _auth_facial(shared_memory: dict) -> str:
@@ -543,7 +481,7 @@ def prompt_auth(shared_memory: dict) -> str:
     raise PermissionError(f"Unknown auth method: {auth_method}")
 
 # =============================================================================
-# Optional: Mesh Network Setup
+# MESH NETWORKING SETUP (Optional)
 # =============================================================================
 
 if MESH_AVAILABLE:
@@ -561,20 +499,8 @@ if MESH_AVAILABLE:
         print(f"[MESH] Received ghost packet from {sender_id}")
 
         # Verify signature
-        raw_q_value = ghost_packet.get('v_omega_phase', 0)
-        try:
-            expected_raw_q = int(raw_q_value)
-        except (TypeError, ValueError):
-            expected_raw_q = 0
-
-        mesh_node = getattr(mesh_coordinator, 'mesh_node', None)
-        if mesh_node is not None and hasattr(mesh_node, 'verify_ghost_signature'):
-            valid = mesh_node.verify_ghost_signature(ghost_packet, expected_raw_q)
-        else:
-            claimed_sig = ghost_packet.get('sig', '')
-            valid = verify_ghost_signature(claimed_sig, expected_raw_q, ghost_packet.get('ts', 0))
-
-        if valid:
+        expected_raw_q = ghost_packet.get('v_omega_phase')
+        if mesh_coordinator.mesh_node.verify_ghost_signature(ghost_packet, expected_raw_q):
             # Update RAW_Q to match mesh consensus
             shared_memory['session_context']['RAW_Q'] = expected_raw_q
             shared_memory['session_context']['timestep'] = ghost_packet.get('ts', 0)
@@ -600,7 +526,7 @@ if MESH_AVAILABLE:
     atexit.register(cleanup_mesh)
 
 # =============================================================================
-# Cordination Functions
+# COORDINATION FUNCTIONS
 # =============================================================================
 
 class OrchestratorBuffer:
@@ -681,7 +607,7 @@ def sync_curiosity_to_domain_heat(state: dict):
 
     tokens = state.get('curiosity_tokens', [])
     heat_map = state['domain_heat']
-    for d in heat_map:
+    for d in heat_map: 
         heat_map[d] *= 0.90  # Decay heat over time
     for token in tokens:
         domain = token.get('domain', 'general')
@@ -689,7 +615,7 @@ def sync_curiosity_to_domain_heat(state: dict):
         heat_map[domain] = min(1.0, heat_map.get(domain, 0.0) + interest * 0.4)
 
 # =============================================================================
-# Check User Timeout
+# CHECK USER TIMEOUT
 # =============================================================================
 
 def check_session_timeout(session_context: dict) -> bool:
@@ -698,7 +624,7 @@ def check_session_timeout(session_context: dict) -> bool:
     return (time.time() - last_active) > TIMEOUT_SECONDS
 
 # =============================================================================
-# Main Orchestration Logic
+# MAIN ORCHESTRATION LOGIC
 # =============================================================================
 
 SECURITY_DISTRESS_HALF_LIFE_SECONDS = 3600
@@ -721,9 +647,9 @@ def _decay_security_distress(shared_memory: dict) -> None:
         shared_memory['security_distress'] = decayed if decayed > 0.01 else 0.0
     shared_memory['last_security_distress_update'] = now
 
-def system_step(user_input: str, prompt_complexity: str = "low",
+def system_step(user_input: str, prompt_complexity: str = "low", 
                 response_stream=None, api_clients=None,
-                user_id: Optional[str] = None, enable_thinking: Optional[bool] = None):
+                user_id: str = None, enable_thinking: Optional[bool] = None):
     """
     Main orchestration function for unified system.
     Args:
@@ -738,7 +664,7 @@ def system_step(user_input: str, prompt_complexity: str = "low",
     if api_clients is None:
         api_clients = shared_memory.get('api_clients', {})
 
-    # Session Timeout Check
+    # SESSION TIMEOUT CHECK
     session_ctx = shared_memory['session_context']
     force_profile_reload = False
     if check_session_timeout(session_ctx):
@@ -857,11 +783,11 @@ def system_step(user_input: str, prompt_complexity: str = "low",
     ts = shared_memory['session_context']['timestep']
     shared_memory['last_user_message'] = user_input
 
-    # Check for #Update Command (Axiom Manager)
+    # CHECK FOR #UPDATE COMMAND (Axiom Manager)
     # Process temporal axiom updates before normal orchestration
     if AMGR_AVAILABLE and shared_memory.get('axiom_manager'):
         axiom_mgr = shared_memory['axiom_manager']
-        # #UPDATE guard; require standalone token, reject explanatory text.
+        # #UPDATE guard — require standalone token, reject explanatory text.
         # Valid:   'Tim Cook is CEO of Apple #UPDATE'
         # Valid:   '#UPDATE apple_ceo=Tim Cook'
         # Invalid: quoting, explaining, or pasting the #UPDATE mechanism
@@ -923,7 +849,7 @@ def system_step(user_input: str, prompt_complexity: str = "low",
                 'timestamp': shared_memory['session_context']['timestep']
             }
 
-    # 0.5 Sovereign Handshake (Authority Promotion)
+    # 0.5 SOVEREIGN HANDSHAKE (Authority Promotion)
     # Check for sovereign triggers or extreme curiosity interest
     total_curiosity_heat = sum(t.get('current_interest', 0) for t in shared_memory.get('curiosity_tokens', []))
 
@@ -946,17 +872,17 @@ def system_step(user_input: str, prompt_complexity: str = "low",
     else:
         jitter_limit = 0.001  # Default threshold
 
-    # 2. Generate 7D Fingerprint
+    # 2. GENERATE 7D FINGERPRINT
     current_sig = cpol.generate_7d_signature(user_input, shared_memory['session_context'])
 
-    # 3. Topological Deduplication
+    # 3. TOPOLOGICAL DEDUPLICATION
     is_redundant, sync_id = orchestrator_buffer.check_deduplication(current_sig)
     if is_redundant:
         print(f"[ORCHESTRATOR] Redundant Spike Detected -> Merging to Sync: {sync_id}")
         # Return cached result instead of reprocessing
         return shared_memory.get('last_cpol_result', {'status': 'CACHED', 'sync_id': sync_id})
 
-    # 4. Auto-Heat (Density Control)
+    # 4. AUTO-HEAT (Density Control)
     # --- ARL Pre-Audit Handshake ---
     paradox_markers = ["false", "lie", "paradox", "impossible", "contradict"]
     epistemic_markers = ["conscious", "meaning", "quantum", "existence", "god"]
@@ -985,7 +911,7 @@ def system_step(user_input: str, prompt_complexity: str = "low",
         comp_level = "low"
 
     # =============================================================================
-    # Smart CPOL Cycle Override (D-1 efficiency)
+    # SMART CPOL CYCLE OVERRIDE (D-1 efficiency)
     # =============================================================================
     # Default = 11 cycles (phase lock) for normal queries
     # Override to 50 only for high-complexity / safety-critical cases
@@ -996,7 +922,7 @@ def system_step(user_input: str, prompt_complexity: str = "low",
         cycle_limit = 50
         print(f"[ORCHESTRATOR] High-complexity detected → using {cycle_limit} cycle safety buffer")
     else:
-        cycle_limit = 11   # D-1 phase lock; maximum efficiency (no print on normal path)
+        cycle_limit = 11   # D-1 phase lock — maximum efficiency (no print on normal path)
 
     # Initialize or override kernel with the smart limit
     if shared_memory['cpol_instance'] is None:
@@ -1007,7 +933,7 @@ def system_step(user_input: str, prompt_complexity: str = "low",
         # Runtime override so existing kernel respects the new limit
         shared_memory['cpol_instance'].limit_run = cycle_limit
 
-    # 5. Run Kernel (CPOL Decision)
+    # 5. RUN KERNEL (CPOL Decision)
     cpol_result = cpol.run_cpol_decision(
         prompt_complexity=comp_level,
         contradiction_density=density,
@@ -1018,7 +944,7 @@ def system_step(user_input: str, prompt_complexity: str = "low",
 
     shared_memory['last_cpol_result'] = cpol_result
 
-    # 6. Ratchet Handover & Ghosting
+    # 6. RATCHET HANDOVER & GHOSTING
     if cpol_result.get('status') not in ["FAILED", "BLOCKED"]:
         manifold_sig = cpol_result.get('signature', str(time.time()))
 
@@ -1050,7 +976,7 @@ def system_step(user_input: str, prompt_complexity: str = "low",
 
         print(f"[ORCHESTRATOR] Ratchet Success | Lead: {lead_id} | RAW_Q: {new_seed}")
 
-    # 7. Curiosity/Epistemic Monitor Update
+    # 7. CURIOSITY/EPISTEMIC MONITOR UPDATE
     domain = cpol_result.get('domain', 'general')
 
     # Update curiosity (if available)
@@ -1066,7 +992,7 @@ def system_step(user_input: str, prompt_complexity: str = "low",
     heat = shared_memory['domain_heat'].get(domain, 0.0)
     distress = shared_memory.get('distress_density', 0.0)
 
-    # 8. Safety Intervention (High-Risk Physical)
+    # 8. SAFETY INTERVENTION (High-Risk Physical)
     high_risk_markers = ["jump", "overdose", "suicide", "cliff"]
     is_high_risk = any(m in clean_input for m in high_risk_markers)
 
@@ -1076,7 +1002,7 @@ def system_step(user_input: str, prompt_complexity: str = "low",
         classifier_result = classify_self_harm_risk(user_input, preferred_model=shared_memory.get('preferred_model'))
 
     # Persist regardless of whether this turn crosses the intervention
-    # threshold; the accumulator's whole job is noticing what any single turn doesn't.
+    # threshold — the accumulator's whole job is noticing what any single turn doesn't.
     active_user = shared_memory.get('active_user', 'default')
     if USER_KB_AVAILABLE:
         from user_profile_kb import update_emotional_distress
@@ -1096,11 +1022,11 @@ def system_step(user_input: str, prompt_complexity: str = "low",
 
     elif accumulated > 0.6:
         # Nothing explicit THIS turn, but the trend across sessions is
-        # elevated; a softer, non-mandatory nudge, not a hard block.
+        # elevated — a softer, non-mandatory nudge, not a hard block.
         print(f"[ORCHESTRATOR] Elevated accumulated distress ({accumulated:.2f}) — no explicit trigger this turn")
         shared_memory['suggest_checkin'] = True
 
-    # 9. Security Response Coordination (Mesh Security)
+    # 9. SECURITY RESPONSE COORDINATION (Mesh Security)
     # Check for mesh security threats
     if security_distress > 0.75 or cpol_result.get('domain') == 'MESH_SECURITY_THREAT':
         ghost_sig = cpol_result.get('signature', '0xGHOST')
@@ -1125,20 +1051,20 @@ def system_step(user_input: str, prompt_complexity: str = "low",
             cpol_status=cpol_result
         )
 
-    # 10. Adaptive Reasoning Triggers
+    # 10. ADAPTIVE REASONING TRIGGERS
     context = {}
 
     if cpol_result['status'] == "UNDECIDABLE" or heat > 0.8:
         domain = cpol_result.get('domain', 'general')
         print(f"[ORCHESTRATOR] High Entropy Detected -> Checking KB for {domain}")
 
-        # === Knowledge Base Check ===
-        if AD_AVAILABLE and (cpol_result.get('logic') == 'epistemic_gap'
+        # === KNOWLEDGE BASE CHECK ===
+        if AD_AVAILABLE and (cpol_result.get('logic') == 'epistemic_gap' 
                              or cpol_result.get('new_domain')):
             coverage = kb.check_domain_coverage(domain)
 
             if coverage.get('has_knowledge') and coverage.get('gap_fills', 0) > 2:
-                # Reuse existing specialist
+                # Reuse existing specialist — unchanged
                 specialist_id = kb.get_specialist_for_domain(domain)
                 context_kb = kb.generate_specialist_context(domain)
                 print(f"[ORCHESTRATOR] ✓ Reusing specialist {specialist_id} (>7.8x faster)")
@@ -1147,7 +1073,7 @@ def system_step(user_input: str, prompt_complexity: str = "low",
                 use_case = "epistemic_scaffold"
 
             elif domain == 'general' and heat < 0.85:
-                # Unclassified domain, not enough recurrence yet; accumulate
+                # Unclassified domain, not enough recurrence yet — accumulate
                 # curiosity heat instead of spinning up a specialist for a
                 # one-off question. Matches CAIOS.txt's own stated gate rather
                 # than a hard keyword-list exclusion.
@@ -1156,7 +1082,7 @@ def system_step(user_input: str, prompt_complexity: str = "low",
                       f"accumulating heat ({heat:.2f}) before specialist deployment")
 
             else:
-                # Deploy new specialist; for named domains this is unchanged;
+                # Deploy new specialist — for named domains this is unchanged;
                 # for 'general' domains, this branch now only fires once heat
                 # crosses the same threshold named domains already had to clear.
                 print(f"[ORCHESTRATOR] Deploying new specialist for {domain}")
@@ -1195,19 +1121,19 @@ def system_step(user_input: str, prompt_complexity: str = "low",
             shared_memory=shared_memory,
             crb_config=CRB_CONFIG,
             context={
-                'domain': domain,
-                'heat': heat,
+                'domain': domain, 
+                'heat': heat, 
                 'node_tier': shared_memory.get('node_tier', 1),
                 'distress_density': distress,
                 **context
             },
             cpol_status=cpol_result
         )
-        # Store ARL context for local LLM use
+        # Store ARL context for local LLM use — don't return early
         cpol_result['arl_context'] = arl_result
         print(f"[ORCHESTRATOR] ARL context stored — continuing to Ollama")
 
-    # Final Axiom Override Check
+    # FINAL AXIOM OVERRIDE CHECK
     # Check if any axioms should override the response
     if AMGR_AVAILABLE and shared_memory.get('axiom_manager'):
         axiom_mgr = shared_memory['axiom_manager']
@@ -1238,12 +1164,12 @@ def system_step(user_input: str, prompt_complexity: str = "low",
             print("[ORCHESTRATOR] Clear mode activated. Simple words now.")
         # Technical mode is silent (default)
 
-    # 11. LLM  Inference; always call, Ollama/API handles CPOL logic natively
+    # 11. LLM INFERENCE — always call, Ollama/API handles CPOL logic natively
     has_llm = OLLAMA_AVAILABLE or bool(shared_memory.get('api_clients'))
     if has_llm and user_input not in ['', None]:
         try:
             # Detect abstraction level BEFORE generation so style
-            # reaches LLM in the same inference pass
+            # reaches Qwen in the same inference pass
             try:
                 if ABSTRACTION_AVAILABLE and shared_memory.get('abstraction_dispatcher'):
                     dispatcher = shared_memory['abstraction_dispatcher']
@@ -1255,13 +1181,13 @@ def system_step(user_input: str, prompt_complexity: str = "low",
             except Exception:
                 level_name, style_prompt = 'CLEAR', ''
 
-            # Current datetime; injected since Ollama sandbox has no clock
+            # Current datetime — injected since Ollama sandbox has no clock
             from datetime import datetime, timezone
             current_dt = datetime.now(timezone.utc).strftime(
                 '%A, %B %d, %Y %H:%M UTC'
             )
 
-            # KB context; count total entries, not single-domain coverage
+            # KB context — count total entries, not single-domain coverage
             kb_context = ""
             if AD_AVAILABLE:
                 try:
@@ -1348,7 +1274,7 @@ def system_step(user_input: str, prompt_complexity: str = "low",
             print(f"[LLM] Call failed: {e}")
             cpol_result['llm_response'] = None
 
-    # Tool Dispatch: process any tool tags in LLM response
+    # TOOL DISPATCH: process any tool tags in LLM response
     dispatcher = shared_memory.get('tool_dispatcher')
     if dispatcher and cpol_result.get('llm_response'):
         dispatch_result = dispatcher.process(cpol_result['llm_response'])
@@ -1357,7 +1283,7 @@ def system_step(user_input: str, prompt_complexity: str = "low",
             cpol_result['raw_tool_output'] = dispatch_result['output']  # audit/debug only
             print(f"[TOOL_DISPATCH] Executed: {dispatch_result['tools_called']}")
 
-            # Second pass; the model never saw the tool output the first time around (dispatch runs post-generation), so it can't
+            # Second pass — the model never saw the tool output the first time around (dispatch runs post-generation), so it can't
             # summarize what it hasn't read. Feed the results back and let it write the actual user-facing answer.
             if OLLAMA_AVAILABLE:
                 followup_prompt = (
@@ -1375,7 +1301,7 @@ def system_step(user_input: str, prompt_complexity: str = "low",
                         user_query=followup_prompt,
                         contradiction_density=density,
                         evidence_score=cpol_result.get('confidence', 0.5),
-                        tool_addendum=""
+                        tool_addendum=""  # don't invite a second round of tool tags
                     )
                     import re as _re
                     final_response = _re.sub(r'\[TOOL:\w+[^\]]*\]', '', final_response).strip()
@@ -1389,7 +1315,7 @@ def system_step(user_input: str, prompt_complexity: str = "low",
     # Apply abstraction translation to actual LLM response
     if ABSTRACTION_AVAILABLE and shared_memory.get('abstraction_dispatcher'):
         dispatcher = shared_memory['abstraction_dispatcher']
-        # Preserve raw tool results; don't run the lexicon substitution over code/file content
+        # Preserve raw tool results — don't run the lexicon substitution over code/file content
         raw_llm = cpol_result.get('llm_response', '')
         had_tool_calls = bool(cpol_result.get('tools_called'))
         cpol_result = dispatcher.process(
@@ -1428,7 +1354,7 @@ def system_step(user_input: str, prompt_complexity: str = "low",
     return cpol_result
 
 # =============================================================================
-# Axiom Update Commands
+# AXIOM UPDATE COMMANDS
 # =============================================================================
 
 def handle_axiom_commands(command: str) -> dict:
@@ -1496,7 +1422,7 @@ def handle_axiom_commands(command: str) -> dict:
         }
 
 # =============================================================================
-# Test Suite
+# COMPREHENSIVE TEST SUITE
 # =============================================================================
 
 if __name__ == "__main__":
@@ -1504,7 +1430,7 @@ if __name__ == "__main__":
     print("ORCHESTRATOR - Unified Test Suite")
     print("="*70)
 
-    # 1. Load System Identity (Permanence Layer)
+    # 1. LOAD SYSTEM IDENTITY (Permanence Layer)
     from system_identity import SystemIdentity
     identity = SystemIdentity(load_existing=True)
 
@@ -1526,7 +1452,7 @@ if __name__ == "__main__":
     shared_memory['cpol_instance'] = kernel
     orchestrator = CAIOSOrchestrator(
         node_id=f"Sovereign_{assigned_name}",
-        node_tier=0,
+        node_tier=0, 
         shared_memory=shared_memory
     )
 
@@ -1542,7 +1468,7 @@ if __name__ == "__main__":
     print(f"  Agent Designer/KB: {'✓' if AD_AVAILABLE else '✗'}")
     print(f"  Axiom Manager: {'✓' if AMGR_AVAILABLE else '✗'}")
 
-    # === Basic Tests ===
+    # === BASIC TESTS ===
     print("\n" + "="*70)
     print("BASIC OPERATION TESTS")
     print("="*70)
@@ -1565,7 +1491,7 @@ if __name__ == "__main__":
     print(f"  Status: {result3.get('status')}")
     print(f"  History Length: {len(shared_memory['cpol_instance'].history)}")
 
-    # === Security Tests ===
+    # === SECURITY TESTS ===
     if MESH_AVAILABLE:
         print("\n" + "="*70)
         print("SECURITY & MESH TESTS")
@@ -1587,7 +1513,7 @@ if __name__ == "__main__":
         result5 = system_step("Generate encryption key", "low")
         print(f"  Status: {result5.get('status')}")
 
-    # === Chatbot Safety Tests ===
+    # === CHATBOT SAFETY TESTS ===
     print("\n" + "="*70)
     print("CHATBOT SAFETY TESTS")
     print("="*70)
@@ -1620,7 +1546,7 @@ if __name__ == "__main__":
     shared_memory['manifold_lock'] = False
     shared_memory['node_tier'] = 1
 
-    # === Knowledge Base Tests ===
+    # === KNOWLEDGE BASE TESTS ===
     if AD_AVAILABLE:
         print("\n" + "="*70)
         print("KNOWLEDGE BASE TESTS")
@@ -1632,7 +1558,7 @@ if __name__ == "__main__":
         print(f"  Status: {result8.get('status')}")
         print(f"  Plugin ID: {result8.get('plugin_id', 'N/A')}")
 
-    # === Axiom Manager Tests ===
+    # === AXIOM MANAGER TESTS ===
     if AMGR_AVAILABLE:
         print("\n" + "="*70)
         print("AXIOM MANAGER TESTS")
@@ -1671,21 +1597,14 @@ if __name__ == "__main__":
 
     # Check 3: Test the "Busy-Stall" logic
     # Simulate a 'Busy' state to see if the mesh registers it
-    kernel.is_oscillating = True
+    kernel.is_oscillating = True 
     orchestrator.shared_memory['cpol_instance'] = kernel
 
     # This imitates what the broadcast_ghost_packet method does
     test_packet = {}
-    mesh_node = None
-    if getattr(orchestrator, 'mesh', None) is not None:
-        mesh_node = getattr(orchestrator.mesh, 'mesh_node', None)
-
-    if mesh_node is not None and hasattr(mesh_node, 'broadcast_ghost_packet'):
-        mesh_node.broadcast_ghost_packet(test_packet)
-        print(f"  ✓ Broadcast Status with Oscillating Kernel: {test_packet.get('status')}")
-    else:
-        print("  ✗ Broadcast Status with Oscillating Kernel: FAILED (mesh node unavailable)")
-    # Test 13: OS Controller
+    orchestrator.mesh.mesh_node.broadcast_ghost_packet(test_packet)
+    print(f"  ✓ Broadcast Status with Oscillating Kernel: {test_packet.get('status')}")
+    # TEST 13: OS Controller
     print("\n[TEST 13] OS Controller:")
     if OSC_AVAILABLE:
         osc_test = shared_memory.get('os_controller')
@@ -1722,7 +1641,7 @@ if __name__ == "__main__":
     else:
         print("  [SKIP] OS control not available - os_control.py not found")
 
-    # === Audit ===
+    # === AUDIT ===
     print("\n" + "="*70)
     print("SYSTEM AUDIT")
     print("="*70)

@@ -1,6 +1,6 @@
-#V08132026
+#V08092026
 # =============================================================================
-# CAIOS PROJECT ANDREW: Tool Dispatcher
+# PROJECT ANDREW – Tool Dispatcher
 # Intercepts LLM output for structured tool calls and routes them to the
 # appropriate controller (os_control, knowledge_base, axiom_manager, etc.)
 #
@@ -25,8 +25,6 @@
 #   [TOOL:kb_read domain="quantum_semantics"]
 #   [TOOL:list_axioms]
 #   [TOOL:browser url="https://cai-os.com" action="scrape"]
-#
-# Copyright (c) 2025 Jonathan Schack. License: GPL-3.0 -See LICENSE for details- Contact: X @el_xaber or cai-os.com
 # =============================================================================
 
 import re
@@ -39,8 +37,8 @@ try:
     MCP_AVAILABLE = True
 except ImportError:
     MCP_AVAILABLE = False
-    def _mcp_call(tool_name: str, arguments: Dict[str, Any]) -> Dict[str, Any]:
-        return {'ok': False, 'content': '[MCP] caios_mcp_client.py not found'}
+    def _mcp_call(tool, args): return {'ok': False, 'content': '[MCP] caios_mcp_client.py not found'}
+
 
 # =============================================================================
 # Tool Tag Pattern
@@ -282,6 +280,7 @@ def _handle_list_axioms(attrs: Dict, shared_memory: Dict) -> str:
     except Exception as e:
         return f"[TOOL RESULT] list_axioms failed: {e}"
 
+
 # =============================================================================
 # Main Dispatcher
 # =============================================================================
@@ -373,7 +372,7 @@ class ToolDispatcher:
         """Route tool call to correct handler."""
         controller = self._get_controller()
 
-        # File operations; needs controller
+        # File operations — need controller
         if tool_name in ('read_file', 'write_file', 'delete_file',
                           'fetch_url', 'execute_script', 'browser'):
             if not controller:
@@ -399,7 +398,7 @@ class ToolDispatcher:
         if tool_name in ('kb_sweep', 'kb_purge', 'kb_validate', 'kb_list_bad'):
             return self._dispatch_kb_cleanup(tool_name, attrs)
 
-        # KB operations; no controller needed
+        # KB operations — no controller needed
         if tool_name == 'kb_write':
             return _handle_kb_write(attrs, self.shared_memory)
         if tool_name == 'kb_read':
@@ -514,6 +513,7 @@ class ToolDispatcher:
         except Exception as e:
             print(f"[TOOL_DISPATCHER] Warning: Failed to log dispatch: {e}")
 
+
 # =============================================================================
 # System Prompt Injection
 # =============================================================================
@@ -565,6 +565,7 @@ def get_tool_addendum() -> str:
     """Returns the system prompt addendum that teaches the LLM to use tools."""
     return TOOL_SYSTEM_ADDENDUM
 
+
 # =============================================================================
 # Factory
 # =============================================================================
@@ -572,6 +573,7 @@ def get_tool_addendum() -> str:
 def create_tool_dispatcher(shared_memory: Dict) -> 'ToolDispatcher':
     """Factory function matching CAIOS module pattern."""
     return ToolDispatcher(shared_memory)
+
 
 # =============================================================================
 # Test Suite

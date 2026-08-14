@@ -1,6 +1,7 @@
-#V08132026
+#V06242026
 # =============================================================================
-# CAIOS PROJECT ANDREW: Search Engine (DuckDuckGo, stdlib only)
+# CAIOS — Search Engine (DuckDuckGo, stdlib only)
+#
 # Provides web search capability for epistemic gap resolution.
 # Integrates with tool_dispatcher.py via [TOOL:web_search query="..." n="5"]
 # and with os_control.py's fetch_url for full-page extraction on results.
@@ -11,9 +12,7 @@
 #   3. Results feed into shared_memory['last_search_results'] for orchestrator
 #      to pass URLs downstream to os_control.fetch_url / caios_mcp_client.scrape
 #
-# Zero external dependencies; urllib only.
-#
-# Copyright (c) 2025 Jonathan Schack. License: GPL-3.0 -See LICENSE for details- Contact: X @el_xaber or cai-os.com
+# Zero external dependencies — urllib only.
 # =============================================================================
 
 import re
@@ -24,15 +23,12 @@ import urllib.error
 import html
 from typing import List, Dict, Optional, Any
 
-# =========================================================================
-# Constants
-# =========================================================================
-
+# ── Constants ─────────────────────────────────────────────────
 DDG_API_URL  = 'https://api.duckduckgo.com/'
 DDG_LITE_URL = 'https://lite.duckduckgo.com/lite/'
 TIMEOUT      = 10  # seconds
 
-# Plausible browser UA: DDG blocks obvious bot strings
+# Plausible browser UA — DDG blocks obvious bot strings
 _UA = (
     'Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
     'AppleWebKit/537.36 (KHTML, like Gecko) '
@@ -41,6 +37,7 @@ _UA = (
 
 # HTML entities we want decoded in snippets
 _ENTITY_RE = re.compile(r'&[a-zA-Z]+;|&#\d+;')
+
 
 # =============================================================================
 # Internal helpers
@@ -67,8 +64,9 @@ def _get(url: str, data: Optional[bytes] = None) -> Optional[str]:
     except Exception:
         return None
 
+
 # =============================================================================
-# Strategy 1: DDG Instant Answer API (JSON, rate-limit friendly)
+# Strategy 1 — DDG Instant Answer API (JSON, rate-limit friendly)
 # =============================================================================
 
 def _search_api(query: str, max_results: int) -> List[Dict]:
@@ -105,7 +103,7 @@ def _search_api(query: str, max_results: int) -> List[Dict]:
             'source':  'ddg_abstract'
         })
 
-    # RelatedTopics; the bulk of results
+    # RelatedTopics — the bulk of results
     for item in data.get('RelatedTopics', []):
         if len(results) >= max_results:
             break
@@ -136,8 +134,9 @@ def _search_api(query: str, max_results: int) -> List[Dict]:
 
     return results
 
+
 # =============================================================================
-# Strategy 2: DDG HTML lite fallback
+# Strategy 2 — DDG HTML lite fallback
 # =============================================================================
 
 # lite.duckduckgo.com is simpler HTML than the main page and more stable to parse
@@ -224,6 +223,7 @@ def _search_lite(query: str, max_results: int) -> List[Dict[str, str]]:
 
     return results
 
+
 # =============================================================================
 # Public interface
 # =============================================================================
@@ -303,8 +303,9 @@ def format_results_for_llm(search_payload: Dict) -> str:
     lines.append('[/SEARCH RESULTS]')
     return '\n'.join(lines)
 
+
 # =============================================================================
-# Factory: Matches CAIOS module pattern
+# Factory — matches CAIOS module pattern
 # =============================================================================
 
 def create_search_engine(shared_memory: Optional[Dict] = None):
@@ -317,6 +318,7 @@ def create_search_engine(shared_memory: Optional[Dict] = None):
     def _search(query: str, max_results: int = 5) -> Dict:
         return search(query, max_results=max_results, shared_memory=shared_memory)
     return _search
+
 
 # =============================================================================
 # Test suite

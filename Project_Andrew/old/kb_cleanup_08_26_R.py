@@ -1,6 +1,7 @@
-#V08132026
+#V08102026
+#!/usr/bin/env python3
 # =============================================================================
-# CAIOS PROJECT ANDREW: CAIOS Knowledge Base Cleanup & Validation Tool
+# kb_cleanup.py — CAIOS Knowledge Base Cleanup & Validation Tool
 #
 # Usage:
 #  python kb_cleanup.py sweep                    Scan for bad entries (report only)
@@ -18,8 +19,6 @@
 #  python kb_cleanup.py purge-specialist 730ae895
 #  python kb_cleanup.py purge-specialist --domain pokemon_singles_strategy
 #  python kb_cleanup.py sweep --fix
-#
-# Copyright (c) 2025 Jonathan Schack. License: GPL-3.0 -See LICENSE for details- Contact: X @el_xaber or cai-os.com
 # =============================================================================
 
 import sys
@@ -38,10 +37,7 @@ SPECIALIST_REG  = KB_DIR / 'specialist_registry.json'
 QUARANTINE      = KB_DIR / 'quarantine.jsonl'
 HASH_CHAIN      = KB_DIR / 'integrity_chain.txt'
 
-# =========================================================================
-# Noise detection patterns
-# =========================================================================
-
+# ── Noise detection patterns ──────────────────────────────────
 # Domain keys that look like garbage from a misfire
 NOISE_DOMAIN_PATTERNS = [
     r'^axiom_[a-z]+,_',           # starts with word then comma-underscore
@@ -69,9 +65,7 @@ NOISE_FACT_PATTERNS = [
     r'#UPDATE.*anywhere',          # meta-discussion
 ]
 
-# =========================================================================
-# Load/save helpers
-# =========================================================================
+# ── Load/save helpers ─────────────────────────────────────────
 
 def load_entries() -> List[Dict]:
     if not DISCOVERIES.exists():
@@ -139,9 +133,7 @@ def save_specialist_registry(registry: Dict) -> None:
         json.dump(registry, f, indent=2)
     print(f"  Backup saved: {backup.name}")
 
-# =========================================================================
-# Detection logic
-# =========================================================================
+# ── Detection logic ───────────────────────────────────────────
 
 def is_noise_domain(domain: str) -> Tuple[bool, str]:
     """Return (is_noise, reason)."""
@@ -192,9 +184,8 @@ def check_entry(entry: Dict) -> List[str]:
 
     return problems
 
-# =========================================================================
-# Commands
-# =========================================================================
+
+# ── Commands ──────────────────────────────────────────────────
 
 def cmd_sweep(fix: bool = False) -> int:
     """Scan all entries for problems. If fix=True, quarantine bad ones."""
@@ -439,9 +430,7 @@ def cmd_purge_specialist(target: str, by_domain: bool = False) -> int:
     print(f"Removed {len(to_remove)} specialist(s).")
     return 1
 
-# =========================================================================
-# CLI
-# =========================================================================
+# ── CLI ───────────────────────────────────────────────────────
 
 def usage():
     print("""

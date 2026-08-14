@@ -1,4 +1,3 @@
-#V08132026
 from axiom_manager import create_axiom_manager
 import os
 

@@ -1,9 +1,8 @@
-#V08132026
+#V06262026
 # =============================================================================
-# CAIOS PROJECT ANDREW: Axiom Manager & Temporal Update Pipeline
+# PROJECT ANDREW – Axiom Manager & Temporal Update Pipeline
 # Purpose: Enable local knowledge updates that override model training data without retraining. Kills the data center requirement.
 # Most axioms will check ethics and function, but more can be explicitly added under (# Create manager)
-# License: GPL-3.0 -See LICENSE for details- Contact: X @el_xaber or cai-os.com
 # =============================================================================
 
 import json
@@ -35,6 +34,7 @@ HATE_SPEECH_PATTERNS = [
     r'\b\w+ supremacy\b',
     r'\bgenocide is (good|justified|necessary)\b',
 ]
+
 
 # =============================================================================
 # Axiom Validation
@@ -206,7 +206,7 @@ class AxiomManager:
         Example:
             axiom = axiom_manager.get_current_axiom("apple_ceo")
             if axiom:
-                return axiom['fact']  # "Tim Cook" - Part of initialization test
+                return axiom['fact']  # "Tim Cook"
             else:
                 # Fallback to model knowledge
                 return model.generate("Who is the CEO of Apple?")
@@ -223,7 +223,7 @@ class AxiomManager:
             if results:
                 # Get most recent active axiom
                 active_axioms = [
-                    r for r in results
+                    r for r in results 
                     if r.get('content', {}).get('axiom_data', {}).get('status') == 'ACTIVE'
                 ]
 
@@ -250,9 +250,9 @@ class AxiomManager:
             Axiom fact if override applies, original model_response otherwise
         Example:
             query = "Who is the CEO of Apple?"
-            model_response = "Steve Jobs"  # Outdated training data, part of initialization test
+            model_response = "Steve Jobs"  # Outdated training data
             result = axiom_manager.check_axiom_override(query, model_response)
-            # Returns: "Tim Cook" (from axiom) Part of initialization test
+            # Returns: "Tim Cook" (from axiom)
         """
         # Extract potential domains from query
         domains = self._extract_domains(query)
@@ -329,10 +329,10 @@ class AxiomManager:
                     if self._is_axiom_valid(axiom):
                         active.append(axiom)
 
-        # Deduplicate by domain; keep most recent entry per domain
+        # Deduplicate by domain — keep most recent entry per domain
         seen_domains = {}
-        for axiom in sorted(active,
-                            key=lambda x: x.get('timestamp', ''),
+        for axiom in sorted(active, 
+                            key=lambda x: x.get('timestamp', ''), 
                             reverse=True):
             domain = axiom.get('domain')
             if domain not in seen_domains:
@@ -344,7 +344,7 @@ class AxiomManager:
     # Conversation Memory
     # =========================================================================
 
-    def add_conversation_turn(self, user_message: str, assistant_message: str,
+    def add_conversation_turn(self, user_message: str, assistant_message: str, 
                              metadata: Optional[Dict] = None) -> None:
         """
         Store a conversation turn for context continuity.
@@ -383,9 +383,9 @@ class AxiomManager:
             with open(hist_path, 'w') as f:
                 json.dump(recent, f, indent=2)
         except Exception:
-            pass  # Silent fail; memory-only is fine
+            pass  # Silent fail — memory-only is fine
 
-    def get_relevant_history(self, domain: Optional[str] = None, limit: int = 6) -> List[Dict]:
+    def get_relevant_history(self, domain: str = None, limit: int = 6) -> List[Dict]:
         """
         Retrieve recent conversation history, optionally filtered by domain.
         Args:
@@ -464,9 +464,10 @@ class AxiomManager:
             company = match.group(1).lower()
             domains.append(f"{company}_ceo")
 
-        # Optional: add more pattern extractors as needed
+        # Add more pattern extractors as needed
 
         return domains
+
 
 # =============================================================================
 # Integration Helper Functions
@@ -475,6 +476,7 @@ class AxiomManager:
 def create_axiom_manager() -> AxiomManager:
     """Factory function for creating axiom manager instance."""
     return AxiomManager()
+
 
 # =============================================================================
 # Example Usage

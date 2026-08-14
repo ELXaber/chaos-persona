@@ -1,7 +1,7 @@
-#V08132026
+#V03172026
 # caios_pipeline.yaml
-# CAIOS PROJECT ANDREW: Pipeline Configuration
-# Example agricultural deployment
+# CAIOS Pipeline Configuration
+# Example for Porters Reserve agricultural deployment
 
 pipeline:
   node_tier: 1

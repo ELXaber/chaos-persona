@@ -1,4 +1,3 @@
-#V08132026
 import ollama
 import sys
 

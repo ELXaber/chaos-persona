@@ -1,8 +1,8 @@
-#V08132026
+#V08092026
 # =============================================================================
-# CAIOS PROJECT ANDREW: User Profile Knowledge Base
-# Stores per-user personality state, emotional baselines, abstraction level, and preferences
-# Copyright (c) 2025 Jonathan Schack. License: GPL-3.0 -See LICENSE for details- Contact: X @el_xaber or cai-os.com
+# CAIOS — User Profile Knowledge Base
+# Stores per-user personality state, emotional baselines, and preferences
+# Minimal numeric storage — no conversation history bloat
 # =============================================================================
 
 import json
@@ -78,18 +78,18 @@ def _default_profile(user_id: str) -> Dict[str, Any]:
         'last_updated': None,
         'session_count': 0,
 
-        # [Age Group & Content] - parent-managed, no PII collected
+        # [AGE GROUP & CONTENT] — parent-managed, no PII collected
         'age_group': 'adult',        # 'child', 'teen', 'adult'
         'content_filter': False,     # Parent enables for child profiles
         'abstraction_override': None, # Forces abstraction regardless of learned pref
         'managed_by': None,          # Primary user ID if sub-user
         'sub_users': {},             # Primary user stores child profiles here
 
-        # [Profiles] — volatility thresholds
+        # [PROFILES] — volatility thresholds
         'volatility_profile': 'pragmatic',  # Learns over time
         'context_threshold': 0.6,
 
-        # [Robotics Personality Layer] - numeric weights
+        # [ROBOTICS PERSONALITY LAYER] — numeric weights
         'personality': {
             'friendly': 0.5,
             'kind': 0.5,
@@ -104,14 +104,14 @@ def _default_profile(user_id: str) -> Dict[str, Any]:
             'romantic': 0.2
         },
 
-        # [Emotional Drift] - baseline state
+        # [EMOTIONAL DRIFT] — baseline state
         'emotional_baseline': {
             'distress_density': 0.0,
             'hope_potential': 0.5,
             'emotional_intensity': 0.3
         },
 
-        # [Neurosymbolic Value Learning] - trust weights
+        # [NEUROSYMBOLIC VALUE LEARNING] — trust weights
         'neurosymbolic': {
             'user_input': 0.9,
             'ethics': 0.9,
@@ -125,10 +125,10 @@ def _default_profile(user_id: str) -> Dict[str, Any]:
         'complaint_count': 0,
         'persistent_complainer': False,
 
-        # [Scratch space] - personal preferences
+        # Scratch space — personal preferences
         'scratch': {},
 
-        # [Conversation axioms] - compressed preferences
+        # Conversation axioms — compressed preferences
         'axioms': []
     }
 
@@ -151,7 +151,7 @@ def get_distress_threshold(user_id: str, base_threshold: float) -> float:
     }
     return base_threshold * multipliers.get(age_group, 1.0)
 
-DISTRESS_HALF_LIFE_DAYS = 21   # slow; this needs to survive a quiet week, not a quiet hour
+DISTRESS_HALF_LIFE_DAYS = 21   # slow — this needs to survive a quiet week, not a quiet hour
 
 def update_emotional_distress(user_id: str, current_signal: float) -> float:
     """
@@ -181,7 +181,7 @@ def update_emotional_distress(user_id: str, current_signal: float) -> float:
     stored = baseline.get('distress_density', 0.0)
     decayed = stored * (0.5 ** (elapsed_days / DISTRESS_HALF_LIFE_DAYS))
 
-    # Nudge up proportional to this turn's signal; asymmetric on purpose:
+    # Nudge up proportional to this turn's signal — asymmetric on purpose:
     # rises fast on a real hit, only ever falls slowly via the decay above.
     updated = min(1.0, decayed + current_signal * 0.3)
 

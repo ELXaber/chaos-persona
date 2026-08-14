@@ -1,8 +1,8 @@
-#V05062026
-#!/usr/bin/env python3
+#V08132026
 # =============================================================================
-# Knowledge Base Inspector - CLI Tool
+# CAIOS PROJECT ANDREW: Knowledge Base Inspector - CLI Tool
 # Usage: python kb_inspect.py [command] [args]
+# Copyright (c) 2025 Jonathan Schack. License: GPL-3.0 -See LICENSE for details- Contact: X @el_xaber or cai-os.com
 # =============================================================================
 
 import sys
@@ -11,6 +11,10 @@ from pathlib import Path
 from typing import Optional
 import knowledge_base as kb
 from datetime import datetime, timezone
+
+# =========================================================================
+# Commands
+# =========================================================================
 
 def cmd_list_domains():
     """List all domains in the knowledge base."""
@@ -148,7 +152,7 @@ def cmd_list_specialists():
     print(f"Total specialists: {len(registry)}")
 
 
-def cmd_export_domain(domain: str, output_file: str = None):
+def cmd_export_domain(domain: str, output_file: Optional[str] = None):
     """Export domain summary to file."""
     if not output_file:
         output_file = f"knowledge_export_{domain}_{datetime.now(timezone.utc).strftime('%Y%m%d_%H%M%S')}.txt"
@@ -442,7 +446,7 @@ def cmd_verify_integrity():
             continue
 
         # Each hash chain entry is: timestamp SHA256(prev_hash + discovery_json)
-        # We can at minimum verify the hash at position i links to position i-1
+        # Verify the hash at position i links to position i-1
         prev_hash = prev_parts[1]
         curr_hash = curr_parts[1]
         if len(prev_hash) != 64 or len(curr_hash) != 64:
@@ -462,7 +466,7 @@ def cmd_verify_integrity():
     print(f"{'='*70}")
 
 
-def cmd_axioms(domain: str = None):
+def cmd_axioms(domain: Optional[str] = None):
     """Show axioms for a domain or all domains."""
     if domain:
         # Show axioms for specific domain
@@ -519,7 +523,6 @@ COMMANDS:
     predict [domain]       - Predict epistemic gaps (all or specific domain)
     help                   - Show this help message
 
-
 EXAMPLES:
     python kb_inspect.py list
     python kb_inspect.py show quantum_semantics
@@ -537,6 +540,9 @@ TIER LABELS:
     EDGE-N      - Tier N (Edge node, N ≥ 1)
     """)
 
+# =========================================================================
+# Main
+# =========================================================================
 
 def main():
     if len(sys.argv) < 2:

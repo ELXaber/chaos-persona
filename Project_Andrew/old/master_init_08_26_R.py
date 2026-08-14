@@ -1,12 +1,10 @@
-#V08132026
+#V05062026
 # =============================================================================
-# CAIOS PROJECT ANDREW: Master Integration & Sovereign Boot
-# Pre-requisites auto-install from run_caios.bat or run_caios.sh - fallback directions below
-# Copyright (c) 2025 Jonathan Schack. License: GPL-3.0 -See LICENSE for details- Contact: X @el_xaber or cai-os.com
+# PROJECT ANDREW – Master Integration & Sovereign Boot
 # =============================================================================
 # PRE-REQUISITES:
-# 1. Python 3.8+
-# 2. Libraries:
+# 1. Python 3.8+ 
+# 2. Libraries: 
 #    pip install numpy zmq cryptography
 # 3. Optional API Libraries (for multi-model swarm):
 #    pip install openai anthropic google-generativeai
@@ -28,26 +26,12 @@ import getpass
 from datetime import datetime, timezone
 from typing import Optional
 
-try:
-    import openai  # type: ignore
-except ImportError:
-    openai = None
-
-try:
-    from anthropic import Anthropic  # type: ignore
-except ImportError:
-    Anthropic = None
-
-try:
-    import google.generativeai as genai  # type: ignore
-except ImportError:
-    genai = None
-
 # Project Andrew Imports
 from chaos_encryption import generate_raw_q_seed, CPOLQuantumManifold
 from mesh_network import MeshCoordinator
 from knowledge_base import log_discovery, check_domain_coverage
 from system_identity import SystemIdentity, get_effective_asimov_weight
+
 
 # =============================================================================
 # API Client Initialization Functions
@@ -55,21 +39,18 @@ from system_identity import SystemIdentity, get_effective_asimov_weight
 
 def _init_openai(api_key: str):
     """Initialize OpenAI client."""
-    if openai is None:
-        raise ImportError("openai package not installed")
+    import openai
     openai.api_key = api_key
     return openai
 
 def _init_anthropic(api_key: str):
     """Initialize Anthropic client."""
-    if Anthropic is None:
-        raise ImportError("anthropic package not installed")
+    from anthropic import Anthropic
     return Anthropic(api_key=api_key)
 
 def _init_xai(api_key: str):
     """Initialize xAI/Grok client (uses OpenAI-compatible API)."""
-    if openai is None:
-        raise ImportError("openai package not installed")
+    import openai
     client = openai.OpenAI(
         api_key=api_key,
         base_url="https://api.x.ai/v1"
@@ -78,8 +59,7 @@ def _init_xai(api_key: str):
 
 def _init_google(api_key: str):
     """Initialize Google Gemini client."""
-    if genai is None:
-        raise ImportError("google-generativeai package not installed")
+    import google.generativeai as genai
     genai.configure(api_key=api_key)
     return genai
 
@@ -101,7 +81,7 @@ def load_api_clients(shared_memory: dict) -> dict:
             'package': 'openai'
         },
         'anthropic': {
-            'env_var': 'ANTHROPIC_API_KEY',
+            'env_var': 'ANTHROPIC_API_KEY', 
             'init': _init_anthropic,
             'package': 'anthropic'
         },
@@ -248,8 +228,8 @@ def run_system_diagnostic():
     try:
         # Initialize the coordinator with the shared memory from earlier in master_init
         coordinator = MeshCoordinator(
-            node_id=MY_NODE_ID,
-            node_tier=MY_TIER,
+            node_id=MY_NODE_ID, 
+            node_tier=MY_TIER, 
             shared_memory=shared_memory
         )
 
@@ -264,7 +244,7 @@ def run_system_diagnostic():
     # 5. Test Knowledge Base (The Sovereign Trace)
     print("\n[STEP 4] Testing Knowledge Base & Authority...")
     try:
-        # Simulate a "Sovereign Root" discovery (Tier 0)
+        # We simulate a "Sovereign Root" discovery (Tier 0)
         disc_id = log_discovery(
             domain="system_init",
             discovery_type="diagnostic_check",
@@ -385,7 +365,7 @@ def run_system_diagnostic():
     print("="*80)
 
 
-def write_authorized_users(identity: SystemIdentity, filepath: str = "users.json", passwords: Optional[dict] = None):
+def write_authorized_users(identity: SystemIdentity, filepath: str = "users.json", passwords: dict = None):
     """
     Derive flat authorized user list from system_identity.
     This is the ONLY place users.json gets written.
@@ -394,8 +374,7 @@ def write_authorized_users(identity: SystemIdentity, filepath: str = "users.json
     primary = identity.identity_data['primary_user']
     authorized = identity.identity_data['authorized_users']
     sub_users = list(identity.identity_data.get('user_profiles', {}).keys())
-    # Normalize passwords to a dict for safe access
-    passwords = {} if passwords is None else passwords
+    passwords = passwords or {}
 
     def make_entry(uid, utype):
         entry = {'id': uid, 'type': utype}

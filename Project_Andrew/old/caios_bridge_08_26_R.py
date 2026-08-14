@@ -1,12 +1,13 @@
-#V08132026
+#V07312026
 # =============================================================================
-# CAIOS PROJECT ANDREW: Web Bridge
-# Flask server that connects caios_chat_ui.html to the existing orchestrator/caios_chat.py stack.
-# See SETUP.MD for quickstart
-# Open http://localhost:5000 in your browser.
-# The CLI caios_chat.py continues to work alongside this
-# they share the same orchestrator, shared_memory, and conversation_log.jsonl.
-# Copyright (c) 2025 Jonathan Schack. License: GPL-3.0 -See LICENSE for details- Contact: X @el_xaber or cai-os.com
+# CAIOS Web Bridge — Flask server that connects caios_chat_ui.html to the existing orchestrator/caios_chat.py stack.
+#
+# Run from the Project_Andrew directory:
+#   pip install flask
+#   python caios_bridge.py
+#
+# Then open http://localhost:5000 in your browser.
+# The CLI caios_chat.py continues to work alongside this — they share the same orchestrator, shared_memory, and conversation_log.jsonl.
 # =============================================================================
 
 import os
@@ -28,17 +29,14 @@ from flask import (
     Response, stream_with_context
 )
 
-# MCP client; graceful if caios_mcp_client.py not present
+# MCP client — graceful if caios_mcp_client.py not present yet
 try:
     from caios_mcp_client import mcp_tool, mcp_status, get_client as get_mcp_client
     MCP_AVAILABLE = True
 except ImportError:
     MCP_AVAILABLE = False
-    def mcp_status() -> dict:
-        return {'filesystem_server': False, 'windows_mcp': False}
-
-    def mcp_tool(tool_name: str, arguments: dict) -> dict:
-        return {'ok': False, 'content': '[MCP] caios_mcp_client.py not found'}
+    def mcp_status(): return {'filesystem_server': False, 'windows_mcp': False}
+    def mcp_tool(tool, args): return {'ok': False, 'content': '[MCP] caios_mcp_client.py not found'}
 
 app = Flask(__name__, static_folder='.', static_url_path='')
 
@@ -59,7 +57,7 @@ except ImportError:
     PYTESSERACT_AVAILABLE = False
 
 # =============================================================================
-# Bootstrap; same logic as caios_chat.py load_shared_memory()
+# Bootstrap — same logic as caios_chat.py load_shared_memory()
 # =============================================================================
 
 def _bootstrap_shared_memory() -> Dict[str, Any]:
@@ -102,14 +100,14 @@ except ImportError as e:
     ORCH_AVAILABLE = False
     print(f'[BRIDGE] Orchestrator not available ({e}), using bootstrap memory')
 
-# Active session state; keyed by session token
+# Active session state — keyed by session token
 _sessions: Dict[str, Dict] = {}
 
 UPLOAD_DIR = pathlib.Path(tempfile.gettempdir()) / 'caios_uploads'
 UPLOAD_DIR.mkdir(exist_ok=True)
 
 # =============================================================================
-# Service Startup: Ollama, MCP filesystem server, windows-mcp
+# Service Startup — Ollama, MCP filesystem server, windows-mcp
 #
 # Moved here from run_caios.bat/.sh so that BOTH launch paths documented in
 # SETUP.md ("run run_caios.bat" and "run python caios_bridge.py directly")
@@ -117,7 +115,7 @@ UPLOAD_DIR.mkdir(exist_ok=True)
 # one-time environment setup (deps, model pull, first-boot identity) and
 # hands off to this on every launch.
 #
-# Safe to call repeatedly; each service is skipped if already reachable,
+# Safe to call repeatedly — each service is skipped if already reachable,
 # so it's harmless if ollama is already running as a background service,
 # or if you start the bridge a second time.
 # =============================================================================
@@ -301,10 +299,7 @@ def _ocr_image(path: str) -> str:
             img = cv2.imread(path)
             if img is not None:
                 result = recognize_cv2_sync(img)
-                if isinstance(result, dict):
-                    text = (result.get('text') or '').strip()
-                else:
-                    text = (str(result) or '').strip()
+                text = (result.get('text') or '').strip()
                 if text:
                     return text
         except Exception as e:
@@ -322,7 +317,7 @@ def _ocr_image(path: str) -> str:
 
 
 # =============================================================================
-# Routes: startup / static
+# Routes — startup / static
 # =============================================================================
 
 @app.route('/')
@@ -338,9 +333,9 @@ def favicon():
 
 
 # =============================================================================
-# Route: GET /api/boot
+# Route — GET /api/boot
 # Returns everything the UI needs on first load:
-# identity, available models, users list (names only, no hashes), KB stats, whether auth is required.
+#   identity, available models, users list (names only, no hashes), KB stats, whether auth is required.
 # =============================================================================
 
 @app.route('/api/boot')
@@ -364,7 +359,7 @@ def api_boot():
         models.append({'id': f'api:{p.lower()}', 'label': p, 'provider': 'api'})
 
     users = _get_users()
-    # Only send user IDs to the browser; never password hashes
+    # Only send user IDs to the browser — never password hashes
     user_list = [{'id': uid, 'type': info.get('type', 'user')}
                  for uid, info in users.items()]
 
@@ -382,6 +377,7 @@ def api_boot():
         'mcp': mcp_status(),
     })
 
+
 # =============================================================================
 # Route — POST /api/auth
 # Body: { "username": "...", "password": "..." }
@@ -398,7 +394,7 @@ def api_auth():
     users = _get_users()
 
     if not users:
-        # No user registry; allow guest
+        # No user registry — allow guest
         token = _make_token('guest')
         _sessions[token] = {'user_id': 'guest', 'conversation': []}
         shared_memory['active_user'] = 'guest'
@@ -436,8 +432,9 @@ def api_auth():
     return jsonify({'token': token, 'user_id': username,
                     'display': username})
 
+
 # =============================================================================
-# Route: POST /api/select_model
+# Route — POST /api/select_model
 # Body: { "token": "...", "model_id": "ollama:qwen3.6:27b" } <- example
 # =============================================================================
 
@@ -463,7 +460,7 @@ def api_select_model():
 
 
 # =============================================================================
-# Route: POST /api/thinking
+# Route — POST /api/thinking
 # Enables thinking mode
 # =============================================================================
 
@@ -482,12 +479,13 @@ def api_set_thinking():
     elif mode == 'off':
         sess['enable_thinking'] = False
     else:
-        sess['enable_thinking'] = None  # auto is density-based decision
+        sess['enable_thinking'] = None  # auto — density-based decision
 
     return jsonify({'ok': True, 'enable_thinking': sess['enable_thinking']})
 
+
 # =============================================================================
-# Route: POST /api/upload
+# Route — POST /api/upload
 # Saves attached file, returns a reference path.
 # =============================================================================
 
@@ -501,15 +499,15 @@ def api_upload():
     if not f or f.filename == '':
         return jsonify({'error': 'No file'}), 400
 
-    # f.filename can be None; pass string to pathlib.Path
-    safe_name = pathlib.Path(f.filename or '').name
+    safe_name = pathlib.Path(f.filename).name
     dest = UPLOAD_DIR / safe_name
     f.save(str(dest))
 
     return jsonify({'filename': safe_name, 'path': str(dest)})
 
+
 # =============================================================================
-# Route: POST /api/chat (non-streaming version)
+# Route — POST /api/chat   (non-streaming version)
 # Body: { "token": "...", "message": "...", "attachment_path": null }
 # =============================================================================
 
@@ -611,7 +609,7 @@ def api_chat():
             conv = [{'role': 'system', 'content': sys_prompt}] + history
             conv.append({'role': 'user', 'content': full_input})
             from ollama_config import get_cpol_ollama_params
-            params = get_cpol_ollama_params(preferred_model=ollama_model or '')
+            params = get_cpol_ollama_params(preferred_model=ollama_model)
             resp = ollama.chat(model=params['model'], messages=conv,
                                options=params['options'],
                                think=enable_thinking if enable_thinking is not None
@@ -637,8 +635,9 @@ def api_chat():
         'kb': kb,
     })
 
+
 # =============================================================================
-# Route: GET /api/history?token=...&n=30
+# Route — GET /api/history?token=...&n=30
 # =============================================================================
 
 @app.route('/api/history')
@@ -651,8 +650,9 @@ def api_history():
     entries = _load_history(n)
     return jsonify({'entries': entries})
 
+
 # =============================================================================
-# Route: GET /api/status?token=...
+# Route — GET /api/status?token=...
 # =============================================================================
 
 @app.route('/api/status')
@@ -668,8 +668,9 @@ def api_status():
         'thinking': sess.get('enable_thinking'),
     })
 
+
 # =============================================================================
-# Route: POST /api/mcp
+# Route — POST /api/mcp
 # Lets the UI (and Andrew via tool tags) call MCP tools directly.
 # Body: { "token": "...", "tool": "read_file", "args": { "path": "C:/CAIOS/readme.txt" } }
 # =============================================================================
@@ -692,7 +693,7 @@ def api_mcp():
         # Return server status if no tool specified
         return jsonify({'status': mcp_status()})
 
-    # KB cleanup commands; routed here so system can call them via tool tags
+    # KB cleanup commands — routed here so Andrew can call them via tool tags
     if tool == 'kb_sweep':
         try:
             import kb_cleanup
@@ -746,6 +747,7 @@ def api_mcp():
     })
 
     return jsonify(result)
+
 
 # =============================================================================
 # Entry point

@@ -1,27 +1,26 @@
-#V08132026
+#V06262026
 # =============================================================================
-# CAIOS PROJECT ANDREW: MCP JSON-RPC client for CAIOS
+# caios_mcp_client.py — MCP JSON-RPC client for CAIOS
+#
 # Talks to two MCP servers that should be running alongside caios_bridge.py:
 #
-#   Server A: @modelcontextprotocol/server-filesystem (Node.js, stdio→HTTP)
+#   Server A — @modelcontextprotocol/server-filesystem (Node.js, stdio→HTTP)
 #     Start: npx @modelcontextprotocol/server-filesystem C:\CAIOS
 #     Default port: 3000  (or whatever you set with --port)
 #     Used for: read_file, list_directory, search_files on C:\CAIOS
 #
-#   Server B: windows-mcp (Python, SSE transport)
+#   Server B — windows-mcp (Python, SSE transport)
 #     Start: uvx windows-mcp serve --transport sse --host localhost --port 8000
 #     Used for: PowerShell, Screenshot, Click, Snapshot, Scrape, etc.
 #
 # MCP protocol used here:
 #   - JSON-RPC 2.0 over HTTP POST to /mcp  (filesystem server)
 #   - JSON-RPC 2.0 over HTTP POST to /messages (windows-mcp SSE)
-# Both return application/json for tool calls.
+#   Both return application/json for tool calls.
 #
 # Usage inside caios_bridge.py:
 #   from caios_mcp_client import MCPClient, mcp_tool
 #   result = mcp_tool('read_file', {'path': 'C:/CAIOS/orchestrator.py'})
-#
-# Copyright (c) 2025 Jonathan Schack. License: GPL-3.0 -See LICENSE for details- Contact: X @el_xaber or cai-os.com
 # =============================================================================
 
 import json
@@ -31,7 +30,7 @@ import urllib.error
 from typing import Any, Dict, Optional, List
 
 # =============================================================================
-# Configuration; change ports here if you started the servers differently
+# Configuration — change ports here if you started the servers differently
 # =============================================================================
 
 FS_MCP_URL   = 'http://localhost:3000'   # @modelcontextprotocol/server-filesystem
@@ -68,6 +67,7 @@ WIN_TOOLS = {
     'clipboard',
     'process',
 }
+
 
 # =============================================================================
 # Low-level JSON-RPC caller
@@ -192,8 +192,8 @@ class MCPClient:
                 self._win_available = False
         return self._win_available
 
-    def status(self) -> Dict[str, Any]:
-        """Return availability of both servers and their URLs."""
+    def status(self) -> Dict[str, bool]:
+        """Return availability of both servers."""
         return {
             'filesystem_server': self.fs_available(),
             'windows_mcp': self.win_available(),
@@ -248,7 +248,7 @@ class MCPClient:
         )
         return _parse_mcp_result(rpc_result)
 
-    # Convenience wrappers for common filesystem operations
+    # ── Convenience wrappers for common filesystem operations ──
 
     def read_file(self, path: str) -> Dict:
         """Read a file from the filesystem MCP server."""
@@ -266,7 +266,7 @@ class MCPClient:
         """Write content to a file via the filesystem MCP server."""
         return self.call('write_file', {'path': path, 'content': content})
 
-    # Convenience wrappers for windows-mcp
+    # ── Convenience wrappers for windows-mcp ──
 
     def powershell(self, command: str) -> Dict:
         """Run a PowerShell command via windows-mcp."""
@@ -279,6 +279,7 @@ class MCPClient:
     def scrape(self, url: str) -> Dict:
         """Scrape a URL via windows-mcp's Scrape tool."""
         return self.call('scrape', {'url': url})
+
 
 # =============================================================================
 # Helpers
@@ -322,6 +323,7 @@ def _parse_mcp_result(rpc_result: Dict) -> Dict:
     is_error = result.get('isError', False)
     return {'ok': not is_error, 'content': content, 'raw': rpc_result}
 
+
 # =============================================================================
 # Module-level singleton + convenience function for caios_bridge.py
 # =============================================================================
@@ -346,12 +348,13 @@ def mcp_tool(tool_name: str, arguments: Dict[str, Any]) -> Dict[str, Any]:
     return get_client().call(tool_name, arguments)
 
 
-def mcp_status() -> Dict[str, Any]:
+def mcp_status() -> Dict[str, bool]:
     """Quick status check for the /api/boot endpoint."""
     return get_client().status()
 
+
 # =============================================================================
-# CLI test; python caios_mcp_client.py
+# CLI test — python caios_mcp_client.py
 # =============================================================================
 
 if __name__ == '__main__':

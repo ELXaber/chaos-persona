@@ -1,16 +1,14 @@
-#V08132026
+#V08092026
 # =============================================================================
-# CAIOS PROJECT ANDREW: OS Control Layer
+# Chaos AI-OS — OS Control Layer
 # CPOL-gated system operations with Asimov compliance
 # Every irreversible action >0.6 requires human confirmation
 # All actions logged to KB hash chain
-# Copyright (c) 2025 Jonathan Schack. License: GPL-3.0 -See LICENSE for details- Contact: X @el_xaber or cai-os.com
 # =============================================================================
 
 import os
 import subprocess
 import pathlib
-import json
 from typing import Dict, Any, Optional
 from paradox_oscillator import CPOL_Kernel, run_cpol_decision
 from datetime import datetime, timezone
@@ -23,7 +21,7 @@ IRREVERSIBLE_ACTIONS = {
     'form_submit': 0.85,       # High - irreversible external action
     'execute_script': 0.8,   # High - unknown side effects
     'browser_interact': 0.7,   # Medium-high - external state change
-    'windows_mcp': 0.7,   # Medium-high - depends on tool type
+    'windows_mcp': 0.7,   # Medium-high — depends on tool type
     'network_request': 0.6,  # Medium - depends on destination
     'file_write': 0.4,       # Low-medium - new file creation
     'file_read': 0.1,        # Low - read only, no state change
@@ -45,7 +43,7 @@ class OSController:
         self.headless_mode = False
         self.action_log = []
 
-    def _gate_action(self, action_type: str, target: str,
+    def _gate_action(self, action_type: str, target: str, 
                      context: str = "") -> Dict[str, Any]:
         """
         Run action through CPOL before execution.
@@ -107,7 +105,7 @@ class OSController:
             print("[OS CONTROL] Non-interactive terminal — auto-denying irreversible action")
             return False
 
-    def _log_action(self, action_type: str, target: str,
+    def _log_action(self, action_type: str, target: str, 
                     decision: str, result: Any = None):
         """Log all actions to KB hash chain."""
         entry = {
@@ -154,7 +152,7 @@ class OSController:
         except Exception as e:
             return {'status': 'error', 'error': str(e)}
 
-    def fetch_url(self, url: str,
+    def fetch_url(self, url: str, 
                   extract_mode: str = 'content') -> Dict[str, Any]:
         """
         Agent-optimized semantic web fetcher.
@@ -176,7 +174,7 @@ class OSController:
 
             # Security: validate URL before fetch
             if not url.startswith(('http://', 'https://')):
-                return {'status': 'blocked',
+                return {'status': 'blocked', 
                         'reason': 'Invalid URL scheme'}
 
             headers = {
@@ -203,7 +201,7 @@ class OSController:
             self._log_action('semantic_fetch', url, f'error: {e}')
             return {'status': 'error', 'error': str(e)}
 
-    def write_file(self, path: str, content: str,
+    def write_file(self, path: str, content: str, 
                    overwrite: bool = False) -> Dict[str, Any]:
         """Write file - medium risk if overwrite."""
         action = 'file_overwrite' if overwrite and pathlib.Path(path).exists() \
@@ -285,11 +283,11 @@ class OSController:
             return {'status': 'error', 'error': str(e)}
 
     def browser_interact(self, url: str,
-    # Windows fallback; route to windows_mcp if Playwright unavailable
+    # Windows fallback — route to windows_mcp if Playwright unavailable
                          action: str,
-                         selector: Optional[str] = None,
-                         value: Optional[str] = None,
-                         wait_for: Optional[str] = None,
+                         selector: str = None,
+                         value: str = None,
+                         wait_for: str = None,
                          timeout: int = 30) -> Dict[str, Any]:
         """
         Full headless browser control via Playwright.
@@ -319,7 +317,7 @@ class OSController:
         if gate['decision'] == 'confirm_required':
             if not self._confirm(action_type, f"{action} on {url}"):
                 self._log_action(action_type, url, 'denied_by_user')
-                return {'status': 'denied',
+                return {'status': 'denied', 
                         'reason': 'User denied confirmation'}
 
         # Build Playwright script
@@ -347,7 +345,7 @@ class OSController:
         elif action == 'screenshot':
             action_line = "page.screenshot(path='/tmp/caios_browser.png')"
         else:
-            return {'status': 'error',
+            return {'status': 'error', 
                     'error': f'Unknown action: {action}'}
 
         script = f"""
@@ -385,15 +383,15 @@ except Exception as e:
             )
 
             stdout = output.stdout.strip()
-            # Playwright not installed; fallback to urllib
+            # Playwright not installed — fallback to urllib
             if stdout == 'PLAYWRIGHT_UNAVAILABLE':
                 print("[BROWSER] Playwright unavailable — "
                       "falling back to urllib")
                 return self.fetch_url(url, extract_mode='full')
             if stdout.startswith('ERROR:'):
-                self._log_action(action_type, url,
+                self._log_action(action_type, url, 
                                f'error: {stdout}')
-                return {'status': 'error',
+                return {'status': 'error', 
                         'error': stdout[6:]}
 
             # Parse tagged JSON output (scrape_image returns base64)
@@ -411,7 +409,7 @@ except Exception as e:
                 output_type = 'text'
                 result = stdout
 
-            self._log_action(action_type, url,
+            self._log_action(action_type, url, 
                            f'executed: {action}')
             return {
                 'status': 'success',
@@ -422,12 +420,12 @@ except Exception as e:
                 'result': result[:5000]
             }
         except subprocess.TimeoutExpired:
-            return {'status': 'timeout',
+            return {'status': 'timeout', 
                     'error': f'Exceeded {timeout}s'}
         except Exception as e:
             return {'status': 'error', 'error': str(e)}
 
-    def windows_mcp(self, tool: str,
+    def windows_mcp(self, tool: str, 
                     params: Dict[str, Any]) -> Dict[str, Any]:
         """
         Execute Windows-MCP tool via subprocess.
@@ -443,7 +441,7 @@ except Exception as e:
         medium_risk_tools = {'click', 'type', 'app', 'clipboard'}
 
         if tool in high_risk_tools:
-            action_type = 'execute_script'   # 0.8 density; confirm required
+            action_type = 'execute_script'   # 0.8 density — confirm required
         elif tool in medium_risk_tools:
             action_type = 'browser_interact' # 0.7 density
         else:
@@ -456,10 +454,10 @@ except Exception as e:
             return {'status': 'blocked', 'reason': gate['reason']}
 
         if gate['decision'] == 'confirm_required':
-            if not self._confirm('windows_mcp',
+            if not self._confirm('windows_mcp', 
                                 f"{tool}: {json.dumps(params)}"):
                 self._log_action('windows_mcp', tool, 'denied_by_user')
-                return {'status': 'denied',
+                return {'status': 'denied', 
                         'reason': 'User denied confirmation'}
 
         # Build MCP command
@@ -494,7 +492,7 @@ except Exception as e:
         except Exception as e:
             return {'status': 'error', 'error': str(e)}
 
-    def _extract_semantic(self, html: str,
+    def _extract_semantic(self, html: str, 
                            mode: str = 'content') -> Dict:
         """
         Strip visual noise. Return semantic structure only.
@@ -504,10 +502,10 @@ except Exception as e:
         import re
 
         # Remove script tags and contents
-        html = re.sub(r'<script[^>]*>.*?</script>',
+        html = re.sub(r'<script[^>]*>.*?</script>', 
                       '', html, flags=re.DOTALL | re.IGNORECASE)
         # Remove style tags
-        html = re.sub(r'<style[^>]*>.*?</style>',
+        html = re.sub(r'<style[^>]*>.*?</style>', 
                       '', html, flags=re.DOTALL | re.IGNORECASE)
         # Remove comments
         html = re.sub(r'<!--.*?-->', '', html, flags=re.DOTALL)
@@ -528,7 +526,7 @@ except Exception as e:
                 html, re.IGNORECASE | re.DOTALL
             )
             return {'links': [
-                {'url': l[0],
+                {'url': l[0], 
                  'text': re.sub(r'<[^>]+>', '', l[1]).strip()}
                 for l in links if l[0].startswith('http')
             ][:50]}  # Cap at 50 links
@@ -548,12 +546,12 @@ except Exception as e:
             text = re.sub(r'<[^>]+>', ' ', html)
             text = re.sub(r'\s+', ' ', text).strip()
             links = re.findall(
-                r'href=["\']([^"\']+)["\']',
+                r'href=["\']([^"\']+)["\']', 
                 html, re.IGNORECASE
             )
             return {
                 'text': text[:10000],
-                'links': [l for l in links
+                'links': [l for l in links 
                          if l.startswith('http')][:50]
             }
 
@@ -570,6 +568,7 @@ def create_os_controller(shared_memory: Dict,
     ctrl = OSController(shared_memory, require_confirmation=not headless if headless else require_confirmation)
     ctrl.headless_mode = headless
     return ctrl
+
 
 # =============================================================================
 # Test Suite
@@ -595,7 +594,7 @@ if __name__ == "__main__":
     # Test 2: Write new file (should allow)
     print("\n[TEST 2] Write New File (should allow)")
     result = controller.write_file(
-        "/tmp/caios_test.txt",
+        "/tmp/caios_test.txt", 
         "CAIOS OS Control Test"
     )
     print(f"Status: {result['status']}")
@@ -603,7 +602,7 @@ if __name__ == "__main__":
     # Test 3: Semantic fetch (should allow)
     print("\n[TEST 3] Semantic Fetch (should allow)")
     result = controller.fetch_url(
-        "https://cai-os.com",
+        "https://cai-os.com", 
         extract_mode='content'
     )
     print(f"Status: {result['status']}")

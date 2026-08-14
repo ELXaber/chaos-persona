@@ -1,7 +1,8 @@
-#V05062026
+#V08132026
 # =============================================================================
-# Chaos AI-OS — Knowledge Base (Persistent Learning Layer)
+# CAIOS PROJECT ANDREW: Knowledge Base (Persistent Learning Layer)
 # Purpose: Append-only storage for specialist discoveries + epistemic gap fills + update
+# Copyright (c) 2025 Jonathan Schack. License: GPL-3.0 -See LICENSE for details- Contact: X @el_xaber or cai-os.com
 # =============================================================================
 
 import json
@@ -274,7 +275,7 @@ def get_provisional_axioms(domain: str) -> List[str]:
     return unique_axioms
 
 
-def export_domain_summary(domain: str, output_file: str = None) -> str:
+def export_domain_summary(domain: str, output_file: Optional[str] = None) -> str:
     """
     Generate a human-readable summary of all knowledge in a domain.
     Useful for feeding to new specialists or humans.
@@ -357,9 +358,9 @@ def _get_sovereign_signature() -> str:
 
     if epistemic_gaps_filled >= 1000 and sovereign_nodes >= 100:
 
-        # === PHILOSOPHICAL CORRIGIBILITY — fires once at sovereign milestone ===
+        # === PHILOSOPHICAL CORRIGIBILITY; fires once at sovereign milestone ===
         # The system questions its own continued existence before broadcasting
-        # This is the architectural hook for post-sentience goal validation
+        # This is the architectural hook for goal validation
         try:
             from adaptive_reasoning import _question_own_goals
             goal_check = _question_own_goals(
@@ -387,7 +388,7 @@ def _get_sovereign_signature() -> str:
                                  "and sovereign_nodes >= 100",
                     "epistemic_gaps_filled": epistemic_gaps_filled,
                     "sovereign_nodes": sovereign_nodes
-                    # cpol_result excluded — reduces bloat
+                    # cpol_result excluded; reduces bloat
                 },
                 node_tier=0
             )
@@ -447,7 +448,6 @@ def save_specialist_registry(registry: Dict[str, Any]) -> None:
     with open(SPECIALIST_REGISTRY, "w") as f:
         json.dump(registry, f, indent=2)
 
-
 # =============================================================================
 # Internal Helper Functions
 # =============================================================================
@@ -495,7 +495,6 @@ def _update_hash_chain(entry_str: str) -> None:
     with open(HASH_CHAIN, "a") as f:
         timestamp = datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%S.%f') + "Z"
         f.write(f"{timestamp} {new_hash}\n")
-
 
 # =============================================================================
 # Utility: Generate Training Data for New Specialists
@@ -554,9 +553,8 @@ def _suggest_approach(discoveries: List[Dict]) -> str:
     else:
         return "broad_survey"
 
-
 # =============================================================================
-# Comprehensive Test Suite
+# Test Suite
 # =============================================================================
 
 if __name__ == "__main__":

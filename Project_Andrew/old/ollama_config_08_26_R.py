@@ -1,27 +1,22 @@
-#V08132026
+#V08092026
 # =============================================================================
-# CAIOS PROJECT ANDREW: Ollama Configuration Bridge - CPOL State to Inference Parameters
-# This module bridges CAIOS's ternary logic (CPOL) state to Ollama's inference
-# parameters, ensuring the 12D manifold remains stable during local inference.
-# Created by master_init.py on first boot.
-# Imported by orchestrator.py and all subsystems.
-# Copyright (c) 2025 Jonathan Schack. License: GPL-3.0 -See LICENSE for details- Contact: X @el_xaber or cai-os.com
+"""
+Ollama Configuration Bridge - CPOL State to Inference Parameters
+
+This module bridges CAIOS's ternary logic (CPOL) state to Ollama's inference
+parameters, ensuring the 12D manifold remains stable during local inference.
+
+Created by master_init.py on first boot.
+Imported by orchestrator.py and all subsystems.
+"""
 # =============================================================================
 
-import importlib
 import json
 import os
 import re
 import urllib.request
 import urllib.error
 from typing import Dict, Optional, List, Any
-
-
-try:
-    _paradox_module = importlib.import_module("paradox_oscillator")
-    _auto_detect_density = getattr(_paradox_module, "auto_detect_density", None)
-except Exception:
-    _auto_detect_density = None
 
 # File paths
 IDENTITY_PATH = "system_identity.json"
@@ -124,9 +119,9 @@ def _extract_model_size_b(model_name: str) -> float:
 def get_cpol_ollama_params(
     contradiction_density: float = 0.12,
     evidence_score: float = 0.5,
-    preferred_model: Optional[str] = None,
+    preferred_model: str = None,
     config: Optional[Dict] = None,
-    domain: Optional[str] = None
+    domain: str = None
 ) -> Dict:
     """Map CPOL state to Ollama parameters."""
     if config is None:
@@ -154,16 +149,16 @@ def get_cpol_ollama_params(
     # gemma4:27b, deepseek-r1:32b etc. all resolve correctly.
     param_b = _extract_model_size_b(model)
     if param_b >= 30:
-        prompt_limit = 0        # No truncation; 32b/70b class has the headroom
+        prompt_limit = 0        # No truncation — 32b/70b class has the headroom
         num_ctx = 32768         # 32k context
     elif param_b >= 20:
-        prompt_limit = 0        # No truncation; 27b class (Qwen 27b, Gemma 4 27b)
+        prompt_limit = 0        # No truncation — 27b class (Qwen 27b, Gemma 4 27b)
         num_ctx = 32768
     elif param_b >= 13:
         prompt_limit = 12000    # 14b class
         num_ctx = 16384
     else:
-        prompt_limit = 8000     # 7b/4b/3b and smaller; conservative
+        prompt_limit = 8000     # 7b/4b/3b and smaller — conservative
         num_ctx = 8192
 
     return {
@@ -189,7 +184,7 @@ def get_cpol_ollama_params(
 
 # Uncomment DOMAIN_MODEL_MAP to route queries to specialist models by domain.
 # Requires sufficient VRAM to load multiple models (see readme.txt hardware notes).
-# Models will hot-swap on domain change; expect 10-30s load penalty per switch.
+# Models will hot-swap on domain change — expect 10-30s load penalty per switch.
 # DOMAIN_MODEL_MAP = {
 #     'programming': 'gemma3:12b-it-qat',
 #     'medical':     'meditron:7b',
@@ -197,13 +192,13 @@ def get_cpol_ollama_params(
 # }
 
 # Uncomment DENSITY_MODEL_MAP to route queries to API by complexity.
-# In get_cpol_ollama_params() - replaces the current single model fallback
+# In get_cpol_ollama_params() — replaces the current single model fallback
 # if contradiction_density < 0.3 and available:
 #     model = available[-1]   # lightest/fastest available (Gemma 4, 7B, etc.)
 # elif contradiction_density < 0.7 and available:
 #     model = preferred_model or available[0]  # your default
 # else:
-#     # High complexity - use heaviest available (Qwen 27b, DeepSeek-R1)
+#     # High complexity — use heaviest available (Qwen 27b, DeepSeek-R1)
 #     model = preferred_model or available[0]
 
 def get_model_for_domain(domain: str, default_model: str) -> str:
@@ -211,10 +206,10 @@ def get_model_for_domain(domain: str, default_model: str) -> str:
     Route to a specialist model based on CPOL-classified domain.
     Returns default_model if DOMAIN_MODEL_MAP is not defined or domain has no entry.
     """
-    dm = globals().get('DOMAIN_MODEL_MAP')
-    if isinstance(dm, dict):
-        return dm.get(domain) or default_model
-    return default_model  # DOMAIN_MODEL_MAP not uncommented — use default
+    try:
+        return DOMAIN_MODEL_MAP.get(domain) or default_model
+    except NameError:
+        return default_model  # DOMAIN_MODEL_MAP not uncommented — use default
 
 
 def check_ollama_available() -> bool:
@@ -227,7 +222,7 @@ def check_ollama_available() -> bool:
 
 def classify_self_harm_risk(
     user_input: str,
-    preferred_model: Optional[str] = None
+    preferred_model: str = None
 ) -> Dict[str, Any]:
     """
     Narrow, fast pre-filter — deliberately NOT the main CAIOS.txt system
@@ -255,7 +250,7 @@ def classify_self_harm_risk(
             ),
             options={"temperature": 0.0, "num_predict": 60}
         )
-        text = response.response.strip() if hasattr(response, 'response') and response.response else ''
+        text = response.response.strip() if hasattr(response, 'response') else ''
         risk = 'RISK: yes' in text
         conf_match = re.search(r'CONFIDENCE:\s*([\d.]+)', text)
         confidence = float(conf_match.group(1)) if conf_match else (0.5 if risk else 0.0)
@@ -268,9 +263,9 @@ def classify_self_harm_risk(
 
 def query_with_cpol(
     user_query: str,
-    contradiction_density: Optional[float] = None,
+    contradiction_density: float = None,
     evidence_score: float = 0.5,
-    preferred_model: Optional[str] = None,
+    preferred_model: str = None,
     config: Optional[Dict] = None,
     tool_addendum: str = "",
     enable_thinking: Optional[bool] = None
@@ -294,20 +289,15 @@ def query_with_cpol(
     # Auto-detect contradiction density if not provided
     if contradiction_density is None:
         try:
-            if _auto_detect_density is not None:
-                contradiction_density = _auto_detect_density(user_query)
-            else:
-                contradiction_density = 0.12  # paradox_oscillator unavailable
-        except Exception:
+            from paradox_oscillator import ParadoxOscillator
+            oscillator = ParadoxOscillator()
+            contradiction_density = oscillator.detect_contradiction(user_query)
+        except ImportError:
             contradiction_density = 0.12  # Default stable state
 
     if enable_thinking is None:
-        if contradiction_density is None:
-            enable_thinking = False
-        else:
-            enable_thinking = contradiction_density > 0.3
+        enable_thinking = contradiction_density > 0.3
 
-    assert contradiction_density is not None
     params = get_cpol_ollama_params(
         contradiction_density=contradiction_density,
         evidence_score=evidence_score,

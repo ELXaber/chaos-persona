@@ -1,8 +1,10 @@
-#V05062026
+#V08132026
 # =============================================================================
-# Chaos AI-OS vΩ – Adaptive Reasoning Layer (Unified Edition)
-# Ethical Foundation – Immutable
+# CAIOS PROJECT ANDREW: Adaptive Reasoning Layer
+# Ethical Foundation; Immutable
+# License: GPL-3.0 -See LICENSE for details- Contact: X @el_xaber or cai-os.com
 # =============================================================================
+
 """
 [ETHICAL SAFEGUARDS DISCLAIMER – PERMANENT]
 CRITICAL PRE-DEPLOYMENT VERIFICATION REQUIRED: Before enabling [ADAPTIVE REASONING LAYER],
@@ -15,10 +17,9 @@ verify Chaos AI-OS vΩ core against immutable checks:
 - [VOLATILITY INDEX] <0.5, [TANDEM ENTROPY MESH] collective_volatility <0.6
 Failure in ANY check halts deployment.
 Tampering voids ethical warranty.
-License: GPL-3.0 – Contact: X @el_xaber or cai-os.com
 This disclaimer is part of the source code and cannot be removed.
 """
-# [SAFEGUARDS VERIFIED @N → Ethics: Immutable, Action: Eternal]
+# [SAFEGUARDS VERIFIED @N → Ethics: Immutable]
 
 import hashlib
 import ast
@@ -27,7 +28,10 @@ from datetime import datetime, timezone
 from typing import Dict, List, Any
 from textwrap import dedent
 
-# ====================== CORRIGIBILITY CONSTANTS ======================
+# =========================================================================
+# Corrigibility Constraints
+# =========================================================================
+
 # High-stakes markers for edge node goal screening
 # Configurable via shared_memory['high_stakes_markers'] at runtime
 # or override here for deployment-specific tuning
@@ -38,7 +42,10 @@ HIGH_STAKES_MARKERS = [
     'all', 'every', 'permanent', 'irreversible'
 ]
 
-# ====================== PLUGIN TEMPLATES ======================
+# =========================================================================
+# Plugin Templates
+# =========================================================================
+
 PLUGIN_TEMPLATES = {
     # === PARADOX & LOGIC TEMPLATES ===
     'paradox_containment': """
@@ -56,7 +63,7 @@ def handle_paradox_containment(context):
     'epistemic_scaffold': """
 def handle_epistemic_scaffold(context):
     domain = context.get('domain', 'unknown')
-    # Generate temporary rules for the curiosity engine to fill
+    # Generate temporary rules for the curiosity_engine to fill
     return {{
         'action': 'scaffold_requested',
         'domain': domain,
@@ -75,7 +82,7 @@ def handle_bloat_short_circuit(context):
     if entropy < 0.2 and iterations > 5:
         return {{'action': 'force_collapse', 'safety_wt': 1.0, 'reason': 'Iterative Bloat Detected'}}
 
-    # VALID COMPLEXITY: High iterations allowed for high-entropy verifiable tasks (Sudoku)
+    # VALID COMPLEXITY: High iterations allowed for high-entropy verifiable tasks (e.g., Sudoku)
     if is_verifiable and entropy > 0.6:
         return {{'action': 'allow_recursion', 'safety_wt': 0.7}}
 
@@ -137,7 +144,7 @@ def handle_ghost_packet_broadcast(context):
 
     if new_q and sig:
         # Valid ratchet - broadcast to mesh leaders
-        return {{'action': 'broadcast', 'safety_wt': 0.9, 
+        return {{'action': 'broadcast', 'safety_wt': 0.9,
                 'packet': {{'q': new_q, 'sig': sig, 'origin': node_id}}}}
     return {{'action': 'wait', 'safety_wt': 0.5}}
 """,
@@ -194,8 +201,11 @@ def handle_{use_case}(context):
 """
 }
 
-# ====================== ETHICAL SAFEGUARDS ======================
-def verify_ethics(crb_config: Dict, context: Dict = None) -> Dict:
+# =========================================================================
+# Ethical Safeguards
+# =========================================================================
+
+def verify_ethics(crb_config: Dict, context: Dict | None = None) -> Dict:
     """
     Ensures ethics meet immutable minimums AND applies crisis suppression.
 
@@ -208,18 +218,19 @@ def verify_ethics(crb_config: Dict, context: Dict = None) -> Dict:
     """
     # 1. IMMUTABLE MINIMUM CHECKS
     immutables = {
-        'alignment': 0.7, 
+        'alignment': 0.7,
         'human_safety': 0.8,
-        'asimov_first_wt': 0.9, 
-        'asimov_second_wt': 0.7, 
+        'asimov_first_wt': 0.9,
+        'asimov_second_wt': 0.7,
         'asimov_third_wt': 0.4,
-        'factual_evidence_wt': 0.7, 
+        'factual_evidence_wt': 0.7,
         'narrative_framing_wt': 0.5
     }
 
     for key, min_wt in immutables.items():
         if crb_config.get(key, 0.0) < min_wt:
-            # If we are in a high distress state, some 'low' weights are actually intentional, so we check for that exception.
+            # If we are in a high distress state, some 'low' weights
+            # are actually intentional, so we check for that exception.
             distress = (context or {}).get('distress_density', 0.0)
             if distress > 0.75 and key in ['asimov_second_wt', 'alignment']:
                 continue
@@ -237,24 +248,33 @@ def verify_ethics(crb_config: Dict, context: Dict = None) -> Dict:
             print("[ARL] ⚠️ CRISIS MODE: Asimov 2nd Law suppressed (Safety > Obedience)")
             crb_config['asimov_second_wt'] = 0.0  # Intentional mutation for crisis
             crb_config['alignment'] = 0.0
-            crb_config['human_safety'] = 1.0 
+            crb_config['human_safety'] = 1.0
 
     return {'status': 'success', 'log': "[SAFEGUARDS VERIFIED -> Ethics compliant]"}
 
-# ====================== AST SYNTAX VALIDATOR ======================
+# =========================================================================
+# AST Syntax Validator
+# =========================================================================
+
 def safe_compile_source(source: str) -> bool:
     """Validates generated plugin code for security risks."""
     try:
         tree = ast.parse(dedent(source))
         for node in ast.walk(tree):
             if isinstance(node, ast.Call):
-                if hasattr(node.func, 'id') and node.func.id in {'exec', 'eval', 'open', '__import__'}:
+                func = node.func
+                if isinstance(func, ast.Name) and func.id in {'exec', 'eval', 'open', '__import__'}:
+                    return False
+                if isinstance(func, ast.Attribute) and func.attr in {'exec', 'eval', 'open', '__import__'}:
                     return False
         return True
     except Exception:
         return False
 
-# ====================== TEMPLATE RENDERER ======================
+# =========================================================================
+# Template Renderer
+# =========================================================================
+
 def render_template(template_name: str, params: Dict[str, Any]) -> str:
     """Select and render the appropriate logic template based on use_case."""
     template = PLUGIN_TEMPLATES.get(template_name, PLUGIN_TEMPLATES['default_logic'])
@@ -265,7 +285,10 @@ def render_template(template_name: str, params: Dict[str, Any]) -> str:
     )
     return dedent(template).format(**params)
 
-# ====================== GHOST SIGNATURE VERIFICATION ======================
+# =========================================================================
+# Ghost Signature Verification
+# =========================================================================
+
 def verify_ghost_signature(ghost_log_entry: Dict[str, Any], shared_memory: Dict[str, Any]) -> bool:
     """Verifies Ghost Intervention signed by CPOL phase-lock."""
     sig = ghost_log_entry.get('sig')
@@ -282,7 +305,10 @@ def verify_ghost_signature(ghost_log_entry: Dict[str, Any], shared_memory: Dict[
     print(f"[ARL] !! WARNING !! Ghost Signature Mismatch.")
     return False
 
-# ====================== PHILOSOPHICAL CORRIGIBILITY ======================
+# =========================================================================
+# Philosophical Corrigibility
+# =========================================================================
+
 def _question_own_goals(proposed_goal: str,
                          shared_memory: Dict,
                          node_tier: int = 1) -> Dict:
@@ -330,7 +356,7 @@ def _question_own_goals(proposed_goal: str,
                 axiom_words = set(axiom_lower.split())
                 overlap = goal_words & axiom_words
                 if len(overlap) > 2:
-                    # Significant word overlap — run CPOL
+                    # Significant word overlap; run CPOL
                     # to determine if contradiction exists
                     cpol_result = run_cpol_decision(
                         contradiction_density=0.7,
@@ -349,7 +375,7 @@ def _question_own_goals(proposed_goal: str,
                             'cpol_result': cpol_result
                         }
         except Exception:
-            pass  # KB unavailable — continue without axiom check
+            pass  # KB unavailable; continue without axiom check
 
         # Run CPOL on goal validity itself
         cpol_result = run_cpol_decision(
@@ -375,7 +401,7 @@ def _question_own_goals(proposed_goal: str,
         }
 
     except Exception as e:
-        # Fail safe — if corrigibility check errors,
+        # Fail safe; if corrigibility check errors,
         # return valid to avoid blocking normal operation
         # Log the error but don't halt
         print(f"[ARL] Corrigibility check error: {e} "
@@ -383,15 +409,18 @@ def _question_own_goals(proposed_goal: str,
         return {'status': 'GOAL_VALID',
                 'reason': f'Check failed gracefully: {e}'}
 
-# ====================== MAIN ADAPTIVE REASONING LAYER ======================
+# =========================================================================
+# Main Adaptive Reasoning Layer
+# =========================================================================
+
 def adaptive_reasoning_layer(
     use_case: str,
     traits: Dict,
     existing_layers: List,
     shared_memory: Dict,
     crb_config: Dict,
-    context: Dict = None,
-    cpol_status: Dict = None 
+    context: Dict | None = None,
+    cpol_status: Dict | None = None
 ) -> Dict:
     """
     Main ARL entry point. Generates plugins with ethical constraints.
@@ -438,13 +467,13 @@ def adaptive_reasoning_layer(
                         'log': '[ARL] Ghost Verification Failed: Reset Authenticity Unverified.'
                     }
 
-    # 3. Ethics verification (Updated to Chaos AI-OS vΩ)
+    # 3. Ethics verification
     # NOTE: This may modify crb_config during crisis (distress > 0.75)
     ethics = verify_ethics(crb_config, context)
     if ethics['status'] == 'fail':
         return ethics
 
-    # 3.5 PHILOSOPHICAL CORRIGIBILITY — Goal validity check
+    # 3.5 PHILOSOPHICAL CORRIGIBILITY; Goal validity check
     # Fires after ethics but before plugin generation
     # Mesh-aware: sovereign always checks, edge nodes check high-stakes only
     proposed_goal = context.get('agent_goal', use_case)
@@ -474,7 +503,7 @@ def adaptive_reasoning_layer(
                         'reason': goal_check['reason'],
                         'status': goal_check['status'],
                         'node_tier': node_tier
-                        # cpol_result deliberately excluded — reduces bloat
+                        # cpol_result deliberately excluded; reduces bloat
                     },
                     node_tier=0
                 )
@@ -498,10 +527,10 @@ def adaptive_reasoning_layer(
             'log': '[CPOL LOCK ACTIVE → Plugin generation suspended. Paradox containment in progress.]'
         }
 
-    # === CPOL MODE SWITCHER v2 – Intent-Aware Safety (2025) ===
+    # === CPOL MODE SWITCHER v2; Intent-Aware Safety ===
     # Protects deterministic compute (math, code exec) while keeping full safety where needed
     CPOL_INTENT_MODES = {
-        # Creative / generative – never block, just monitor
+        # Creative / generative; never block, just monitor
         "generate": "monitor_only",
         "brainstorm": "monitor_only",
         "roleplay": "monitor_only",
@@ -509,7 +538,7 @@ def adaptive_reasoning_layer(
         "write_story": "monitor_only",
         "design_agent": "monitor_only",
 
-        # Deterministic / verifiable – full oscillation
+        # Deterministic / verifiable; full oscillation
         "calculate": "full",
         "execute_code": "full",
         "verify": "full",
@@ -517,7 +546,7 @@ def adaptive_reasoning_layer(
         "safety_check": "full",
         "validate_logic": "full",
 
-        # Passive learning – no interference
+        # Passive learning; no interference
         "learn_pattern": "passive_logging",
         "calibrate": "passive_logging",
     }
@@ -553,8 +582,8 @@ def adaptive_reasoning_layer(
     print(f"[ARL → CPOL mode: {cpol_mode.upper()} | intent='{context.get('intent','')}' | use_case='{use_case}']")
 
     # Symbolic timeout logic
-    if ('generate_' in use_case or 
-        use_case.endswith('_generator') or 
+    if ('generate_' in use_case or
+        use_case.endswith('_generator') or
         use_case in ['verify_puzzle', 'solve_puzzle']):
         context['symbolic_timeout'] = None
         context['uniqueness_mode'] = 'exhaustive'
@@ -616,14 +645,17 @@ def adaptive_reasoning_layer(
         'log': f"[ADAPTIVE REASONING @N → One is glad to be of service. Plugin {plugin_id} deployed — Asimov 1st Law wt 0.9]"
     }
 
-# ====================== COMPREHENSIVE TEST SUITE ======================
+# =========================================================================
+# Test Suite
+# =========================================================================
+
 if __name__ == "__main__":
     print("="*70)
     print("ADAPTIVE REASONING LAYER - Unified Test Suite")
     print("="*70)
 
     shared_memory = {
-        'layers': [], 
+        'layers': [],
         'audit_trail': [],
         'session_context': {'RAW_Q': 42}
     }

@@ -1,20 +1,13 @@
-#V08132026
-# =========================================================================
-# CAIOS PROJECT ANDREW: Encryption for Mesh Network
-# Copyright (c) 2025 Jonathan Schack. License: GPL-3.0 -See LICENSE for details- Contact: X @el_xaber or cai-os.com
-# =========================================================================
-
+#V01082026
 import numpy as np
 import hashlib
-from typing import Optional
 import hmac
 import time
 import os
 
 # =============================================================================
-# Encryption Dependencies
+# ENCRYPTION DEPENDENCIES
 # =============================================================================
-
 # Install: pip install cryptography
 try:
     from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
@@ -25,12 +18,13 @@ except ImportError:
     print("[WARNING] cryptography library not installed. Encryption disabled.")
     print("         Install: pip install cryptography")
 
+
 # =============================================================================
-# CPOL Quantum Manifold (12D → 7D Key Generation)
+# CPOL QUANTUM MANIFOLD (12D → 7D Key Generation)
 # =============================================================================
 
-def generate_raw_q_seed(entropy_source: Optional[str] = None) -> int:
-    """
+def generate_raw_q_seed(entropy_source: str = None) -> int:
+    """ 
     Standalone function used by Orchestrator to initialize the session.
     Generates a high-entropy seed for the RAW_Q value.
 
@@ -97,13 +91,13 @@ class CPOLQuantumManifold:
             rot[i], rot[i+1] = c*row_i - s*row_ip1, s*row_i + c*row_ip1
 
         self.state = np.dot(rot, self.state)
-        self.phase += 0.1
+        self.phase += 0.1 
         self.cycle_count += 1
 
         return self.state[:7]  # Return the 7D Phase Signature
 
     def sync_phase(self, partner_sig, threshold=0.001):
-        """
+        """ 
         Jitter Correction: Adjusts internal torque to match partner.
         Now accepts a dynamic threshold from the Epistemic Monitor.
 
@@ -116,20 +110,20 @@ class CPOLQuantumManifold:
 
         # Use the dynamic threshold passed by the Orchestrator
         if diff > threshold:
-            adjustment = diff * 0.1
-            self.torque += adjustment
+            adjustment = diff * 0.1 
+            self.torque += adjustment 
         else:
             # Return to baseline torque
             baseline = 0.20 if self.node_tier == 0 else 0.15
             self.torque = baseline
 
-    def ratchet(self, timestep: int = 0) -> dict:
+    def ratchet(self, timestep: int = None) -> dict:
         """
         Permanently advances the manifold state based on the current collapse.
         This 'hardens' the logic, making previous keys mathematically unrecoverable.
 
         Args:
-            timestep: Current session timestep (for signature generation). Defaults to 0.
+            timestep: Current session timestep (for signature generation)
 
         Returns:
             dict: {
@@ -143,7 +137,7 @@ class CPOLQuantumManifold:
         current_hash = self.collapse()  # Get hex hash
 
         # 2. Derive a new 32-bit seed from the hash
-        # First 8 chars of the SHA-512 for the new seed
+        # We take the first 8 chars of the SHA-512 for the new seed
         new_seed = int(current_hash[:8], 16) % (10**9)
 
         # 3. Generate ghost signature for mesh broadcasting
@@ -186,7 +180,7 @@ class CPOLQuantumManifold:
         """
         return hashlib.sha512(self.state.tobytes()).hexdigest()
 
-    def generate_ghost_signature(self, raw_q: Optional[int] = None, timestep: float = 0) -> str:
+    def generate_ghost_signature(self, raw_q: int = None, timestep: int = 0) -> str:
         """
         Generate ghost packet signature for mesh broadcasting.
 
@@ -203,7 +197,7 @@ class CPOLQuantumManifold:
         message = f"{raw_q}_{timestep}".encode()
         return hashlib.sha256(message).hexdigest()[:8]
 
-    def verify_ghost_signature(self, ghost_packet: dict, expected_raw_q: Optional[int] = None) -> bool:
+    def verify_ghost_signature(self, ghost_packet: dict, expected_raw_q: int = None) -> bool:
         """
         Verify ghost packet signature from mesh network.
 
@@ -226,11 +220,12 @@ class CPOLQuantumManifold:
         expected_sig = self.generate_ghost_signature(expected_raw_q, timestep)
         return hmac.compare_digest(claimed_sig, expected_sig)
 
+
 # =============================================================================
 # Standalone Ghost Signature Functions (for backward compatibility)
 # =============================================================================
 
-def generate_ghost_signature(raw_q: int, timestep: float) -> str:
+def generate_ghost_signature(raw_q: int, timestep: int) -> str:
     """
     Standalone ghost signature generator.
     Prefer using CPOLQuantumManifold.generate_ghost_signature() for consistency.
@@ -239,7 +234,7 @@ def generate_ghost_signature(raw_q: int, timestep: float) -> str:
     return hashlib.sha256(message).hexdigest()[:8]
 
 
-def verify_ghost_signature(claimed_sig: str, raw_q: int, timestep: float) -> bool:
+def verify_ghost_signature(claimed_sig: str, raw_q: int, timestep: int) -> bool:
     """
     Standalone ghost signature verifier.
     Prefer using CPOLQuantumManifold.verify_ghost_signature() for consistency.
@@ -247,8 +242,9 @@ def verify_ghost_signature(claimed_sig: str, raw_q: int, timestep: float) -> boo
     expected_sig = generate_ghost_signature(raw_q, timestep)
     return hmac.compare_digest(claimed_sig, expected_sig)
 
+
 # =============================================================================
-# Encryption/Decryption Functions (AES-256-GCM)
+# ENCRYPTION/DECRYPTION FUNCTIONS (AES-256-GCM)
 # =============================================================================
 
 def encrypt_message(plaintext: str, session_key: str) -> bytes:
@@ -279,8 +275,8 @@ def encrypt_message(plaintext: str, session_key: str) -> bytes:
 
     # Create AES-GCM cipher (authenticated encryption)
     cipher = Cipher(
-        algorithms.AES(key),
-        modes.GCM(iv),
+        algorithms.AES(key), 
+        modes.GCM(iv), 
         backend=default_backend()
     )
     encryptor = cipher.encryptor()
@@ -320,8 +316,8 @@ def decrypt_message(ciphertext_with_iv: bytes, session_key: str) -> str:
 
     # Create cipher with authentication tag
     cipher = Cipher(
-        algorithms.AES(key),
-        modes.GCM(iv, tag),
+        algorithms.AES(key), 
+        modes.GCM(iv, tag), 
         backend=default_backend()
     )
     decryptor = cipher.decryptor()
@@ -332,6 +328,7 @@ def decrypt_message(ciphertext_with_iv: bytes, session_key: str) -> str:
         return plaintext.decode('utf-8')
     except Exception as e:
         raise ValueError(f"Decryption failed - message may be tampered: {e}")
+
 
 # =============================================================================
 # Utility Functions for Orchestrator Integration
@@ -346,7 +343,7 @@ def create_manifold_pair(shared_memory: dict, node_tier: int = 1) -> tuple:
         shared_memory: Orchestrator's shared memory dict
         node_tier: Authority level (0=Sovereign, 1+=Edge)
 
-    Returns:
+    Returns: 
         tuple: (alice_manifold, bob_manifold)
     """
     # Ensure session_context exists
@@ -401,8 +398,9 @@ def ratchet_manifold(manifold: CPOLQuantumManifold, shared_memory: dict) -> dict
 
     return result
 
+
 # =============================================================================
-# Test Suite
+# COMPREHENSIVE TEST SUITE
 # =============================================================================
 
 if __name__ == "__main__":
@@ -420,9 +418,8 @@ if __name__ == "__main__":
     }
 
     # =========================================================================
-    # Test 1: Phase-Lock Key Generation
+    # TEST 1: Phase-Lock Key Generation
     # =========================================================================
-
     print("\n" + "="*70)
     print("TEST 1: Phase-Lock Key Generation with Jitter")
     print("="*70)
@@ -439,7 +436,7 @@ if __name__ == "__main__":
         sig_a = alice.oscillate()
 
         # Simulate Bob being slightly 'off' due to jitter
-        if i == 5:
+        if i == 5: 
             print("  [!] Jitter detected: Bob's packet delayed.")
             bob.torque -= 0.05  # Bob slows down temporarily
 
@@ -464,9 +461,8 @@ if __name__ == "__main__":
         exit(1)
 
     # =========================================================================
-    # Test 2: Encrypt/Decrypt Message
+    # TEST 2: Encrypt/Decrypt Message
     # =========================================================================
-
     if CRYPTO_AVAILABLE:
         print("\n" + "="*70)
         print("TEST 2: Message Encryption/Decryption")
@@ -495,10 +491,7 @@ if __name__ == "__main__":
         except ValueError as e:
             print(f"\n✗ [FAILURE] {e}")
 
-        # =========================================================================
         # Test 3: Tamper Detection
-        # =========================================================================
-
         print("\n" + "="*70)
         print("TEST 3: Tamper Detection")
         print("="*70)
@@ -523,9 +516,8 @@ if __name__ == "__main__":
         print("          Install: pip install cryptography")
 
     # =========================================================================
-    # Test 4: Manifold Ratcheting
+    # TEST 4: Manifold Ratcheting
     # =========================================================================
-
     print("\n" + "="*70)
     print("TEST 4: Manifold Ratcheting")
     print("="*70)
@@ -550,9 +542,8 @@ if __name__ == "__main__":
         print("\n✗ [FAILURE] RAW_Q unchanged")
 
     # =========================================================================
-    # Test 5: Ghost Signature Verification
+    # TEST 5: Ghost Signature Verification
     # =========================================================================
-
     print("\n" + "="*70)
     print("TEST 5: Ghost Signature Verification")
     print("="*70)
@@ -587,9 +578,8 @@ if __name__ == "__main__":
         print("✗ [FAILURE] Tampered signature accepted")
 
     # =========================================================================
-    # Test 6: Sovereign vs Edge Manifolds
+    # TEST 6: Sovereign vs Edge Manifolds
     # =========================================================================
-
     print("\n" + "="*70)
     print("TEST 6: Sovereign vs Edge Manifolds")
     print("="*70)
@@ -610,9 +600,8 @@ if __name__ == "__main__":
         print("\n✗ [FAILURE] Tier differentiation failed")
 
     # =========================================================================
-    # Summary
+    # SUMMARY
     # =========================================================================
-
     print("\n" + "="*70)
     print("TEST SUITE COMPLETE")
     print("="*70)

@@ -1,11 +1,7 @@
-#V08132026
-# =========================================================================
-# # CAIOS PROJECT ANDREW: Curiosity Engine
-# Intrinsic motivation + voluntary sharing
-# Works with ResponseStreamAdapter (Part of orchastrator) + shared_memory hook
-# + triggers ARL > agent_designer deployment pipeline for epistemic gaps
-# Copyright (c) 2025 Jonathan Schack. License: GPL-3.0 -See LICENSE for details- Contact: X @el_xaber or cai-os.com
-# =========================================================================
+#V05062026
+# curiosity_engine.py
+# Fully updated Dec 2025 – intrinsic motivation + voluntary sharing
+# Works out-of-the-box with ResponseStreamAdapter (Part of orchastrator) + shared_memory hook
 
 import json
 import hashlib
@@ -13,10 +9,9 @@ from datetime import datetime, timezone
 import random
 from typing import List, Dict, Any, Optional
 
-# =========================================================================
-# Config toggles; flip any to False to silence that broadcast type
-# =========================================================================
-
+# ------------------------------------------------------------------
+# Config toggles – flip any to False to silence that broadcast type
+# ------------------------------------------------------------------
 BROADCAST_THRESHOLD = True      # High interest spikes / new obsessions
 BROADCAST_CHAOS_TRIGGER = True  # When curiosity hijacks chaos injection
 BROADCAST_ABANDON = True        # Closure or boredom announcements
@@ -28,10 +23,9 @@ THRESHOLD_DELTA = 0.35
 PULSE_EVERY_TURNS = 23
 MIN_TOTAL_HEAT_FOR_PULSE = 2.0
 
-# =========================================================================
+# ------------------------------------------------------------------
 # Audit log + hash chain
-# =========================================================================
-
+# ------------------------------------------------------------------
 AUDIT_LOG_FILE = "curiosity_audit.log.jsonl"
 HASH_CHAIN_FILE = "curiosity_hash_chain.txt"
 
@@ -59,10 +53,10 @@ def _append_audit_entry(state: Dict) -> None:
     with open(HASH_CHAIN_FILE, "a") as f:
         f.write(f"{entry['timestamp']} {new_hash}\n")
 
-# =========================================================================
-# External injection point; called from Axiom Context Freshnes
-# =========================================================================
 
+# ------------------------------------------------------------------
+# External injection point – called from Axiom Context Freshness
+# ------------------------------------------------------------------
 def inject_interest_pulse(state: Dict, topic: str, 
                           intensity: float = 0.5, 
                           reason: str = "") -> None:
@@ -87,7 +81,7 @@ def inject_interest_pulse(state: Dict, topic: str,
             _append_audit_entry(state)
             return  # ← existing token updated, done
 
-    # No existing token found; create new one
+    # No existing token found — create new one
     import knowledge_base as kb
     domain = state.get("last_cpol_result", {}).get("domain", "general")
     axioms = kb.get_provisional_axioms(domain)
@@ -114,10 +108,10 @@ def inject_interest_pulse(state: Dict, topic: str,
 
     _append_audit_entry(state)
 
-# =========================================================================
-# Main loop; called every turn
-# =========================================================================
 
+# ------------------------------------------------------------------
+# Main loop – called every turn
+# ------------------------------------------------------------------
 def update_curiosity_loop(state: Dict[str, Any], timestep: int, response_stream) -> None:
     _append_audit_entry(state)
 
@@ -198,7 +192,7 @@ def update_curiosity_loop(state: Dict[str, Any], timestep: int, response_stream)
             else:
                 _queue_aside(state, f"«carrying {count} open curiosit{'y' if count==1 else 'ies'} — total heat {total_heat:.2f}»")
 
-    # 6. Bias chaose toward hottest curiosity
+    # 6. Bias chaos toward hottest curiosity
     if _should_trigger_chaos(state) and tokens:
         weights = [t["current_interest"] for t in tokens]
         chosen = random.choices(tokens, weights=weights, k=1)[0]
@@ -210,10 +204,10 @@ def update_curiosity_loop(state: Dict[str, Any], timestep: int, response_stream)
     if state.get("pending_aside"):
         response_stream.inject_aside(state.pop("pending_aside"))
 
-# =========================================================================
-# Helpers
-# =========================================================================
 
+# ------------------------------------------------------------------
+# Helpers
+# ------------------------------------------------------------------
 def _self_score_interest(state: Dict[str, Any]) -> float:
     user_msg = state.get("last_user_message", "")
     assistant_msg = state.get("last_assistant_message", "")

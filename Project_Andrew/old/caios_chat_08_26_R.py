@@ -1,19 +1,18 @@
-#V08132026
-# =========================================================================
-# CAIOS PROJECT ANDREW: Inference Wrapper
-# Simple interactive chat that uses CAIOS.txt as the system prompt and any model client initialized by master_init.py
-# Copyright (c) 2025 Jonathan Schack. License: GPL-3.0 -See LICENSE for details- Contact: X @el_xaber or cai-os.com
-# Patent Pending: US 19/390,493 & 19/433,771
-# =========================================================================
+#V06072026
+#!/usr/bin/env python3
+"""
+CAIOS Inference Wrapper
+Simple interactive chat that uses CAIOS.txt as the system prompt and any model client initialized by master_init.py
+"""
 
-# Note: Mac OS import readline
+# Mac OS import readline
 
 import os
 import time
 import json
 import sys
 
-from typing import Dict, Any, List, Optional
+from typing import Dict, Any, List
 
 try:
     import orchestrator as orch
@@ -131,7 +130,7 @@ def get_personalized_prompt():
     identity = shared_memory.get('system_identity', {})
 
     # system_identity.json uses 'system_id' not 'system_name'
-    name = identity.get('system_id',
+    name = identity.get('system_id', 
            identity.get('system_name', 'Andrew'))
     owner = identity.get('primary_user', 'User')
 
@@ -143,7 +142,7 @@ def get_personalized_prompt():
     tool_addendum = shared_memory.get('tool_addendum', '')
     return f"{identity_prefix}\n\n{base_prompt}\n\n{tool_addendum}"
 
-def load_recent_history(n: int = 10, user_id: Optional[str] = None) -> list:
+def load_recent_history(n: int = 10, user_id: str = None) -> list:
     """
     Load last N exchanges for conversation continuity.
     Filters by user_id if provided, and skips entries that look like
@@ -166,7 +165,7 @@ def load_recent_history(n: int = 10, user_id: Optional[str] = None) -> list:
                     # (very long user messages with no conversational content)
                     user_text = e.get('user', '')
                     if len(user_text) > 2000 and '[CPOL_STATE' not in user_text:
-                        # Long technical prompt; still include but truncate
+                        # Long technical prompt — still include but truncate
                         e['user'] = user_text[:500] + ' [... truncated for context]'
                     entries.append(e)
                 except Exception:
@@ -242,9 +241,9 @@ def select_client(clients: Dict[str, Any]) -> tuple:
         except ValueError:
             print("Please enter a valid number.")
 
-def chat_with_model(provider: str, client: Any,
+def chat_with_model(provider: str, client: Any, 
                     messages: List[Dict[str, str]],
-                    ollama_model: Optional[str] = None) -> str:
+                    ollama_model: str = None) -> str:
     """Main entry point: CAIOS Prompt → Orchestrator → Model"""
     user_input = messages[-1]["content"] if messages else ""
 
@@ -255,9 +254,9 @@ def chat_with_model(provider: str, client: Any,
         # Pass through the full orchestration pipeline
         result = orch.system_step(
             user_input=user_input,
-            prompt_complexity="medium",
+            prompt_complexity="medium",        # Can be made dynamic later
             api_clients=shared_memory.get('api_clients'),
-            user_id=str(shared_memory.get('active_user') or "")
+            user_id=shared_memory.get('active_user')
         )
 
         # Extract final output
@@ -382,20 +381,9 @@ try:
         options = [c for c in COMMANDS if c.startswith(text)]
         return options[state] if state < len(options) else None
 
-    # Not all readline implementations expose set_completer/parse_and_bind (e.g., some Windows builds).
-    try:
-        set_completer = getattr(readline, 'set_completer', None)
-        parse_and_bind = getattr(readline, 'parse_and_bind', None)
-
-        if set_completer is not None:
-            set_completer(completer)
-        if parse_and_bind is not None:
-            parse_and_bind('tab: complete')
-
-        READLINE_AVAILABLE = True
-    except (AttributeError, Exception):
-        # If any attribute access or call fails, treat readline as unavailable for completions.
-        READLINE_AVAILABLE = False
+    readline.set_completer(completer)
+    readline.parse_and_bind('tab: complete')
+    READLINE_AVAILABLE = True
 
 except ImportError:
     READLINE_AVAILABLE = False  # Windows fallback - readline not available
@@ -488,12 +476,11 @@ def main():
             print(f"Auth Method        : {identity.get('auth_method', 'TEXT_USERNAME')}")
             print(f"Current Model      : {ollama_model or 'Unknown'}")
 
-            prompt_text = current_system_prompt if 'current_system_prompt' in locals() else get_personalized_prompt()
-            prompt_len = len(prompt_text)
+            prompt_len = len(full_system_prompt) if 'full_system_prompt' in locals() else len(get_personalized_prompt())
             print(f"System Prompt Size : {prompt_len} characters")
 
             print("\nPrompt Preview (first 500 characters):")
-            preview = prompt_text[:500]
+            preview = full_system_prompt[:500] if 'full_system_prompt' in locals() else get_personalized_prompt()[:500]
             print(preview + "..." if len(preview) == 500 else preview)
 
             cpol = shared_memory.get('cpol_state', {})
@@ -509,7 +496,7 @@ def main():
             print("\n" + "="*40)
             print(f"NEIGHBORHOOD DISCOVERY: {len(peers)} Active Nodes")
             print("="*40)
-
+            
             if not peers:
                 print("No neighbors detected yet. Pinging...")
             else:
@@ -517,7 +504,7 @@ def main():
                     latency = round(time.time() - last_seen, 2)
                     status = "ONLINE" if latency < 30 else "STALE"
                     print(f"• [{status}] {peer_id} | Seen: {latency}s ago")
-
+            
             print("="*40)
             continue
 

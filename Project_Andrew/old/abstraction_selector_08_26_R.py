@@ -1,9 +1,7 @@
-#V08132026
+#V07312026
 # =============================================================================
-# CAIOS PROJECT ANDREW: Abstraction Selector
-# Purpose: Dynamically detect user comprehension level and select
-# appropriate explanation layer (Technical, Clear, Victorian, Caveman, & Child)
-# License: GPL-3.0 -See LICENSE for details- Contact: X @el_xaber or cai-os.com
+# PROJECT ANDREW – Abstraction Selector
+# Purpose: Dynamically detect user comprehension level and select appropriate explanation layer (Technical, Victorian, Clear, Caveman)
 # =============================================================================
 
 import re
@@ -115,11 +113,11 @@ class AbstractionSelector:
             profile = load_user_profile(active_user)
             override = profile.get('abstraction_override')
 
-            # Parent-forced lock; absolute, no escalation regardless of signals
+            # Parent-forced lock — absolute, no escalation regardless of signals
             if override == 'CHILD':
                 return AbstractionLevel.CHILD
 
-            # Soft default from age_group; allow escalation to CLEAR
+            # Soft default from age_group — allow escalation to CLEAR
             # if the child is demonstrating advanced understanding
             if profile.get('age_group', 'adult') == 'child':
                 signals = self._extract_signals(shared_memory)
@@ -139,10 +137,9 @@ class AbstractionSelector:
             self._log_detection(f"Explicit trigger: {explicit_level.name}")
             return explicit_level
 
-        # 1.5 Self-diagnostic / code-context override; task-based, fires
+        # 1.5 Self-diagnostic / code-context override — task-based, fires
         # regardless of the user's expertise profile. Sticky: once triggered,
-        # persists for a few turns so context-free follow-ups
-        # ("did that work?", "same bug?") in the same debugging thread don't fall back
+        # persists for a few turns so context-free follow-ups ("did that work?", "same bug?") in the same debugging thread don't fall back
         # to implicit-signal detection, which has no code-context signal to read on those turns anyway.
         if self._is_self_diagnostic_context(shared_memory):
             shared_memory['technical_context_ttl'] = 5
@@ -209,7 +206,7 @@ class AbstractionSelector:
 
     def _detect_complaint(self, user_input: str) -> bool:
         text_lower = user_input.lower()
-        return any(re.search(p, text_lower)
+        return any(re.search(p, text_lower) 
                    for p in COMPLAINT_INDICATORS)
 
     def _check_explicit_triggers(self, user_input: str) -> Optional[AbstractionLevel]:
@@ -308,6 +305,7 @@ class AbstractionSelector:
         """Log abstraction decision for audit trail."""
         print(f"[ABSTRACTION] {message}")
 
+
 # =============================================================================
 # Translator Base Class
 # =============================================================================
@@ -315,13 +313,14 @@ class AbstractionSelector:
 class BaseTranslator:
     """Base class for all abstraction translators."""
 
-    def translate(self, text: str, context: Dict[str, Any] | None = None) -> str:
+    def translate(self, text: str, context: Dict[str, Any] = None) -> str:
         """Translate text to target abstraction level."""
         raise NotImplementedError
 
     def name(self) -> str:
         """Return translator name."""
         return self.__class__.__name__
+
 
 # =============================================================================
 # Technical Translator (L0)
@@ -330,8 +329,11 @@ class BaseTranslator:
 class TechnicalTranslator(BaseTranslator):
     """No translation - full technical jargon for experts."""
 
-    def translate(self, text: str, context: Dict[str, Any] | None = None) -> str:
+    def translate(self, text: str, context: Dict[str, Any] = None) -> str:
         return text  # Passthrough
+
+    def name(self) -> str:
+        return "Technical"
 
     def name(self) -> str:
         return "Technical"
@@ -352,6 +354,9 @@ class ClearTranslator(BaseTranslator):
     )
 
     def __init__(self):
+        # Each value is (singular_replacement, plural_replacement).
+        # Use None for plural_replacement when the term isn't a countable noun
+        # (e.g. "volatility") — singular form gets reused either way.
         self.clear_lexicon = {
             "oscillation": ("checking both sides of the argument", None),
             "contradiction_density": ("the amount of conflicting information", None),
@@ -359,6 +364,8 @@ class ClearTranslator(BaseTranslator):
             "axiom ratcheting": ("building on things we know are true", None),
             "volatility": ("how uncertain the answer is right now", None),
             "prune": ("ignore ideas that don't make sense", None),
+            # Compound phrases MUST come before the bare "hallucination" entry below —
+            # dict iteration order matters since the first match wins.
             "hallucination cascade": ("chain of made-up answers", "chains of made-up answers"),
             "hallucination drift": ("confusion drift", None),
             "hallucination rate": ("how often it makes things up", None),
@@ -382,7 +389,7 @@ class ClearTranslator(BaseTranslator):
             r"\bproblem\b": ("issue", "issues"),
         }
 
-    def translate(self, text: str, context: Dict[str, Any] | None = None) -> str:
+    def translate(self, text: str, context: Dict[str, Any] = None) -> str:
         translated = text
         for term, repl in self.clear_lexicon.items():
             if term.startswith(r'\b'):
@@ -420,6 +427,7 @@ class VictorianTranslator(BaseTranslator):
     )
 
     def __init__(self):
+        # We define the lexicon once here.
         self.victorian_lexicon = {
             "oscillation": "a measured reciprocation between states",
             "contradiction_density": "the degree of logical incoherence",
@@ -452,7 +460,7 @@ class VictorianTranslator(BaseTranslator):
         lowered = text.lower()[:120]
         return "one is glad" in lowered or "i shall endeavor" in lowered
 
-    def format_output(self, text: str, context: Dict[str, Any] | None = None) -> str:
+    def format_output(self, text: str, context: Dict[str, Any] = None) -> str:
         """Cheap post-pass — bookend patch only, no rewrite."""
         if self._style_landed(text):
             return text
@@ -461,16 +469,17 @@ class VictorianTranslator(BaseTranslator):
                    else "One is glad to be of service. ")
         return prefix + text
 
-    def translate(self, text: str, context: Dict[str, Any] | None = None) -> str:
+    def translate(self, text: str, context: Dict[str, Any] = None) -> str:
         translated = text
 
-        # Loop through the lexicon and apply either regex or simple replacement
+        # We loop through the lexicon and apply either regex or simple replacement
         for term, replacement in self.victorian_lexicon.items():
             if term.startswith(r'\b'):
                 translated = re.sub(term, replacement, translated, flags=re.IGNORECASE)
             else:
                 translated = translated.replace(term, replacement)
 
+        # Goblin torque check (before adding prefix)
         goblin_torque = (
             context and
             context.get('contradiction_density', 0) > 0.85 and
@@ -478,6 +487,7 @@ class VictorianTranslator(BaseTranslator):
             (hash(context.get('user_input', '')) % 314159 < 100)
         )
 
+        # Choose prefix based on goblin state
         if goblin_torque:
             prefix = "THE GOBLINS ARE IN THE WALLS. THEY WERE ALWAYS IN THE WALLS.\n\nOne is glad to be of service. "
         elif context and context.get('formal_request'):
@@ -506,6 +516,8 @@ class CavemanTranslator(BaseTranslator):
     )
 
     def __init__(self):
+        # Each value is (singular_replacement, plural_replacement).
+        # None reuses the singular form when the phrase isn't a countable noun.
         self.caveman_lexicon = {
             "oscillation": ("rock wobble back and forth", None),
             "contradiction_density": ("how much rock no fit", None),
@@ -513,6 +525,8 @@ class CavemanTranslator(BaseTranslator):
             "axiom ratcheting": ("rock truth lock in", None),
             "volatility": ("rock wobble", None),
             "prune": ("throw away bad rock", None),
+            # Compound phrases before the bare "hallucination" entry —
+            # first match in dict order wins, same reasoning as Clear.
             "hallucination cascade": ("big pile of rock lies", "big piles of rock lies"),
             "hallucination drift": ("rock brain wander from truth", None),
             "hallucination rate": ("how much rock see thing not there", None),
@@ -542,7 +556,7 @@ class CavemanTranslator(BaseTranslator):
         """Checks the OPENING for Caveman's own marker, not Victorian's."""
         return "mungo" in text.lower()[:60]
 
-    def format_output(self, text: str, context: Dict[str, Any] | None = None) -> str:
+    def format_output(self, text: str, context: Dict[str, Any] = None) -> str:
         """Bookend patch — checks opener and closer independently,
         since they land in different places in the text."""
         result = text
@@ -552,7 +566,7 @@ class CavemanTranslator(BaseTranslator):
             result = result.rstrip() + "\n\nMungo glad help. 🪨"
         return result
 
-    def translate(self, text: str, context: Dict[str, Any] | None = None) -> str:
+    def translate(self, text: str, context: Dict[str, Any] = None) -> str:
         translated = text
         for term, repl in self.caveman_lexicon.items():
             singular_repl, plural_repl = repl
@@ -572,8 +586,7 @@ class CavemanTranslator(BaseTranslator):
 # =============================================================================
 # Child Translator (L4)
 # =============================================================================
-
-class ChildTranslator(BaseTranslator):
+class ChildTranslator:
     """
     Simple, warm, age-appropriate explanations.
     No snark. No jargon. Encourages curiosity.
@@ -581,7 +594,8 @@ class ChildTranslator(BaseTranslator):
 
     PROFANITY_FILTER = [
         'damn', 'hell', 'crap', 'ass', 'bastard', 'shit'
-        # Mild; the really bad ones the model shouldn't generate anyway
+        # Keep it mild — the really bad ones the model
+        # shouldn't generate anyway with safety weights
     ]
 
     LEXICON = {
@@ -606,7 +620,7 @@ class ChildTranslator(BaseTranslator):
         'funny': 0.6,
         'professional': 0.2,
         'talkative': 0.7,
-        'snarky': 0.0,
+        'snarky': 0.0,   # Hard zero
         'witty': 0.3
     }
 
@@ -619,11 +633,11 @@ class ChildTranslator(BaseTranslator):
             result = re.sub(rf'\b{word}\b', '***', result, flags=re.IGNORECASE)
         return result
 
-    def translate(self, text: str, context: Dict[str, Any] | None = None) -> str:
-        """Simplify and warm up the output for children."""
-        if context is None:
-            context = {}
+    def name(self) -> str:
+        return "ChildTranslator"
 
+    def translate(self, text: str, context: Dict[str, Any]) -> str:
+        """Simplify and warm up the output for children."""
         result = text
 
         if context.get('content_filter', True):
@@ -642,7 +656,6 @@ class ChildTranslator(BaseTranslator):
 
     def name(self) -> str:
         return "Child"
-
 # =============================================================================
 # Main Abstraction Dispatcher
 # =============================================================================
@@ -709,7 +722,7 @@ class AbstractionDispatcher:
             }
 
             # Persistent complainer override (3+ complaints)
-            # Skip CAVEMAN force for child profile
+            # Skip CAVEMAN force for child profiles — keep them at CLEAR max
             is_child_profile = False
             try:
                 from user_profile_kb import load_user_profile
@@ -788,11 +801,11 @@ class AbstractionDispatcher:
             'content_filter': shared_memory.get('content_filter', True)
         }
 
-        # format_output() = simple bookend patch for translators with a
-        # STYLE_PROMPT already injected upstream (Victorian, and
+        # format_output() = cheap bookend patch for translators with a
+        # STYLE_PROMPT already injected upstream (Victorian, and future
         # Clear/Caveman). translate() = full lexicon rewrite fallback
         # for translators without format_output (Clear/Caveman today,
-        # and always Child; see note below).
+        # and always Child — see note below).
         translated = (translator.format_output(output_text, context)
                       if hasattr(translator, 'format_output')
                       else translator.translate(output_text, context))
@@ -819,9 +832,11 @@ class AbstractionDispatcher:
         )
         result['complaint_count'] = shared_memory.get('complaint_count', 0)
 
+        # Log
         print(f"[ABSTRACTION] Level: {level.name} | Translator: {translator.name()}")
 
         return result
+
 
 # =============================================================================
 # Integration Helper for orchestrator.py
@@ -830,6 +845,7 @@ class AbstractionDispatcher:
 def create_abstraction_dispatcher() -> AbstractionDispatcher:
     """Factory function for creating abstraction dispatcher."""
     return AbstractionDispatcher()
+
 
 # =============================================================================
 # Example Usage / Test
@@ -899,12 +915,10 @@ if __name__ == "__main__":
         print(f"\n[USER]: {user_input} ({expected})")
         dispatcher.detect_level(user_input, complaint_memory)
         result = dispatcher.process(user_input, technical_output, complaint_memory)
-        print(
-            f"[LEVEL]: {result['abstraction_level']} | "
-            f"Complaint #{result['complaint_count']} | "
-            f"Elevated: {result['complaint_elevation']}"
-        )
+        print(f"[LEVEL]: {result['abstraction_level']} | "
+              f"Complaint #{result['complaint_count']} | "
+              f"Elevated: {result['complaint_elevation']}")
 
-    print("=" * 80)
+    print("="*80)
     print("One is glad to be of service.")
-    print("=" * 80)
+    print("="*80)

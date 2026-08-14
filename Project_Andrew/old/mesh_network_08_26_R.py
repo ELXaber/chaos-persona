@@ -1,15 +1,12 @@
-#V08132026
+#V04302026
 # =============================================================================
-# CAIOS PROJECT ANDREW: Mesh Transport Layer
+# mesh_network.py - CAIOS Mesh Transport Layer
 # Handles ghost packet broadcasting, 7D signature exchange, node discovery
-# Uses chaos_encryption
-# Copyright (c) 2025 Jonathan Schack. License: GPL-3.0 -See LICENSE for details- Contact: X @el_xaber or cai-os.com
 # =============================================================================
 
 import json
 import time
 import hashlib
-import socket
 from typing import Dict, List, Optional, Callable
 from threading import Thread, Event
 
@@ -31,9 +28,8 @@ except ImportError:
     print("         Install: pip install pyzmq")
 
 # =============================================================================
-# Configuration
+# CONFIGURATION
 # =============================================================================
-
 # Note increasing timeout or heartbeat may create an attack vector
 DEFAULT_BROADCAST_PORT = 5555
 DEFAULT_RESPONSE_PORT = 5556
@@ -41,25 +37,25 @@ HEARTBEAT_INTERVAL = 5  # seconds
 NODE_TIMEOUT = 15  # seconds
 
 # ==========================================================
-# Node Identity Configuration
+# NODE IDENTITY CONFIGURATION
 # ==========================================================
 
-# OPTION A: SOVEREIGN (Leader) - Run this if standalone
+# OPTION A: SOVEREIGN (Leader) - Run this on the M2 Mac Mini if standalone
 #node = MeshNode(
-#    node_id="Alpha_Sovereign",
-#    node_tier=0,
+#    node_id="Alpha_Sovereign", 
+#    node_tier=0, 
  #   shared_memory=shared_memory
 #)
 
 # OPTION B: EDGE (Follower) - Use this for neighborhood nodes
 # node = MeshNode(
-#     node_id="Node_Beta_01",
-    # node_tier=1,
+#     node_id="Node_Beta_01", 
+    # node_tier=1, 
     # shared_memory=shared_memory
 # )
 
 # =============================================================================
-# Mesh Node (ZeroMQ Transport)
+# MESH NODE (ZeroMQ Transport)
 # =============================================================================
 
 class MeshNode:
@@ -81,11 +77,8 @@ class MeshNode:
         cpol = self.shared_memory.get('cpol_instance')
         if cpol:
             # 1. Force the local kernel to flip its state
-            new_seed = cpol.ratchet()
-            # Support ratchet() returning either a dict {'new_raw_q': val} or a raw value
-            self.shared_memory.setdefault('session_context', {})['RAW_Q'] = (
-                new_seed['new_raw_q'] if isinstance(new_seed, dict) and 'new_raw_q' in new_seed else new_seed
-            )
+            new_seed = cpol.ratchet() 
+            self.shared_memory['session_context']['RAW_Q'] = result['new_raw_q']
 
         # 2. Log it to the audit trail
         self.shared_memory.get('audit_trail', []).append({
@@ -194,8 +187,6 @@ class MeshNode:
 
         # 5. Generate 7D Signature
         if CRYPTO_AVAILABLE:
-            # timestep is typed as float in chaos_encryption.py — must match
-            # ghost_packet['ts'] exactly (set above) or verification will fail
             signature = ce.generate_ghost_signature(raw_q, timestamp)
             ghost_packet['sig'] = signature
         else:
@@ -249,7 +240,7 @@ class MeshNode:
                     message = self.subscriber.recv()
                     ghost_packet = json.loads(message.decode('utf-8'))
 
-                    # Ignore self broadcast
+                    # Ignore our own broadcasts
                     if ghost_packet.get('sender') == self.node_id:
                         continue
 
@@ -273,9 +264,7 @@ class MeshNode:
                             cpol = self.shared_memory.get('cpol_instance')
                             if cpol:
                                 new_seed = cpol.ratchet()
-                                self.shared_memory.setdefault('session_context', {})['RAW_Q'] = (
-                                    new_seed['new_raw_q'] if isinstance(new_seed, dict) and 'new_raw_q' in new_seed else new_seed
-                                )
+                                self.shared_memory['session_context']['RAW_Q'] = result['new_raw_q']
 
                     # Call the external handler (orchestrator)
                     callback_fn(ghost_packet, sender_id)
@@ -328,7 +317,7 @@ class MeshNode:
             print(f"[MESH] ✓ Ghost signature verified: {received_sig}")
         else:
             print(f"[MESH] ✗ Ghost signature mismatch!")
-
+            
         return is_valid
 
     def is_node_stale(self, peer_id: str) -> bool:
@@ -353,7 +342,7 @@ class MeshNode:
 
         Args:
             peer_id: Node identifier
-
+            
         Returns:
             int: Tier level (0=Sovereign, 1+=Edge, -1=Unknown)
         """
@@ -362,8 +351,9 @@ class MeshNode:
             return peer_info.get('tier', 1)
         return -1
 
+
 # =============================================================================
-# Mesh Cordinator (High-Level API for Orchestrator)
+# MESH COORDINATOR (High-Level API for Orchestrator)
 # =============================================================================
 
 class MeshCoordinator:
@@ -437,8 +427,9 @@ class MeshCoordinator:
         """Check if peer is a Sovereign Root node."""
         return self.get_peer_tier(peer_id) == 0
 
+
 # =============================================================================
-# Optional: UDP Mode (for satellite/military networks)
+# OPTIONAL: UDP MODE (for satellite/military networks)
 # =============================================================================
 
 class UDPMeshNode:
@@ -461,7 +452,7 @@ class UDPMeshNode:
         tier_label = "SOVEREIGN" if node_tier == 0 else f"EDGE-{node_tier}"
         print(f"[UDP-MESH] Node {node_id} ({tier_label}) listening on port {bind_port}")
 
-    def broadcast_ghost_packet(self, ghost_packet: Dict, peer_addresses: List[str], shared_memory: Optional[Dict] = None):
+    def broadcast_ghost_packet(self, ghost_packet: Dict, peer_addresses: List[str], shared_memory: Dict = None):
         """
         Broadcast to specific peer addresses (UDP is not pub/sub).
 
@@ -496,7 +487,7 @@ class UDPMeshNode:
                 data, addr = self.socket.recvfrom(65535)  # Max UDP packet size
                 ghost_packet = json.loads(data.decode('utf-8'))
                 callback_fn(ghost_packet, addr[0])
-            except socket.timeout:
+            except self.socket.timeout:
                 continue
             except json.JSONDecodeError as e:
                 print(f"[UDP-MESH] Malformed packet: {e}")
@@ -508,8 +499,9 @@ class UDPMeshNode:
         self.running.clear()
         self.socket.close()
 
+
 # =============================================================================
-# Test Suite 
+# COMPREHENSIVE TEST SUITE
 # =============================================================================
 
 if __name__ == "__main__":
@@ -525,7 +517,7 @@ if __name__ == "__main__":
         exit(0)
 
     # =========================================================================
-    # Test 1: Basic Ghost Packet Broadcasting
+    # TEST 1: Basic Ghost Packet Broadcasting
     # =========================================================================
     print("\n" + "="*70)
     print("TEST 1: Basic Ghost Packet Broadcasting")
@@ -572,7 +564,7 @@ if __name__ == "__main__":
         print("Last entry:", mock_shared_memory['audit_trail'][-1])
 
     # =========================================================================
-    # Test 2: Sovereign Node Broadcasting
+    # TEST 2: Sovereign Node Broadcasting
     # =========================================================================
     print("\n" + "="*70)
     print("TEST 2: Sovereign Node Broadcasting")
@@ -598,7 +590,7 @@ if __name__ == "__main__":
     sovereign_coordinator.broadcast_ratchet(sovereign_packet, sovereign_memory)
 
     # =========================================================================
-    # Test 3: Signature Verification
+    # TEST 3: Signature Verification
     # =========================================================================
     print("\n" + "="*70)
     print("TEST 3: Signature Verification")
@@ -620,11 +612,7 @@ if __name__ == "__main__":
     }
 
     print(f"\nTest packet: {valid_packet}")
-    if coordinator.mesh_node:
-        is_valid = coordinator.mesh_node.verify_ghost_signature(valid_packet, test_raw_q)
-    else:
-        print("[MESH] Mesh networking disabled - skipping signature verification")
-        is_valid = False
+    is_valid = coordinator.mesh_node.verify_ghost_signature(valid_packet, test_raw_q)
 
     if is_valid:
         print("✓ [SUCCESS] Valid signature accepted")
@@ -635,10 +623,7 @@ if __name__ == "__main__":
     invalid_packet = valid_packet.copy()
     invalid_packet['sig'] = "deadbeef"
 
-    if coordinator.mesh_node:
-        is_invalid = coordinator.mesh_node.verify_ghost_signature(invalid_packet, test_raw_q)
-    else:
-        is_invalid = False
+    is_invalid = coordinator.mesh_node.verify_ghost_signature(invalid_packet, test_raw_q)
 
     if not is_invalid:
         print("✓ [SUCCESS] Invalid signature rejected")
@@ -646,26 +631,25 @@ if __name__ == "__main__":
         print("✗ [FAILURE] Invalid signature accepted")
 
     # =========================================================================
-    # Test 4: Peer Tier Detection
+    # TEST 4: Peer Tier Detection
     # =========================================================================
     print("\n" + "="*70)
     print("TEST 4: Peer Tier Detection")
     print("="*70)
 
-    if coordinator.mesh_node:
-        # Simulate receiving packet from sovereign node
-        coordinator.mesh_node.peers['node_sovereign'] = {
-            'last_seen': time.time(),
-            'raw_q': 99999999,
-            'tier': 0
-        }
+    # Simulate receiving packet from sovereign node
+    coordinator.mesh_node.peers['node_sovereign'] = {
+        'last_seen': time.time(),
+        'raw_q': 99999999,
+        'tier': 0
+    }
 
-        # Simulate receiving packet from edge node
-        coordinator.mesh_node.peers['node_beta'] = {
-            'last_seen': time.time(),
-            'raw_q': 88888888,
-            'tier': 2
-        }
+    # Simulate receiving packet from edge node
+    coordinator.mesh_node.peers['node_beta'] = {
+        'last_seen': time.time(),
+        'raw_q': 88888888,
+        'tier': 2
+    }
 
     print("\nPeer tiers:")
     print(f"  node_sovereign: Tier {coordinator.get_peer_tier('node_sovereign')}")
@@ -682,7 +666,7 @@ if __name__ == "__main__":
         print("✗ [FAILURE] Edge peer misidentified as Sovereign")
 
     # =========================================================================
-    # Test 5: Cleanup
+    # TEST 5: Cleanup
     # =========================================================================
     print("\n" + "="*70)
     print("TEST 5: Cleanup")
@@ -695,7 +679,7 @@ if __name__ == "__main__":
     print("✓ [SUCCESS] Mesh nodes stopped cleanly")
 
     # =========================================================================
-    # Summary
+    # SUMMARY
     # =========================================================================
     print("\n" + "="*70)
     print("TEST SUITE COMPLETE")

@@ -1,9 +1,9 @@
-#V08132026
-# =========================================================================
-# CAIOS PROJECT ANDREW: User Password Manager
-# Add, change, or remove passwords from users.json without re-running master_init.
-# Copyright (c) 2025 Jonathan Schack. License: GPL-3.0 -See LICENSE for details- Contact: X @el_xaber or cai-os.com
-# =========================================================================
+#V05282026
+#!/usr/bin/env python3
+"""
+CAIOS User Password Manager
+Add, change, or remove passwords from users.json without re-running master_init.
+"""
 
 import json
 import hashlib
