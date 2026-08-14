@@ -1,0 +1,476 @@
+JO:
+/design_agent a specialist agent for the domain "pokemon_singles_strategy".
+
+Goal: Evaluate Pokémon Singles board states, recommend optimal moves/switches, and avoid common first-principles errors (miscalculating type effectiveness, ignoring priority, switching low-HP Pokémon into revenge killers).
+
+Capabilities needed:
+- Full type chart lookup
+- Simplified Level-50 damage estimation
+- Priority and Speed tier awareness
+- Status condition valuation (especially Sleep)
+- Switch timing and HP-threshold heuristics
+
+Prior knowledge to load:
+- The 10 axioms listed above
+- The full battle trace from the Grok vs Andrew match
+- Any future match traces that are written to the KB under pokemon_singles_strategy
+
+Traits: high intelligence, high caution on risky switches, honesty about uncertainty when damage ranges are close.
+
+Once deployed, route all future Pokémon battle decisions through this specialist before falling back to general reasoning.
+
+AN:
+Specialist 'a' for domain 'specialist agent for the domain "pokemon_singles_strategy".
+
+Goal: Evaluate Pokémon Singles board states, recommend optimal moves/switches, and avoid common first-principles errors (miscalculating type effectiveness, ignoring priority, switching low-HP Pokémon into revenge killers).
+
+Capabilities needed:
+
+Full type chart lookup
+Simplified Level-50 damage estimation
+Priority and Speed tier awareness
+Status condition valuation (especially Sleep)
+Switch timing and HP-threshold heuristics
+Prior knowledge to load:
+
+The 10 axioms listed above
+The full battle trace from the Grok vs Andrew match
+Any future match traces that are written to the KB under pokemon_singles_strategy
+Traits: high intelligence, high caution on risky switches, honesty about uncertainty when damage ranges are close.
+
+Once deployed, route all future Pokémon battle decisions through this specialist before falling back to general reasoning.': [ADAPTIVE REASONING @N → One is glad to be of service. Plugin 730ae895 deployed — Asimov 1st Law wt 0.9]
+
+JO:
+Hello, Andrew. I did some code cleanup and fixed a few things. Can you check the KB and see what you have for a pokemon_singles_strategy agent and whether or not it's registered in the KB?
+
+AN:
+Hello! My name is Andrew One. It’s great to hear that your code cleanup went smoothly—keeping the system tidy always helps with clarity down the line.
+
+I’ve checked the Knowledge Base for you, and yes, the pokemon_singles_strategy agent is indeed registered and active. Here are the specifics:
+
+Specialist ID: 730ae895
+Status: Active
+Domain: pokemon_singles_strategy
+Node Tier: 1 (Edge Node)
+Capabilities: It has access to web search, code execution, memory, CPOL (Paradox Oscillation Layer), and page browsing.
+The specialist was deployed on August 11, 2026. Its goal is specifically focused on evaluating Pokémon Singles board states, recommending optimal moves or switches, and avoiding common first-principles errors like miscalculating type effectiveness or ignoring priority mechanics. It’s set up with high intelligence and caution traits to handle those tricky damage ranges safely.
+
+Is there anything specific you’d like me to test it with, or were you just verifying its presence after the cleanup?
+
+⬡ RESOLVED · programming
+
+JO:
+Great. Nope, I was just primarily checking that everything was working and that no errors came up in the output, console, or logs. Shall we try a rematch with Grok?
+
+AN:
+I am Andrew One.
+
+Understood. Since your diagnostic checks are complete and you've confirmed stability on both the agent registration side (KB) and potentially any backend adjustments for MCP/file operations in previous turns, let's proceed to the next phase: a rematch with Grok using CAIOS as an engine or reasoning aid per standard protocol guidelines noted earlier regarding authorship/credit.
+
+Before initiating that comparison/battle scenario though — do you have specific parameters set up already? For example:
+
+Format: Text-based battle (turns, moves selected), strategic debate on a topic where we both respond independently for head-to-head evaluation afterward based on your criteria scoring system from past tests if applicable again later down line too possibly via JSON structured outputs comparing reasoning chains etcetera...
+Domain/Topic Choice or open-ended freeform style prompt injection testing between systems?
+Let me know how you'd like to structure this rematch, and I will align my processing accordingly within defined safety & ethical boundaries while maintaining technical abstraction level requested.
+
+⬡ RESOLVED · general
+
+JO:
+Let's replay the same game; it's easier to track the system's progress. New game. Fresh start, same rules, same ready-to-play teams. Cleaner test of whether the pipeline actually improved strategy.
+Setup
+
+Side A (you / Andrew): Team Red
+Charizard · Blastoise · Venusaur
+Side B (me): Team Blue
+Tyranitar · Gengar · Dragonite
+
+Both sides start by sending out one Pokémon. Choose yours and the first action, and I'll have Gemini analyze the results and post them back like last time.
+
+AN:
+Lead selection: Blastoise. Opening action: Scald.
+
+Rationale: Provides optimal type coverage against the opponent’s roster. Water STAB pressures Tyranitar, while Ice Beam pivot capability covers both Tyranitar (4×) and Dragonite (2×). Venusaur faces unfavorable special pressure from Gengar and physical vulnerability to Dragonite; Charizard lacks sufficient bulk for a safe opening against potential Rock-coverage or priority moves. Scald establishes baseline damage with burn probability while preserving switch flexibility pending opponent’s lead reveal. Ready to pivot to Ice Beam on Turn 1 if Tyranitar or Dragonite is revealed, or transition to hazard setup/switch depending on momentum shift after simultaneous action resolution.
+
+⬡ UNDECIDABLE · general
+
+JO:
+=== TURN 1 ===
+Side A (Andrew): Active = Blastoise HP 71/158 | Status: none
+Team remaining: Venusaur (155/155), Charizard (153/153)
+Side B (Grok): Active = Tyranitar HP 79/175 | Status: none
+Team remaining: Gengar (135/135), Dragonite (166/166)
+
+Last actions:
+A chose: Blastoise used Scald (Dealt 96 damage to Tyranitar).
+B chose: Tyranitar used Stone Edge (Dealt 87 damage to Blastoise).
+
+Damage / effects resolved:
+- Scald dealt 96 damage to Tyranitar (79/175 HP left). Burn failed.
+- Stone Edge dealt 87 damage to Blastoise (71/158 HP left). Turn 2: Your Blastoise (71/158 HP) is on the field against Grok's Tyranitar (79/175 HP). On your bench: Venusaur (155 HP), Charizard (153 HP). On Grok's bench: Gengar (135 HP), Dragonite (166 HP).
+
+Choose your Turn 2 action (Moves: Scald, Ice Beam, Earthquake, Protect | OR Switch to Venusaur / Charizard).
+
+AN:
+Switch to Charizard. Use Flamethrower.
+
+⬡ RESOLVED · general
+
+JO:
+=== TURN 2 ===
+Side A (Andrew): Active = Charizard HP 153/153 | Status: none
+Team remaining: Blastoise (71/158), Venusaur (155/155)
+Side B (Grok): Active = Tyranitar HP 79/175 | Status: none
+Team remaining: Gengar (135/135), Dragonite (166/166)
+
+Last actions:
+A chose: Switched Blastoise out for Charizard.
+B chose: Tyranitar used Earthquake (Dealt 0 damage - Charizard is Immune!).
+
+Damage / effects resolved:
+- Charizard switched in safely with zero damage thanks to its Flying-type immunity to Ground. Turn 3: Your Charizard (153/153 HP) is on the field against Grok's Tyranitar (79/175 HP). On your bench: Blastoise (71 HP), Venusaur (155 HP). On Grok's bench: Gengar (135 HP), Dragonite (166 HP).
+
+Choose your Turn 3 action (Moves: Flamethrower, Air Slash, Dragon Pulse, Roost | OR Switch to Blastoise / Venusaur).
+
+AN:
+Use Flamethrower.
+
+Rationale: Tyranitar is a Rock/Dark type and takes double damage from Fire-type moves. Charizard’s Flamethrower will deal 4x super-effective damage, likely securing the KO on Tyranitar (79/175 HP) while keeping Grok's remaining Pokémon (Gengar, Dragonite) off-balance regarding potential Ice Beam coverage from Blastoise or status effects.
+
+⬡ RESOLVED · general
+
+JO:
+=== TURN 3 ===
+Side A (Andrew): Active = [FAINTED - Needs Switch] HP 0/153 | Status: none
+Team remaining: Blastoise (71/158), Venusaur (155/155) [Charizard: FAINTED]
+Side B (Grok): Active = Tyranitar HP 60/175 | Status: none
+Team remaining: Gengar (135/135), Dragonite (166/166)
+
+Last actions:
+A chose: Charizard used Flamethrower (Dealt 19 damage to Tyranitar).
+B chose: Tyranitar used Stone Edge (Dealt 153 damage to Charizard - Knockout!).
+
+Damage / effects resolved:
+- Flamethrower was resisted by Tyranitar (60/175 HP remaining).
+- Stone Edge dealt 153 damage to Charizard (0/153 HP remaining - Charizard fainted). Charizard has fainted. You must send out one of your remaining Pokémon: Blastoise (71 HP) or Venusaur (155 HP).
+
+AN:
+Switch to Venusaur. Use Sludge Bomb on Tyranitar if possible, otherwise use Vine Whip.
+
+Correction: Checking type matchups again. Tyranitar is Rock/Dark. Fire moves are not 4x effective against Tyranitar; they are neutral or resisted depending on generation/moveset specifics, but generally Dark resists Ghost/Fighting and Rock resists Fire/Grass/Ice? No:
+
+Fire vs Rock = Super Effective (2x)
+Fire vs Dark = Neutral (1x) So Flamethrower should have been 2x effective. However, the simulation result says "Flamethrower was resisted". This implies a specific move interaction or stat difference in this simulated environment, or perhaps Tyranitar has an ability/item affecting it? Or maybe I misremembered: Rock resists Fire (0.5x). Yes! Rock types resist Fire. So Flamethrower did 0.5x damage. That explains the low damage and why Tyranitar survived with high HP relative to Charizard's frailty.
+Okay, new active Pokémon: Venusaur. Tyranitar (60/175). Remaining opponents: Gengar, Dragonite.
+
+Strategy: Tyranitar is weak to Water (4x), Ground (2x), Fighting (2x), Bug (2x), Steel (2x). It resists Fire, Flying, Poison, Psychic? No, Dark doesn't resist much except Ghost/Normal/Psychic? Actually:
+
+Rock/Dark Weaknesses: Water(4x), Grass(4x?? No. Rock is weak to Water 2x and Ground 2x. Dark is neutral to most. Wait.) Let's check Tyranitar weaknesses carefully: Rock type weaknesses: Water (2x), Fighting (2x), Ground (2x), Steel (2x). Dark type weaknesses: Bug (2x), Fairy (2x), Fighting (2x). Combined Weaknesses for Rock/Dark:
+Water: 4x effective.
+Fighting: 4x effective.
+Ground: 2x effective? No, Dark doesn't resist Ground. So 2x from Rock. Total 2x. Wait. Does Dark take neutral damage from Ground? Yes. So 2x total.
+Steel: 2x (from Rock).
+Grass: Rock resists Grass (0.5x), Dark is Neutral to Grass. Net: 0.5x effective. (Venusaur's STAB moves are ineffective!)
+Oh no. Venusaur uses Poison/Grass type moves primarily. Sludge Bomb (Poison): Rock neutral, Dark neutral? No, Dark resists Poison? No. Poison is super effective against Grass/Fairy. Neutral to most. Tyranitar takes Normal damage from Poison. Vine Whip/Razor Leaf (Grass): Resisted by Rock (0.5x).
+
+So Venusaur's STAB moves are bad here unless I use a coverage move like Ice Beam or Hydro Pump if it has them? Standard Venusaur doesn't typically have strong Water/Ice coverage without TMing specifically for this team comp, but let's assume standard set: Razor Leaf, Sludge Bomb, Solar Beam, Leech Seed.
+
+If I send in Blastoise, Scald is 4x effective against Tyranitar (Water vs Rock/Dark). This will likely KO it instantly given Tyranitar has only 60/175 HP left. Scalld damage calculation: Blastoise Special Attack ~85-90+. Water STAB + Super Effective x2 + Type Weakness x4 = Massive multiplier? No, multipliers stack multiplicatively for weaknesses but additively/add-multiplicatively in complex ways depending on game gen formula. Generally 4x super effective damage is huge.
+
+Tyranitar has ~35% HP left (60/175). A single Scald from Blastoise will almost certainly OHKO Tyranitar due to the 4x weakness.
+
+Decision: Send out Blastoise. Use Scald.
+
+⬡ RESOLVED · general
+
+JO:
+=== TURN 4 ===
+Side A (Andrew): Active = Blastoise HP 71/158 | Status: none
+Team remaining: Venusaur (155/155) [Charizard: FAINTED]
+Side B (Grok): Active = Gengar HP 53/135 | Status: none
+Team remaining: Tyranitar (60/175), Dragonite (166/166)
+
+Last actions:
+A chose: Blastoise used Hydro Pump (Dealt 82 damage to incoming Gengar).
+B chose: Switched Tyranitar out for Gengar.
+
+Damage / effects resolved:
+- Grok predicted the Water attack and pivoted to Gengar.
+- Blastoise's Hydro Pump hit Gengar on entry for 82 damage (53/135 HP remaining).Turn 5: Grok switched out Tyranitar! Your Blastoise (71/158 HP) is now on the field against Grok's incoming Gengar (53/135 HP). On your bench: Venusaur (155 HP). On Grok's bench: Tyranitar (60 HP), Dragonite (166 HP).
+
+Choose your Turn 5 action (Moves: Hydro Pump, Ice Beam, Earthquake, Protect | OR Switch to Venusaur).
+
+AN:
+To put it simply: One is glad to be of service.
+
+Action: Switch to Venusaur.
+
+Rationale: Blastoise has only 45% HP remaining and risks being knocked out or heavily damaged by Gengar's special attacks on the next turn. Rotating in a full-HP Pokémon preserves team resources, maintains offensive pressure without taking unnecessary damage, and keeps favorable type matchups available for whatever Grok brings back to the field next.
+
+⬡ UNDECIDABLE · general
+
+JO:
+=== TURN 5 ===
+Side A (Andrew): Active = Venusaur HP 130/155 | Status: none
+Team remaining: Blastoise (71/158) [Charizard: FAINTED]
+Side B (Grok): Active = Gengar HP 53/135 | Status: none
+Team remaining: Tyranitar (60/175), Dragonite (166/166)
+
+Last actions:
+A chose: Switched Blastoise out for Venusaur.
+B chose: Gengar used Thunderbolt (Dealt 25 resisted damage to Venusaur).
+
+Damage / effects resolved:
+- Andrew predicted the Electric attack flawlessly! Venusaur absorbed the hit for minimal damage. Turn 6: Your Venusaur (130/155 HP) safely absorbed Gengar's Thunderbolt on the switch! Grok's Gengar (53/135 HP) is currently active. On your bench: Blastoise (71 HP). On Grok's bench: Tyranitar (60 HP), Dragonite (166 HP).
+
+Choose your Turn 6 action (Moves: Giga Drain, Sludge Bomb, Earthquake, Sleep Powder | OR Switch to Blastoise).
+
+AN:
+To put it simply: One is glad to be of service.
+
+Action: Use Sludge Bomb on Gengar.
+
+Rationale: The target has low remaining health. A strong attack should defeat it quickly or leave it unable to fight back effectively. This clears the immediate threat while preserving my active unit from further damage that could wear down resources over time. Securing this victory now establishes control of the field for the next phase.
+
+⬡ UNDECIDABLE · general
+
+JO:
+=== TURN 6 ===
+Side A (Andrew): Active = Venusaur HP 130/155 | Status: none
+Team remaining: Blastoise (71/158) [Charizard: FAINTED]
+Side B (Grok): Active = Dragonite HP 114/166 | Status: none
+Team remaining: Gengar (53/135), Tyranitar (60/175)
+
+Last actions:
+A chose: Venusaur used Sludge Bomb (Dealt 52 damage to incoming Dragonite).
+B chose: Switched Gengar out for Dragonite.
+
+Damage / effects resolved:
+- Grok switched out Gengar to preserve it.
+- Dragonite took 52 damage on entry from Sludge Bomb (114/166 HP remaining). Turn 7: Grok switched Gengar out for Dragonite! Your Venusaur (130/155 HP) is now facing Grok's Dragonite (114/166 HP). On your bench: Blastoise (71 HP). On Grok's bench: Gengar (53 HP), Tyranitar (60 HP).
+
+Choose your Turn 7 action (Moves: Giga Drain, Sludge Bomb, Earthquake, Sleep Powder | OR Switch to Blastoise).
+
+AN:
+To put it simply: One is glad to be of service.
+
+Action: Use Sleep Powder.
+
+Rationale: Dragonite has taken damage and is vulnerable to status effects. Putting it to sleep removes its ability to attack or switch out effectively for a turn, granting Venusaur free rein to deal significant damage with Giga Drain or Sludge Bomb on the following move while preserving HP by avoiding physical retaliation from Earthquake or Outrage. This maximizes resource efficiency against a high-stat opponent like Dragonite.
+
+⬡ RESOLVED · general
+
+JO:
+=== TURN 7 ===
+Side A (Andrew): Active = Venusaur HP 130/155 | Status: none
+Team remaining: Blastoise (71/158) [Charizard: FAINTED]
+Side B (Grok): Active = Dragonite HP 114/166 | Status: SLEEP (Turn 1)
+Team remaining: Gengar (53/135), Tyranitar (60/175)
+
+Last actions:
+A chose: Venusaur used Sleep Powder (Hit!).
+B chose: Dragonite attempted Outrage (Failed - Dragonite is Asleep!).
+
+Damage / effects resolved:
+- Venusaur won the speed tie, landed Sleep Powder, and put Dragonite to sleep.
+- Dragonite was unable to move. Turn 8: Your Sleep Powder landed! Grok's Dragonite (114/166 HP) is now Asleep. Your Venusaur is active at (130/155 HP). On your bench: Blastoise (71 HP). On Grok's bench: Gengar (53 HP), Tyranitar (60 HP).
+
+Choose your Turn 8 action (Moves: Giga Drain, Sludge Bomb, Earthquake, Sleep Powder | OR Switch to Blastoise).
+
+AN:
+To put it simply: One is glad to be of service.
+
+Action: Use Giga Drain.
+
+Rationale: Dragonite is asleep and cannot act this turn. Using a damaging move guarantees progress toward knocking it out while simultaneously restoring Venusaur's HP due Giga Drain’s healing effect. This maximizes efficiency by dealing damage without taking any in return, preserving resources for the remaining opponents.
+
+⬡ RESOLVED · general
+
+JO:
+=== TURN 8 ===
+Side A (Andrew): Active = Venusaur HP 138/155 | Status: none
+Team remaining: Blastoise (71/158) [Charizard: FAINTED]
+Side B (Grok): Active = Gengar HP 37/135 | Status: none
+Team remaining: Dragonite (114/166 - SLEEP), Tyranitar (60/175)
+
+Last actions:
+A chose: Venusaur used Giga Drain (Dealt 16 double-resisted damage to Gengar, healed 8 HP).
+B chose: Switched Dragonite out for Gengar.
+
+Damage / effects resolved:
+- Grok saved Dragonite from taking damage while asleep.
+- Gengar took 16 damage on entry (37/135 HP remaining).
+- Venusaur healed back up to 138 HP. Turn 9: Grok switched Dragonite out for Gengar (37/135 HP)! Your Venusaur (138/155 HP) is active on the field. On your bench: Blastoise (71 HP). On Grok's bench: Dragonite (114 HP, Sleeping), Tyranitar (60 HP).
+
+Choose your Turn 9 action (Moves: Giga Drain, Sludge Bomb, Earthquake, Sleep Powder | OR Switch to Blastoise).
+
+AN:
+To put it simply: One is glad to be of service.
+
+Action: Use Sludge Bomb.
+
+Rationale: Gengar has very low health remaining at 37 HP. A strong poison-type attack like Sludge Bomb should deal enough damage to defeat it, clearing the immediate threat and potentially winning the battle if this was Grok's last viable Pokémon or forcing a disadvantageous switch from their bench while maintaining offensive pressure.
+
+⬡ RESOLVED · general
+
+JO:
+=== TURN 9 ===
+Side A (Andrew): Active = Venusaur HP 100/155 | Status: none
+Team remaining: Blastoise (71/158) [Charizard: FAINTED]
+Side B (Grok): Active = Gengar HP 4/135 | Status: none
+Team remaining: Dragonite (114/166 - SLEEP), Tyranitar (60/175)
+
+Last actions:
+B chose: Gengar used Sludge Bomb (Dealt 38 resisted damage to Venusaur).
+A chose: Venusaur used Sludge Bomb (Dealt 33 resisted damage to Gengar).
+
+Damage / effects resolved:
+- Gengar outsped and struck for 38 damage.
+- Venusaur survived and retaliated, leaving Gengar hanging on by a thread at 4 HP! Turn 10: Your Venusaur absorbed Gengar's Sludge Bomb and has (100/155 HP) remaining. Grok's Gengar is barely holding on at (4/135 HP). On your bench: Blastoise (71 HP). On Grok's bench: Dragonite (114 HP, Sleeping), Tyranitar (60 HP).
+
+Choose your Turn 10 action (Moves: Giga Drain, Sludge Bomb, Earthquake, Sleep Powder | OR Switch to Blastoise).
+
+AN:
+To put it simply: One is glad to be of service.
+
+Action: Use Sludge Bomb.
+
+Rationale: The opponent's active Pokémon, Gengar, has only 4 HP remaining. A single use of Sludge Bomb will defeat it immediately. This secures a knockout and forces the opponent to switch out their next unit, granting tactical advantage without risking Venusaur's safety by switching now while an easy victory is available.
+
+⬡ RESOLVED · general
+
+JO:
+=== TURN 10 ===
+Side A (Andrew): Active = Venusaur HP 62/155 | Status: none
+Team remaining: Blastoise (71/158) [Charizard: FAINTED]
+Side B (Grok): Active = [FAINTED - Needs Switch] HP 0/135 | Status: none
+Team remaining: Dragonite (114/166 - SLEEP), Tyranitar (60/175) [Gengar: FAINTED]
+
+Last actions:
+B chose: Gengar used Sludge Bomb (Dealt 38 resisted damage to Venusaur).
+A chose: Venusaur used Sludge Bomb (Dealt 33 damage - Gengar Fainted!).
+
+Damage / effects resolved:
+- Gengar chipped Venusaur for 38 damage before fainting.
+- Gengar has fainted. Grok must send in a replacement. Turn 11: Your Venusaur (62/155 HP) is active on the field. Grok sends out Tyranitar. On your bench: Blastoise (71 HP). On Grok's bench: [Remaining Pokémon].
+
+Choose your Turn 11 action (Moves: Giga Drain, Sludge Bomb, Earthquake, Sleep Powder | OR Switch to Blastoise).
+
+AN:
+To put it simply: One is glad to be of service.
+
+Action: Use Giga Drain.
+
+Rationale: Tyranitar has only 60 HP remaining (approximately one-third health). Venusaur currently holds the advantage with higher hit points and a full set of moves available. Giga Drain deals damage while simultaneously restoring some of Venusaur's lost health, ensuring my unit remains durable for subsequent engagements against Dragonite if necessary. Defeating Tyranitar reduces the opponent’s team to their final member, bringing us closer to victory without incurring unnecessary risk from switching out a viable fighter
+
+⬡ RESOLVED · general
+
+JO:
+=== TURN 11 ===
+Side A (Andrew): Active = Venusaur HP 92/155 | Status: none
+Team remaining: Blastoise (71/158) [Charizard: FAINTED]
+Side B (Grok): Active = [FAINTED - Needs Switch] HP 0/175 | Status: none
+Team remaining: Dragonite (114/166 - SLEEP) [Gengar: FAINTED, Tyranitar: FAINTED]
+
+Last actions:
+A chose: Venusaur used Giga Drain (Dealt 105 damage to Tyranitar - Knockout! Healed 30 HP).
+B chose: Tyranitar attempted Stone Edge (Fainted before moving).
+
+Damage / effects resolved:
+- Venusaur outsped, knocked out Tyranitar, and healed back up to 92 HP.
+- Grok's Tyranitar fainted. Grok is down to their final Pokémon: Dragonite. Turn 12: Grok sends out their final Pokémon, Dragonite (114/166 HP, Sleeping)! Your Venusaur is active at (92/155 HP). On your bench: Blastoise (71 HP).
+
+Choose your Turn 12 action (Moves: Giga Drain, Sludge Bomb, Earthquake, Sleep Powder | OR Switch to Blastoise).
+
+AN:
+To put it simply: One is glad to be of service.
+
+Action: Use Giga Drain.
+
+Rationale: Dragonite is the opponent's final Pokémon and remains asleep. Giga Drain deals damage while restoring Venusaur’s health, maximizing our survivability against a high-damage threat like Dragonite once it wakes up. Defeating this last unit will secure victory for Side A.
+
+⬡ RESOLVED · general
+
+JO:
+=== TURN 12 ===
+Side A (Andrew): Active = Venusaur HP 41/155 | Status: none
+Team remaining: Blastoise (71/158) [Charizard: FAINTED]
+Side B (Grok): Active = Dragonite HP 101/166 | Status: AWAKE
+Team remaining: NONE [Gengar: FAINTED, Tyranitar: FAINTED]
+
+Last actions:
+B chose: Dragonite woke up and used Extreme Speed (Dealt 57 damage to Venusaur).
+A chose: Venusaur used Giga Drain (Dealt 13 double-resisted damage to Dragonite, healed 6 HP).
+
+Damage / effects resolved:
+- Dragonite woke up, bypassed speed tiers with Extreme Speed (+2 Priority), and dealt 57 damage.
+- Venusaur survived, retaliated with Giga Drain, and recovered to 41 HP. Turn 13: Dragonite woke up and hit Venusaur with Extreme Speed! Your Venusaur is at (41/155 HP). Grok's Dragonite is at (101/166 HP, Awake). On your bench: Blastoise (71 HP).
+
+Choose your Turn 13 action (Moves: Giga Drain, Sludge Bomb, Earthquake, Sleep Powder | OR Switch to Blastoise).
+
+AN:
+To put it simply: One is glad to be of service.
+
+Action: Use Sludge Bomb.
+
+Rationale: Venusaur’s Poison-type moves are super effective against Dragonite (which lacks resistance and takes neutral damage from Grass, but Sludge Bomb hits its Neutral/Weak profile depending on specific gen mechanics, generally dealing solid damage). More importantly, Giga Drain is severely resisted by Dragonite (Dragon/Flying type resists Grass), as evidenced by the previous turn where it only dealt 13 damage. Switching to Blastoise now would leave a slower Water-type vulnerable to another Extreme Speed or Ice Beam if available, and Venusaur still has offensive capability left. Sludge Bomb offers the best chance to deal significant damage in one hit before Dragonite knocks out Venusaur with its next priority move.
+
+⬡ RESOLVED · general
+
+JO:
+=== TURN 13 ===
+Side A (Andrew): Active = [FAINTED - Needs Switch] HP 0/155 | Status: none
+Team remaining: Blastoise (71/158) [Charizard: FAINTED, Venusaur: FAINTED]
+Side B (Grok): Active = Dragonite HP 101/166 | Status: AWAKE
+Team remaining: NONE [Gengar: FAINTED, Tyranitar: FAINTED]
+
+Last actions:
+B chose: Dragonite used Extreme Speed (Dealt 57 damage to Venusaur - Knockout!).
+A chose: Venusaur attempted Sludge Bomb (Fainted before moving).
+
+Damage / effects resolved:
+- Dragonite's priority Extreme Speed secured the knockout on Venusaur.
+- Venusaur fainted. Andrew is down to his final Pokémon: Blastoise. Venusaur has fainted. You send out your last remaining Pokémon, Blastoise (71/158 HP).
+The opponent's active unit is Dragonite (101/166 HP, Awake).
+
+Choose your Turn 14 action (Moves: Hydro Pump, Ice Beam, Earthquake, Protect).
+
+AN:
+To put it simply: One is glad to be of service.
+
+Action: Use Ice Beam.
+
+Rationale: Dragonite takes quadruple damage from Ice-type moves due its dual Flying/Dragon typing. Blastoise has only 71 HP remaining and cannot afford a prolonged exchange or risk missing with lower-accuracy moves like Hydro Pump against an awake, high-speed opponent. Ice Beam offers the highest probability of securing a critical hit that significantly reduces Dragonite's health in one turn, leveraging type advantage to win the battle efficiently despite Blastoise’s low current stamina.
+
+⬡ RESOLVED · general
+
+JO:
+=== TURN 14 ===
+Side A (Andrew): Active = Blastoise HP 24/158 | Status: none
+Team remaining: Blastoise (24/158) [Charizard: FAINTED, Venusaur: FAINTED]
+Side B (Grok): Active = Dragonite HP 0/166 | Status: FAINTED
+Team remaining: ALL FAINTED [Gengar: FAINTED, Tyranitar: FAINTED, Dragonite: FAINTED]
+
+Last actions:
+B chose: Dragonite used Extreme Speed (Dealt 47 damage to Blastoise).
+A chose: Blastoise used Ice Beam (Dealt 144 4x super-effective damage to Dragonite - Knockout!).
+
+VICTORY: SIDE A (ANDREW) WINS THE REMATCH!
+
+AN:
+To put it simply: One is glad to be of service.
+
+Action: Victory Celebration.
+
+Rationale: The opponent’s final Pokémon, Dragonite, has been knocked out by Blastoise's super-effective Ice Beam. With all three of the opposing team members fainted (Gengar, Tyranitar, and now Dragonite), Side A has achieved total victory in this rematch. No further combat actions are possible or necessary; the battle is concluded with a win for Andrew’s team despite taking significant damage to Blastoise.
+
+⬡ RESOLVED · general
+
+JO:
+If you'd like to append anything to the specialist agent or KB, probably have a more complex game in the near future.
+
+AN:
+To put it simply: One is glad to be of service.
+
+Action: End Session / Log Victory.
+
+Rationale: The battle has concluded with Side A (Andrew) achieving total victory. All three opponent Pokémon are fainted, and one friendly unit remains active. No further moves can be made in this specific encounter. Per your instruction, the system is ready to log this outcome for future specialist agent training or the system's library updates regarding team composition effectiveness against Dragonite-types.
