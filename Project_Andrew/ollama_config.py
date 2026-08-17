@@ -1,4 +1,4 @@
-#V08132026
+#V08142026
 # =============================================================================
 # CAIOS PROJECT ANDREW: Ollama Configuration Bridge - CPOL State to Inference Parameters
 # This module bridges CAIOS's ternary logic (CPOL) state to Ollama's inference
@@ -166,10 +166,7 @@ def get_cpol_ollama_params(
         prompt_limit = 8000     # 7b/4b/3b and smaller; conservative
         num_ctx = 8192
 
-    return {
-        "model": model,
-        "system": load_caios_system_prompt(max_chars=prompt_limit),
-        "options": {
+    options = {
             "temperature": round(temperature, 2),
             "num_predict": 8192,
             "top_p": 0.92,
@@ -181,8 +178,19 @@ def get_cpol_ollama_params(
                 "<|endoftext|>",
                 "<|eot_id|>",
                 "[/TOOL]",
-            ]
+            ],
         }
+
+    # Enable MTP speculative decoding for models that ship the head
+    # (Qwen3.x / Qwen3.6 / Qwen3.8 20B+ class, etc.)
+    # Matches llama.cpp: --spec-type draft-mtp --spec-draft-n-max 2
+    if param_b >= 20 and any(x in model.lower() for x in ("qwen3", "qwen3.6", "qwen3.8")):
+        options["draft_num_predict"] = 3   # try 1–4
+
+    return {
+        "model": model,
+        "system": load_caios_system_prompt(max_chars=prompt_limit),
+        "options": options
     }
 
 # For either doman model mapping multi-LLM in VRAM or API fallback see ollama_subsystem_readme.txt

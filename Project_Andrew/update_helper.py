@@ -1,4 +1,4 @@
-#V08132026
+#V08142026
 # =============================================================================
 # CAIOS PROJECT ANDREW: GitHub update checker
 # Called by update.bat and update.sh
@@ -37,10 +37,12 @@ MANIFEST = [
     'curiosity_engine.py',
     'knowledge_base.py',
     'kb_inspect.py',
+    'kb_inspect.py',
     # OS and tool layer
     'os_control.py',
     'tool_dispatcher.py',
     'caios_mcp_client.py',
+    'pdf_extract.py',
     # Identity, users, abstraction
     'system_identity.py',
     'abstraction_selector.py',

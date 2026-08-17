@@ -51,6 +51,7 @@ python -m pip install --quiet windows-mcp 2>nul && echo [OK] windows-mcp install
 python -m pip install --quiet pyyaml 2>nul && echo [OK] pyyaml installed || echo [SKIP] pyyaml unavailable ^(optional^)
 python -m pip install --quiet uv 2>nul && echo [OK] uv installed || echo [SKIP] uv unavailable ^(optional^)
 python -m pip install --quiet winocr[cv2] 2>nul && echo [OK] winocr installed || echo [SKIP] winocr unavailable ^(optional^)
+python -m pip install --quiet pymupdf 2>nul && echo [OK] pymupdf installed || echo [SKIP] pymupdf unavailable ^(optional^)
 
 echo [OK] Python packages ready
 
@@ -110,10 +111,10 @@ if errorlevel 1 (
     echo   Progress will appear below. This may take 10-30 minutes
     echo   depending on your connection.
     echo.
-    ollama pull qwen3:27b
+    ollama pull qwen3.8:27b
     if errorlevel 1 (
         echo.
-        echo [WARN] qwen3:27b pull failed. Trying smaller fallback...
+        echo [WARN] qwen3.8:27b pull failed. Trying smaller fallback...
         ollama pull qwen2.5:7b
     )
 ) else (

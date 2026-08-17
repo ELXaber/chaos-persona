@@ -1,4 +1,4 @@
-#V08132026
+#V08142026
 # =============================================================================
 # CAIOS PROJECT ANDREW: Tool Dispatcher
 # Intercepts LLM output for structured tool calls and routes them to the
@@ -24,12 +24,15 @@
 #   [TOOL:kb_write domain="apple_ceo" type="axiom" summary="Tim Cook"]
 #   [TOOL:kb_read domain="quantum_semantics"]
 #   [TOOL:list_axioms]
+#   [TOOL:search_logs]
 #   [TOOL:browser url="https://cai-os.com" action="scrape"]
+#   TOOL:search_logs query="phrase" scope="all"]
 #
 # Copyright (c) 2025 Jonathan Schack. License: GPL-3.0 -See LICENSE for details- Contact: X @el_xaber or cai-os.com
 # =============================================================================
 
 import re
+import os
 import json
 from typing import Dict, Any, List, Tuple, Optional
 from datetime import datetime, timezone
@@ -79,6 +82,96 @@ def parse_tool_tags(text: str) -> List[Tuple[str, Dict[str, str], str]]:
 # =============================================================================
 # Individual Tool Handlers
 # =============================================================================
+
+def _handle_search_logs(attrs: Dict, shared_memory: Dict) -> str:
+    """
+    Scans CAIOS session logs/transcripts for a specific regex pattern or keyword.
+    Tag format: [TOOL:search_logs query="phrase" log_dir="knowledge_base" max_matches="5"]
+
+    conversation_log.jsonl gets special handling: each line is parsed as real
+    JSON and matched against the 'user'/'andrew' fields specifically, returning
+    a clean timestamped exchange pair instead of a truncated raw-line fragment.
+    Other log files (.log/.txt/.json without a known schema) fall back to a
+    plain substring grep per line.
+
+    By default, conversation_log.jsonl matches are filtered to the requesting
+    user's own history (shared_memory['active_user']), so one user can't
+    surface another user's conversations. Pass scope="all" to search across
+    all users — only honored for Sovereign (node_tier 0) sessions.
+    """
+    query = attrs.get('query', '').strip()
+    if not query:
+        return "[TOOL RESULT] Error: 'query' attribute is required for search_logs."
+
+    log_dir = attrs.get('log_dir', 'knowledge_base')
+    max_matches = int(attrs.get('max_matches', '5'))
+
+    if not os.path.exists(log_dir):
+        return f"[TOOL RESULT] search_logs failed: Directory '{log_dir}' not found."
+
+    active_user = shared_memory.get('active_user')
+    node_tier = shared_memory.get('session_context', {}).get('node_tier', 1)
+    scope_all = attrs.get('scope', '').lower() == 'all' and node_tier == 0
+
+    try:
+        pattern = re.compile(re.escape(query), re.IGNORECASE)
+    except re.error as e:
+        return f"[TOOL RESULT] search_logs error: invalid query pattern ({e})"
+
+    results: List[str] = []
+
+    def _scan() -> None:
+        for root, _, files in os.walk(log_dir):
+            for file in files:
+                if file == 'conversation_history.json':
+                    continue  # redundant cache of the last 50 turns already in conversation_log.jsonl
+
+                file_path = os.path.join(root, file)
+                rel_path = os.path.relpath(file_path, log_dir)
+                if file == 'conversation_log.jsonl':
+                    with open(file_path, 'r', encoding='utf-8', errors='ignore') as f:
+                        for line in f:
+                            line = line.strip()
+                            if not line:
+                                continue
+                            try:
+                                entry = json.loads(line)
+                            except json.JSONDecodeError:
+                                continue
+
+                            if not scope_all and active_user and entry.get('user_id') != active_user:
+                                continue
+
+                            user_text = entry.get('user', '')
+                            andrew_text = entry.get('andrew', '')
+                            if pattern.search(user_text) or pattern.search(andrew_text):
+                                results.append(
+                                    f"[{rel_path} | {entry.get('timestamp', 'unknown time')} | "
+                                    f"{entry.get('user_id', 'unknown user')}]\n"
+                                    f"  User: {user_text[:300]}\n"
+                                    f"  Andrew: {andrew_text[:300]}"
+                                )
+                                if len(results) >= max_matches:
+                                    return
+
+                elif file.endswith(('.log', '.json', '.jsonl', '.txt')):
+                    with open(file_path, 'r', encoding='utf-8', errors='ignore') as f:
+                        for idx, line in enumerate(f, start=1):
+                            if pattern.search(line):
+                                results.append(f"{rel_path} (L{idx}): {line.strip()[:150]}")
+                                if len(results) >= max_matches:
+                                    return
+
+    try:
+        _scan()
+    except Exception as e:
+        return f"[TOOL RESULT] search_logs error: {str(e)}"
+
+    if not results:
+        scope_note = "" if scope_all or not active_user else f" for user '{active_user}'"
+        return f"[TOOL RESULT] search_logs: No occurrences found for query '{query}'{scope_note} in {log_dir}."
+
+    return f"[TOOL RESULT] search_logs ({query}):\n\n" + "\n\n".join(results)
 
 def _handle_read_file(attrs: Dict, controller) -> str:
     path = attrs.get('path', '')
@@ -413,6 +506,10 @@ class ToolDispatcher:
                           'mcp_screenshot'):
             return self._dispatch_mcp(tool_name, attrs)
 
+        # Local log search
+        if tool_name == 'search_logs':
+            return _handle_search_logs(attrs, self.shared_memory)
+
         # Web search
         if tool_name == 'web_search':
             return _handle_web_search(attrs, self.shared_memory)
@@ -539,6 +636,7 @@ AVAILABLE TOOLS:
   [TOOL:kb_write domain="domain_name" type="discovery" summary="what you found" confidence="0.85"]
   [TOOL:kb_read domain="domain_name"]
   [TOOL:list_axioms]
+  [TOOL:search_logs query="phrase" scope="all"]  (Sovereign only — searches all users)
 
 MCP TOOLS (filesystem server + windows-mcp):
   [TOOL:mcp_list path="C:/CAIOS"]
@@ -554,7 +652,7 @@ RULES:
 - Only emit a tool tag if the user actually requested that action
 - After a file read, summarize or quote only the relevant sections. Do not reproduce the entire file content in your response.
 - After the tool result appears, continue your response naturally
-- For C:\CAIOS filesystem access: prefer mcp_read / mcp_list over read_file
+- For C:/CAIOS filesystem access: prefer mcp_read / mcp_list over read_file
 - For web research: use fetch_url for simple reads, browser for interactive pages
 - For KB writes: use kb_write when you discover something worth persisting
 - Delete requires user confirmation — the system handles that automatically

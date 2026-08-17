@@ -1,4 +1,4 @@
-#V06062026
+#V08142026
 #!/usr/bin/env bash
 # CAIOS — Update Check  |  github.com/ELXaber/chaos-persona
 

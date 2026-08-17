@@ -1,4 +1,4 @@
-#V08132026
+#V08142026
 # =============================================================================
 # CAIOS PROJECT ANDREW: OS Control Layer
 # CPOL-gated system operations with Asimov compliance
@@ -181,12 +181,34 @@ class OSController:
 
             headers = {
                 'User-Agent': 'CAIOS-Agent/1.0 (semantic fetch)',
-                'Accept': 'text/html,application/xhtml+xml',
+                'Accept': 'text/html,application/xhtml+xml,application/pdf,*/*',
             }
 
             req = urllib.request.Request(url, headers=headers)
             with urllib.request.urlopen(req, timeout=10) as response:
-                raw_html = response.read().decode('utf-8', errors='ignore')
+                raw_bytes = response.read()
+                content_type = response.headers.get('Content-Type', '')
+
+            from pdf_extract import is_pdf, extract_pdf_text
+            if is_pdf(content_type=content_type, url_or_path=url, magic_bytes=raw_bytes[:5]):
+                pdf_result = extract_pdf_text(raw_bytes)
+                self._log_action('semantic_fetch', url, 'allowed (pdf)')
+                if pdf_result['status'] != 'success':
+                    return {'status': 'error', 'error': pdf_result.get('error', 'PDF extraction failed')}
+                return {
+                    'status': 'success',
+                    'url': url,
+                    'extract_mode': 'pdf',
+                    'content': {
+                        'text': pdf_result['text'],
+                        'pages_total': pdf_result['pages_total'],
+                        'pages_processed': pdf_result['pages_processed'],
+                        'pages_ocr': pdf_result['pages_ocr'],
+                        'truncated': pdf_result['truncated'],
+                    }
+                }
+
+            raw_html = raw_bytes.decode('utf-8', errors='ignore')
 
             # Strip to semantic content
             result = self._extract_semantic(raw_html, extract_mode)

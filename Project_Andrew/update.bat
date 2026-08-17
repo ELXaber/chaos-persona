@@ -1,4 +1,4 @@
-@rem V06062026
+@rem V08142026
 @echo off
 setlocal EnableDelayedExpansion
 title CAIOS — Update Check
@@ -33,6 +33,7 @@ set FILES=^
     curiosity_engine.py ^
     knowledge_base.py ^
     kb_inspect.py ^
+    kb_cleanup.py ^
     os_control.py ^
     abstraction_selector.py ^
     axiom_manager.py ^
@@ -48,9 +49,12 @@ set FILES=^
     user_profile_kb.py ^
     manager_users.py ^
     caios_chat_ui.html ^
+    pdf_extract.py ^
+    update_help.py ^
     run_caios.bat ^
     run_caios.sh ^
     readme.txt ^
+    LICENSE.txt ^
     SETUP.md
 
 echo Checking for updates against GitHub...

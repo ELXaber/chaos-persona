@@ -571,6 +571,27 @@ def api_chat():
                     f"Describe the image in text, or attach a text-based file instead.]\n\n"
                     f"{user_input}"
                 )
+        elif ext == '.pdf':
+            from pdf_extract import extract_pdf_text
+            pdf_result = extract_pdf_text(str(path_obj))
+            if pdf_result['status'] == 'success' and pdf_result['text']:
+                note = ''
+                if pdf_result['pages_ocr'] > 0:
+                    note = f" ({pdf_result['pages_ocr']} page(s) required OCR)"
+                if pdf_result['truncated']:
+                    note += " [content truncated]"
+                full_input = (
+                    f"[ATTACHED PDF: {path_obj.name} — {pdf_result['pages_processed']}/{pdf_result['pages_total']} pages{note}]\n"
+                    f"{pdf_result['text']}\n"
+                    f"[END OF PDF]\n\n"
+                    f"{user_input}"
+                )
+            else:
+                reason = pdf_result.get('error', 'no extractable text found')
+                full_input = (
+                    f"[ATTACHMENT NOTICE: {path_obj.name} is a PDF, and {reason}.]\n\n"
+                    f"{user_input}"
+                )
         else:
             try:
                 content = path_obj.read_text(encoding='utf-8', errors='strict')

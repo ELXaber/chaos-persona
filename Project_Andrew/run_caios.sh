@@ -83,6 +83,7 @@ info "Installing Python packages..."
 
 # Optional
 "$PYTHON" -m pip install --quiet pyyaml 2>/dev/null && ok "pyyaml" || warn "pyyaml unavailable (optional)"
+"$PYTHON" -m pip install --quiet pymupdf 2>/dev/null && ok "pymupdf" || warn "pymupdf unavailable (optional)"
 
 # Playwright for browser control (optional)
 "$PYTHON" -m pip install --quiet playwright 2>/dev/null \
@@ -156,8 +157,8 @@ if ! ollama list 2>/dev/null | grep -q "qwen"; then
     echo "  Qwen 27B not found. Pulling now."
     echo "  This is a large download — may take 10-30 minutes."
     echo ""
-    if ! ollama pull qwen3:27b; then
-        warn "qwen3:27b failed. Trying smaller fallback..."
+    if ! ollama pull qwen3.8:27b; then
+        warn "qwen3.8:27b failed. Trying smaller fallback..."
         ollama pull qwen2.5:7b || warn "Model pull failed — set one up manually with: ollama pull <model>"
     fi
 else
@@ -180,4 +181,3 @@ echo "  Press Ctrl+C to stop."
 echo ""
 
 "$PYTHON" caios_bridge.py
-

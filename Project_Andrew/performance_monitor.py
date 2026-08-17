@@ -3,7 +3,7 @@ import time
 import json
 
 OLLAMA_URL = "http://localhost:11434/api/generate"
-MODEL = "qwen3.6:27b"
+MODEL = "qwen3.8:27b"
 PROMPT = "Write a short story about a robot in 100 words."
 
 payload = {
