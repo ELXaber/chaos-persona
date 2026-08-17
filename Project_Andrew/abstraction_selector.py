@@ -1,4 +1,4 @@
-#V08132026
+#V08172026
 # =============================================================================
 # CAIOS PROJECT ANDREW: Abstraction Selector
 # Purpose: Dynamically detect user comprehension level and select
@@ -37,15 +37,15 @@ EXPLICIT_TRIGGERS = {
         r'\bclarify\b', r'\bmake it simple\b', r'\bunderstandable\b'
     ],
     AbstractionLevel.VICTORIAN: [
-        r'\bprofessional\b', r'\bformal\b', r'\bpolite\b', r'\bexplain professionally\b', r'\victorian\b',
+        r'\bprofessional\b', r'\bpolite\b', r'\bexplain professionally\b', r'\bvictorian\b',
         r'\bin a professional manner\b', r'\bformal explanation\b', r'\beloquent\b',
-        r'\bwith decorum\b', r'\bas a gentleman\b', r'\bVictorian\b'
+        r'\bwith decorum\b', r'\bas a gentleman\b'
     ],
     AbstractionLevel.CAVEMAN: [
         r'\bbro what\b', r'\bdumb it down\b', r'\bcaveman\b',
         r'\bexplain like i\'m 5\b', r'\bexplain like im 5\b', r'\btoo complicated\b',
-        r'\bmy brain hurts\b', r'\bwhat\?{2,}\b', r'\bhuh\?{2,}\b', r'\bmungo\b',
-        r'\bfor real?\b', r'\btoo hard\b'
+        r'\bmy brain hurts\b', r'\bwhat\?{2,}', r'\bhuh\?{2,}', r'\bmungo\b',
+        r'\bfor real\?{2,}', r'\btoo hard\b'
     ],
     AbstractionLevel.CHILD: [
         r'\bkid mode\b', r'\bexplain like im a kid\b',
@@ -678,8 +678,8 @@ class AbstractionDispatcher:
         # Complaint elevation check
         user_lower = user_input.lower()
         directed_complaint = any([
-            'you' in user_lower and bool(re.search(r'\bwrong\b', user_lower)),
-            'your' in user_lower and bool(re.search(r'\bincorrect\b', user_lower)),
+            bool(re.search(r'\byou\b(?:\W+\w+){0,6}?\W+\bwrong\b', user_lower)),
+            bool(re.search(r'\byour\b(?:\W+\w+){0,6}?\W+\bincorrect\b', user_lower)),
             bool(re.search(r'\bthat\'s wrong\b', user_lower)),
             bool(re.search(r'\byou\'re wrong\b', user_lower)),
             bool(re.search(r'\bthat makes no sense\b', user_lower)),
