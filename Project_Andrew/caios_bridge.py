@@ -1,4 +1,4 @@
-#V08142026
+#V08182026
 # =============================================================================
 # CAIOS PROJECT ANDREW: Web Bridge
 # Flask server that connects caios_chat_ui.html to the existing orchestrator/caios_chat.py stack.
@@ -223,7 +223,7 @@ def _get_users() -> Dict[str, Dict]:
 
 def _list_ollama_models():
     try:
-        import ollama
+        import  ollama
         models = ollama.list().get('models', [])
         return [m['model'] for m in models]
     except Exception:
@@ -542,15 +542,15 @@ def api_chat():
             # ollama.com/library). This sends the raw image to the model
             # alongside the OCR text below, instead of relying on OCR
             # text alone. Only takes effect on the "direct Ollama"
-            # fallback path further down (the ollama.chat() call) — not
+            # fallback path further down (the ollama.chat() call) - not
             # yet threaded through orchestrator.py's CPOL/abstraction
             # pipeline, which builds its prompt as a flat string with no
             # image parameter today.
             #
             # ────────────────────────────────────────────────────────────────────
-            # import base64
-            # with open(path_obj, 'rb') as _img_f:
-            #     image_b64 = base64.b64encode(_img_f.read()).decode('utf-8')
+            import base64
+            with open(path_obj, 'rb') as _img_f:
+                image_b64 = base64.b64encode(_img_f.read()).decode('utf-8')
             # ────────────────────────────────────────────────────────────────────
 
             extracted = _ocr_image(str(path_obj))
@@ -622,6 +622,7 @@ def api_chat():
                 api_clients=shared_memory.get('api_clients'),
                 user_id=user_id,
                 enable_thinking=enable_thinking,
+                images=[image_b64] if image_b64 else None,
             )
             if isinstance(result, dict):
                 response_text = result.get('llm_response') or result.get('output', '')
@@ -646,8 +647,8 @@ def api_chat():
 
             # --- OPTIONAL: NATIVE VISION PASSTHROUGH (see attachment block above) ---
             # ────────────────────────────────────────────────────────────────────
-            # if image_b64:
-            #     user_msg['images'] = [image_b64]
+            if image_b64:
+                user_msg['images'] = [image_b64]
             # ────────────────────────────────────────────────────────────────────
 
             conv.append(user_msg)

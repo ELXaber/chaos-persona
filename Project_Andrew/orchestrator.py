@@ -1,4 +1,4 @@
-#V08132026
+#V08182026
 # =============================================================================
 # CAIOS PROJECT ANDREW: Hardened Orchestrator
 # This acts as the central nervous system connecting everything
@@ -723,7 +723,8 @@ def _decay_security_distress(shared_memory: dict) -> None:
 
 def system_step(user_input: str, prompt_complexity: str = "low",
                 response_stream=None, api_clients=None,
-                user_id: Optional[str] = None, enable_thinking: Optional[bool] = None):
+                user_id: Optional[str] = None, enable_thinking: Optional[bool] = None,
+                images: Optional[list] = None):
     """
     Main orchestration function for unified system.
     Args:
@@ -731,6 +732,7 @@ def system_step(user_input: str, prompt_complexity: str = "low",
         prompt_complexity: "low", "medium", or "high"
         response_stream: Optional response stream for curiosity engine
         api_clients: Optional override (useful for testing or multi-process)
+        images: Optional list of base64-encoded images
     Returns:
         CPOL result dict or ARL plugin result
     """
@@ -1330,7 +1332,8 @@ def system_step(user_input: str, prompt_complexity: str = "low",
                     contradiction_density=density,
                     evidence_score=cpol_result.get('confidence', 0.5),
                     tool_addendum=shared_memory.get('tool_addendum', ''),
-                    enable_thinking=enable_thinking
+                    enable_thinking=enable_thinking,
+                    images=images
                 )
             else:
                 # API client path (OpenAI, Anthropic, xAI, Google)

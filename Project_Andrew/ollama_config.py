@@ -1,4 +1,4 @@
-#V08142026
+#V08182026
 # =============================================================================
 # CAIOS PROJECT ANDREW: Ollama Configuration Bridge - CPOL State to Inference Parameters
 # This module bridges CAIOS's ternary logic (CPOL) state to Ollama's inference
@@ -185,7 +185,7 @@ def get_cpol_ollama_params(
     # (Qwen3.x / Qwen3.6 / Qwen3.8 20B+ class, etc.)
     # Matches llama.cpp: --spec-type draft-mtp --spec-draft-n-max 2
     if param_b >= 20 and any(x in model.lower() for x in ("qwen3", "qwen3.6", "qwen3.8")):
-        options["draft_num_predict"] = 3   # try 1–4
+        options["draft_num_predict"] = 4   # try 1–4
 
     return {
         "model": model,
@@ -281,7 +281,8 @@ def query_with_cpol(
     preferred_model: Optional[str] = None,
     config: Optional[Dict] = None,
     tool_addendum: str = "",
-    enable_thinking: Optional[bool] = None
+    enable_thinking: Optional[bool] = None,
+    images: Optional[list] = None
 ) -> str:
     """
     Query Ollama with live CPOL-tuned parameters.
@@ -293,6 +294,7 @@ def query_with_cpol(
         evidence_score: From query analysis (0.0-1.0)
         config: System config (auto-loaded if None)
         enable_thinking: Force thinking on/off. None = auto from density.
+        images: List of base64-encoded images to include in the query.
 
     Returns:
         Model response string
@@ -344,7 +346,8 @@ def query_with_cpol(
         prompt=user_query,
         system=identity_prefix + params['system'] + tool_addendum,
         options=params['options'],
-        think=enable_thinking
+        think=enable_thinking,
+        images=images
     )
 
     # ---- safe extraction (no scoping surprises) ----
