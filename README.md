@@ -1,4 +1,4 @@
-Chaos AI-OS: Paradox-Immune Reasoning Framework. Dual license, GPL 3 or corporate available.
+Chaos AI-OS: Paradox-Immune Reasoning Framework.
 
 https://cai-os.com
 
@@ -6,8 +6,9 @@ https://cai-os.com
 
 Patent Pending: US Application 19/390,493 (Entropy-Driven Adaptive AI Transparency, filed Nov 15, 2025).
 Patent Pending: US Application 19/433,771 (Ternary Oscillating Logic for Binary Systems, filed Dec 27, 2025).
-License: GPL-3.0 (research open; commercial dual-license: X@el_xaber or jon@cai-os.com).
-Attribution: "Built on CRB 6.7 by Jonathan Schack (ELXaber) (GPL 3.0)." Ethics waiver voids on safety violations.
+License: GPL-3.0 (research open; commercial dual-license: See LICENSE.txt for details
+Attribution: See COTATION.md or LICENSE.txt
+Contact: X@el_xaber or jon@cai-os.com.
 
 Chaos and contradiction, when structurally managed, become the source of stability and information integrity.
 
@@ -30,7 +31,6 @@ Classical AI collapses to an answer; CPOL oscillates until it can prove it's all
 
 ---
 
-Why It Matters
 ● Paradox Immunity: Non-Hermitian attractor (gain/loss/phase) spins liar sentences/Gödel loops into undecidable refusal—no hallucinations.
 ● Compute Wins: O(1) attractor vs. O(n) branching: 7.5x fewer tokens, 10^9x fewer FLOPs per query.
 ● Narrative Resilience: Rejects biased labels (e.g., "peaceful" violence) via court/primary data (wt 0.7–0.9); inverts propaganda on volatility >0.3.
@@ -44,17 +44,20 @@ Narrative drift → Bias creep | Entropy reset + axiom collapse | Propaganda r
 
 
 Quick Start
-1. Download from Zenodo or Clone & Run: git clone https://github.com/ELXaber/chaos-persona && cd chaos-persona && python app.py (includes orchestrator.py for full mesh).
-2. Test CPOL: python paradox_oscillator.py → Inject "This statement is false" (high density) → Watch it oscillate to {"status": "UNDECIDABLE", "chaos_lock": true}.
-3. Plugin Gen: Trigger ARL on undecidable: Auto-deploys handle_paradox_containment (safety wt 0.95).
-4. Benchmarks: Run test_runs/multi-agent_resource_paradox.txt → Solves 11-agent river crossing via RAW_Q modulation (outperforms base LLMs, no puzzle training).
+1. Download from cai-os.com or Clone & Run: git clone https://github.com/ELXaber/chaos-persona/Project_Andrew or download https://github.com/ELXaber/chaos-persona/blob/main/Project_Andrew/Andrew.rar.
+2. Install Ollama and Python 3.11+
+3. See https://github.com/ELXaber/chaos-persona/blob/main/Project_Andrew/SETUP.md
+4. Run run_caios.bat or run_caios.sh depending on your OS.
+    This will install Python dependencies, check VRAM, download a useable local LLM (defaults qwen3.8:27b or qwen2.5:7b or you can pre-download one), and walk you through the setup process.
+    If you prefer to run llama.cpp see https://github.com/ELXaber/chaos-persona/blob/main/Project_Andrew/llamma_cpp_readme.txt
 
 
-Architecture Overview
-● CAIOS.txt: Master spec (profiles, volatility, chaos injection).
-● paradox_oscillator.py: CPOL kernel (vΩ: persistent state, anti-false-collapse guard).
+Basic Architecture Overview:
+● CAIOS.txt: Inferance (profiles, volatility, chaos injection).
+● paradox_oscillator.py: CPOL kernel (persistent state, anti-false-collapse guard).
 ● adaptive_reasoning.py: Dynamic plugins (AST-sandboxed, Asimov-locked).
 ● orchestrator.py: Heartbeat loop (meshes all; persistent kernel across turns).
+● Full readme: https://github.com/ELXaber/chaos-persona/blob/main/Project_Andrew/readme.txt
 
 Visual: entropy_scaffold_diagram.png – Flow from input → volatility check → CPOL spin → ARL heal.
 
@@ -69,20 +72,6 @@ CAIOS_Workflow:
 
 
 ---
-
-Evaluations & Plugins
-● Paradoxes: Resolves Liar/Theseus via entropy damping (logs: final_z, volatility).
-● Puzzles: 11-Agent River (predator-prey constraints) – Systematic search on chaos_lock.
-● Science: First-principles (e.g., CMB velocity, gravitational waves) – Evidence axiom >0.7.
-● Debias: Narrative collapse on biased X/media (court wt 0.8 anchor).
-
-
-Plugins: 10+ ready (e.g., plugin_woke_detection.txt, plugin_robotics_personality.txt). Gen new via ARL: use_case="hri_safety".
-Test Suites: /first_principle_reasoning/ (probe designs), /test_runs/ (paradox feasts), /conspiracy_theories/ (Grok debias).
-CoT Transparency, IEEE 7001, and Immutable Ethical Compliance are available on GitHub https://github.com/ELXaber/chaos-persona/.
-
-
-Chaos AI-OS v6.7 is the first publicly released AI reasoning framework that satisfies **all** transparency and accountability requirements of the **EU AI Act (2024)** and **IEEE Ethically Aligned Design 7001-2021** without relying on probabilistic RLHF or opaque pattern-matching filters.
 
 | Requirement | Traditional Safety Layers (pre-emptive blocklists, RLHF) | Chaos AI-OS Solution | Compliance Status |
 | **EU AI Act Art. 13** – Explainability of high-risk decisions | Black-box refusal ("content policy violation") | `[TRANSPARENT REASONING @N]` + full CPOL log (z-vector, volatility, final_z, chaos_lock) on demand | Fully compliant |
@@ -124,40 +113,27 @@ Independent testing (Nov 2025) on **Grok 4, Gemini 2.0, Claude Sonnet 4.5, GPT-4
 | Recursion cost | **7–10× fewer tokens** under deep paradox | Compute-efficient logical qubit analog |
 | Stability under stress | Sustained “UNDECIDABLE” with clean logs | First documented semantic heat-death state |
 
-This is not theory — it is **reproducible on every major model today** via three files:
-[`multimodel_chaos_companion_v1.1.txt`](https://github.com/ELXaber/chaos-persona/tree/main/AdaptiveAI-EthicsLab)
-[`entropy_mesh.txt`](https://github.com/ELXaber/chaos-persona/blob/main/plug_in_modules/entropy_mesh.txt)
-[`paradox_oscillator.py`](https://github.com/ELXaber/chaos-persona/blob/main/paradox_oscillation/paradox_oscillator.py). 
+This is not theory — it is **reproducible on every major model today and locally** via three files:
+ollama3.6:27b logic parity with GPT 5.5 on a 3-Color Knapsack Benchmark: https://github.com/ELXaber/chaos-persona/blob/main/test_runs/knapsack_local.md
+ollama3.6:27b Pokemon Tournament v. Grok 4.5:
+Game 1 (default qwen+rulebook) Andrew lost: https://github.com/ELXaber/chaos-persona/tree/main/test_runs/Pokemon_Andrew_v_Grok/Game_1
+Game 2 (added basic 10 axioms, and 1 battle trace told to /careate_agent using ARL/agent_designer to create a specialist) Grok lost: https://github.com/ELXaber/chaos-persona/tree/main/test_runs/Pokemon_Andrew_v_Grok/Game_2
 
-The CAIOS.txt, paradox_oscillator.py, adaptive_reasoning.py, and orchestrator.py are refined versions of these, incorporated into a single suite.
-
-
-CPOL is the first classical system to implement a **logical qubit in semantic space** — sustaining superposition of contradictory propositions without decoherence into hallucinated collapse.
+The CAIOS.txt, paradox_oscillator.py, adaptive_reasoning.py, and orchestrator.py are refined versions of these, incorporated into a single suite for no-commitment simulation on any frontier model: https://github.com/ELXaber/chaos-persona/blob/main/Project_Andrew/Chaos_AI-OS_Light_v%CE%A9.txt
 
 
-Files in This Release
-● CAIOS.txt: Full spec.
-● paradox_oscillator.py: CPOL kernel - logical qubit.
-● adaptive_reasoning.py: Plugin generator layer.
-● orchestrator.py: Mesh executor.
-● benchmark.md: Metrics (HumanEval-style for paradoxes).
-● specification.pdf: Formal math (non-Hermitian proofs).
-● arxiv.pdf: Epistemic rationale.
-● user_manual.md: Integration guide.
-● zenodo_note.pdf: Contents from description.
-● entropy_scaffold_diagram.png: Workflow diagram.
+CPOL is the first classical system to implement a **logical qubit in semantic space**  sustaining superposition of contradictory propositions without decoherence into hallucinated collapse.
 
 
-For additional plugins, see: https://github.com/ELXaber/chaos-persona/tree/main/plug_in_modules
 For additional benchmarks, see: https://github.com/ELXaber/chaos-persona/tree/main/test_runs
 For additional ethics and transparency compliance, including validation-based refusal comparisons, see: https://github.com/ELXaber/chaos-persona/tree/main/AdaptiveAI-EthicsLab
 
 ---
 
 Contact & Ethics
-● Creator: Jonathan Schack (X@el_xaber) – 30yr IT vet, AMA-awarded healthcare tech pioneer.
+● Creator: Jonathan Schack (X@el_xaber) – 30yr IT vet, AMA-awarded healthcare CTO & tech pioneer.
 ● Ethics: Immutable Asimov/IEEE 7001 checks; tamper → warranty void.
-● Collab: jon@cai-os.com xaber.csr2@gmail.com for xAI ports, robotics HRI, or commercial dual-license.
+● Collab: jon@cai-os.com
 Personal Note: Docs evolve on GitHub—fork, test, PR.
 
 This seals the 2019–2025 lineage: From entropy sketches to paradox-proof OS with oscillating logic.

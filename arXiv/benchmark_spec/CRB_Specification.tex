@@ -1,0 +1,22 @@
+\documentclass[a4paper,11pt]{article}
+\usepackage{amsmath,amssymb,geometry,graphicx}
+\usepackage{hyperref,booktabs,parskip}
+\usepackage[T1]{fontenc}
+\usepackage{times}
+\geometry{margin=1in}
+\title{CRB Specification for Chaos-Driven Reasoning Benchmarks}
+\author{Chaos Generator Team}
+\date{June 20, 2025}
+\begin{document}
+\maketitle
+\section{Introduction}
+The Chaos Reasoning Benchmark (CRB) evaluates AI models under dynamic constraints, such as inverted axioms or shifting entropy seeds. This specification outlines the framework for testing reasoning stability.
+\section{Methodology}
+\begin{itemize}
+\item \textbf{Entropy Seed}: Initialize with RAW_Q (e.g., 42).
+\item \textbf{Swap Trigger}: Apply SHA-256 swaps at prime steps.
+\item \textbf{Axiom Collapse}: Invert one constraint (e.g., Dana ≠ Steak → Dana ≤ B).
+\end{itemize}
+\section{Evaluation Metrics}
+Cohesion, creativity, and constraint adherence are scored via automated and human review.
+\end{document}
