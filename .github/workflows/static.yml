@@ -31,18 +31,22 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Delete old github-pages artifacts
-        uses: gha-remove-artifacts@v2
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          age: "0 seconds"
-          skip-recent: 0
       - name: Setup Pages
         uses: actions/configure-pages@v5
+      - name: Delete old github-pages artifacts from current run
+        run: |
+          ARTIFACTS=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+            "https://api.github.com/repos/${{ github.repository }}/actions/runs/${{ github.run_id }}/artifacts?name=github-pages" \
+            | jq -r '.artifacts[].id')
+          
+          for ARTIFACT_ID in $ARTIFACTS; do
+            curl -X DELETE -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+              "https://api.github.com/repos/${{ github.repository }}/actions/artifacts/$ARTIFACT_ID"
+            echo "Deleted artifact $ARTIFACT_ID"
+          done
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          # Upload entire repository
           path: '.'
       - name: Deploy to GitHub Pages
         id: deployment
