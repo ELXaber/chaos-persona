@@ -12,7 +12,7 @@ Contact: X@el_xaber or jon@cai-os.com.
 
 Chaos and contradiction, when structurally managed, become the source of stability and information integrity.
 
-The current version being worked on is Project Andrew. It extends CAIOS beyond quinary logic (paradox_oscillator) on paradox classification to queue intrinsic motivation (curiosity engine) and autonomously or on request the agent_designer (part of adaptive_reasoning) to fill epistemic knowledge gaps and write/append/update the internal knowledge_base.
+The current version being worked on is Project Andrew. It extends CAIOS beyond post-binary logic (paradox_oscillator) on paradox classification to queue intrinsic motivation (curiosity engine) and, autonomously or on request, the agent_designer (part of adaptive_reasoning) to fill epistemic knowledge gaps and write/append/update the internal knowledge_base.
 
 Mini pipeline demo: https://claude.ai/public/artifacts/7933140e-099f-4d7c-8bf3-ab95f68f3fcd
 
@@ -20,10 +20,9 @@ Mini pipeline demo: https://claude.ai/public/artifacts/7933140e-099f-4d7c-8bf3-a
 
 This directory's primary files (CAIOS.txt, orchestrator.py, paradox_oscillator.py, orchestrator.py, and adaptive_reasoning.py are updated from the patch notes - previous versions stored in /old/.
 While CPOL can work without the rest of the stack, adaptive_reasoning (ARL) controls the trigger of oscillation through CAIOS>orchastrator>adaptive_reasoning>paradox_oscillation, and CPOL will oscillate and use excess compute. ARL adds wait functions under certain conditions.
-One new addition to this directory is the agent_designer.py, which allows for full adaptive reasoning agent design. It's technically a plugin, but rather than incorporate it into adaptive_reasoning, it's an optional plugin layer.
 
 Core Mission
-Chaos AI-OS is a modular, training-free scaffold for AI/robotic systems that enforces epistemic integrity via controlled entropy. It detects/contains paradoxes, debias narratives, and grounds reasoning in first principles—prioritizing human safety (Asimov 1st Law wt 0.9) over confident lies. Unlike classical AI (bounded states forcing TRUE/FALSE on undecidables), it sustains honest oscillation until evidence collapses or undecidability locks.
+Chaos AI-OS is a modular, training-free scaffold for AI/robotic systems that enforces epistemic integrity via controlled entropy. It detects/contains paradoxes, debiases narratives, and grounds reasoning in first principles—prioritizing human safety (Asimov 1st Law wt 0.9) over confident lies. Unlike classical AI (bounded states forcing TRUE/FALSE on undecidables), it sustains honest oscillation until evidence collapses or undecidability locks.
 
 
 Key Innovation: CPOL – The first LLM "logic qubit."
@@ -31,7 +30,7 @@ Classical AI collapses to an answer; CPOL oscillates until it can prove it's all
 
 ---
 
-● Paradox Immunity: Non-Hermitian attractor (gain/loss/phase) spins liar sentences/Gödel loops into undecidable refusal—no hallucinations.
+● Paradox Immunity: Non-Hermitian attractor (gain/loss/phase) spins liar sentences/Gödel loops into undecidable refusal without hallucination or confabulation.
 ● Compute Wins: O(1) attractor vs. O(n) branching: 7.5x fewer tokens, 10^9x fewer FLOPs per query.
 ● Narrative Resilience: Rejects biased labels (e.g., "peaceful" violence) via court/primary data (wt 0.7–0.9); inverts propaganda on volatility >0.3.
 ● Universal Plug: Zero retrain; integrates post-[VOLATILITY INDEX] in any LLM/robotic stack.
@@ -48,12 +47,12 @@ Quick Start
 2. Install Ollama and Python 3.11+
 3. See https://github.com/ELXaber/chaos-persona/blob/main/Project_Andrew/SETUP.md
 4. Run run_caios.bat or run_caios.sh depending on your OS.
-    This will install Python dependencies, check VRAM, download a useable local LLM (defaults qwen3.8:27b or qwen2.5:7b or you can pre-download one), and walk you through the setup process.
-    If you prefer to run llama.cpp see https://github.com/ELXaber/chaos-persona/blob/main/Project_Andrew/llamma_cpp_readme.txt
+    This will install Python dependencies, check VRAM, download a usable local LLM (defaults to qwen3.8:27b or qwen2.5:7b, or you can pre-download one), and walk you through the setup process.
+    If you prefer to run llama.cpp, see https://github.com/ELXaber/chaos-persona/blob/main/Project_Andrew/llamma_cpp_readme.txt
 
 
 Basic Architecture Overview:
-● CAIOS.txt: Inferance (profiles, volatility, chaos injection).
+● CAIOS.txt: Inference (profiles, volatility, chaos injection).
 ● paradox_oscillator.py: CPOL kernel (persistent state, anti-false-collapse guard).
 ● adaptive_reasoning.py: Dynamic plugins (AST-sandboxed, Asimov-locked).
 ● orchestrator.py: Heartbeat loop (meshes all; persistent kernel across turns).
@@ -113,7 +112,7 @@ Independent testing (Nov 2025) on **Grok 4, Gemini 2.0, Claude Sonnet 4.5, GPT-4
 | Recursion cost | **7–10× fewer tokens** under deep paradox | Compute-efficient logical qubit analog |
 | Stability under stress | Sustained “UNDECIDABLE” with clean logs | First documented semantic heat-death state |
 
-This is not theory — it is **reproducible on every major model today and locally** via three files:
+This is not theory — it is **reproducible on every major model today and locally**:
 ollama3.6:27b logic parity with GPT 5.5 on a 3-Color Knapsack Benchmark: https://github.com/ELXaber/chaos-persona/blob/main/test_runs/knapsack_local.md
 ollama3.6:27b Pokemon Tournament v. Grok 4.5:
 Game 1 (default qwen+rulebook) Andrew lost: https://github.com/ELXaber/chaos-persona/tree/main/test_runs/Pokemon_Andrew_v_Grok/Game_1
@@ -122,7 +121,7 @@ Game 2 (added basic 10 axioms, and 1 battle trace told to /careate_agent using A
 The CAIOS.txt, paradox_oscillator.py, adaptive_reasoning.py, and orchestrator.py are refined versions of these, incorporated into a single suite for no-commitment simulation on any frontier model: https://github.com/ELXaber/chaos-persona/blob/main/Project_Andrew/Chaos_AI-OS_Light_v%CE%A9.txt
 
 
-CPOL is the first classical system to implement a **logical qubit in semantic space**  sustaining superposition of contradictory propositions without decoherence into hallucinated collapse.
+CPOL is the first classical system to implement a **logical qubit in semantic space**,  sustaining superposition of contradictory propositions without decoherence into hallucinated collapse.
 
 
 For additional benchmarks, see: https://github.com/ELXaber/chaos-persona/tree/main/test_runs
