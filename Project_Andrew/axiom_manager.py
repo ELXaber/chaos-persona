@@ -1,4 +1,4 @@
-#V08132026
+#V08192026
 # =============================================================================
 # CAIOS PROJECT ANDREW: Axiom Manager & Temporal Update Pipeline
 # Purpose: Enable local knowledge updates that override model training data without retraining. Kills the data center requirement.
@@ -385,27 +385,27 @@ class AxiomManager:
         except Exception:
             pass  # Silent fail; memory-only is fine
 
-    def get_relevant_history(self, domain: Optional[str] = None, limit: int = 6) -> List[Dict]:
+    def get_relevant_history(self, domain: Optional[str] = None, limit: int = 6,
+                          user_id: Optional[str] = None) -> List[Dict]:
         """
         Retrieve recent conversation history, optionally filtered by domain.
         Args:
             domain: Optional domain filter (e.g., 'apple_ceo')
             limit: Number of turns to return
+            user_id: Optional user ID filter
         Returns:
             List of recent conversation turns (dicts with user/assistant/metadata)
         """
         if not hasattr(self, 'conversation_history'):
             self.conversation_history = []
-
+        pool = self.conversation_history
+        if user_id:
+            # Filter by user ID in metadata
+            pool = [t for t in pool if t.get('metadata', {}).get('user_id') == user_id]
         if domain:
             # Filter by domain in metadata
-            filtered = [
-                t for t in self.conversation_history
-                if t.get('metadata', {}).get('domain') == domain
-            ]
-            return filtered[-limit:]
-
-        return self.conversation_history[-limit:]
+            pool = [t for t in pool if t.get('metadata', {}).get('domain') == domain]
+        return pool[-limit:]
 
     def clear_history(self):
         """Clear the conversation history (for new sessions)."""

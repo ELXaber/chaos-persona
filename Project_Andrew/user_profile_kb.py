@@ -1,4 +1,4 @@
-#V08132026
+#V08192026
 # =============================================================================
 # CAIOS PROJECT ANDREW: User Profile Knowledge Base
 # Stores per-user personality state, emotional baselines, abstraction level, and preferences
@@ -111,6 +111,9 @@ def _default_profile(user_id: str) -> Dict[str, Any]:
             'emotional_intensity': 0.3
         },
 
+        # [CPOL State] - last known state for continuity
+        'last_cpol_state': None,
+
         # [Neurosymbolic Value Learning] - trust weights
         'neurosymbolic': {
             'user_input': 0.9,
@@ -131,6 +134,21 @@ def _default_profile(user_id: str) -> Dict[str, Any]:
         # [Conversation axioms] - compressed preferences
         'axioms': []
     }
+
+def save_cpol_state(user_id: str, cpol_result: Dict[str, Any]) -> None:
+    """Persist a trimmed CPOL snapshot so the next login can resume context."""
+    profile = load_user_profile(user_id)
+    profile['last_cpol_state'] = {
+        'status': cpol_result.get('status'),
+        'domain': cpol_result.get('domain'),
+        'volatility': cpol_result.get('volatility'),
+        'final_z': cpol_result.get('final_z'),
+        'timestamp': datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%S.%f') + "Z"
+    }
+    save_user_profile(user_id, profile)
+
+def get_cpol_state(user_id: str) -> Optional[Dict[str, Any]]:
+    return load_user_profile(user_id).get('last_cpol_state')
 
 def is_child_profile(user_id: str) -> bool:
     """Quick check for child-appropriate safety thresholds."""
@@ -303,6 +321,8 @@ def create_user_profile_kb():
         'update_complaint': update_complaint_state,
         'get_complaint': get_complaint_state,
         'update_distress': update_emotional_distress,
+        'save_cpol_state': save_cpol_state,
+        'get_cpol_state': get_cpol_state,
         'summary': get_profile_summary
     }
 

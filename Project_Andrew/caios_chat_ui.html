@@ -1,4 +1,4 @@
-<!-- V08142026 -->
+<!-- V08232026 -->
 <!-- CAIOS PROJECT ANDREW: UX -->
 <!-- Copyright (c) 2025 Jonathan Schack. License: GPL-3.0 -See LICENSE for details- Contact: X @el_xaber or cai-os.com -->
 <!DOCTYPE html>
@@ -8,6 +8,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>CAIOS — Andrew</title>
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
 <style>
 :root {
   --bg:       #0e0e0e;
@@ -364,6 +367,7 @@ label.compose-btn{cursor:pointer}
       </div>
       <button class="tb-icon" id="btn-whoami" title="/whoami">⊕</button>
       <button class="tb-icon" id="btn-think" title="Toggle thinking mode (currently: Auto)">T</button>
+      <button class="tb-icon" id="btn-logout" title="Logout">🚪</button>
     </div>
   </div>
 
@@ -737,7 +741,23 @@ function appendMsg(role, text, cpol_status, domain, attachName, skipScroll) {
       /(\[TOOL RESULT\][^\[]*)/g,
       (match) => '\n```\n' + match.trim() + '\n```\n'
     );
-    bodyHtml = marked.parse(processed);
+
+    // Shield $...$ and $$...$$ math from marked's markdown parsing
+    const mathBlocks = [];
+    const shielded = processed.replace(
+      /(\$\$[\s\S]+?\$\$|\$[^\$\n]+?\$)/g,
+      (match) => {
+        mathBlocks.push(match);
+        return `\u0000MATH${mathBlocks.length - 1}\u0000`;
+      }
+    );
+
+    let html = marked.parse(shielded);
+
+    // Restore math segments after markdown parsing
+    html = html.replace(/\u0000MATH(\d+)\u0000/g, (_, i) => mathBlocks[Number(i)]);
+
+    bodyHtml = html;
   } else {
     bodyHtml = (text || '').replace(/</g,'&lt;').replace(/\n/g,'<br>');
   }
@@ -765,6 +785,19 @@ function appendMsg(role, text, cpol_status, domain, attachName, skipScroll) {
     </div>`;
 
   messages.appendChild(wrap);
+
+  // Render math after the bubble is in the DOM
+  if (role === 'andrew' && typeof renderMathInElement !== 'undefined') {
+    const bubble = wrap.querySelector('.bubble');
+    renderMathInElement(bubble, {
+      delimiters: [
+        {left: '$$', right: '$$', display: true},
+        {left: '$', right: '$', display: false}
+      ],
+      throwOnError: false
+    });
+  }
+
   if (!skipScroll) messages.scrollTop = messages.scrollHeight;
   return wrap;
 }
@@ -1023,6 +1056,16 @@ $('btn-whoami').addEventListener('click', () => {
   msgInput.value = '/whoami';
   msgInput.dispatchEvent(new Event('input'));
   sendMessage();
+});
+
+$('btn-logout').addEventListener('click', () => {
+  S.token = null; S.userId = null; S.display = null; S.modelId = null;
+  shell.classList.remove('visible');
+  overlay.style.display = 'flex';
+  panelModel.style.display = 'none';
+  panelAuth.style.display = 'block';
+  messages.innerHTML = '';
+  $('inp-user').value = ''; $('inp-pw').value = '';
 });
 
 // Local UI state for the three-way cycle

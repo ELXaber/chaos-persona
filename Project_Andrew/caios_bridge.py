@@ -1,4 +1,4 @@
-#V08182026
+#V08192026
 # =============================================================================
 # CAIOS PROJECT ANDREW: Web Bridge
 # Flask server that connects caios_chat_ui.html to the existing orchestrator/caios_chat.py stack.
@@ -21,7 +21,7 @@ import platform
 import atexit
 import socket
 from datetime import datetime, timezone
-from typing import Dict, Any
+from typing import Dict, Optional, Any
 
 import faulthandler
 faulthandler.enable()
@@ -255,7 +255,7 @@ def _kb_stats() -> Dict:
     return {'total_discoveries': total, 'active_axioms': axioms}
 
 
-def _load_history(n: int = 30):
+def _load_history(n: int = 30, user_id: Optional[str] = None):
     log = pathlib.Path('knowledge_base') / 'conversation_log.jsonl'
     if not log.exists():
         return []
@@ -264,7 +264,10 @@ def _load_history(n: int = 30):
         with open(log, 'r', encoding='utf-8') as f:
             for line in f:
                 try:
-                    entries.append(json.loads(line.strip()))
+                    entry = json.loads(line.strip())
+                    if user_id and entry.get('user_id') != user_id:
+                        continue
+                    entries.append(entry)
                 except Exception:
                     continue
     except Exception:
@@ -424,6 +427,16 @@ def api_auth():
             profile['session_count'] = profile.get('session_count', 0) + 1
             upkb['save'](username, profile)
             shared_memory['personality_weights'] = profile.get('personality', {})
+
+            # Per-user distress and CPOL continuity
+            # Per-user isolation (chatbot/web UI only). For HRI/robotics deployments where
+            # CAIOS runs as one embodied system serving multiple people, distress_density
+            # and last_cpol_result are meant to stay global/shared; do not namespace
+            # these per-user in that context.
+            shared_memory['distress_density'] = profile.get(
+                'emotional_baseline', {}
+            ).get('distress_density', 0.0)
+            shared_memory['last_cpol_result'] = profile.get('last_cpol_state')
     except Exception:
         pass
 
@@ -690,7 +703,7 @@ def api_history():
     if token not in _sessions:
         return jsonify({'error': 'Invalid session'}), 401
 
-    entries = _load_history(n)
+    entries = _load_history(n, user_id=_sessions[token].get('user_id'))
     return jsonify({'entries': entries})
 
 # =============================================================================

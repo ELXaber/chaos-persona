@@ -1,4 +1,4 @@
-#V08182026
+#V08232026
 # =============================================================================
 # CAIOS PROJECT ANDREW: Hardened Orchestrator
 # This acts as the central nervous system connecting everything
@@ -19,21 +19,11 @@ import importlib
 import paradox_oscillator as cpol
 from paradox_oscillator import CPOL_Kernel
 import adaptive_reasoning as arl
-from system_identity import SystemIdentity
+from system_identity import SystemIdentity, get_effective_asimov_weight as get_identity_tiebreak_weight
 
-try:
-    asimov_logic = importlib.import_module("asimov_logic")
-    ASIMOV_AVAILABLE = True
-    get_effective_asimov_weight = getattr(asimov_logic, "get_effective_asimov_weight", None)
-    if get_effective_asimov_weight is None:
-        raise ImportError("asimov_logic missing get_effective_asimov_weight")
-except ImportError:
-    ASIMOV_AVAILABLE = False
-    get_effective_asimov_weight = None
-    print("[INFO] asimov_logic not available. Falling back to default safety weights.")
-
+# Default Asimov law weights used when no external policy configuration is loaded.
 ASIMOV_WEIGHTS = {
-    'law_2_obey': 0.7
+    'law_2_obey': 0.7,
 }
 
 # Optional imports with fallbacks
@@ -217,19 +207,15 @@ class CAIOSOrchestrator:
         """Calculates safety and authority weights before allowing a response."""
         identity = self.shared_memory.get('system_identity')
 
-        # Calculate effective Law 2 weight with user authority
-        if identity and get_effective_asimov_weight is not None:
-            effective_law_2 = get_effective_asimov_weight(
+        if identity:
+            effective_law_2 = get_identity_tiebreak_weight(
                 ASIMOV_WEIGHTS['law_2_obey'],
                 user_id,
                 identity
             )
-        elif identity:
-            effective_law_2 = ASIMOV_WEIGHTS['law_2_obey']
         else:
-            effective_law_2 = 0.7 # Default fallback
+            effective_law_2 = 0.7  # Default fallback
 
-        # Logic for ALLOW/REFUSE
         return {
             'decision': 'ALLOW',
             'reason': 'No primary directive violations detected.',
@@ -425,6 +411,22 @@ CRB_CONFIG = {
     'factual_evidence_wt': 0.7,
     'narrative_framing_wt': 0.5
 }
+
+def _get_effective_crb_config(user_id: Optional[str]) -> Dict:
+    """
+    Per-request copy of CRB_CONFIG with asimov_second_wt adjusted for the
+    current user's authority tier (primary user +0.01 tiebreak, via
+    system_identity.get_effective_asimov_weight). Copied fresh each call so
+    verify_ethics()'s in-place crisis mutation never leaks back into the
+    shared CRB_CONFIG baseline (see note below).
+    """
+    config = CRB_CONFIG.copy()
+    identity = shared_memory.get('system_identity')
+    if identity and user_id:
+        config['asimov_second_wt'] = get_identity_tiebreak_weight(
+            CRB_CONFIG['asimov_second_wt'], user_id, identity
+        )
+    return config
 
 # =============================================================================
 # Session Timeout & Soverign Tiering Config
@@ -785,7 +787,9 @@ def system_step(user_input: str, prompt_complexity: str = "low",
         if AMGR_AVAILABLE and shared_memory.get('axiom_manager'):
             axiom_mgr = shared_memory['axiom_manager']
             detected_domain = shared_memory.get('last_cpol_result', {}).get('domain', 'general')
-            hist_turns = axiom_mgr.get_relevant_history(detected_domain, limit=6)
+            hist_turns = axiom_mgr.get_relevant_history(
+                detected_domain, limit=6, user_id=shared_memory.get('active_user')
+            )
             if hist_turns:
                 lines = []
                 for turn in hist_turns:
@@ -1427,6 +1431,15 @@ def system_step(user_input: str, prompt_complexity: str = "low",
                 'timestep': ts
             }
         )
+    # Persist CPOL snapshot for cross-session continuity
+    if USER_KB_AVAILABLE and shared_memory.get('user_profile_kb'):
+        try:
+            shared_memory['user_profile_kb']['save_cpol_state'](
+                shared_memory.get('active_user', 'default'),
+                cpol_result
+            )
+        except Exception:
+            pass
 
     return cpol_result
 
