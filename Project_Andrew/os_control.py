@@ -1,4 +1,4 @@
-#V08142026
+#V08232026
 # =============================================================================
 # CAIOS PROJECT ANDREW: OS Control Layer
 # CPOL-gated system operations with Asimov compliance
@@ -44,6 +44,7 @@ class OSController:
         self.cpol = CPOL_Kernel()
         self.headless_mode = False
         self.action_log = []
+        self.confirm_callback = None
 
     def _gate_action(self, action_type: str, target: str,
                      context: str = "") -> Dict[str, Any]:
@@ -96,6 +97,8 @@ class OSController:
         """
         if not self.require_confirmation:
             return True
+        if self.confirm_callback is not None:
+            return self.confirm_callback(action_type, target)
         try:
             print(f"\n[OS CONTROL] ⚠️  CONFIRMATION REQUIRED")
             print(f"[OS CONTROL] Action: {action_type}")

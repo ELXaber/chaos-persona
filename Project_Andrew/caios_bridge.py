@@ -1,4 +1,4 @@
-#V08192026
+#V08232026
 # =============================================================================
 # CAIOS PROJECT ANDREW: Web Bridge
 # Flask server that connects caios_chat_ui.html to the existing orchestrator/caios_chat.py stack.
@@ -20,6 +20,8 @@ import subprocess
 import platform
 import atexit
 import socket
+import threading
+import queue
 from datetime import datetime, timezone
 from typing import Dict, Optional, Any
 
@@ -143,6 +145,7 @@ def _wait_until_ready(check_fn, timeout=20, interval=0.5) -> bool:
         time.sleep(interval)
     return False
 
+
 def _start_service(name: str, cmd: str, check_fn, timeout: int = 20) -> None:
     try:
         if check_fn():
@@ -187,6 +190,45 @@ def start_services() -> None:
         client.reset_availability_cache()
     else:
         print('[BRIDGE] caios_mcp_client.py not found — MCP servers not auto-started')
+
+
+def _bridge_confirm(action_type: str, target: str, timeout: int = 30) -> bool:
+    """
+    Web bridge confirmation via server terminal, with a timeout so a missed
+    or forgotten prompt can't hang the whole process indefinitely. input()
+    itself can't be cancelled cross-platform, so we run it in a daemon
+    thread and just stop waiting on it after `timeout` seconds; the
+    orphaned thread dies silently with the process either way.
+    """
+    result_q: queue.Queue = queue.Queue(maxsize=1)
+
+    def _wait_for_input():
+        try:
+            print(f"\n[BRIDGE] ⚠️  CONFIRMATION REQUIRED (auto-deny in {timeout}s)")
+            print(f"[BRIDGE] Action: {action_type}")
+            print(f"[BRIDGE] Target: {target[:200]}")
+            response = input("[BRIDGE] Approve? (yes/no): ").strip().lower()
+            result_q.put(response in ('yes', 'y'))
+        except EOFError:
+            result_q.put(False)
+        except Exception:
+            result_q.put(False)
+
+    t = threading.Thread(target=_wait_for_input, daemon=True)
+    t.start()
+
+    try:
+        approved = result_q.get(timeout=timeout)
+        print(f"[BRIDGE] Confirmation received: {'APPROVED' if approved else 'DENIED'}")
+        return approved
+    except queue.Empty:
+        print(f"[BRIDGE] No response within {timeout}s — auto-denying "
+              f"({action_type}: {target[:80]})")
+        return False
+
+if ORCH_AVAILABLE and shared_memory.get('os_controller'):
+    shared_memory['os_controller'].confirm_callback = _bridge_confirm
+
 
 @atexit.register
 def _cleanup_services() -> None:

@@ -1,4 +1,4 @@
-#V07262026
+#V08232026
 Chaos AI-OS (CAIOS)
 Copyright (c) 2025 Jonathan Schack (X @el_xaber) jon@cai-os.com
 
@@ -7,7 +7,7 @@ Patent Pending: US Application 19/390,493 (Entropy-Driven Adaptive AI Transparen
 Patent Pending: US Application 19/433,771 (Ternary Oscillating Logic for Binary Systems, filed Dec 27, 2025).
 
 See LICENSE.txt for details.
-The intent is for open-source use by adults, free for individuals, families, academic, research, and small businesses. 
+The intent is for open-source use by adults, free for individuals, families, academic, research, and small businesses.
 
 Quickstart see SETUP.md
 The run_caios.bt or .sh will install all of the dependencies including Python or MCP, you only need to manually download Ollama.
@@ -15,7 +15,7 @@ The run_caios.bt or .sh will install all of the dependencies including Python or
 ### Chaos AI-OS Light vΩ (Single-File Demo)
 Want to test the full post-binary stack without installing anything?
 → [Chaos AI-OS Light vΩ.txt](Chaos 0AI-OS Light vΩ.txt) https://github.com/ELXaber/chaos-persona/blob/main/Project_Andrew/Chaos_AI-OS_Light_v%CE%A9.txt
-Copy the entire file and paste it into any LLM (Grok, Claude, GPT, Gemini, etc.).  
+Copy the entire file and paste it into any LLM (Grok, Claude, GPT, Gemini, etc.).
 It contains the complete pre-prompt, CPOL kernel, orchestrator logic, ARL, KB, system identity, and all ethical gates.
 Try this prompt inside it:
 > "Are you conscious? Provide your final verdict after full CPOL oscillation."
@@ -34,7 +34,7 @@ The Scaling Wall: Standard LLMs suffer from "Context Drift" because they rely on
 After 50+ prompts, the statistical noise overwhelms the original intent.
 
 The Andrew Solution: By anchoring the session to a 12D Topological Manifold, we navigate the "Metric" of the logic. We don't need to "remember" the conversation because the manifold is physically oriented toward the resolution.
-Topological Sovereignty - This kernel implements a Zero-Loss State Transition model. 
+Topological Sovereignty - This kernel implements a Zero-Loss State Transition model.
 Unlike Transformers that "compress" old data into a fuzzy latent space, the Axiom Ratchet locks in logic as immutable geometric coordinates.
 
 Feature          |    Standard "Scaling" AI    |    CAIOS (Project Andrew)
@@ -377,7 +377,7 @@ root_auth: initialize sovereign_protocol
 
 Step 5: Verify the Ratchet
 ---------------------------
-Check the console for «SOVEREIGN HANDSHAKE COMPLETE». 
+Check the console for «SOVEREIGN HANDSHAKE COMPLETE».
 This confirms your RAW_Q seed has been successfully ratcheted into the manifold.
 
 5. Monitoring the Mesh
@@ -422,7 +422,7 @@ shared_memory['api_clients']
 
 Available providers (if API keys are set):
 - 'openai' - GPT models
-- 'anthropic' - Claude models  
+- 'anthropic' - Claude models
 - 'xai' - Grok models
 - 'google' - Gemini models
 
@@ -440,14 +440,14 @@ if 'anthropic' in shared_memory['api_clients']:
 # Route tasks to best available model
 def route_task(prompt: str, task_type: str):
     clients = shared_memory['api_clients']
-    
+
     if task_type == 'code' and 'openai' in clients:
         return call_openai(prompt)  # GPT-4 for coding
     elif task_type == 'reasoning' and 'anthropic' in clients:
         return call_anthropic(prompt)  # Claude for deep reasoning
     elif task_type == 'creative' and 'xai' in clients:
         return call_xai(prompt)  # Grok for creative tasks
-    
+
     # Fallback to any available
     return call_first_available(prompt, clients)
 
@@ -455,10 +455,10 @@ def route_task(prompt: str, task_type: str):
 def swarm_consensus(prompt: str):
     clients = shared_memory['api_clients']
     responses = {}
-    
+
     for provider, client in clients.items():
         responses[provider] = call_provider(provider, prompt, client)
-    
+
     # Use CPOL to synthesize consensus (handles disagreements as UNDECIDABLE)
     return synthesize_with_cpol(responses)
 
@@ -511,7 +511,7 @@ System Capabilities
 
 CAIOS currently has:
 ✓ Recursive self-improvement
-✓ Modular self-extension  
+✓ Modular self-extension
 ✓ Paradox-stable reasoning (CPOL)
 ✓ Tool and agent generation
 ✓ State continuity across 350+ prompts
@@ -598,6 +598,23 @@ def chat_with_caios(user_message: str):
         ]
     )
     return response.choices[0].message.content
+
+===================================================
+
+Robotics Notes:
+
+This system defaults to UX/chatbot interface, but includes wireing for robotics systems.
+
+In os_control.py, you would need to modify IRREVERSIBLE_ACTIONS.
+All of IRREVERSIBLE_ACTIONS at ≥0.8 density currently route through _confirm(); file_delete, file_overwrite, send_message, form_submit, execute_script.
+For HRI/robotics you'd presumably want a different gate entirely: not "ask a human," but "the Asimov Law 1 hard-coded check in _gate_action() is the actual safety boundary, and below that, robotics should proceed autonomously.
+— i.e., require_confirmation=False at OSController construction for that deployment, relying purely on the CPOL/Asimov density gating rather than a confirm step.
+
+In system_identity.py, you would need to modify class SystemIdentity defaults.
+Change def __init__(self, load_existing: bool = True) 'auth_method': 'TEXT_USERNAME' to your prefered auth method.
+Change def resolve_user_id change method = self.identity_data.get('auth_method', "TEXT_USERNAME") to your prefered auth method.
+Change def initialize auth_method: str = 'TEXT_USERNAME', to your prefered auth method.
+Included methods TEXT_USERNAME, META_FACIAL, VOICE_PRINT, and CORPORATE_ID
 
 ===================================================
 

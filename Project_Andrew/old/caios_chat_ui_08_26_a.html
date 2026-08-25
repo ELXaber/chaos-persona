@@ -1,4 +1,4 @@
-<!-- V08242026 -->
+<!-- V08232026 -->
 <!-- CAIOS PROJECT ANDREW: UX -->
 <!-- Copyright (c) 2025 Jonathan Schack. License: GPL-3.0 -See LICENSE for details- Contact: X @el_xaber or cai-os.com -->
 <!DOCTYPE html>
@@ -231,16 +231,6 @@ select option{background:var(--bg3)}
   border-radius:4px;font-size:11px;font-family:var(--mono);color:var(--text3);
 }
 
-.attach-thumb{
-  width:32px;height:32px;border-radius:4px;object-fit:cover;
-  border:0.5px solid var(--border2);flex-shrink:0;
-}
-.msg-image-preview{
-  max-width:240px;max-height:240px;border-radius:var(--radius);
-  border:0.5px solid var(--border);display:block;margin-bottom:5px;
-  cursor:pointer;
-}
-
 /* Thinking animation */
 .thinking{display:flex;gap:4px;padding:14px 0 6px 4px}
 .dot-pulse{width:5px;height:5px;border-radius:50%;background:var(--text3);animation:pulse 1.2s ease-in-out infinite}
@@ -428,8 +418,6 @@ const S = {
   modelId: null,
   attachPath: null,
   attachName: null,
-  attachPreviewUrl: null,
-  attachIsImage: false,
   sending: false,
 };
 
@@ -735,7 +723,7 @@ function renderHistorySidebar(entries) {
 // ══════════════════════════════════════════════════════════════
 // Append message to chat
 // ══════════════════════════════════════════════════════════════
-function appendMsg(role, text, cpol_status, domain, attachName, skipScroll, imagePreviewUrl) {
+function appendMsg(role, text, cpol_status, domain, attachName, skipScroll) {
   const wrap = document.createElement('div');
   wrap.className = `msg ${role}`;
 
@@ -788,14 +776,10 @@ function appendMsg(role, text, cpol_status, domain, attachName, skipScroll, imag
   const attachHtml = attachName
     ? `<div class="attach-chip">📎 ${attachName}</div>` : '';
 
-  const imageHtml = imagePreviewUrl
-    ? `<img class="msg-image-preview" src="${imagePreviewUrl}" alt="${attachName || 'attached image'}" onclick="window.open('${imagePreviewUrl}', '_blank')">`
-    : '';
-
   wrap.innerHTML = `
     ${avatarHtml}
     <div class="bubble-wrap">
-      ${imagePreviewUrl ? imageHtml : (attachName && role === 'user' ? attachHtml : '')}
+      ${attachName && role === 'user' ? attachHtml : ''}
       <div class="bubble">${bodyHtml}</div>
       ${tagHtml}
     </div>`;
@@ -841,10 +825,6 @@ $('file-input').addEventListener('change', async () => {
   const file = $('file-input').files[0];
   if (!file) return;
 
-  const IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/bmp'];
-  S.attachIsImage = IMAGE_TYPES.includes(file.type);
-  S.attachPreviewUrl = S.attachIsImage ? URL.createObjectURL(file) : null;
-
   const fd = new FormData();
   fd.append('token', S.token);
   fd.append('file', file);
@@ -866,14 +846,9 @@ function renderAttachChip() {
   if (!S.attachName) return;
   const chip = document.createElement('div');
   chip.className = 'attach-preview';
-  const thumbHtml = S.attachIsImage
-    ? `<img class="attach-thumb" src="${S.attachPreviewUrl}" alt="">`
-    : `<span style="font-size:12px">📎</span>`;
-  chip.innerHTML = `${thumbHtml}<span>${S.attachName}</span><button class="rm-btn" title="Remove">×</button>`;
+  chip.innerHTML = `<span style="font-size:12px">📎</span><span>${S.attachName}</span><button class="rm-btn" title="Remove">×</button>`;
   chip.querySelector('.rm-btn').addEventListener('click', () => {
-    if (S.attachPreviewUrl) URL.revokeObjectURL(S.attachPreviewUrl);
     S.attachPath = null; S.attachName = null;
-    S.attachPreviewUrl = null; S.attachIsImage = false;
     attachStrip.innerHTML = '';
     $('file-input').value = '';
   });
@@ -954,17 +929,13 @@ async function sendMessage() {
 
   const attachName = S.attachName;
   const attachPath = S.attachPath;
-  const attachPreviewUrl = S.attachIsImage ? S.attachPreviewUrl : null;
 
-  appendMsg('user', text, null, null, attachName, false, attachPreviewUrl);
+  appendMsg('user', text, null, null, attachName);
 
   // Clear input and attachment
   msgInput.value = '';
   msgInput.style.height = 'auto';
-  S.attachPath = null;
-  S.attachName = null;
-  S.attachIsImage = false;
-  S.attachPreviewUrl = null;
+  S.attachPath = null; S.attachName = null;
   attachStrip.innerHTML = '';
   $('file-input').value = '';
 
