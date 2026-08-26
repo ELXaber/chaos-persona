@@ -1,4 +1,4 @@
-@rem V08142026
+@rem V08252026
 @echo off
 setlocal EnableDelayedExpansion
 title CAIOS — Update Check
@@ -50,6 +50,7 @@ set FILES=^
     manager_users.py ^
     caios_chat_ui.html ^
     pdf_extract.py ^
+    vision_verifier.py ^
     update_help.py ^
     run_caios.bat ^
     run_caios.sh ^

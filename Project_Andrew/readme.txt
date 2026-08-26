@@ -1,4 +1,4 @@
-#V08232026
+#V08252026
 Chaos AI-OS (CAIOS)
 Copyright (c) 2025 Jonathan Schack (X @el_xaber) jon@cai-os.com
 
@@ -313,11 +313,12 @@ CAIOS/
        │                                           # Asimov Law 1 prevents irreversible harmful actions
        │                                           # All operations logged to KB hash chain
        │                                           # Requires human confirmation for irreversible actions
-       ├── caios_browser.py           # Browser Control (requires playwright) same human confirmation
+       ├── vision_verifier.py           # Domain-agnostic image consistency check
+       ├── pdf_extract.py           # PDF OCR
        ├── search_engine.py          # DuckDuckGo intergrated web-search
 └── kb_inspect.py                   # CLI inspection tool
-├── run_caios.bat &.sh              # CAIOS nstaller
-├── update.bat & .sh                  # CAIOS file version updater
+├── run_caios.bat &.sh              # CAIOS installer
+├── update.bat & .sh                  # CAIOS GitHub file version updater
 
 4. The Sovereign Boot Sequence
 ===============================

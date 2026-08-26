@@ -1,4 +1,4 @@
-#V08232026
+#V08252026
 # =============================================================================
 # CAIOS PROJECT ANDREW: Hardened Orchestrator
 # This acts as the central nervous system connecting everything
@@ -1354,6 +1354,36 @@ def system_step(user_input: str, prompt_complexity: str = "low",
         except Exception as e:
             print(f"[LLM] Call failed: {e}")
             cpol_result['llm_response'] = None
+
+        # Geometric claim verification — separate try/except so a verifier bug
+        # degrades to "skip verification," never to discarding a good response.
+        response_text = cpol_result.get('llm_response')
+        if images and isinstance(response_text, str) and response_text:
+            try:
+                from vision_verifier import verify_visual_claims
+                from ollama_config import query_with_cpol
+                vc = verify_visual_claims(response_text, images[0])
+                if vc and vc['contradiction_density'] > 0.3:
+                    density = max(density, vc['contradiction_density'])
+                    cpol_result['visual_contradiction'] = vc
+
+                    correction_prompt = (
+                        f"[GEOMETRIC VERIFICATION MISMATCH]\n"
+                        f"Your response claimed: {vc['contradictions']}\n"
+                        f"Re-examine the image and your prior claim. Correct your "
+                        f"answer if the measured geometry contradicts it.\n\n"
+                        f"Original query: {user_input}"
+                    )
+                    corrected = query_with_cpol(
+                        preferred_model=shared_memory.get('preferred_model'),
+                        user_query=correction_prompt,
+                        contradiction_density=density,
+                        images=images
+                    )
+                    cpol_result['llm_response'] = corrected
+                    print(f"[VISION_VERIFIER] Correction pass triggered — {vc['contradictions']}")
+            except Exception as e:
+                print(f"[VISION_VERIFIER] Verification failed, skipping: {e}")
 
     # Tool Dispatch: process any tool tags in LLM response
     dispatcher = shared_memory.get('tool_dispatcher')

@@ -1,4 +1,4 @@
-#V08142026
+#V08252026
 # =============================================================================
 # CAIOS PROJECT ANDREW: GitHub update checker
 # Called by update.bat and update.sh
@@ -43,6 +43,7 @@ MANIFEST = [
     'tool_dispatcher.py',
     'caios_mcp_client.py',
     'pdf_extract.py',
+    'vision_verifier.py',
     # Identity, users, abstraction
     'system_identity.py',
     'abstraction_selector.py',
