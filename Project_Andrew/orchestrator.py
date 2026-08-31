@@ -1,4 +1,4 @@
-#V08252026
+#V08302026
 # =============================================================================
 # CAIOS PROJECT ANDREW: Hardened Orchestrator
 # This acts as the central nervous system connecting everything
@@ -1310,6 +1310,27 @@ def system_step(user_input: str, prompt_complexity: str = "low",
                     f"{cpol_result['arl_context'].get('use_case', 'unknown')}]\n"
                 )
 
+            # Vision context (if image attached)
+            vision_context = ""
+            if images:
+                try:
+                    from vision_verifier import extract_geometry
+                    geo = extract_geometry(images[0])
+                    if geo.get('lines'):
+                        top_lines = sorted(geo['lines'], key=lambda l: -l['length'])[:6]
+                        lines_desc = "; ".join(
+                            f"segment {i+1}: length={l['length']:.0f}px, angle={l['angle']:.0f}°"
+                            for i, l in enumerate(top_lines)
+                        )
+                        vision_context = (
+                            f"[REAL PIXEL-LEVEL MEASUREMENT of the attached image — this is "
+                            f"ground truth from computer vision, not visual estimation. If asked "
+                            f"to compare or measure elements in this image, use these numbers, "
+                            f"do not estimate or invent measurements]: {lines_desc}\n"
+                        )
+                except Exception as e:
+                    print(f"[VISION_CONTEXT] Failed to extract geometry: {e}")
+
             # Build full context prefix
             cpol_context = (
                 f"[CPOL_STATE density={density:.2f} "
@@ -1323,6 +1344,7 @@ def system_step(user_input: str, prompt_complexity: str = "low",
                 f"[INSTRUCTION: Do NOT pre-translate or adopt a persona. Respond in plain technical prose. The abstraction layer will translate your output automatically.]\n"
                 f"{kb_context}"
                 f"{axiom_context}"
+                f"{vision_context}"
             )
 
             enriched_query = cpol_context + arl_context + recent_history + user_input
@@ -1366,12 +1388,18 @@ def system_step(user_input: str, prompt_complexity: str = "low",
                 if vc and vc['contradiction_density'] > 0.3:
                     density = max(density, vc['contradiction_density'])
                     cpol_result['visual_contradiction'] = vc
+                    geometry_summary = vc.get('geometry_summary', 'unavailable')
 
                     correction_prompt = (
-                        f"[GEOMETRIC VERIFICATION MISMATCH]\n"
-                        f"Your response claimed: {vc['contradictions']}\n"
-                        f"Re-examine the image and your prior claim. Correct your "
-                        f"answer if the measured geometry contradicts it.\n\n"
+                        f"[GEOMETRIC VERIFICATION — AUTOMATED MEASUREMENT, NOT A SUGGESTION]\n"
+                        f"An independent computer-vision measurement of the actual image pixels "
+                        f"found: {vc['contradictions']}\n"
+                        f"Raw measured segments (length, angle): {geometry_summary}\n"
+                        f"This measurement is authoritative and was NOT produced by visual "
+                        f"estimation — it is a pixel-level geometric measurement. Your previous "
+                        f"response's claim about line length does not match this measurement. "
+                        f"State the corrected, measured comparison directly. Do not hedge between "
+                        f"your visual impression and the measurement — the measurement is correct.\n\n"
                         f"Original query: {user_input}"
                     )
                     corrected = query_with_cpol(

@@ -1,4 +1,4 @@
-#V07262026
+#V08302026
 #!/usr/bin/env bash
 # CAIOS — Andrew One  |  First-Time Setup & Launch
 # Works on macOS (Intel + Apple Silicon) and Linux (Ubuntu/Debian/Arch)
@@ -84,6 +84,7 @@ info "Installing Python packages..."
 # Optional
 "$PYTHON" -m pip install --quiet pyyaml 2>/dev/null && ok "pyyaml" || warn "pyyaml unavailable (optional)"
 "$PYTHON" -m pip install --quiet pymupdf 2>/dev/null && ok "pymupdf" || warn "pymupdf unavailable (optional)"
+"$PYTHON" -m pip install --quiet tesseract 2>/dev/null && ok "tesseract" || warn "tesseract unavailable (optional)"
 
 # Playwright for browser control (optional)
 "$PYTHON" -m pip install --quiet playwright 2>/dev/null \

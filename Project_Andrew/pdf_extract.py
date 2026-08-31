@@ -1,4 +1,4 @@
-#V08152026
+#V08302026
 # =============================================================================
 # CAIOS PROJECT ANDREW: PDF Text Extraction
 # Shared helper for local file attachments (caios_bridge.py) and web-fetched
@@ -23,7 +23,10 @@ except ImportError:
 try:
     import cv2
     from winocr import recognize_cv2_sync
-    WINOCR_AVAILABLE = True
+    WINOCR_AVAILABLE = False  # Disabled: causes native access violation crashes
+                              # under Flask's threaded request handling (WinRT/COM
+                              # apartment threading issue). Use pytesseract instead.
+                              # Left in for optional use - disable pytesseract if you want to try winocr.
 except ImportError:
     WINOCR_AVAILABLE = False
 
@@ -113,7 +116,8 @@ def extract_pdf_text(
 
     for i in range(pages_to_process):
         page = doc[i]
-        native_text = page.get_text().strip()
+        native_text_value = page.get_text("text")
+        native_text = native_text_value.strip() if isinstance(native_text_value, str) else ""
 
         if native_text:
             parts.append(f"--- Page {i+1} ---\n{native_text}")

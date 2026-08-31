@@ -1,4 +1,4 @@
-#V08232026
+#V08302026
 # =============================================================================
 # CAIOS PROJECT ANDREW: Web Bridge
 # Flask server that connects caios_chat_ui.html to the existing orchestrator/caios_chat.py stack.
@@ -54,7 +54,10 @@ app = Flask(__name__, static_folder='.', static_url_path='')
 try:
     import cv2
     from winocr import recognize_cv2_sync
-    WINOCR_AVAILABLE = True
+    WINOCR_AVAILABLE = False  # Disabled: causes native access violation crashes
+                              # under Flask's threaded request handling (WinRT/COM
+                              # apartment threading issue). Use pytesseract instead.
+                              # Left in for optional use - disable pytesseract if you want to try winocr.
 except ImportError:
     WINOCR_AVAILABLE = False
     print('[BRIDGE] winocr not found — image OCR disabled (Windows-only feature)')

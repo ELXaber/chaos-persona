@@ -1,4 +1,4 @@
-@rem V07262026
+@rem V08302026
 @echo off
 setlocal EnableDelayedExpansion
 title CAIOS — Andrew One Setup
@@ -52,7 +52,7 @@ python -m pip install --quiet pyyaml 2>nul && echo [OK] pyyaml installed || echo
 python -m pip install --quiet uv 2>nul && echo [OK] uv installed || echo [SKIP] uv unavailable ^(optional^)
 python -m pip install --quiet winocr[cv2] 2>nul && echo [OK] winocr installed || echo [SKIP] winocr unavailable ^(optional^)
 python -m pip install --quiet pymupdf 2>nul && echo [OK] pymupdf installed || echo [SKIP] pymupdf unavailable ^(optional^)
-
+python -m pip install --quiet tesseract 2>nul && echo [OK] tesseract installed || echo [SKIP] tesseract unavailable ^(optional^)
 echo [OK] Python packages ready
 
 :: ── 4. Check Node.js (for MCP filesystem server) ─────────────

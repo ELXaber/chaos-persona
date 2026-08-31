@@ -1,4 +1,4 @@
-<!-- V08242026 -->
+<!-- V08302026 -->
 <!-- CAIOS PROJECT ANDREW: UX -->
 <!-- Copyright (c) 2025 Jonathan Schack. License: GPL-3.0 -See LICENSE for details- Contact: X @el_xaber or cai-os.com -->
 <!DOCTYPE html>
@@ -656,6 +656,16 @@ async function loadHistory() {
   } catch(e) {}
 }
 
+async function refreshSidebarOnly() {
+  try {
+    const r = await fetch(`/api/history?token=${S.token}&n=40`);
+    const data = await r.json();
+    if (data.error) return;
+    allHistoryEntries = data.entries;
+    renderHistorySidebar(data.entries);
+  } catch(e) {}
+}
+
 function renderHistorySidebar(entries) {
   const scroll = $('hist-scroll');
   scroll.innerHTML = '';
@@ -990,7 +1000,7 @@ async function sendMessage() {
     updateCPOL(data.cpol_status);
 
     // Refresh sidebar history
-    await loadHistory();
+    await refreshSidebarOnly();
 
   } catch(e) {
     thinkEl.remove();

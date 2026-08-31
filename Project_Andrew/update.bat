@@ -1,4 +1,4 @@
-@rem V08252026
+@rem V08302026
 @echo off
 setlocal EnableDelayedExpansion
 title CAIOS — Update Check
@@ -35,6 +35,7 @@ set FILES=^
     kb_inspect.py ^
     kb_cleanup.py ^
     os_control.py ^
+    search_engine.py ^
     abstraction_selector.py ^
     axiom_manager.py ^
     system_identity.py ^
@@ -52,6 +53,7 @@ set FILES=^
     pdf_extract.py ^
     vision_verifier.py ^
     update_help.py ^
+    update.bat ^
     run_caios.bat ^
     run_caios.sh ^
     readme.txt ^
