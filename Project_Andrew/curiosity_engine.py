@@ -1,4 +1,4 @@
-#V08132026
+#V09082026
 # =========================================================================
 # # CAIOS PROJECT ANDREW: Curiosity Engine
 # Intrinsic motivation + voluntary sharing
@@ -9,9 +9,10 @@
 
 import json
 import hashlib
-from datetime import datetime, timezone
 import random
-from typing import List, Dict, Any, Optional
+from datetime import datetime, timezone
+from pathlib import Path
+from typing import List, Dict, Any
 
 # =========================================================================
 # Config toggles; flip any to False to silence that broadcast type
@@ -28,12 +29,15 @@ THRESHOLD_DELTA = 0.35
 PULSE_EVERY_TURNS = 23
 MIN_TOTAL_HEAT_FOR_PULSE = 2.0
 
+KNOWLEDGE_BASE_DIR = Path("knowledge_base")
+KNOWLEDGE_BASE_DIR.mkdir(exist_ok=True)
+
+AUDIT_LOG_FILE = KNOWLEDGE_BASE_DIR / "curiosity_audit.log.jsonl"
+HASH_CHAIN_FILE = KNOWLEDGE_BASE_DIR / "curiosity_hash_chain.txt"
+
 # =========================================================================
 # Audit log + hash chain
 # =========================================================================
-
-AUDIT_LOG_FILE = "curiosity_audit.log.jsonl"
-HASH_CHAIN_FILE = "curiosity_hash_chain.txt"
 
 def _append_audit_entry(state: Dict) -> None:
     tokens = state.get("curiosity_tokens", [])
@@ -63,24 +67,24 @@ def _append_audit_entry(state: Dict) -> None:
 # External injection point; called from Axiom Context Freshnes
 # =========================================================================
 
-def inject_interest_pulse(state: Dict, topic: str, 
-                          intensity: float = 0.5, 
+def inject_interest_pulse(state: Dict, topic: str,
+                          intensity: float = 0.5,
                           reason: str = "") -> None:
     """
     Direct curiosity boost from blocked context freshness.
     Used when volatility is high and RAW_Q reset is protected.
     """
     tokens: List[Dict] = state.setdefault("curiosity_tokens", [])
-    
+
     # Boost existing token
     for token in tokens:
         if token["topic"] == topic:
-            token["current_interest"] = min(0.95, 
+            token["current_interest"] = min(0.95,
                 token["current_interest"] + intensity)
-            token["peak_interest"] = max(token["peak_interest"], 
+            token["peak_interest"] = max(token["peak_interest"],
                 token["current_interest"])
             if BROADCAST_INJECT:
-                _queue_aside(state, 
+                _queue_aside(state,
                     f"«curiosity boosted: {topic} "
                     f"(+{intensity:.2f} → "
                     f"{token['current_interest']:.2f})»")
@@ -100,7 +104,7 @@ def inject_interest_pulse(state: Dict, topic: str,
         "peak_interest": intensity,
         "current_interest": intensity,
         "trigger_reason": reason or "context_freshness_blocked",
-        "axioms_referenced": axioms if axioms != 
+        "axioms_referenced": axioms if axioms !=
             ["initial_entropy_observation"] else [],
         "node_tier": node_tier
     }
@@ -109,7 +113,7 @@ def inject_interest_pulse(state: Dict, topic: str,
     if BROADCAST_THRESHOLD and intensity >= THRESHOLD_SPIKE:
         label = "SOVEREIGN OBSESSION" if node_tier == 0 else "new obsession"
         axiom_note = f" (Scaffolded by {len(axioms)} axioms)" if axioms else ""
-        _queue_aside(state, 
+        _queue_aside(state,
             f"«{label}: {topic} ({intensity:.2f}){axiom_note}»")
 
     _append_audit_entry(state)
@@ -155,7 +159,7 @@ def update_curiosity_loop(state: Dict[str, Any], timestep: int, response_stream)
         "peak_interest": current_interest,
         "current_interest": current_interest,
         "trigger_reason": "curiosity_threshold_exceeded",
-        "axioms_referenced": axioms if axioms != 
+        "axioms_referenced": axioms if axioms !=
                 ["initial_entropy_observation"] else [],
         "node_tier": state.get('session_context', {}).get('node_tier', 1)
     }
