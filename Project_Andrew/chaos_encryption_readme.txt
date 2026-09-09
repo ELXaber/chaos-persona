@@ -24,6 +24,17 @@ Must take both user_input and session_context to ensure the signature is time-se
 Needs to be an instance of a class that tracks shared_memory['active_syncs'] globally to handle multi-agent requests.
 Cleanup Protocol: Ensure that once a sync_id is resolved (the qubit collapses), it is purged from the buffer to prevent "Phantom Syncs" from clogging the ingress.
 
+Modifications are needed to orchestrator.py:
+    # 1. Get dynamic threshold (if available)
+    # TODO: not yet wired to chaos_encryption.CPOLQuantumManifold.sync_phase() —
+    # needs a live 7D signature exchange path in mesh_network.py's _listen_loop
+    # and a CPOLQuantumManifold instance reachable from shared_memory. Requires
+    # 2+ physical nodes to test; can't verify on single-machine dev setup.
+    if EM_AVAILABLE:
+        jitter_limit = em.calculate_dynamic_jitter_threshold(shared_memory)
+    else:
+        jitter_limit = 0.001  # Default threshold
+
 This setup effectively turns the  Orchestrator into a Distributed Enigma Machine, where the security isn't in the password, but in the synchronized 12D rotation of the entire swarm.
 
 

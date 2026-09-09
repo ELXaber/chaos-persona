@@ -1,4 +1,4 @@
-#V09082026
+#V08182026
 # =============================================================================
 # CAIOS PROJECT ANDREW: Ollama Configuration Bridge - CPOL State to Inference Parameters
 # This module bridges CAIOS's ternary logic (CPOL) state to Ollama's inference
@@ -44,12 +44,11 @@ def load_system_config() -> Dict:
         return {
             'node_tier': identity.get('node_tier', 1),
             'system_id': identity.get('system_id', 'Unknown'),
-            'auth_method': identity.get('auth_method', 'TEXT_USERNAME'),
-            'ollama_model': identity.get('ollama_model', None)
+            'auth_method': identity.get('auth_method', 'TEXT_USERNAME')
         }
     except Exception as e:
         print(f"[OLLAMA_CONFIG] Warning: Failed to load system_identity.json: {e}")
-        return {'node_tier': 1, 'system_id': 'Error', 'auth_method': 'TEXT_USERNAME', 'ollama_model': None}
+        return {'node_tier': 1, 'system_id': 'Error', 'auth_method': 'TEXT_USERNAME'}
 
 
 def list_available_ollama_models() -> List[str]:

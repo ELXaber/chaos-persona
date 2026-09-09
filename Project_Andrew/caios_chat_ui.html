@@ -1,4 +1,4 @@
-<!-- V08302026 -->
+<!-- V09042026 -->
 <!-- CAIOS PROJECT ANDREW: UX -->
 <!-- Copyright (c) 2025 Jonathan Schack. License: GPL-3.0 -See LICENSE for details- Contact: X @el_xaber or cai-os.com -->
 <!DOCTYPE html>
@@ -437,11 +437,11 @@ const S = {
 let allHistoryEntries = [];
 
 const COMMANDS = [
-  '/whoami','/status','/debug','/mesh','/axioms','/axiom_refresh',
+  '/whoami','/status','/intro','/debug','/mesh',
   '/show_reasoning','/trace_mode_verbose','/gearbox', '/search_logs',
   '/lock L0','/lock L1','/lock L2','/lock L3',
   '/mungo-stats','/invert_idx','/design_agent','/regen_raw_q',
-  '/rotate axioms',
+  '/axioms','/axiom_refresh','/rotate axioms',
   '/kb_sweep','/kb_validate','/kb_purge','/kb_list_bad',
   '/think on','/think off','/think auto',
 ];
@@ -623,9 +623,8 @@ async function enterChat() {
 
   // Welcome message if no history
   if (messages.children.length === 0) {
-    const identity = bootData.system_id || 'Andrew';
-    appendMsg('andrew',
-      `Hello, ${S.display}. I'm ${identity}. Session is active — how can I help you today?`,
+    appendMsg('andrew', bootData.intro ||
+      `Hello, ${S.display}. I'm ${bootData.system_id || 'Andrew'}. How can I help?`,
       'RESOLVED', 'general');
   }
 }
@@ -1065,6 +1064,11 @@ function handleLocalCommand(text) {
       });
     return true;
   }
+
+  if (cmd === '/intro' || cmd === 'what can you do' || cmd === 'what can you do?') {
+    appendMsg('andrew', bootData.intro, 'RESOLVED', 'system');
+    return true;
+}
 
   return false; // pass to server
 }

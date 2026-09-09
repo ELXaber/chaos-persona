@@ -1,4 +1,4 @@
-#V08132026
+#V09072026
 # =============================================================================
 # CAIOS PROJECT ANDREW: Paradox Oscillation Layer (CPOL)
 # Copyright (c) 2025 Jonathan Schack. License: GPL-3.0 -See LICENSE for details- Contact: X @el_xaber or cai-os.com
@@ -14,7 +14,7 @@
 #
 # D=12 (full CPOL):  phase lock=11, heat death=242, jitter=231
 # D=6  (lightweight): phase lock=5,  heat death=50,  jitter=45
-# D=7  (coupling):    phase lock=6,  heat death=72,  jitter=60
+# D=7  (coupling):    phase lock=6,  heat death=72,  jitter=66
 #
 # 50-60 empirical variance = formula minimum + safety margin
 #

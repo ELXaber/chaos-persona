@@ -1,4 +1,4 @@
-#V08142026
+#V09042026
 # =============================================================================
 # CAIOS PROJECT ANDREW: MCP JSON-RPC client for CAIOS
 # Talks to two MCP servers that should be running alongside caios_bridge.py:
@@ -26,6 +26,7 @@
 
 import json
 import time
+import re
 import urllib.request
 import urllib.error
 from typing import Any, Dict, Optional, List
@@ -318,6 +319,15 @@ def _parse_mcp_result(rpc_result: Dict) -> Dict:
         content = content_blocks
     else:
         content = json.dumps(result)
+
+    # Content returned by MCP servers is untrusted (scraped pages, file
+    # contents, PowerShell output, etc.) and may contain literal
+    # [TOOL:...] syntax intended to inject a tool call when this string
+    # is later echoed into the LLM's context. Strip it at the source so
+    # every caller of mcp_tool()/MCPClient.call() is covered, not just
+    # whichever dispatcher happens to wrap the result.
+    if isinstance(content, str):
+        content = re.sub(r'\[TOOL:\w+[^\]]*\]', '[STRIPPED_TOOL_TAG]', content)
 
     is_error = result.get('isError', False)
     return {'ok': not is_error, 'content': content, 'raw': rpc_result}

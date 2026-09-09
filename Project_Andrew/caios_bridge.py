@@ -1,4 +1,4 @@
-#V08302026
+#V09042026
 # =============================================================================
 # CAIOS PROJECT ANDREW: Web Bridge
 # Flask server that connects caios_chat_ui.html to the existing orchestrator/caios_chat.py stack.
@@ -118,6 +118,41 @@ _sessions: Dict[str, Dict] = {}
 
 UPLOAD_DIR = pathlib.Path(tempfile.gettempdir()) / 'caios_uploads'
 UPLOAD_DIR.mkdir(exist_ok=True)
+
+# =============================================================================
+# Introduction: Can be triggered with /intro or "what can you do?"
+# in the UI. Static, server-computed summary.
+# =============================================================================
+
+def _build_intro(identity: Dict, kb: Dict, mcp: Dict) -> str:
+    """
+    Static, server-computed first-use summary. No LLM call, no MCP
+    content — only booleans/counts get interpolated, so there's nothing
+    here for untrusted data to inject into.
+    """
+    name = identity.get('system_id', 'Andrew')
+    lines = [
+        f"Hi, I'm {name}. Here's a quick rundown of what I can do:",
+        "",
+        "• Hold a conversation and reason through contradictions without "
+        "guessing (\"/show_reasoning\" shows why).",
+        "• Read and write files, run scripts, and browse the web when "
+        "asked — anything irreversible outside /working gets flagged for "
+        "your approval first.",
+        f"• Remember facts you tell me to override outdated info "
+        f"(\"...#UPDATE\") — {kb.get('active_axioms', 0)} active right now.",
+        f"• Search the web and build a persistent knowledge base "
+        f"({kb.get('total_discoveries', 0)} discoveries so far).",
+    ]
+    if mcp.get('windows_mcp') or mcp.get('filesystem_server'):
+        lines.append("• Control the system directly via MCP "
+                      "(filesystem and/or Windows automation connected).")
+    lines += [
+        "",
+        "Type / to see commands, or ask \"what can you do?\" any time "
+        "you want this again.",
+    ]
+    return "\n".join(lines)
 
 # =============================================================================
 # Service Startup: Ollama, MCP filesystem server, windows-mcp
@@ -412,6 +447,8 @@ def api_boot():
 
     requires_auth = len(users) > 0
 
+    kb = _kb_stats()
+    mcp = mcp_status()
     return jsonify({
         'system_id': identity.get('system_id', 'Andrew'),
         'primary_user': identity.get('primary_user', ''),
@@ -419,9 +456,11 @@ def api_boot():
         'requires_auth': requires_auth,
         'models': models,
         'users': user_list,
-        'kb': _kb_stats(),
+        'kb': kb,
+        'cpol': shared_memory.get('last_cpol_result', {}).get('status', 'idle'),
         'orchestrator': ORCH_AVAILABLE,
-        'mcp': mcp_status(),
+        'mcp': mcp,
+        'intro': _build_intro(identity, kb, mcp),
     })
 
 # =============================================================================

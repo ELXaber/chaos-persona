@@ -110,6 +110,13 @@ class CPOLQuantumManifold:
         Args:
             partner_sig: Partner node's 7D signature
             threshold: Maximum acceptable phase difference
+
+        TODO: no live caller yet. See orchestrator.py's jitter_limit
+        (epistemic_monitor.py doesn't exist — this is orchestrator.py's
+        computed value waiting for a wire-up) and mesh_network.py's
+        _listen_loop, which currently only handles REQ_RESYNC via
+        ratchet(), not jitter-based sync_phase() calls on regular
+        ghost packets. Untestable without 2+ physical mesh nodes.
         """
         my_sig = self.state[:7]
         diff = np.linalg.norm(partner_sig - my_sig)

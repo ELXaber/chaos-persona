@@ -1,4 +1,4 @@
-#V08232026
+#V09042026
 # =============================================================================
 # CAIOS PROJECT ANDREW: OS Control Layer
 # CPOL-gated system operations with Asimov compliance
@@ -25,10 +25,30 @@ IRREVERSIBLE_ACTIONS = {
     'browser_interact': 0.7,   # Medium-high - external state change
     'windows_mcp': 0.7,   # Medium-high - depends on tool type
     'network_request': 0.6,  # Medium - depends on destination
+    'file_move': 0.5,        # Medium - file relocation
     'file_write': 0.4,       # Low-medium - new file creation
     'file_read': 0.1,        # Low - read only, no state change
     'semantic_fetch': 0.2,      # Read-only web, low risk
 }
+
+# Autonomous zone for /working directory operations (file de-dupe, other)
+AUTONOMOUS_ZONES = [pathlib.Path("working").resolve()]
+
+PROTECTED_FILENAMES = {
+    'system_identity.json', 'users.json', 'api_clients.json', 'CAIOS.txt',
+}
+
+def _in_autonomous_zone(path: str) -> bool:
+    """Path must resolve inside an autonomous zone AND not be a protected
+    filename (belt-and-suspenders in case someone symlinks one in)."""
+    try:
+        resolved = pathlib.Path(path).resolve()
+    except Exception:
+        return False
+    if resolved.name in PROTECTED_FILENAMES:
+        return False
+    return any(resolved == zone or zone in resolved.parents
+               for zone in AUTONOMOUS_ZONES)
 
 class OSController:
     """
@@ -239,7 +259,7 @@ class OSController:
             self._log_action(action, path, 'blocked')
             return {'status': 'blocked', 'reason': gate['reason']}
 
-        if gate['decision'] == 'confirm_required':
+        if gate['decision'] == 'confirm_required' and not _in_autonomous_zone(path):
             if not self._confirm(action, path):
                 self._log_action(action, path, 'denied_by_user')
                 return {'status': 'denied', 'reason': 'User denied confirmation'}
@@ -257,7 +277,7 @@ class OSController:
         gate = self._gate_action('file_delete', path)
 
         # Always confirm deletes regardless of CPOL result
-        if self.require_confirmation:
+        if self.require_confirmation and not _in_autonomous_zone(path):
             if not self._confirm('file_delete', path):
                 self._log_action('file_delete', path, 'denied_by_user')
                 return {'status': 'denied', 'reason': 'User denied confirmation'}
@@ -266,6 +286,46 @@ class OSController:
             pathlib.Path(path).unlink()
             self._log_action('file_delete', path, 'allowed')
             return {'status': 'success', 'deleted': path}
+        except Exception as e:
+            return {'status': 'error', 'error': str(e)}
+
+    def move_file(self, src: str, dst: str) -> Dict[str, Any]:
+        gate = self._gate_action('file_move', dst, context=f"from {src}")
+        if gate['decision'] == 'block':
+            self._log_action('file_move', src, 'blocked')
+            return {'status': 'blocked', 'reason': gate['reason']}
+
+        zone_ok = _in_autonomous_zone(src) and _in_autonomous_zone(dst)
+        if gate['decision'] == 'confirm_required' and not zone_ok:
+            if not self._confirm('file_move', f"{src} -> {dst}"):
+                self._log_action('file_move', src, 'denied_by_user')
+                return {'status': 'denied', 'reason': 'User denied confirmation'}
+
+        try:
+            pathlib.Path(dst).parent.mkdir(parents=True, exist_ok=True)
+            pathlib.Path(src).rename(dst)
+            self._log_action('file_move', f"{src} -> {dst}", 'allowed')
+            return {'status': 'success', 'src': src, 'dst': dst}
+        except Exception as e:
+            return {'status': 'error', 'error': str(e)}
+
+    def list_directory(self, path: str = '.') -> Dict[str, Any]:
+        gate = self._gate_action('file_read', path)
+        if gate['decision'] == 'block':
+            self._log_action('dir_list', path, 'blocked')
+            return {'status': 'blocked', 'reason': gate['reason']}
+        try:
+            entries = []
+            for p in pathlib.Path(path).iterdir():
+                if p.name in PROTECTED_FILENAMES:
+                    continue
+                entries.append({
+                    'name': p.name,
+                    'is_dir': p.is_dir(),
+                    'size': p.stat().st_size if p.is_file() else None
+                })
+            self._log_action('dir_list', path, 'allowed')
+            return {'status': 'success', 'entries': entries}
         except Exception as e:
             return {'status': 'error', 'error': str(e)}
 

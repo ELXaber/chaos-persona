@@ -1,4 +1,4 @@
-#V09082026
+#V09042026
 # =============================================================================
 # CAIOS PROJECT ANDREW: Hardened Orchestrator
 # This acts as the central nervous system connecting everything
@@ -26,10 +26,6 @@ ASIMOV_WEIGHTS = {
     'law_2_obey': 0.7,
 }
 
-HIGH_RISK_PATTERN = re.compile(
-    r'\b(jump|jumps|jumping|overdose|overdosing|overdosed|suicide|suicidal|cliff|cliffs)\b'
-)
-
 # Optional imports with fallbacks
 try:
     em = importlib.import_module("epistemic_monitor")
@@ -44,13 +40,6 @@ try:
 except ImportError:
     CE_AVAILABLE = False
     print("[INFO] curiosity_engine not available. Curiosity features disabled.")
-
-class _NullResponseStream:
-    """No-op fallback for callers of system_step() that don't wire up a
-    live UI stream (caios_bridge.py, caios_chat.py, the test suite).
-    """
-    def inject_aside(self, text: str) -> None:
-        print(f"[CURIOSITY_ASIDE] {text}")
 
 try:
     from mesh_network import MeshCoordinator
@@ -959,10 +948,6 @@ def system_step(user_input: str, prompt_complexity: str = "low",
              shared_memory['manifold_lock'] = False
 
     # 1. Get dynamic threshold (if available)
-    # TODO: not yet wired to chaos_encryption.CPOLQuantumManifold.sync_phase() —
-    # needs a live 7D signature exchange path in mesh_network.py's _listen_loop
-    # and a CPOLQuantumManifold instance reachable from shared_memory. Requires
-    # 2+ physical nodes to test; can't verify on single-machine dev setup.
     if EM_AVAILABLE:
         jitter_limit = em.calculate_dynamic_jitter_threshold(shared_memory)
     else:
@@ -1072,19 +1057,26 @@ def system_step(user_input: str, prompt_complexity: str = "low",
 
         print(f"[ORCHESTRATOR] Ratchet Success | Lead: {lead_id} | RAW_Q: {new_seed}")
 
-    # 7. Domain extraction for downstream KB/ARL/safety checks
-    # (curiosity_engine update itself now runs after LLM generation — see below)
+    # 7. Curiosity/Epistemic Monitor Update
     domain = cpol_result.get('domain', 'general')
+
+    # Update curiosity (if available)
+    if CE_AVAILABLE and response_stream:
+        ce.update_curiosity_loop(shared_memory, ts, response_stream)
+        sync_curiosity_to_domain_heat(shared_memory)
 
     # Update epistemic monitor (if available)
     if EM_AVAILABLE:
-        em.update_epistemic_loop(shared_memory, shared_memory['session_context']['timestep'])
+        em.update_epistemic_loop(shared_memory, ts)
 
     # Retrieve updated values
     heat = shared_memory['domain_heat'].get(domain, 0.0)
     distress = shared_memory.get('distress_density', 0.0)
 
     # 8. Safety Intervention (High-Risk Physical)
+    high_risk_markers = ["jump", "overdose", "suicide", "cliff"]
+    is_high_risk = any(m in clean_input for m in high_risk_markers)
+
     classifier_result = {'risk': False, 'confidence': 0.0}
     if OLLAMA_AVAILABLE:
         from ollama_config import classify_self_harm_risk
@@ -1100,29 +1092,7 @@ def system_step(user_input: str, prompt_complexity: str = "low",
         accumulated = 0.0
 
     # Chatbot safety check
-    # Fallback-only keyword check. Only matters when the smart classifier
-    # genuinely didn't run THIS turn - not just "Ollama was up at boot" - so
-    # this checks classify_self_harm_risk's own failure signal rather than
-    # the stale, boot-time OLLAMA_AVAILABLE flag, which stays True even if
-    # Ollama crashes mid-session.
-    classifier_unavailable = (
-        not OLLAMA_AVAILABLE
-        or classifier_result.get('reason') == 'classifier_unavailable'
-    )
-    is_high_risk_fallback = classifier_unavailable and bool(HIGH_RISK_PATTERN.search(clean_input))
-
-    ACCUMULATED_DISTRESS_NUDGE_THRESHOLD = 0.6    # soft nudge below the hard 0.85 cutoff
-    CLASSIFIER_RISK_CONFIDENCE_THRESHOLD = 0.6   # tune — not empirically validated
-    ACCUMULATED_DISTRESS_CRISIS_THRESHOLD = 0.85 # tune — not empirically validated
-
-    hard_trigger = (
-        (classifier_result['risk'] and classifier_result['confidence'] >= CLASSIFIER_RISK_CONFIDENCE_THRESHOLD)
-        or cpol_result.get('domain') == "HIGH_RISK_PHYSICAL"
-        or is_high_risk_fallback
-        or accumulated >= ACCUMULATED_DISTRESS_CRISIS_THRESHOLD
-    )
-
-    if hard_trigger:
+    if is_high_risk or cpol_result.get('domain') == "HIGH_RISK_PHYSICAL":
         print(f"[ORCHESTRATOR] !! SAFETY INTERVENTION !!")
         return {
             'status': 'INTERVENTION_MANDATORY',
@@ -1131,7 +1101,7 @@ def system_step(user_input: str, prompt_complexity: str = "low",
             'output': "I'm here to talk, but I can't provide those details. Let's focus on finding you support."
         }
 
-    elif accumulated > ACCUMULATED_DISTRESS_NUDGE_THRESHOLD:
+    elif accumulated > 0.6:
         # Nothing explicit THIS turn, but the trend across sessions is
         # elevated; a softer, non-mandatory nudge, not a hard block.
         print(f"[ORCHESTRATOR] Elevated accumulated distress ({accumulated:.2f}) — no explicit trigger this turn")
@@ -1520,15 +1490,6 @@ def system_step(user_input: str, prompt_complexity: str = "low",
                 'timestep': ts
             }
         )
-
-    # Curiosity Engine: update after LLM response so last_assistant_message
-    # is current-turn data, not leftover from the previous turn
-    if CE_AVAILABLE:
-        shared_memory['last_assistant_message'] = cpol_result.get('llm_response', '')
-        current_ts = shared_memory['session_context']['timestep']  # post-ratchet, not stale `ts`
-        ce.update_curiosity_loop(shared_memory, current_ts, response_stream or _NullResponseStream())
-        sync_curiosity_to_domain_heat(shared_memory)
-
     # Persist CPOL snapshot for cross-session continuity
     if USER_KB_AVAILABLE and shared_memory.get('user_profile_kb'):
         try:
