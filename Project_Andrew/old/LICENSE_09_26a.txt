@@ -1,4 +1,4 @@
-# V09102026
+# V05012026
 Chaos AI-OS (CAIOS)
 Copyright (c) 2025 Jonathan Schack (EL_Xaber) jon@cai-os.com
 
@@ -13,8 +13,22 @@ The use of any large language model, generative AI system, or automated reasonin
 
 All commercial exploitation, derivative closed-source implementations, or use in proprietary products requires a separate commercial license and explicit acknowledgment of the inventor and pending patents.
 
+--------------------------------------------------------------------------------
+
+Due to recent legislation (e.g., S.3062 & future identification requirements) that protect ID vendors, not children, the following is amended:
+This system is not intended for use by persons under the age of 18. By installing this software, you represent that you are an adult.
+Andrew is safer than any commercial chatbot. But legislation doesn't measure safety. It measures compliance budgets.
+
+During initial setup (master_init), there is an underage user addition feature that enforces more polite, simplified abstraction output.
+
+Data privacy policy:
+Any data collected by CAIOS is not and never will be forwarded to any external vendor/party.
+If you use API keys to hook into an external AI, which is not required, be sure to check their data privacy policies.
+
+While future additions to the system may include multimodal processing of images/video, I will not be adding generative image/video output.
+
 ===================
-DUAL LICENSE NOTICE:
+DUAL LICENSE NOTICE
 ===================
 
 This software is available under two licensing options:
@@ -29,6 +43,7 @@ This software is available under two licensing options:
 --------------------------------------------------------------------------------
 1. OPEN SOURCE LICENSE
 --------------------------------------------------------------------------------
+
 This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version, WITH THE FOLLOWING ADDITIONAL TERMS:
 
 ATTRIBUTION REQUIREMENT (GPL Section 7 Additional Permission):
@@ -90,12 +105,25 @@ constitutes willful infringement of both this license and the pending patent
 applications referenced herein, and shall be subject to maximum statutory 
 damages.
 
+--------------------------------------------------------------------------------
+
+SAFETY TERMINATION CLAUSE:
+This license automatically terminates if the software is used in violation of:
+  - IEEE 7000-2021 ethical AI standards
+  - EU AI Act transparency and safety requirements
+  - Applicable AI safety regulations in jurisdiction of use
+
+Licensor shall provide 30 days written notice and opportunity to cure before termination becomes effective.
+
 PATENT LICENSE GRANT:
 Subject to the terms of this GPL license, licensor grants non-commercial users a limited patent license under US Patent Application 19/390,493 and 19/433,771 solely for non-commercial, GPL-compliant use. Commercial patent rights are reserved.
+
+This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
 
 --------------------------------------------------------------------------------
 2. COMMERCIAL LICENSE
 --------------------------------------------------------------------------------
+
 For use in commercial products, SaaS platforms, proprietary software, or any closed-source application, you must obtain a separate commercial license.
 
 Commercial licensing includes:
@@ -107,51 +135,13 @@ Commercial licensing includes:
 CONTACT FOR COMMERCIAL LICENSING:
   Email: jon@cai-os.com
   X/Twitter: @el_xaber  
-  Website: www.cai-os.com
+  Web: www.cai-os.com
 
 Commercial licenses are negotiated on a case-by-case basis.
 
-============
-DISCLAIMERS:
-============
-
-This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
-
---------------------------------------------------------------------------------
-1. SAFETY TERMINATION CLAUSE:
---------------------------------------------------------------------------------
-This license automatically terminates if the software is used in violation of:
-  - IEEE 7000-2021 ethical AI standards
-  - EU AI Act transparency and safety requirements
-  - Applicable AI safety regulations in jurisdiction of use
-
-Licensor shall provide 30 days written notice and opportunity to cure before termination becomes effective.
-
---------------------------------------------------------------------------------
-2. JURISDICTIONAL COMPLIANCE AND USER RESPONSIBILITY:
---------------------------------------------------------------------------------
-CAIOS was developed in the United States by an independent, unfunded developer and is provided under U.S. law. The Licensor makes no representation that the software complies with the laws, regulations, or regulatory guidance of any other jurisdiction, including (without limitation) the EU AI Act or any national implementation thereof.
-
-It is the sole responsibility of each user, distributor, or deployer to determine whether their intended use of the software complies with all applicable laws and regulations in the jurisdiction(s) of deployment or use. The Licensor has no obligation to monitor, advise on, or ensure compliance with foreign regulatory regimes.
-
-Use of the software in any jurisdiction constitutes the user’s acceptance of this responsibility. Any violation of local law by a user does not create liability for the Licensor and may result in termination of the license under the Safety Termination Clause above.
-
---------------------------------------------------------------------------------
-3. AGE APPROPRIATE DEPLOYMENT AND DATA PRIVACY POLICY:
---------------------------------------------------------------------------------
-Due to recent legislation (e.g., S.3062 & future identification requirements) that protect ID vendors, not children, the following is amended:
-This system is not intended for use by persons under the age of 18. By installing this software, you represent that you are an adult.
-Andrew is safer than any commercial chatbot. But legislation doesn't measure safety. It measures compliance budgets.
-
-During initial setup (master_init), there is an underage user addition feature that enforces more polite, simplified abstraction output.
-
-Data privacy policy:
-Any data collected by CAIOS is not and never will be forwarded to any external vendor/party.
-If you use API keys to hook into an external AI, which is not required, be sure to check their data privacy policies.
-
-=======================
+======================
 QUESTIONS OR CONCERNS?
-=======================
+======================
 
 For licensing clarification, commercial inquiries, or patent licensing:
 jon@cai-os.com | www.cai-os.com | X @el_xaber
@@ -159,7 +149,6 @@ jon@cai-os.com | www.cai-os.com | X @el_xaber
 ==========================
 GNU GENERAL PUBLIC LICENSE
 ==========================
-
                        Version 3, 29 June 2007
 
  Copyright (C) 2007 Free Software Foundation, Inc. <https://fsf.org/>
