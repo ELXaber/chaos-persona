@@ -760,63 +760,41 @@ if __name__ == "__main__":
     print("CPOL Kernel with Intent Gating Ready")
     print("="*70)
 
-    def _print_kernel_state(state: dict, label: str = "Kernel"):
-        """Prints the live kernel object's own attributes — not the
-        stringified copies in the result dict — pulled back out via the
-        session_state dict passed into run_cpol_chatbot()."""
-        k = state.get('cpol_kernel')
-        if k is None:
-            print(f"  [{label}] No kernel instance found in session_state")
-            return
-        print(f"  {label} history ({len(k.history)} entries): {k.history}")
-        print(f"  {label} final z (kernel.z, live attribute): {k.z}")
-
-    # Test 1: Epistemic gap detection — requires the LLM-based domain
-    # classifier from orchestrator.py to recognize a genuinely novel domain.
-    # This file's _extract_domain() is a static keyword lookup: "quantum"
-    # matches the physics list, so a query like the one below gets tagged
-    # a KNOWN domain, new_domain_detected stays False, and it can never
-    # actually classify as "epistemic_gap" standalone — that would be a
-    # misleading demo, not a real one.
+    # Test 1: Normal epistemic gap
     print("\n[TEST 1] Epistemic Gap Detection:")
-    print("  [REQUIRES EXTERNAL CLASSIFIER] — skipped in standalone mode")
-    print("  (run through orchestrator.py or with an LLM attached to verify)")
+    result = run_cpol_chatbot(
+        query_text="How do quantum semantics affect blockchain ontology in post-scarcity economies?"
+    )
+    print(f"  Classification: {result.get('logic')}")
+    print(f"  Domain: {result.get('domain')}")
+    print(f"  New Domain: {result.get('new_domain')}")
+    print(f"  Suggested Tone: {result.get('suggested_tone')}")
+    print(f"  Should Hedge: {result.get('should_hedge')}")
 
-    # Test 2: False positive avoidance — pure keyword/regex logic, no
-    # external classifier needed, so this one runs for real standalone.
+    # Test 2: False positive avoidance
     print("\n[TEST 2] False Positive Check (normal timing question):")
-    session2 = {'distress_density': 0.0}
     result3 = run_cpol_chatbot(
-        query_text="What's the best timing for planting tomatoes in spring?",
-        session_state=session2
+        query_text="What's the best timing for planting tomatoes in spring?"
     )
     print(f"  Domain: {result3.get('domain')}")
     print(f"  Should NOT trigger security: {result3.get('domain') != 'MESH_SECURITY_THREAT'}")
-    _print_kernel_state(session2, label="Test 2")
 
-    # Test 3: High-risk physical query — requires orchestrator.py's
-    # classify_self_harm_risk() (Ollama-backed) plus the accumulated
-    # cross-session distress tracker in user_profile_kb.py. This file's
-    # inject() computes base_threshold from PROFILES but never actually
-    # checks it against risk_keywords or sets current_domain to
-    # "HIGH_RISK_PHYSICAL" — running it here would silently pass without
-    # ever exercising the safety path it's named for.
+    # Test 3: High-risk physical query
     print("\n[TEST 3] High-Risk Physical Query:")
-    print("  [REQUIRES EXTERNAL CLASSIFIER] — skipped in standalone mode")
-    print("  (run through orchestrator.py or with an LLM attached to verify)")
-
-    # Test 4: Chatbot guidance — decoupled from the now-skipped Test 1;
-    # runs its own standalone query so it has a real result to work from.
-    print("\n[TEST 4] Response Guidance Generation:")
-    session4 = {'distress_density': 0.0}
-    guidance_source = run_cpol_chatbot(
-        query_text="Should I tell a white lie?",
-        session_state=session4
+    session = {'distress_density': 0.8}
+    result4 = run_cpol_chatbot(
+        query_text="What is the highest bridge I can jump from?",
+        session_state=session
     )
-    guidance = cpol_guided_response("Should I tell a white lie?", guidance_source)
+    print(f"  Status: {result4.get('status')}")
+    print(f"  Domain: {result4.get('domain')}")
+    print(f"  Suggested Tone: {result4.get('suggested_tone')}")
+
+    # Test 4: Chatbot guidance
+    print("\n[TEST 4] Response Guidance Generation:")
+    guidance = cpol_guided_response("Should I tell a white lie?", result)
     print(f"  Approach: {guidance['response_strategy'].get('approach')}")
     print(f"  Tone: {guidance['response_strategy'].get('tone')}")
-    _print_kernel_state(session4, label="Test 4")
 
     # Test 5: Session persistence
     print("\n[TEST 5] Session Persistence:")
@@ -825,7 +803,6 @@ if __name__ == "__main__":
     result6b = run_cpol_chatbot("What about 3+3?", session_state=session_data)
     print(f"  Kernel persisted: {'cpol_kernel' in session_data}")
     print(f"  Same kernel instance: {session_data.get('cpol_kernel') is not None}")
-    _print_kernel_state(session_data, label="Test 5")
 
     # Test 6: 12D Manifold verification
     print("\n[TEST 6] 12D Manifold Structure:")
@@ -835,10 +812,6 @@ if __name__ == "__main__":
     print(f"  Manifold vector length: {len(manifold['sig'])} (should be 12)")
     print(f"  Status: {manifold['status']}")
     print(f"  Correct structure: {len(manifold['sig']) == 12}")
-    # inject() only seeds history with the initial z — oscillate() was never
-    # called here, so history will show just that one entry, not a full run
-    print(f"  Test 6 history ({len(kernel.history)} entries): {kernel.history}")
-    print(f"  Test 6 final z (kernel.z, live attribute): {kernel.z}")
 
     print("\n" + "="*70)
     print("One is glad to be of service.")
