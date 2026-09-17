@@ -13,10 +13,11 @@ See Hardware Notes at the bottom for details.
 
 ## Windows
 
-### Step 1 — Install Python
+### Step 1 — Install Python and Windows Subsystem for Linux
 1. Go to **https://www.python.org/downloads/**
 2. Click the big yellow "Download Python 3.x" button
 3. Run the installer — **check the box that says "Add Python to PATH"** before clicking Install
+4. Go to Windows Add/Remove Programs, select Add/Remove Windows components, and select the box that says Windows Subsystem for Linux. In Windows 11, it's under (Settings > Optional Features), then click More Windows Features, then select Windows Subsystem for Linux.
 
 ### Step 2 — Install Ollama
 1. Go to **https://ollama.com/download**
