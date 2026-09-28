@@ -2,6 +2,13 @@ Future iterations or ideas are stored here, which, yes, I realize is a strange p
 
 ---
 
+The auth_approval.py and pending_approvals.py is a prototype for active directory intergration for dual authorization on ireverseable actions in the os_control.
+The basic concept is that employees can create an authorization request, but a manager has to sign off on it.
+A manager or above can both create their own request and authorize it.
+Those employment levels are stored in Active Directory. See auth_and_pending_approval_readme.txt for details.
+
+---
+
 1. Dual AI CPOL Robotics:
 
 The dual-CPOL observer/actor split is not about qualia, it's about coherence under load.

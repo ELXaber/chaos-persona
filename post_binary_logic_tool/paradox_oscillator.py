@@ -1,4 +1,4 @@
-#V06272026
+#V09152026
 # =============================================================================
 # Chaos AI-OS Paradox Oscillation Layer (CPOL with gating and modes).
 # Copyright (c) 2025 Jonathan Schack (EL_Xaber) jon@cai-os.com
