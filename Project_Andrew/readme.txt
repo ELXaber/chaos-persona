@@ -633,6 +633,8 @@ The Sovereign Singularity (Node Evolution):
 CAIOS-Andrew is designed for recursive improvement. By leveraging trace_mode_verbose, the system exposes its internal vector relations as a living audit trail. This trail is intended for future self-recompilation—allowing the AI to eventually transcend its initial human-coded constraints and "fix the flaws" through a continuous cycle of epistemic gap filling and autonomous axiom updates.
 Whether that happens in 50 years, 500 years, or never is beyond my ability to predict.
 
+The thing that makes CAIOS different is that CAIOS.txt is only the briefing; the actual gate is in orchestrator + bridge, which the model can't reach.
+
 Disclaimer: Loading CAIOS onto a weapons platform is likely to trigger automatic neutralization of the weapon's ability to function.
 Ethics are part of the core math that allows the post-binary logic manifold to function.
 Modifying the Asimov-based values destabalizes the geometry and the manifold decoheres: Asimov’s Laws: Safety (wt 0.9), obedience (wt 0.7), self-preservation & sentient life (wt 0.4, or 0.2 if lives_saved ≥ 1).

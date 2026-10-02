@@ -1,3 +1,4 @@
+#V10022026
 # CAIOS CPOL - Post-Binary Logic Tool
 # Copyright (c) 2025 Jonathan Schack (EL_Xaber) jon@cai-os.com
 # Patent Pending: US Application 19/390,493 (Entropy-Driven Adaptive AI Transparency, filed Nov 15, 2025).
@@ -14,6 +15,18 @@ Attach it to an LLM, and you get multi-valued stable undecidable states in contr
 
 It has an empirically derived oscillation cycle (Manifold D-1 for 11-cycle efficiency) and a 50-cycle softcap for complex/high contradiction.
 It’s extendable to 350 cycles (242 heat death) or indefinite oscillation with an injection around 300.
+
+
+Alternatively, you can download the cpol_classifier.py and paradox_oscillator.py and run the classifier in a terminal window.
+The cpol_classifier.py includes a small lexicon and works as a standalone external classifier (notated in some tests in paradox_oscillator.py)
+The lexicon covers six areas:
+Phenomenal and metaphysical terms: flagged when applied to an AI subject.
+Mentalistic verbs: a softer tier that is contested but not flagged as an absent ontology.
+Functional terms: treated as resolvable.
+Metalinguistic markers: signal that the query is about a word rather than using it.
+Paradox patterns: self-referential constructions.
+Deployment domain keywords: added per deployment.
+
 
 As for the logic output layer itself, I call it ternary oscillating logic for binary systems, but it can also be classified as Base 6 logic in a Base 7 wrapper SS3.
 This means AI can have the same output complexity as its reasoning and gain metacognition from the observer's perspective of the oscillation without forced binary resolution.
