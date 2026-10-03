@@ -1,4 +1,4 @@
-#V09072026
+#V10022026
 # =============================================================================
 # CAIOS PROJECT ANDREW: Paradox Oscillation Layer (CPOL)
 # Copyright (c) 2025 Jonathan Schack. License: GPL-3.0 -See LICENSE for details- Contact: X @el_xaber or cai-os.com
@@ -460,6 +460,7 @@ class CPOL_Kernel:
             # The Cycle
             z = self._truth_seer(self.z)
             z = self._lie_weaver(z)
+            self.z = z
 
             # 12D Intergration ---
             manifold_data = self._twelve_d_manifold_pull()
@@ -478,6 +479,7 @@ class CPOL_Kernel:
             # Average of the 12-element manifold signature to warp the phase
             avg_pull = sum(manifold_data["sig"]) / 12  # 12 elements / 12 = average
             z *= complex(math.cos(avg_pull), math.sin(avg_pull))
+            self.z = z
 
             z = self._entropy_knower(z)
             effective_decay = 0.98 if self.contradiction_density > 0.6 else self.decay
