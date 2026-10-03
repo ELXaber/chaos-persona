@@ -495,8 +495,7 @@ class CPOL_Kernel:
             # Apply the 12D pull to the z-state
             # Average of the 12-element manifold signature to warp the phase
             avg_pull = sum(manifold_data["sig"]) / 12  # 12 elements / 12 = average
-            self.z *= complex(math.cos(avg_pull), math.sin(avg_pull))
-            z = self.z
+            z *= complex(math.cos(avg_pull), math.sin(avg_pull))
 
             z = self._entropy_knower(z)
             z *= self.decay

@@ -479,7 +479,6 @@ class CPOL_Kernel:
             # Average of the 12-element manifold signature to warp the phase
             avg_pull = sum(manifold_data["sig"]) / 12  # 12 elements / 12 = average
             z *= complex(math.cos(avg_pull), math.sin(avg_pull))
-            self.z = z
 
             z = self._entropy_knower(z)
             effective_decay = 0.98 if self.contradiction_density > 0.6 else self.decay
