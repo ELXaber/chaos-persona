@@ -1,4 +1,4 @@
-#V09042026
+#V09242026
 # =============================================================================
 # CAIOS PROJECT ANDREW: Tool Dispatcher
 # Intercepts LLM output for structured tool calls and routes them to the
@@ -28,7 +28,9 @@
 #   [TOOL:list_axioms]
 #   [TOOL:search_logs]
 #   [TOOL:browser url="https://cai-os.com" action="scrape"]
-#   TOOL:search_logs query="phrase" scope="all"]
+#   [TOOL:search_logs query="phrase" scope="all"]
+#   [TOOL:load_skill name="pptx"]
+#   [TOOL:tool_loop goal="dedupe images in working/photos" dir="working"]
 #
 # Copyright (c) 2025 Jonathan Schack. License: GPL-3.0 -See LICENSE for details- Contact: X @el_xaber or cai-os.com
 # =============================================================================
@@ -401,6 +403,31 @@ def _handle_list_axioms(attrs: Dict, shared_memory: Dict) -> str:
     except Exception as e:
         return f"[TOOL RESULT] list_axioms failed: {e}"
 
+
+def _handle_tool_loop(attrs: Dict, controller) -> str:
+    goal = attrs.get('goal', '')
+    if not goal:
+        return "[TOOL RESULT] Error: goal required for tool_loop"
+    work_dir = attrs.get('dir', 'working')
+    try:
+        from tool_loop import run_tool_loop
+    except ImportError:
+        return "[TOOL RESULT] tool_loop failed: tool_loop.py not found — not yet built"
+    result = run_tool_loop(goal=goal, os_controller=controller, work_dir=work_dir)
+    return f"[TOOL RESULT] tool_loop({goal[:60]}):\n{result}"
+
+from pathlib import Path
+SKILLS_DIR = Path("skills")
+
+def _handle_load_skill(attrs: Dict, controller) -> str:
+    name = attrs.get('name', '')
+    if not name:
+        return "[TOOL RESULT] Error: name required for load_skill"
+    result = controller.read_file(str(SKILLS_DIR / name / "SKILL.md"))
+    if result['status'] == 'success':
+        return f"[TOOL RESULT] load_skill({name}):\n{result['content']}"
+    return f"[TOOL RESULT] load_skill failed: {result.get('error', result.get('reason', 'unknown'))}"
+
 # =============================================================================
 # Main Dispatcher
 # =============================================================================
@@ -494,7 +521,8 @@ class ToolDispatcher:
 
         # File operations; needs controller
         if tool_name in ('read_file', 'write_file', 'delete_file',
-                          'fetch_url', 'execute_script', 'browser'):
+                          'fetch_url', 'execute_script', 'browser',
+                          'load_skill', 'tool_loop'):
             if not controller:
                 return f"[TOOL RESULT] {tool_name}: os_control not available. " \
                        f"Ensure os_control.py is in the project root."
@@ -508,6 +536,8 @@ class ToolDispatcher:
                 'fetch_url':      lambda: _handle_fetch_url(attrs, controller),
                 'browser':        lambda: _handle_browser(attrs, controller),
                 'execute_script': lambda: _handle_execute_script(attrs, controller),
+                'load_skill':     lambda: _handle_load_skill(attrs, controller),
+                'tool_loop':     lambda: _handle_tool_loop(attrs, controller),
             }
             handler = dispatch_map.get(tool_name)
             if handler:
@@ -667,6 +697,8 @@ AVAILABLE TOOLS:
   [TOOL:kb_read domain="domain_name"]
   [TOOL:list_axioms]
   [TOOL:search_logs query="phrase" scope="all"]  (Sovereign only — searches all users)
+  [TOOL:load_skill name="pptx"]
+  [TOOL:tool_loop goal="dedupe images in working/photos" dir="working"]
 
 MCP TOOLS (filesystem server + windows-mcp):
   [TOOL:mcp_list path="C:/CAIOS"]

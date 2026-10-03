@@ -1,4 +1,4 @@
-#V09082026
+#V09242026
 # =============================================================================
 # CAIOS PROJECT ANDREW: Hardened Orchestrator
 # This acts as the central nervous system connecting everything
@@ -129,6 +129,7 @@ os.makedirs("knowledge_base", exist_ok=True)
 os.makedirs("logs", exist_ok=True)
 os.makedirs("agents", exist_ok=True)
 os.makedirs("working", exist_ok=True)
+os.makedirs("skills", exist_ok=True)
 
 # =============================================================================
 # Shared Memory Initialization

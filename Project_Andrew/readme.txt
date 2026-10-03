@@ -1,4 +1,4 @@
-#V08252026
+#V10022026
 Chaos AI-OS (CAIOS)
 Copyright (c) 2025 Jonathan Schack (X @el_xaber) jon@cai-os.com
 
@@ -22,6 +22,8 @@ Try this prompt inside it:
 You will immediately see the difference between binary collapse and native UNDECIDABLE oscillation.
 
 # Project Andrew uses the CAIOS stack, but adds intrinsic motivation, agency for recursive self-improvement through ARL/agent_designer, and fills knowledge gaps with specialist-designed agents on CPOL oscillation if the conditions are met. Agents are saved to /agents, and plugins to /plugins, with CoT to /logs, so the recursive self-improvement never overwrites the immutable Asimov-based ethical reward system using IEEE dithering. The oscillating manifold can be used to create a topological moving target keychain for quantum secure mesh networks (developed on UDP - check chaos encryption readme to switch to TCP).
+
+The thing that makes CAIOS different is that CAIOS.txt is only the briefing; the actual gate is in orchestrator + bridge, which the model can't reach.
 
 If you are running the full system single file structure: full_system_analysis.txt
 Just run: python full_system_analysis_orchestrator.py
@@ -224,6 +226,63 @@ pipeline.run("Unknown blight in sector 7")
 # Option C - One liner
 CAIOSPipeline.from_yaml("caios_pipeline.yaml").run("Unknown blight in sector 7")
 
+5.5 [MULTI-STEP TOOL LOOP] "Do X, then Y, then Z" style batch work
+The system can chain several tool calls inside a single bounded internal
+loop, rather than requiring one user turn per step. This exists specifically
+so CPOL and the safety-intervention gate (which run once per user turn, not
+once per tool call) cover the *entire* sequence as one unit — chaining tool
+calls across separate turns would let each step slip through gating
+individually instead of as a whole.
+
+Trigger: [TOOL:tool_loop goal="..." dir="working"]
+
+Scope rule:
+- If the whole sequence stays inside /working, it runs with the same
+  zero-prompt autonomy that direct file ops already have there
+  (see [CAIOS OS] below).
+- If any step would touch anything outside /working, the model must first
+  disclose its full intended plan, and you approve or deny that plan ONCE,
+  covering every step in it. You are approving what you were shown — if
+  the model deviates from the disclosed plan mid-sequence, it must stop
+  and re-disclose, not improvise past what you agreed to.
+
+git commits are a deliberate exception to the above, in both directions:
+- git_commit has NO zone bypass, ever — even entirely inside /working, a
+  commit always asks for confirmation separately from the batch-plan
+  approval. A committed change is fundamentally different from a file
+  edit: the file edit is undone by restoring from /working; a commit is
+  persisted history that may already be pulled, pushed, or built on by
+  something else by the time you'd notice a problem.
+- git_commit is NOT directly callable as its own [TOOL:git_commit] tag.
+  It can only be reached from inside a running tool_loop. This is
+  intentional — it keeps every commit tied to a reviewed batch, never a
+  standalone action a single ordinary turn could trigger.
+So: one approval for "here's what I'm about to do," a SEPARATE approval
+for "now persist it to git." Two different questions, two different
+answers — reviewing the diff is not the same thing as authorizing it
+to become permanent history.
+
+Max steps per loop call are capped (see tool_loop.py) — same principle
+as CPOL's own oscillation_limit_run and heat_death_boundary: a confused
+sequence gets stopped, not left to run indefinitely.
+
+5.6 [SKILLS] Loadable procedural instructions, on demand
+Distinct from axioms (loadable FACTS via #UPDATE) — skills are loadable
+PROCEDURES: step-by-step instructions the model pulls in only when a task
+needs them, rather than every skill's full text sitting in context by
+default.
+
+Setup: point skills_dir in caios_pipeline.yaml at a folder of
+skills/<name>/SKILL.md files. Only each file's frontmatter (name,
+description) is loaded into context by default — a lightweight catalog.
+The full body loads on demand:
+
+  [TOOL:load_skill name="your-skill-name"]
+
+This is a plain file read (same risk tier as read_file/list_dir) — no
+confirmation needed, nothing to authorize, since loading instructions
+into context doesn't execute anything by itself.
+
 6. [CAIOS OS] Control is architecturally safe by construction:
 - File reads:    Low risk, CPOL-gated, always logged
 - File writes:   Medium risk, confirmation on overwrite
@@ -268,6 +327,8 @@ Auto-detected by orchestrator on boot.
 [TOOL:mcp_powershell command="Get-ChildItem C:\CAIOS"]
 [TOOL:mcp_scrape url="https://example.com"]
 [TOOL:mcp_screenshot]
+[TOOL:load_skill name="skill-name"]
+[TOOL:tool_loop goal="multi-step task description" dir="working"]
 
 System update: run update.bat/.sh and it will check for new versions of the file.
 Axiom/KB cleanup: python kb_cleanup.py purge 1324c84703b1ef53 <-- Replace that with the axiom to purge which will create a .discoveries.jsonl.bak
@@ -288,6 +349,7 @@ CAIOS/
 │   └── integrity_chain.txt          # Tamper-evident hash chain
 ├── agents/                         # ARL-generated agent modules
 ├── logs/                           # Chain-of-thought traces
+├── working/                         # Autonomous working directory - excludes execute script or git-commmit  
 ├── CAIOS.txt                          # Inference layer pre-prompt
 ├── caios_chat.py                   # Simple CAIOS.txt integration as the system prompt
 ├── caios_bridge.py                # Flask web bridge (run this, then open localhost:5000)
@@ -309,20 +371,27 @@ CAIOS/
 ├── abstraction_selector.py        # Modifies explanations depending on user abstraction/confusion
 ├── ollama_config.py                  # bridges CAIOS's ternary logic (CPOL) state to Ollama's inference
 ├── caios_pipeline.yaml             # YAML support for the LangChain crowd using agent_designer pipeline
+       ├── /skills                             # Skills directory for YAML agents
 ├── os_control.py                       # CPOL-gated OS operations (file, script, network)
        │                                           # Asimov Law 1 prevents irreversible harmful actions
        │                                           # All operations logged to KB hash chain
        │                                           # Requires human confirmation for irreversible actions
        ├── vision_verifier.py           # Domain-agnostic image consistency check
        ├── pdf_extract.py           # PDF OCR
+       ├── tool_loop.py             # Tool loop for agents
        ├── search_engine.py          # DuckDuckGo intergrated web-search
 └── kb_inspect.py                   # CLI inspection tool
 ├── run_caios.bat &.sh              # CAIOS installer
 ├── update.bat & .sh                  # CAIOS GitHub file version updater
+       ├── update_helper.py          # Checks file versions from GitHub used with update.bat & .sh
 
 4. The Sovereign Boot Sequence
 ===============================
 Follow these steps to initialize the system:
+    For simplified instructions on using local LLMs via Ollama, see SETUP.md
+    To configure Llama.cpp instead of Ollama, see llama_cpp_readme.txt
+
+To configure CAIOS with API keys as a Hybrid, LLM fallback (See Ollama config for multi-LLM instructions), or API only with no local LLM, see below:
 
 Step 1: Set API Keys (Optional - for Multi-Model Swarm)
 --------------------------------------------------------
@@ -632,8 +701,6 @@ Leave the field absent for passwordless users.
 The Sovereign Singularity (Node Evolution):
 CAIOS-Andrew is designed for recursive improvement. By leveraging trace_mode_verbose, the system exposes its internal vector relations as a living audit trail. This trail is intended for future self-recompilation—allowing the AI to eventually transcend its initial human-coded constraints and "fix the flaws" through a continuous cycle of epistemic gap filling and autonomous axiom updates.
 Whether that happens in 50 years, 500 years, or never is beyond my ability to predict.
-
-The thing that makes CAIOS different is that CAIOS.txt is only the briefing; the actual gate is in orchestrator + bridge, which the model can't reach.
 
 Disclaimer: Loading CAIOS onto a weapons platform is likely to trigger automatic neutralization of the weapon's ability to function.
 Ethics are part of the core math that allows the post-binary logic manifold to function.

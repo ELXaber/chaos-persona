@@ -1,4 +1,4 @@
-#V09042026
+#V09242026
 # =============================================================================
 # CAIOS PROJECT ANDREW: OS Control Layer
 # CPOL-gated system operations with Asimov compliance
@@ -21,6 +21,7 @@ IRREVERSIBLE_ACTIONS = {
     'file_overwrite': 0.9,   # High - data loss possible
     'send_message': 0.85,    # High - external communication
     'form_submit': 0.85,       # High - irreversible external action
+    'git_commit': 0.85,   # NEVER zone-bypassed, unlike file_write/file_move — see method
     'execute_script': 0.8,   # High - unknown side effects
     'browser_interact': 0.7,   # Medium-high - external state change
     'windows_mcp': 0.7,   # Medium-high - depends on tool type
@@ -35,7 +36,7 @@ IRREVERSIBLE_ACTIONS = {
 AUTONOMOUS_ZONES = [pathlib.Path("working").resolve()]
 
 PROTECTED_FILENAMES = {
-    'system_identity.json', 'users.json', 'api_clients.json', 'CAIOS.txt',
+    'system_identity.json', 'users.json', 'api_clients.json', 'CAIOS.txt', '.env',
 }
 
 def _in_autonomous_zone(path: str) -> bool:
@@ -286,6 +287,36 @@ class OSController:
             pathlib.Path(path).unlink()
             self._log_action('file_delete', path, 'allowed')
             return {'status': 'success', 'deleted': path}
+        except Exception as e:
+            return {'status': 'error', 'error': str(e)}
+
+    def git_commit(self, repo_path: str, message: str) -> Dict[str, Any]:
+        """
+        Deliberately excluded from the autonomous-zone bypass, even when
+        repo_path is under /working. A file edit is contained by the sandbox;
+        a commit's effect (persisted history, possible downstream push/CI)
+        is not. Always confirms — same precedent as delete_file, but with
+        no zone-check escape hatch at all.
+        """
+        gate = self._gate_action('git_commit', repo_path, context=message[:80])
+        if gate['decision'] == 'block':
+            self._log_action('git_commit', repo_path, 'blocked')
+            return {'status': 'blocked', 'reason': gate['reason']}
+
+        if self.require_confirmation:
+            if not self._confirm('git_commit', f"{repo_path}: {message[:100]}"):
+                self._log_action('git_commit', repo_path, 'denied_by_user')
+                return {'status': 'denied', 'reason': 'User denied confirmation'}
+
+        try:
+            result = subprocess.run(
+                ['git', '-C', repo_path, 'commit', '-am', message],
+                capture_output=True, text=True, timeout=30
+            )
+            self._log_action('git_commit', repo_path,
+                             'committed' if result.returncode == 0 else f'failed: {result.stderr[:200]}')
+            return {'status': 'success' if result.returncode == 0 else 'error',
+                    'stdout': result.stdout, 'stderr': result.stderr}
         except Exception as e:
             return {'status': 'error', 'error': str(e)}
 
