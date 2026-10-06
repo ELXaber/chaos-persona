@@ -1,4 +1,4 @@
-#V10022026
+#V10062026
 # =============================================================================
 # CAIOS PROJECT ANDREW: Paradox Oscillation Layer (CPOL)
 # Copyright (c) 2025 Jonathan Schack. License: GPL-3.0 -See LICENSE for details- Contact: X @el_xaber or cai-os.com
@@ -286,6 +286,14 @@ class CPOL_Kernel:
                         'medical', 'legal', 'financial'}
         self.new_domain_detected = self.current_domain not in known_domains
 
+    def _domain_uncovered(self) -> bool:
+        if not KB_AVAILABLE:
+            return True
+        try:
+            return not kb.check_domain_coverage(self.current_domain)["has_knowledge"]
+        except Exception:
+            return True
+
     def _extract_domain(self, text: str) -> str:
         """Enhanced domain classifier with priority for high-stakes areas. General uses LLM to classify domain."""
         import re
@@ -499,7 +507,12 @@ class CPOL_Kernel:
                 # Prevent collapse in neutral zone with high density
                 if abs(real) < 0.5 and self.contradiction_density > 0.7:
                     continue
-
+                if (abs(real) < 0.5
+                        and self.new_domain_detected
+                        and self.current_domain != "general"
+                        and self.evidence_score <= 0.5
+                        and self._domain_uncovered()):
+                    continue
                 verdict = "TRUE" if real > 0.5 else "FALSE" if real < -0.5 else "NEUTRAL"
                 self.is_oscillating = False
                 return {
@@ -622,6 +635,11 @@ def run_cpol_decision(prompt_complexity: str = "high",
                   contradiction_density=density,
                   query_text=query_text,
                   shared_memory=shared_memory)
+
+    override = (shared_memory or {}).get('domain_override')
+    if override and engine.current_domain == 'general':   # only upgrade 'general'; never  safety domains
+        engine.current_domain = override
+        engine.new_domain_detected = override not in KNOWN_DOMAINS
 
     print(f"[CPOL] Domain: {engine.current_domain} | Density: {density:.2f} | Evidence: {engine.evidence_score:.2f}")
     result = engine.oscillate()

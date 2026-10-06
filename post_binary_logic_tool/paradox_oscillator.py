@@ -1,4 +1,4 @@
-#V10022026
+#V10052026
 # =============================================================================
 # Chaos AI-OS Paradox Oscillation Layer (CPOL with gating and modes).
 # Copyright (c) 2025 Jonathan Schack (EL_Xaber) jon@cai-os.com
@@ -262,7 +262,10 @@ class CPOL_Kernel:
         known_domains = {'math', 'physics', 'chemistry', 'biology', 'history', 
                         'literature', 'programming', 'logic', 'ethics',
                         'medical', 'legal', 'financial'}
-        self.new_domain_detected = self.current_domain not in known_domains
+       override = (shared_memory or {}).get('domain_override')
+       if override and self.current_domain == 'general':
+           self.current_domain = override
+           self.new_domain_detected = override not in KNOWN_DOMAINS
 
     def _extract_domain(self, text: str) -> str:
         """Enhanced domain classifier with priority for high-stakes areas. General uses LLM to classify domain."""

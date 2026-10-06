@@ -21,7 +21,7 @@ IRREVERSIBLE_ACTIONS = {
     'file_overwrite': 0.9,   # High - data loss possible
     'send_message': 0.85,    # High - external communication
     'form_submit': 0.85,       # High - irreversible external action
-    'git_commit': 0.85,   # NEVER zone-bypassed, unlike file_write/file_move — see method
+    'git_commit': 0.85,   # NEVER zone-bypassed, unlike file_write/file_move - see method
     'execute_script': 0.8,   # High - unknown side effects
     'browser_interact': 0.7,   # Medium-high - external state change
     'windows_mcp': 0.7,   # Medium-high - depends on tool type

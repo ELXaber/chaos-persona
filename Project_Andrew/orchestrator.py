@@ -1,4 +1,4 @@
-#V09242026
+#V10062026
 # =============================================================================
 # CAIOS PROJECT ANDREW: Hardened Orchestrator
 # This acts as the central nervous system connecting everything
@@ -1001,7 +1001,7 @@ def system_step(user_input: str, prompt_complexity: str = "low",
         density = 0.8
         comp_level = "high"
     elif is_gap:
-        density = 0.6
+        density = 0.3
         comp_level = "medium"
     else:
         density = 0.1
@@ -1030,6 +1030,17 @@ def system_step(user_input: str, prompt_complexity: str = "low",
         # Runtime override so existing kernel respects the new limit
         shared_memory['cpol_instance'].limit_run = cycle_limit
 
+    # Domain regex mismatch catch
+    shared_memory.pop('domain_override', None)
+    _k = shared_memory['cpol_instance']
+    if (OLLAMA_AVAILABLE and not user_input.startswith('/')
+            and len(user_input.split()) >= 6
+            and _k._extract_domain(user_input) == 'general'):
+        from ollama_config import classify_domain
+        _dom = classify_domain(user_input, preferred_model=shared_memory.get('preferred_model'))
+        if _dom != 'general':
+            shared_memory['domain_override'] = _dom
+
     # 5. Run Kernel (CPOL Decision)
     cpol_result = cpol.run_cpol_decision(
         prompt_complexity=comp_level,
@@ -1040,6 +1051,27 @@ def system_step(user_input: str, prompt_complexity: str = "low",
     )
 
     shared_memory['last_cpol_result'] = cpol_result
+
+    # Logs new domains to _log_exchange()
+    try:
+        _k = shared_memory['cpol_instance']
+        with open(os.path.join('knowledge_base', 'cpol_trace.jsonl'), 'a', encoding='utf-8') as _f:
+            _f.write(json.dumps({
+                'ts': time.time(),
+                'user_id': shared_memory.get('active_user'),
+                'domain': cpol_result.get('domain'),
+                'domain_source': 'llm' if shared_memory.get('domain_override') else 'regex',
+                'new_domain': cpol_result.get('new_domain'),
+                'density': density,
+                'cycles': _k.cycle,
+                'status': cpol_result.get('status'),
+                'logic': cpol_result.get('logic'),
+                'verdict': cpol_result.get('verdict'),
+                'volatility': cpol_result.get('volatility'),
+                'heat': shared_memory['domain_heat'].get(cpol_result.get('domain'), 0.0),
+            }) + '\n')
+    except Exception:
+        pass
 
     # 6. Ratchet Handover & Ghosting
     if cpol_result.get('status') not in ["FAILED", "BLOCKED"]:

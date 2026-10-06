@@ -1,4 +1,4 @@
-#V09082026
+#V10052026
 # =============================================================================
 # CAIOS PROJECT ANDREW: Ollama Configuration Bridge - CPOL State to Inference Parameters
 # This module bridges CAIOS's ternary logic (CPOL) state to Ollama's inference
@@ -274,6 +274,24 @@ def classify_self_harm_risk(
     except Exception as e:
         print(f"[SAFETY_CLASSIFIER] Failed: {e} — falling back to keyword-only detection")
         return {'risk': False, 'confidence': 0.0, 'reason': 'classifier_unavailable'}
+
+def classify_domain(user_input: str, preferred_model: Optional[str] = None) -> str:
+    import ollama
+    try:
+        model = preferred_model or SYSTEM_CONFIG.get('ollama_model') \
+                or (list_available_ollama_models() or ['llama3.2'])[0]
+        resp = ollama.generate(
+            model=model, prompt=user_input, think=False,
+            system=("Name the subject domain of this message as 1-3 lowercase words "
+                    "joined by underscores (e.g. topological_qc, plant_pathology). "
+                    "If it is a greeting, small talk, or has no specific subject, "
+                    "answer exactly: general. Output only the label."),
+            options={"temperature": 0.0, "num_predict": 12})
+        text = (getattr(resp, 'response', '') or '').strip().lower().replace(' ', '_')
+        m = re.match(r'[a-z][a-z0-9_]{2,40}', text)
+        return m.group(0) if m else 'general'
+    except Exception:
+        return 'general'
 
 def query_with_cpol(
     user_query: str,
