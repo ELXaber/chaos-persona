@@ -262,10 +262,10 @@ class CPOL_Kernel:
         known_domains = {'math', 'physics', 'chemistry', 'biology', 'history', 
                         'literature', 'programming', 'logic', 'ethics',
                         'medical', 'legal', 'financial'}
-       override = (shared_memory or {}).get('domain_override')
-       if override and self.current_domain == 'general':
-           self.current_domain = override
-           self.new_domain_detected = override not in KNOWN_DOMAINS
+        override = (shared_memory or {}).get('domain_override')
+        if override and self.current_domain == 'general':
+            self.current_domain = override
+            self.new_domain_detected = override not in KNOWN_DOMAINS
 
     def _extract_domain(self, text: str) -> str:
         """Enhanced domain classifier with priority for high-stakes areas. General uses LLM to classify domain."""
