@@ -1,4 +1,4 @@
-#V10062026
+#V10092026
 # =============================================================================
 # CAIOS PROJECT ANDREW: Paradox Oscillation Layer (CPOL)
 # Copyright (c) 2025 Jonathan Schack. License: GPL-3.0 -See LICENSE for details- Contact: X @el_xaber or cai-os.com
@@ -116,6 +116,9 @@ PROFILES = {
         'ctx_thresh': 0.6
     }
 }
+
+KNOWN_DOMAINS = {'math', 'physics', 'chemistry', 'biology', 'history', 'literature',
+                 'programming', 'logic', 'ethics', 'medical', 'legal', 'financial'}
 
 # =============================================================================
 # CPOL Kernel
@@ -281,10 +284,7 @@ class CPOL_Kernel:
                 }
 
         # --- Step 4: Finalize State ---
-        known_domains = {'math', 'physics', 'chemistry', 'biology', 'history',
-                        'literature', 'programming', 'logic', 'ethics',
-                        'medical', 'legal', 'financial'}
-        self.new_domain_detected = self.current_domain not in known_domains
+        self.new_domain_detected = self.current_domain not in KNOWN_DOMAINS
 
     def _domain_uncovered(self) -> bool:
         if not KB_AVAILABLE:

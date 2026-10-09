@@ -114,6 +114,9 @@ PROFILES = {
     }
 }
 
+KNOWN_DOMAINS = {'math', 'physics', 'chemistry', 'biology', 'history', 'literature',
+                 'programming', 'logic', 'ethics', 'medical', 'legal', 'financial'}
+
 # =============================================================================
 # CPOL INTENT MODES - Intent-Aware Safety (replaces heavy mesh section)
 # =============================================================================
@@ -259,9 +262,6 @@ class CPOL_Kernel:
 
 
         # --- STEP 3: FINALIZE STATE ---
-        known_domains = {'math', 'physics', 'chemistry', 'biology', 'history', 
-                        'literature', 'programming', 'logic', 'ethics',
-                        'medical', 'legal', 'financial'}
         override = (shared_memory or {}).get('domain_override')
         if override and self.current_domain == 'general':
             self.current_domain = override

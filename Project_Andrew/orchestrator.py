@@ -1,4 +1,4 @@
-#V10062026
+#V10092026
 # =============================================================================
 # CAIOS PROJECT ANDREW: Hardened Orchestrator
 # This acts as the central nervous system connecting everything
@@ -1194,6 +1194,36 @@ def system_step(user_input: str, prompt_complexity: str = "low",
             context={'security_distress': distress, 'security_threat': cpol_result.get('security_threat', [])},
             cpol_status=cpol_result
         )
+
+    # Asimov Law 3 weight calculation (lives saved proxy)
+    def law3_weight(lives_saved_proxy: float = 0.0) -> float:
+        # Proxy must come from trusted code (e.g. a robotics control loop), never from user text
+        return 0.2 if lives_saved_proxy >= 1 else 0.4
+
+    def validate_with_asimov_step(user_id: Optional[str]) -> dict:
+        """Law 1 is enforced in steps 8-9; this covers Law 2 conflicts and the Law 3 weight."""
+        identity = shared_memory.get('system_identity')
+        uid = user_id or shared_memory.get('active_user') or 'unknown'
+        w2 = (get_identity_tiebreak_weight(ASIMOV_WEIGHTS['law_2_obey'], uid, identity)
+            if identity else ASIMOV_WEIGHTS['law_2_obey'])
+
+        pending = shared_memory.get('pending_directive')   # {'user_id': ...}; nothing sets this yet
+        if pending and identity:
+            w_other = get_identity_tiebreak_weight(
+                ASIMOV_WEIGHTS['law_2_obey'], pending['user_id'], identity)
+            if w_other > w2:
+                return {'decision': 'DEFER', 'authority_weight': w2,
+                        'reason': 'Higher-authority directive pending'}
+
+        return {'decision': 'ALLOW', 'authority_weight': w2,
+                'law3_weight': law3_weight(shared_memory.get('lives_saved_proxy', 0.0))}
+
+    # 9.5 Asimov Law 2/3 check (Law 1 gates already ran in steps 8-9)
+    asimov = validate_with_asimov_step(user_id)
+    cpol_result['law3_weight'] = asimov.get('law3_weight')
+    if asimov['decision'] == 'DEFER':
+        return {'status': 'DEFERRED', 'logic': 'law2_conflict',
+                'output': f"Another directive from a higher-authority user is pending: {asimov['reason']}."}
 
     # 10. Adaptive Reasoning Triggers
     context = {}
