@@ -910,10 +910,13 @@ if __name__ == "__main__":
     # Test 6: Session persistence
     print("\n[TEST 6] Session Persistence:")
     session_data = {}
-    result6a = run_cpol_chatbot("What is 2+2?", session_state=session_data)
-    result6b = run_cpol_chatbot("What about 3+3?", session_state=session_data)
+    run_cpol_chatbot("What is 2+2?", session_state=session_data)
+    k1 = session_data['cpol_kernel']
+    run_cpol_chatbot("What about 3+3?", session_state=session_data)
+    k2 = session_data['cpol_kernel']
     print(f"  Kernel persisted: {'cpol_kernel' in session_data}")
-    print(f"  Same kernel instance: {session_data.get('cpol_kernel') is not None}")
+    print(f"  Same kernel instance: {k1 is k2}")
+    print(f"  call_count after 2 calls: {k2.call_count} (should be 2)")
     _print_kernel_state(session_data, label="Test 6")
 
     # Test 7: 12D Manifold verification
