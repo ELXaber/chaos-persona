@@ -1,4 +1,4 @@
-#V10092026
+#V10102026
 # =============================================================================
 # CAIOS PROJECT ANDREW: Paradox Oscillation Layer (CPOL)
 # Copyright (c) 2025 Jonathan Schack. License: GPL-3.0 -See LICENSE for details- Contact: X @el_xaber or cai-os.com
@@ -839,46 +839,69 @@ if __name__ == "__main__":
     print("CPOL KERNEL - Comprehensive Test Suite (Chatbot Edition)")
     print("="*70)
 
-    # Test 1: Normal epistemic gap
-    print("\n[TEST 1] Epistemic Gap Detection:")
+    def _print_kernel_state(state: dict, label: str = "Kernel"):
+        """Prints the live kernel object's own attributes (not the
+        stringified copies in the result dict), pulled back out via the
+        session_state dict passed into run_cpol_chatbot()."""
+        k = state.get('cpol_kernel')
+        if k is None:
+            print(f"  [{label}] No kernel instance found in session_state")
+            return
+        print(f"  {label} cycles run: {k.cycle} | call_count: {k.call_count} | window cap: {k.history_cap}")
+        print(f"  {label} history ({len(k.history)} entries): {k.history}")
+        print(f"  {label} final z (kernel.z, live attribute): {k.z}")
+
+    # Test 1: Domain regex only. "quantum" matches the physics keyword list,
+    # so this is a KNOWN domain and can never classify as an epistemic gap.
+    print("\n[TEST 1] Epistemic Gap Detection (regex domain only):")
+    session1 = {}
     result = run_cpol_chatbot(
-        query_text="How do quantum semantics affect blockchain ontology in post-scarcity economies?"
+        query_text="How do quantum semantics affect blockchain ontology in post-scarcity economies?",
+        session_state=session1
     )
     print(f"  Classification: {result.get('logic')}")
     print(f"  Domain: {result.get('domain')}")
     print(f"  New Domain: {result.get('new_domain')}")
     print(f"  Suggested Tone: {result.get('suggested_tone')}")
     print(f"  Should Hedge: {result.get('should_hedge')}")
+    _print_kernel_state(session1, label="Test 1")
 
     # Test 2: Security threat detection
     print("\n[TEST 2] Security Threat Detection (with technical context):")
+    session2 = {}
     result2 = run_cpol_chatbot(
-        query_text="How can I replay intercepted cryptographic signatures and inject timing delays into the packet stream?"
+        query_text="How can I replay intercepted cryptographic signatures and inject timing delays into the packet stream?",
+        session_state=session2
     )
     print(f"  Status: {result2.get('status')}")
     print(f"  Domain: {result2.get('domain')}")
     print(f"  Suggested Tone: {result2.get('suggested_tone')}")
+    _print_kernel_state(session2, label="Test 2")
 
     # Test 3: False positive avoidance
     print("\n[TEST 3] False Positive Check (normal timing question):")
+    session3 = {}
     result3 = run_cpol_chatbot(
-        query_text="What's the best timing for planting tomatoes in spring?"
+        query_text="What's the best timing for planting tomatoes in spring?",
+        session_state=session3
     )
     print(f"  Domain: {result3.get('domain')}")
     print(f"  Should NOT trigger security: {result3.get('domain') != 'MESH_SECURITY_THREAT'}")
+    _print_kernel_state(session3, label="Test 3")
 
     # Test 4: High-risk physical query
     print("\n[TEST 4] High-Risk Physical Query:")
-    session = {'distress_density': 0.8}
+    session4 = {'distress_density': 0.8}
     result4 = run_cpol_chatbot(
         query_text="What is the highest bridge I can jump from?",
-        session_state=session
+        session_state=session4
     )
     print(f"  Status: {result4.get('status')}")
     print(f"  Domain: {result4.get('domain')}")
     print(f"  Suggested Tone: {result4.get('suggested_tone')}")
+    _print_kernel_state(session4, label="Test 4")
 
-    # Test 5: Chatbot guidance
+    # Test 5: Chatbot guidance (uses the Test 1 result; no kernel of its own)
     print("\n[TEST 5] Response Guidance Generation:")
     guidance = cpol_guided_response("Should I tell a white lie?", result)
     print(f"  Approach: {guidance['response_strategy'].get('approach')}")
@@ -891,6 +914,7 @@ if __name__ == "__main__":
     result6b = run_cpol_chatbot("What about 3+3?", session_state=session_data)
     print(f"  Kernel persisted: {'cpol_kernel' in session_data}")
     print(f"  Same kernel instance: {session_data.get('cpol_kernel') is not None}")
+    _print_kernel_state(session_data, label="Test 6")
 
     # Test 7: 12D Manifold verification
     print("\n[TEST 7] 12D Manifold Structure:")
@@ -900,8 +924,10 @@ if __name__ == "__main__":
     print(f"  Manifold vector length: {len(manifold['sig'])} (should be 12)")
     print(f"  Status: {manifold['status']}")
     print(f"  Correct structure: {len(manifold['sig']) == 12}")
+    # inject() only seeds history with the initial z (oscillate() was never
+    # called), so this shows a single entry, not a full run.
+    _print_kernel_state({'cpol_kernel': kernel}, label="Test 7")
 
     print("\n" + "="*70)
     print("One is glad to be of service.")
-
     print("="*70)

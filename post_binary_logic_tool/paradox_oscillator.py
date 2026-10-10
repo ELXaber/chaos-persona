@@ -1,4 +1,4 @@
-#V10052026
+#V10102026
 # =============================================================================
 # Chaos AI-OS Paradox Oscillation Layer (CPOL with gating and modes).
 # Copyright (c) 2025 Jonathan Schack (EL_Xaber) jon@cai-os.com
@@ -772,6 +772,7 @@ if __name__ == "__main__":
         if k is None:
             print(f"  [{label}] No kernel instance found in session_state")
             return
+        print(f"  {label} cycles run: {k.cycle} | call_count: {k.call_count} | window cap: {k.history_cap}")
         print(f"  {label} history ({len(k.history)} entries): {k.history}")
         print(f"  {label} final z (kernel.z, live attribute): {k.z}")
 

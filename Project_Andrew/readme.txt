@@ -1,4 +1,4 @@
-#V10022026
+#V10102026
 Chaos AI-OS (CAIOS)
 Copyright (c) 2025 Jonathan Schack (X @el_xaber) jon@cai-os.com
 
@@ -25,6 +25,46 @@ You will immediately see the difference between binary collapse and native UNDEC
 
 The thing that makes CAIOS different is that CAIOS.txt is only the briefing; the actual gate is in orchestrator + bridge, which the model can't reach.
 
+Binary logic (forced binary resolution in AI despite probabilistic or other reasoning) has no native state for a genuine paradox; CPOL does, and the state carries a reason, a volatility, and a bounded lifetime.
+Example running CPOL in a terminal window without an LLM:
+
+    From post_binary_logic_tool:
+    [TEST 4] Response Guidance Generation:
+    [CPOL] Domain: ethics | Density: 0.50 | Evidence: 0.50
+    [CPOL] Result: UNDECIDABLE
+      Approach: Ask clarifying questions
+      Tone: Helpful and curious
+      Test 4 cycles run: 50 | call_count: 1 | window cap: 5
+      Test 4 history (5 entries): [(-0.012937137788794897-0.019687052962447667j), (-0.012937137814674583-0.01968705299209562j), (-0.012937137822500968-0.01968705301769723j), (-0.012937137821208793-0.01968705303722754j), (-0.012937137816196737-0.019687053050837382j)]
+      Test 4 final z (kernel.z, live attribute): (-0.012937137816196737-0.019687053050837382j)
+
+    From CPOL in Project_Andrew:
+    [TEST 1] Epistemic Gap Detection (regex domain only):
+    [CPOL] Domain: physics | Density: 0.20 | Evidence: 0.50
+    [CPOL] Result: RESOLVED
+      Classification: None
+      Domain: physics
+      New Domain: False
+      Suggested Tone: tentative
+      Should Hedge: False
+      Test 1 cycles run: 4 | call_count: 1 | window cap: 5
+      Test 1 history (5 entries): [0j, (-0.013132855087959807-0.0005458762851129912j), (-0.022387807018846687-0.001421542444881106j), (-0.028892554582942993-0.002475506355279695j), (-0.03344960534695846-0.0036050853530113867j)]
+      Test 1 final z (kernel.z, live attribute): (-0.03344960534695846-0.0036050853530113867j)
+
+    [TEST 2] Security Threat Detection (with technical context):
+    [CPOL] ⚠️ SECURITY THREAT DETECTED: REPLAY, INJECTION, MITM
+    [CPOL] Domain: MESH_SECURITY_THREAT | Density: 0.20 | Evidence: 0.00
+    [CPOL] Result: UNDECIDABLE
+      Status: UNDECIDABLE
+      Domain: MESH_SECURITY_THREAT
+      Suggested Tone: decline_politely
+      Test 2 cycles run: 11 | call_count: 1 | window cap: 5
+      Test 2 history (5 entries): [(0.011324445867628336-0.005847733204933845j), (0.005710556271915345-0.005538668436330752j), (0.0053862938651388715-0.009801167745193884j), (0.009542155406632743-0.010084254921842048j), (0.009842194535849773-0.006928060071848885j)]
+      Test 2 final z (kernel.z, live attribute): (0.009842194535849773-0.006928060071848885j)
+  
+The final z is neither ±1 (forced verdict) nor 0 (refusal). It's a stable off-axis point; the native representation of 'unresolved but well-defined.
+Downstream, the taxonomy ('paradox' vs 'ontological error' vs 'epistemic gap' vs 'structural noise') determines the response strategy; an undecidable is not a dead end, it's a routing instruction.
+
 If you are running the full system single file structure: full_system_analysis.txt
 Just run: python full_system_analysis_orchestrator.py
 
@@ -46,7 +86,7 @@ Logic Type       |    Binary / Statistical     |    Ternary / Geometric
 Security         |    Static Encryption        |    Self-Ratcheting Manifold
 Coherence        |    Decays over time         |    Hardens over time
 
-We aren't building a bigger library; we're building a more accurate compass.
+I'm not building a bigger library; I'm building a more accurate compass.
 It validates the video: https://x.com/el_xaber/status/2008268523659837839
 People can see the 200+ prompt scroll; this section explains why their eyes aren't deceiving them.
 
