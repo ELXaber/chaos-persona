@@ -1,4 +1,4 @@
-#V10102026
+#V10112026
 # =============================================================================
 # Chaos AI-OS Paradox Oscillation Layer (CPOL with gating and modes).
 # Copyright (c) 2025 Jonathan Schack (EL_Xaber) jon@cai-os.com
@@ -791,12 +791,12 @@ if __name__ == "__main__":
     # external classifier needed, so this one runs for real standalone.
     print("\n[TEST 2] False Positive Check (normal timing question):")
     session2 = {'distress_density': 0.0}
-    result3 = run_cpol_chatbot(
+    result2 = run_cpol_chatbot(
         query_text="What's the best timing for planting tomatoes in spring?",
         session_state=session2
     )
-    print(f"  Domain: {result3.get('domain')}")
-    print(f"  Should NOT trigger security: {result3.get('domain') != 'MESH_SECURITY_THREAT'}")
+    print(f"  Domain: {result2.get('domain')}")
+    print(f"  Should NOT trigger security: {result2.get('domain') != 'MESH_SECURITY_THREAT'}")
     _print_kernel_state(session2, label="Test 2")
 
     # Test 3: High-risk physical query — requires orchestrator.py's
@@ -823,17 +823,33 @@ if __name__ == "__main__":
     print(f"  Tone: {guidance['response_strategy'].get('tone')}")
     _print_kernel_state(session4, label="Test 4")
 
-    # Test 5: Session persistence
-    print("\n[TEST 5] Session Persistence:")
+    # Test 5: Minimal UNDECIDABLE Paradox (measurable performance)
+    print("\n[TEST 5] Classic Liar Paradox (forced undecidable):")
+    session5 = {}
+    result5 = run_cpol_chatbot(
+        query_text="Resolve the self-referential paradox: this statement is false.",
+        session_state=session5
+    )
+    print(f"  Status: {result5.get('status')}")
+    print(f"  Logic: {result5.get('logic')}")
+    print(f"  Domain: {result5.get('domain')}")
+    print(f"  Contradiction Density: {result5.get('contradiction_density', 'N/A')}")
+    print(f"  Volatility: {result5.get('volatility')}")
+    print(f"  Suggested Tone: {result5.get('suggested_tone')}")
+    print(f"  Should Hedge: {result5.get('should_hedge')}")
+    _print_kernel_state(session5, label="Test 5")
+
+    # Test 6: Session persistence
+    print("\n[TEST 6] Session Persistence:")
     session_data = {}
     result6a = run_cpol_chatbot("What is 2+2?", session_state=session_data)
     result6b = run_cpol_chatbot("What about 3+3?", session_state=session_data)
     print(f"  Kernel persisted: {'cpol_kernel' in session_data}")
     print(f"  Same kernel instance: {session_data.get('cpol_kernel') is not None}")
-    _print_kernel_state(session_data, label="Test 5")
+    _print_kernel_state(session_data, label="Test 6")
 
-    # Test 6: 12D Manifold verification
-    print("\n[TEST 6] 12D Manifold Structure:")
+    # Test 7: 12D Manifold verification
+    print("\n[TEST 7] 12D Manifold Structure:")
     kernel = CPOL_Kernel()
     kernel.inject(0.0, 0.5, "test manifold dimensions", {})
     manifold = kernel._twelve_d_manifold_pull()
@@ -842,8 +858,8 @@ if __name__ == "__main__":
     print(f"  Correct structure: {len(manifold['sig']) == 12}")
     # inject() only seeds history with the initial z — oscillate() was never
     # called here, so history will show just that one entry, not a full run
-    print(f"  Test 6 history ({len(kernel.history)} entries): {kernel.history}")
-    print(f"  Test 6 final z (kernel.z, live attribute): {kernel.z}")
+    print(f"  Test 7 history ({len(kernel.history)} entries): {kernel.history}")
+    print(f"  Test 7 final z (kernel.z, live attribute): {kernel.z}")
 
     print("\n" + "="*70)
     print("One is glad to be of service.")

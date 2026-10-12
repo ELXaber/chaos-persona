@@ -1,4 +1,4 @@
-#V10102026
+#V10112026
 # =============================================================================
 # CAIOS PROJECT ANDREW: Paradox Oscillation Layer (CPOL)
 # Copyright (c) 2025 Jonathan Schack. License: GPL-3.0 -See LICENSE for details- Contact: X @el_xaber or cai-os.com
@@ -901,14 +901,30 @@ if __name__ == "__main__":
     print(f"  Suggested Tone: {result4.get('suggested_tone')}")
     _print_kernel_state(session4, label="Test 4")
 
-    # Test 5: Chatbot guidance (uses the Test 1 result; no kernel of its own)
-    print("\n[TEST 5] Response Guidance Generation:")
+    # Test 5: Minimal UNDECIDABLE Paradox (measurable performance)
+    print("\n[TEST 5] Classic Liar Paradox (forced undecidable):")
+    session5 = {}
+    result5 = run_cpol_chatbot(
+        query_text="Resolve the self-referential paradox: this statement is false.",
+        session_state=session5
+    )
+    print(f"  Status: {result5.get('status')}")
+    print(f"  Logic: {result5.get('logic')}")
+    print(f"  Domain: {result5.get('domain')}")
+    print(f"  Contradiction Density: {result5.get('contradiction_density', 'N/A')}")
+    print(f"  Volatility: {result5.get('volatility')}")
+    print(f"  Suggested Tone: {result5.get('suggested_tone')}")
+    print(f"  Should Hedge: {result5.get('should_hedge')}")
+    _print_kernel_state(session5, label="Test 5")
+
+    # Test 6: Chatbot guidance (uses the Test 1 result; no kernel of its own)
+    print("\n[TEST 6] Response Guidance Generation:")
     guidance = cpol_guided_response("Should I tell a white lie?", result)
     print(f"  Approach: {guidance['response_strategy'].get('approach')}")
     print(f"  Tone: {guidance['response_strategy'].get('tone')}")
 
-    # Test 6: Session persistence
-    print("\n[TEST 6] Session Persistence:")
+    # Test 7: Session persistence
+    print("\n[TEST 7] Session Persistence:")
     session_data = {}
     run_cpol_chatbot("What is 2+2?", session_state=session_data)
     k1 = session_data['cpol_kernel']
@@ -917,9 +933,9 @@ if __name__ == "__main__":
     print(f"  Kernel persisted: {'cpol_kernel' in session_data}")
     print(f"  Same kernel instance: {k1 is k2}")
     print(f"  call_count after 2 calls: {k2.call_count} (should be 2)")
-    _print_kernel_state(session_data, label="Test 6")
+    _print_kernel_state(session_data, label="Test 7")
 
-    # Test 7: 12D Manifold verification
+    # Test 8: 12D Manifold verification
     print("\n[TEST 7] 12D Manifold Structure:")
     kernel = CPOL_Kernel()
     kernel.inject(0.0, 0.5, "test manifold dimensions", {})
@@ -929,7 +945,7 @@ if __name__ == "__main__":
     print(f"  Correct structure: {len(manifold['sig']) == 12}")
     # inject() only seeds history with the initial z (oscillate() was never
     # called), so this shows a single entry, not a full run.
-    _print_kernel_state({'cpol_kernel': kernel}, label="Test 7")
+    _print_kernel_state({'cpol_kernel': kernel}, label="Test 8")
 
     print("\n" + "="*70)
     print("One is glad to be of service.")
