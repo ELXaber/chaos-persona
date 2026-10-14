@@ -1,6 +1,5 @@
 import requests
 import time
-import json
 
 OLLAMA_URL = "http://localhost:11434/api/generate"
 MODEL = "qwen3.8:27b"

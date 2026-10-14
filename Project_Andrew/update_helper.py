@@ -1,4 +1,4 @@
-#V09242026
+#V10142026
 # =============================================================================
 # CAIOS PROJECT ANDREW: GitHub update checker
 # Called by update.bat and update.sh
@@ -11,12 +11,10 @@
 # =============================================================================
 
 import sys
-import os
 import re
 import shutil
 import urllib.request
 import urllib.error
-from datetime import datetime, timezone
 from pathlib import Path
 
 REPO_RAW = sys.argv[1] if len(sys.argv) > 1 else \
@@ -124,7 +122,7 @@ def fetch_remote(filename: str) -> tuple[str | None, str]:
             return r.read().decode('utf-8', errors='replace'), ''
     except urllib.error.HTTPError as e:
         if e.code == 404:
-            return None, f'not found on GitHub (404)'
+            return None, 'not found on GitHub (404)'
         return None, f'HTTP {e.code}'
     except urllib.error.URLError as e:
         return None, f'network error: {e.reason}'

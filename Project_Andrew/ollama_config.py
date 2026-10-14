@@ -1,4 +1,4 @@
-#V10052026
+#V10142026
 # =============================================================================
 # CAIOS PROJECT ANDREW: Ollama Configuration Bridge - CPOL State to Inference Parameters
 # This module bridges CAIOS's ternary logic (CPOL) state to Ollama's inference
@@ -13,7 +13,6 @@ import json
 import os
 import re
 import urllib.request
-import urllib.error
 from typing import Dict, Optional, List, Any
 
 

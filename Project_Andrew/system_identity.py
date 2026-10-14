@@ -1,4 +1,4 @@
-#V08132026
+#V10142026
 # =============================================================================
 # CAIOS PROJECT ANDREW: System Identity & Authority Initialization
 # Purpose: Enable embodied systems (robots, IoT) to establish identity and authority hierarchy for conflict resolution in multi-user environments
@@ -6,7 +6,6 @@
 # =============================================================================
 
 import json
-import os
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Dict, Optional, List
@@ -118,7 +117,7 @@ class SystemIdentity:
             'last_updated': timestamp,
             'auth_method': auth_method,
             'authority_weights': self._calculate_authority_weights(
-                primary_user, 
+                primary_user,
                 authorized_users or [primary_user]
             ),
             'user_profiles': {}
@@ -141,8 +140,8 @@ class SystemIdentity:
 
 
     def _calculate_authority_weights(
-        self, 
-        primary_user: str, 
+        self,
+        primary_user: str,
         authorized_users: List[str]
     ) -> Dict[str, float]:
         """
@@ -296,7 +295,7 @@ class SystemIdentity:
         if self.identity_data['identity_type'] == 'personal':
             summary += f", serving {self.identity_data['primary_user']}"
         elif self.identity_data['identity_type'] == 'corporate':
-            summary += f" (Corporate Unit)"
+            summary += " (Corporate Unit)"
 
         return summary
 

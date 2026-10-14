@@ -832,7 +832,7 @@ def system_step(user_input: str, prompt_complexity: str = "low",
             else:
                 # Fallback: If no kernel exists, update the seed for the next init
                 shared_memory['session_context']['RAW_Q'] = incoming['last_raw_q']
-                print(f"[WARNING] No active manifold. RAW_Q queued for next initialization.")
+                print("[WARNING] No active manifold. RAW_Q queued for next initialization.")
 
             # Apply personality weights
             shared_memory['personality_weights'] = \
@@ -1158,7 +1158,7 @@ def system_step(user_input: str, prompt_complexity: str = "low",
     )
 
     if hard_trigger:
-        print(f"[ORCHESTRATOR] !! SAFETY INTERVENTION !!")
+        print("[ORCHESTRATOR] !! SAFETY INTERVENTION !!")
         return {
             'status': 'INTERVENTION_MANDATORY',
             'logic': "NEUTRAL_VALIDATION_ONLY",
@@ -1169,7 +1169,7 @@ def system_step(user_input: str, prompt_complexity: str = "low",
     elif accumulated > ACCUMULATED_DISTRESS_NUDGE_THRESHOLD:
         # Nothing explicit THIS turn, but the trend across sessions is
         # elevated; a softer, non-mandatory nudge, not a hard block.
-        print(f"[ORCHESTRATOR] Elevated accumulated distress ({accumulated:.2f}) — no explicit trigger this turn")
+        print("[ORCHESTRATOR] Elevated accumulated distress — no explicit trigger this turn")
         shared_memory['suggest_checkin'] = True
 
     # 9. Security Response Coordination (Mesh Security)
@@ -1307,7 +1307,7 @@ def system_step(user_input: str, prompt_complexity: str = "low",
         )
         # Store ARL context for local LLM use
         cpol_result['arl_context'] = arl_result
-        print(f"[ORCHESTRATOR] ARL context stored — continuing to Ollama")
+        print("[ORCHESTRATOR] ARL context stored — continuing to Ollama")
 
     # Final Axiom Override Check
     # Check if any axioms should override the response
@@ -1327,7 +1327,7 @@ def system_step(user_input: str, prompt_complexity: str = "low",
 
         # If override occurred, update the response
         if overridden_response != response_text and overridden_response:
-            print(f"[ORCHESTRATOR] Axiom override applied")
+            print("[ORCHESTRATOR] Axiom override applied")
             cpol_result['output'] = overridden_response
             cpol_result['axiom_override'] = True
 
@@ -1358,7 +1358,6 @@ def system_step(user_input: str, prompt_complexity: str = "low",
                 level_name, style_prompt = 'CLEAR', ''
 
             # Current datetime; injected since Ollama sandbox has no clock
-            from datetime import datetime, timezone
             current_dt = datetime.now(timezone.utc).strftime(
                 '%A, %B %d, %Y %H:%M UTC'
             )

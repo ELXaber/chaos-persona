@@ -1,4 +1,4 @@
-#V08132026
+#V10142026
 # =============================================================================
 # CAIOS PROJECT ANDREW: Knowledge Base (Persistent Learning Layer)
 # Purpose: Append-only storage for specialist discoveries + epistemic gap fills + update
@@ -7,7 +7,6 @@
 
 import json
 import hashlib
-import os
 from datetime import datetime, timezone
 from typing import Dict, List, Any, Optional
 from pathlib import Path
@@ -43,7 +42,7 @@ def log_discovery(
         specialist_id: ID of specialist making discovery
         cpol_trace: CPOL oscillation metadata
         node_tier: Authority level (0=Sovereign, 1+=Edge)
-    Returns: 
+    Returns:
         discovery_id (hash of entry)
     """
     # 1. Extract the Quantum Anchor from CPOL
@@ -89,7 +88,7 @@ def query_domain_knowledge(domain: str) -> List[Dict[str, Any]]:
     Retrieve all discoveries for a given domain.
     Args:
         domain: Knowledge domain to query
-    Returns: 
+    Returns:
         List of discovery entries
     """
     if not DISCOVERIES_LOG.exists():
@@ -147,7 +146,7 @@ def check_domain_coverage(domain: str) -> Dict[str, Any]:
     Check if domain has been explored before and what we know.
     Args:
         domain: Knowledge domain to check
-    Returns: 
+    Returns:
         Dict with has_knowledge, discovery_count, gap_fills, last_updated, specialist_deployed
     """
     discoveries = query_domain_knowledge(domain)
@@ -230,7 +229,7 @@ def get_specialist_for_domain(domain: str) -> Optional[str]:
     Check if a specialist already exists for this domain.
     Args:
         domain: Knowledge domain
-    Returns: 
+    Returns:
         specialist_id or None
     """
     registry = load_specialist_registry()
@@ -408,10 +407,10 @@ def _get_sovereign_signature() -> str:
             f.write(f"Epistemic gaps filled: {epistemic_gaps_filled}\n")
             f.write(f"Sovereign nodes: {sovereign_nodes}\n")
 
-        print(f"[KB] 🎯 SOVEREIGN MILESTONE REACHED")
-        print(f"[KB] Epistemic gaps filled: {epistemic_gaps_filled}")
-        print(f"[KB] Sovereign discoveries: {sovereign_nodes}")
-        print(f"[KB] Signature evolved.")
+        print("[KB] 🎯 SOVEREIGN MILESTONE REACHED")
+        print("[KB] Epistemic gaps filled: {epistemic_gaps_filled}")
+        print("[KB] Sovereign discoveries: {sovereign_nodes}")
+        print("[KB] Signature evolved.")
         return "Told you this would work in 2025 - Jonathan Schack."
 
     return "One is glad to be of service."

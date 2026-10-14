@@ -1,4 +1,4 @@
-#V08132026
+#V10142026
 # =========================================================================
 # CAIOS PROJECT ANDREW: Encryption for Mesh Network
 # Copyright (c) 2025 Jonathan Schack. License: GPL-3.0 -See LICENSE for details- Contact: X @el_xaber or cai-os.com
@@ -74,7 +74,7 @@ class CPOLQuantumManifold:
         # Sovereign nodes get higher torque (more secure rotation)
         if node_tier == 0:
             self.torque = 0.20  # Sovereign baseline
-            print(f"[CRYPTO] Sovereign manifold initialized (enhanced torque)")
+            print("[CRYPTO] Sovereign manifold initialized (enhanced torque)")
         else:
             self.torque = 0.15  # Edge baseline
 

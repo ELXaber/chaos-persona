@@ -1,4 +1,4 @@
-#V08132026
+#V10142026
 # =============================================================================
 # CAIOS PROJECT ANDREW: Search Engine (DuckDuckGo, stdlib only)
 # Provides web search capability for epistemic gap resolution.
@@ -20,7 +20,6 @@ import re
 import json
 import urllib.request
 import urllib.parse
-import urllib.error
 import html
 from typing import List, Dict, Optional, Any
 

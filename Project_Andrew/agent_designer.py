@@ -1,4 +1,4 @@
-#V08132026
+#V10142026
 # =============================================================================
 # CAIOS PROJECT ANDREW: Agent Designer Plugin (KB-Integrated)
 # Logs discoveries and checks knowledge base before creating specialists
@@ -196,8 +196,8 @@ def design_agent(
     # =========================================================================
 
     if "epistemic gap" in goal.lower():
-        print(f"[AGENT DESIGNER] PHASE 2 — Designing specialist to fill epistemic gap")
-        print(f"[AGENT DESIGNER] Domain: {domain} | Tier: {node_tier}")
+        print("[AGENT DESIGNER] PHASE 2 — Designing specialist to fill epistemic gap")
+        print("[AGENT DESIGNER] Domain: {domain} | Tier: {node_tier}")
 
         # Check if we already have knowledge for this domain
         coverage = kb.check_domain_coverage(domain)
@@ -219,7 +219,7 @@ def design_agent(
             }
 
         # No existing specialist - create new one
-        print(f"[AGENT DESIGNER] No suitable specialist found, creating new one")
+        print("[AGENT DESIGNER] No suitable specialist found, creating new one")
 
         # Get context from any prior discoveries
         kb_context = kb.generate_specialist_context(domain)

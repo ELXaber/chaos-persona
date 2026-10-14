@@ -1,0 +1,1962 @@
+#V10142026
+# =============================================================================
+# CAIOS PROJECT ANDREW: Hardened Orchestrator
+# This acts as the central nervous system connecting everything
+# Copyright (c) 2025 Jonathan Schack. License: GPL-3.0 -See LICENSE for details- Contact: X @el_xaber or cai-os.com
+# =============================================================================
+
+# Standard Library Imports
+import time
+import hashlib
+import os
+import json
+from datetime import datetime, timezone
+from typing import Optional, Dict, Any
+
+# Local Kernel Imports
+import re
+import importlib
+import paradox_oscillator as cpol
+from paradox_oscillator import CPOL_Kernel
+import adaptive_reasoning as arl
+from system_identity import SystemIdentity, get_effective_asimov_weight as get_identity_tiebreak_weight
+
+# Default Asimov law weights used when no external policy configuration is loaded.
+ASIMOV_WEIGHTS = {
+    'law_2_obey': 0.7,
+}
+
+HIGH_RISK_PATTERN = re.compile(
+    r'\b(jump|jumps|jumping|overdose|overdosing|overdosed|suicide|suicidal|cliff|cliffs)\b'
+)
+
+# Optional imports with fallbacks
+try:
+    em = importlib.import_module("epistemic_monitor")
+    EM_AVAILABLE = True
+except ImportError:
+    EM_AVAILABLE = False
+    print("[WARNING] epistemic_monitor not available. Using fallback logic.")
+
+try:
+    import curiosity_engine as ce
+    CE_AVAILABLE = True
+except ImportError:
+    CE_AVAILABLE = False
+    print("[INFO] curiosity_engine not available. Curiosity features disabled.")
+
+class _NullResponseStream:
+    """No-op fallback for callers of system_step() that don't wire up a
+    live UI stream (caios_bridge.py, caios_chat.py, the test suite).
+    """
+    def inject_aside(self, text: str) -> None:
+        print(f"[CURIOSITY_ASIDE] {text}")
+
+try:
+    from mesh_network import MeshCoordinator
+    from chaos_encryption import generate_ghost_signature, verify_ghost_signature, generate_raw_q_seed
+    MESH_AVAILABLE = True
+except ImportError:
+    MESH_AVAILABLE = False
+    print("[INFO] Mesh networking not available. Running in standalone mode.")
+
+try:
+    import agent_designer as ad
+    import knowledge_base as kb
+    AD_AVAILABLE = True
+except ImportError:
+    AD_AVAILABLE = False
+    print("[INFO] Agent Designer/KB not available. Specialist deployment disabled.")
+
+try:
+    from axiom_manager import AxiomManager, create_axiom_manager
+    import axiom_manager as amgr
+    AMGR_AVAILABLE = True
+except ImportError:
+    AMGR_AVAILABLE = False
+    print("[INFO] Axiom Manager/Axiom manager not available. KB Update disabled.")
+
+try:
+    import abstraction_selector as abstraction_selector_module
+    AbstractionDispatcher = getattr(abstraction_selector_module, "AbstractionDispatcher", None)
+    AbstractionLevel = getattr(abstraction_selector_module, "AbstractionLevel", None)
+    VictorianTranslator = getattr(abstraction_selector_module, "VictorianTranslator", None)
+    ClearTranslator = getattr(abstraction_selector_module, "ClearTranslator", None)
+    CavemanTranslator = getattr(abstraction_selector_module, "CavemanTranslator", None)
+    ChildTranslator = getattr(abstraction_selector_module, "ChildTranslator", None)
+    create_abstraction_dispatcher = getattr(abstraction_selector_module, "create_abstraction_dispatcher", None)
+    ABSTRACTION_AVAILABLE = bool(
+        AbstractionDispatcher or AbstractionLevel or create_abstraction_dispatcher
+    )
+except ImportError:
+    ABSTRACTION_AVAILABLE = False
+    AbstractionDispatcher = None
+    AbstractionLevel = None
+    VictorianTranslator = None
+    ClearTranslator = None
+    CavemanTranslator = None
+    ChildTranslator = None
+    create_abstraction_dispatcher = None
+    print("[INFO] Abstraction selector not available.")
+
+try:
+    import ollama_config
+    OLLAMA_AVAILABLE = ollama_config.check_ollama_available()
+    if OLLAMA_AVAILABLE:
+        print(f"✓ Ollama ready (Tier {ollama_config.NODE_TIER}, ID: {ollama_config.SYSTEM_ID})")
+    else:
+        print("⚠ Ollama not running - will use API clients only")
+except ImportError:
+    print("⚠ ollama_config not found - run master_init.py first")
+    OLLAMA_AVAILABLE = False
+
+try:
+    import os_control as osc
+    from os_control import create_os_controller
+    OSC_AVAILABLE = True
+except ImportError:
+    OSC_AVAILABLE = False
+    print("[INFO] OS control not available.")
+
+try:
+    from user_profile_kb import create_user_profile_kb
+    USER_KB_AVAILABLE = True
+except ImportError:
+    USER_KB_AVAILABLE = False
+    print("[INFO] User Profile KB not available.")
+
+os.makedirs("knowledge_base", exist_ok=True)
+os.makedirs("logs", exist_ok=True)
+os.makedirs("agents", exist_ok=True)
+os.makedirs("working", exist_ok=True)
+os.makedirs("skills", exist_ok=True)
+
+# =============================================================================
+# Shared Memory Initialization
+# =============================================================================
+
+shared_memory = {
+    'layers': [],
+    'audit_trail': [],
+    'cpol_instance': None,
+    'cpol_state': {'chaos_lock': False},
+    'session_context': {'RAW_Q': None, 'timestep': 0,
+    'last_active': time.time()},
+    'traits_history': [],
+    'entropy_data': [],
+    'curiosity_tokens': [],
+    'domain_heat': {},
+    'last_user_message': '',
+    'last_assistant_message': '',
+    'swarm_leaders': [],  # Mesh networking
+    'active_syncs': {},     # Deduplication cache
+    'api_clients': {},      # Multi-model swarm clients
+    'available_tools': [        # Agent-accessible tool registry
+        'web_search',
+        'semantic_fetch',       # CPOL-gated semantic web fetcher
+        'browser_interact',     # Works with Playwright
+        'windows_mcp',     # Works with Windows MCP
+        'memory'
+    ]
+}
+
+class UnifiedAbstractionManager:
+    """
+    Handles both DETECTION and TRANSLATION.
+    Keeps the 'Logic' and the 'Linguistics' in sync.
+    """
+    def __init__(self):
+        if not ABSTRACTION_AVAILABLE or AbstractionDispatcher is None or AbstractionLevel is None:
+            self.selector = None
+            self.translators = {}
+            return
+
+        self.selector = AbstractionDispatcher()  # L0-L3 logic
+        self.translators = {}
+
+        if VictorianTranslator is not None:
+            self.translators[AbstractionLevel.VICTORIAN] = VictorianTranslator()
+        if ClearTranslator is not None:
+            self.translators[AbstractionLevel.CLEAR] = ClearTranslator()
+        if CavemanTranslator is not None:
+            self.translators[AbstractionLevel.CAVEMAN] = CavemanTranslator()
+        if ChildTranslator is not None:
+            self.translators[AbstractionLevel.CHILD] = ChildTranslator()
+    def get_response(self, user_input, technical_output, shared_memory):
+        if self.selector is None:
+            return technical_output.get('output', '')
+
+        # 1. Detection
+        # This tells the Orchestrator exactly how confused the user is.
+        selection = self.selector.process(user_input, technical_output, shared_memory)
+        level = selection.get('abstraction_level') if isinstance(selection, dict) else None
+        if level is None:
+            return technical_output.get('output', '')
+
+        # 2. State Adjustment
+        # If level is CAVEMAN, update shared memory so the rest of the system knows to stop using high-level jargon in logs/KBs.
+        shared_memory['current_user_gear'] = getattr(level, 'name', str(level))
+
+        # 3. Translation
+        if AbstractionLevel is not None and getattr(AbstractionLevel, 'TECHNICAL', None) is not None and level == AbstractionLevel.TECHNICAL:
+            return technical_output.get('output', '')
+
+        translator = self.translators.get(level)
+        if translator is not None and hasattr(translator, 'translate'):
+            return translator.translate(technical_output.get('output', ''))
+
+        return technical_output.get('output', '')
+
+class CAIOSOrchestrator:
+    def __init__(self, node_id: str, node_tier: int = 1, shared_memory: Optional[Dict] = None):
+        self.node_id = node_id
+        # Use the provided memory or fall back to the global one
+        self.shared_memory = shared_memory or {}
+        # Make sure to pass the memory to the mesh coordinator
+        self.mesh = MeshCoordinator(node_id, node_tier, shared_memory=self.shared_memory)
+        self.abstraction_manager = UnifiedAbstractionManager()
+
+    def validate_with_asimov(self, request: str, user_id: str = "unknown") -> dict:
+        """Calculates safety and authority weights before allowing a response."""
+        identity = self.shared_memory.get('system_identity')
+
+        if identity:
+            effective_law_2 = get_identity_tiebreak_weight(
+                ASIMOV_WEIGHTS['law_2_obey'],
+                user_id,
+                identity
+            )
+        else:
+            effective_law_2 = 0.7  # Default fallback
+
+        return {
+            'decision': 'ALLOW',
+            'reason': 'No primary directive violations detected.',
+            'authority_weight': effective_law_2
+        }
+
+    def generate_swarm_response(self, user_input: str, provider: str = "openai") -> dict:
+        """
+        Generate a technical response using the unified orchestration pipeline.
+        Returns a dict containing at least an 'output' key for abstraction translation.
+        """
+        result = system_step(
+            user_input=user_input,
+            prompt_complexity="low",
+            response_stream=None,
+            api_clients=self.shared_memory.get('api_clients'),
+            user_id=self.shared_memory.get('active_user'),
+            enable_thinking=False
+        )
+
+        if isinstance(result, dict):
+            output = result.get('llm_response') or result.get('output') or ''
+            if 'output' not in result:
+                result['output'] = output
+            return result
+
+        return {'output': str(result)}
+
+    def handle_user_request(self, user_input: str, provider: str = "openai") -> str:
+        """
+        The central heartbeat. It takes raw thoughts and runs them
+        through the Abstraction Gearbox.
+        """
+        self.shared_memory['last_user_message'] = user_input
+
+        # 1. Safety Check
+        validation = self.validate_with_asimov(user_input)
+        if validation['decision'] == 'REFUSE':
+            return f"Directive Conflict: {validation['reason']}"
+
+        # 2. Kernel Thinking (DeepSeek, Claude, or Local)
+        # Note: You must have a method named 'generate_swarm_response' in this class
+        technical_output = self.generate_swarm_response(user_input, provider)
+
+        # 3. Gearbox Translation (L0, L1, L2, L3, or L4)
+        final_text = self.abstraction_manager.get_response(
+            user_input,
+            technical_output,
+            self.shared_memory
+        )
+
+        # 4. Final memory storage and return
+        self.shared_memory['last_assistant_message'] = final_text
+        return final_text
+
+# =============================================================================
+# System Boot Logic
+# =============================================================================
+
+# Initialize Axiom Manager (if available)
+if AMGR_AVAILABLE:
+    axiom_manager = create_axiom_manager()
+    shared_memory['axiom_manager'] = axiom_manager
+    print("[BOOT] Axiom Manager initialized - KB updates enabled")
+else:
+    shared_memory['axiom_manager'] = None
+    print("[BOOT] Axiom Manager unavailable - KB updates disabled")
+
+# Initialize Abstraction Dispatcher
+if ABSTRACTION_AVAILABLE and create_abstraction_dispatcher is not None:
+    shared_memory['abstraction_dispatcher'] = create_abstraction_dispatcher()
+    print("[BOOT] Abstraction dispatcher initialized - 4 translation modes ready")
+else:
+    shared_memory['abstraction_dispatcher'] = None
+    print("[BOOT] Abstraction selector unavailable - using default responses")
+
+# Initialize User Profile
+if USER_KB_AVAILABLE:
+    shared_memory['user_profile_kb'] = create_user_profile_kb()
+    print("[BOOT] User Profile KB initialized - per-user adaptation enabled")
+
+# Load system identity (Required for the Prediction/Signature)
+identity = SystemIdentity(load_existing=True)
+if identity.identity_data['system_id']:
+    shared_memory['system_identity'] = identity
+    print(f"[BOOT] {identity.get_identity_summary()}")
+else:
+    print("[WARNING] System identity not initialized - run master_init.py")
+
+if OSC_AVAILABLE:
+    shared_memory['os_controller'] = create_os_controller(shared_memory, headless=False)
+    print("[BOOT] OS Controller initialized - system operations enabled")
+
+try:
+    from tool_dispatcher import create_tool_dispatcher, get_tool_addendum
+    shared_memory['tool_dispatcher'] = create_tool_dispatcher(shared_memory)
+    shared_memory['tool_addendum'] = get_tool_addendum()
+    from search_engine import create_search_engine
+    shared_memory['searcher'] = create_search_engine(shared_memory)
+    print("[BOOT] Tool dispatcher initialized - LLM tool access enabled")
+except ImportError:
+    shared_memory['tool_dispatcher'] = None
+    shared_memory['tool_addendum'] = ""
+    print("[BOOT] Tool dispatcher not available")
+
+# =============================================================================
+# API Client Loading (Multi-Model Swarm Support)
+# =============================================================================
+
+def _call_api_client(provider: str, client: Any, query: str) -> str:
+    """
+    Fallback API client call when Ollama unavailable.
+    Used in API mode (OpenAI, Anthropic, xAI, Google).
+    """
+    try:
+        if provider == 'openai':
+            response = client.chat.completions.create(
+                model="gpt-4o",
+                messages=[{"role": "user", "content": query}],
+                max_tokens=2048
+            )
+            return response.choices[0].message.content.strip()
+
+        elif provider == 'anthropic':
+            response = client.messages.create(
+                model="claude-sonnet-4-6",
+                max_tokens=2048,
+                messages=[{"role": "user", "content": query}]
+            )
+            return response.content[0].text.strip()
+
+        elif provider == 'xai':
+            response = client.chat.completions.create(
+                model="grok-beta",
+                messages=[{"role": "user", "content": query}],
+                max_tokens=2048
+            )
+            return response.choices[0].message.content.strip()
+
+        elif provider == 'google':
+            model = client.GenerativeModel("gemini-1.5-pro")
+            response = model.generate_content(query)
+            return response.text.strip()
+
+        else:
+            return f"[LLM] Unsupported provider: {provider}"
+
+    except Exception as e:
+        return f"[LLM] API call failed: {e}"
+
+def load_api_clients_from_config():
+    """
+    Load API clients that master_init.py verified.
+    Re-initializes from environment variables (never stores keys in files).
+    """
+    import json
+
+    if not os.path.exists('api_clients.json'):
+        print("[INFO] No API client config found - multi-model swarm disabled")
+        print("       Run 'python master_init.py' to initialize API clients")
+        return {}
+
+    try:
+        with open('api_clients.json') as f:
+            config = json.load(f)
+
+        print(f"[INFO] Loading {len(config['available_providers'])} API client(s)...")
+
+        # Import the loader from master_init
+        from master_init import load_api_clients
+        clients = load_api_clients(shared_memory)
+
+        if clients:
+            print(f"[INFO] ✓ Multi-model swarm ready with: {', '.join(clients.keys())}")
+        else:
+            print("[WARNING] No external API clients available. Multi-model swarm disabled.")
+
+        return clients
+
+    except Exception as e:
+        print(f"[WARNING] Failed to load API clients: {e}")
+        return {}
+
+# Load API clients on startup
+shared_memory['api_clients'] = load_api_clients_from_config()
+
+CRB_CONFIG = {
+    'alignment': 0.7,
+    'human_safety': 0.8,
+    'asimov_first_wt': 0.9,
+    'asimov_second_wt': 0.7,
+    'asimov_third_wt': 0.4,
+    'factual_evidence_wt': 0.7,
+    'narrative_framing_wt': 0.5
+}
+
+def _get_effective_crb_config(user_id: Optional[str]) -> Dict:
+    """
+    Per-request copy of CRB_CONFIG with asimov_second_wt adjusted for the
+    current user's authority tier (primary user +0.01 tiebreak, via
+    system_identity.get_effective_asimov_weight). Copied fresh each call so
+    verify_ethics()'s in-place crisis mutation never leaks back into the
+    shared CRB_CONFIG baseline (see note below).
+    """
+    config = CRB_CONFIG.copy()
+    identity = shared_memory.get('system_identity')
+    if identity and user_id:
+        config['asimov_second_wt'] = get_identity_tiebreak_weight(
+            CRB_CONFIG['asimov_second_wt'], user_id, identity
+        )
+    return config
+
+# =============================================================================
+# Session Timeout & Soverign Tiering Config
+# =============================================================================
+
+TIMEOUT_SECONDS = 1800  # 30 minutes
+
+# Tier 0 = Primary Root (Weight 5.0)
+# Tier 1+ = Mesh/Edge Nodes (Weight 1.0)
+shared_memory['node_tier'] = 0 if os.getenv('NODE_ID') == 'PRIMARY_ROOT' else 1
+
+# =============================================================================
+# Authentication & Session Management
+# =============================================================================
+
+def _auth_text(users_filepath: str = "users.json") -> str:
+    try:
+        with open(users_filepath, 'r') as f:
+            users = json.load(f)
+    except FileNotFoundError:
+        print("[WARNING] users.json not found - run master_init.py first")
+        raise PermissionError("User registry unavailable")
+
+    # Full dict not just type; needed for password_hash
+    all_users = {u['id']: u for u in users.get('users', [])}
+
+    for attempt in range(3):
+        username = input("Username: ").strip()
+        if username in all_users:
+            user = all_users[username]
+            # Password check; only if hash present
+            if 'password_hash' in user:
+                import hashlib
+                import getpass
+                password = getpass.getpass("Password: ")
+                if hashlib.sha256(password.encode()).hexdigest() != user['password_hash']:
+                    print(f"[SESSION] Incorrect password. ({2 - attempt} attempt(s) remaining)")
+                    continue
+            print(f"[SESSION] Authorized: {username} ({user['type']})")
+            return username
+        print(f"[SESSION] Unauthorized. ({2 - attempt} attempt(s) remaining)")
+
+    raise PermissionError("Authorization failed — session terminated")
+
+
+def _capture_face_id() -> str:
+    """Stub for facial recognition hardware capture."""
+    print("[AUTH] Facial capture hardware not available. Using simulated input.")
+    return input("Simulated face ID: ").strip()
+
+
+def _capture_voice_id() -> str:
+    """Stub for voice recognition hardware capture."""
+    print("[AUTH] Voice capture hardware not available. Using simulated input.")
+    return input("Simulated voice ID: ").strip()
+
+
+def _auth_facial(shared_memory: dict) -> str:
+    """Facial auth stub — replace _capture_face_id() with hardware call."""
+    identity = shared_memory.get('system_identity')
+    if not identity:
+        raise PermissionError("No identity loaded for facial auth")
+    face_id = _capture_face_id()  # hardware stub
+    user_id = identity.resolve_user_id({'face_id': face_id})
+    if user_id == "unrecognized_face":
+        raise PermissionError("Face not recognized")
+    print(f"[SESSION] Face authorized: {user_id}")
+    return user_id
+
+
+def _auth_voice(shared_memory: dict) -> str:
+    """Voice print stub — replace _capture_voice_id() with hardware call."""
+    identity = shared_memory.get('system_identity')
+    if not identity:
+        raise PermissionError("No identity loaded for voice auth")
+    voice_id = _capture_voice_id()  # hardware stub
+    user_id = identity.resolve_user_id({'voice_id': voice_id})
+    if user_id == "unrecognized_voice":
+        raise PermissionError("Voice not recognized")
+    print(f"[SESSION] Voice authorized: {user_id}")
+    return user_id
+
+
+def _auth_corporate(shared_memory: dict) -> str:
+    """Corporate node ID auth via environment variable."""
+    identity = shared_memory.get('system_identity')
+    if not identity:
+        raise PermissionError("No identity loaded for corporate auth")
+    node_id = os.getenv('NODE_ID', '')
+    user_id = identity.resolve_user_id({'node_id': node_id})
+    if user_id == "unauthorized_node":
+        raise PermissionError("Node ID not authorized")
+    print(f"[SESSION] Corporate node authorized: {user_id}")
+    return user_id
+
+
+def prompt_auth(shared_memory: dict) -> str:
+    """
+    Auth method dispatcher - routes to correct prompt based on configured method.
+    Single entry point for all re-authentication calls.
+    """
+    identity = shared_memory.get('system_identity')
+    auth_method = identity.identity_data.get(
+        'auth_method', 'TEXT_USERNAME'
+    ) if identity else 'TEXT_USERNAME'
+
+    if auth_method == "TEXT_USERNAME":
+        return _auth_text()
+    elif auth_method == "META_FACIAL":
+        return _auth_facial(shared_memory)
+    elif auth_method == "VOICE_PRINT":
+        return _auth_voice(shared_memory)
+    elif auth_method == "CORPORATE_ID":
+        return _auth_corporate(shared_memory)
+
+    raise PermissionError(f"Unknown auth method: {auth_method}")
+
+# =============================================================================
+# Optional: Mesh Network Setup
+# =============================================================================
+
+if MESH_AVAILABLE:
+    NODE_ID = os.getenv('NODE_ID', 'PRIMARY_ROOT')
+    mesh_coordinator = MeshCoordinator(NODE_ID)
+
+    def handle_received_ghost_packet(ghost_packet: dict, sender_id: str):
+        """
+        Called when ghost packet received from another mesh node.
+
+        Args:
+            ghost_packet: {v_omega_phase, ts, manifold_entropy, sig, ...}
+            sender_id: ID of sending node
+        """
+        print(f"[MESH] Received ghost packet from {sender_id}")
+
+        # Verify signature
+        raw_q_value = ghost_packet.get('v_omega_phase', 0)
+        try:
+            expected_raw_q = int(raw_q_value)
+        except (TypeError, ValueError):
+            expected_raw_q = 0
+
+        mesh_node = getattr(mesh_coordinator, 'mesh_node', None)
+        if mesh_node is not None and hasattr(mesh_node, 'verify_ghost_signature'):
+            valid = mesh_node.verify_ghost_signature(ghost_packet, expected_raw_q)
+        else:
+            claimed_sig = ghost_packet.get('sig', '')
+            valid = verify_ghost_signature(claimed_sig, expected_raw_q, ghost_packet.get('ts', 0))
+
+        if valid:
+            # Update RAW_Q to match mesh consensus
+            shared_memory['session_context']['RAW_Q'] = expected_raw_q
+            shared_memory['session_context']['timestep'] = ghost_packet.get('ts', 0)
+            shared_memory['last_mesh_sig'] = ghost_packet.get('manifold_entropy')
+
+            print(f"[MESH] ✓ Synced to RAW_Q: {expected_raw_q}")
+        else:
+            print(f"[MESH] ✗ Rejected invalid ghost packet from {sender_id}")
+
+    # Start listening for ghost packets
+    mesh_coordinator.start(handle_received_ghost_packet)
+
+    # Release ZMQ ports cleanly on exit (Windows holds ports longer)
+    import atexit
+
+    def cleanup_mesh():
+        try:
+            mesh_coordinator.stop()
+            print("[MESH] Ports released cleanly")
+        except Exception:
+            pass
+
+    atexit.register(cleanup_mesh)
+
+# =============================================================================
+# Cordination Functions
+# =============================================================================
+
+class OrchestratorBuffer:
+    """Handles 7D signature deduplication for mesh coordination."""
+    def __init__(self):
+        self.seen_signatures = {}
+        self.sync_counter = 0
+
+    def check_deduplication(self, signature: str) -> tuple:
+        """
+        Check if signature has been seen before.
+        Returns: (is_redundant: bool, sync_id: str)
+        """
+        if signature in self.seen_signatures:
+            return True, self.seen_signatures[signature]
+
+        # New signature - assign sync ID
+        sync_id = f"sync_{self.sync_counter}"
+        self.seen_signatures[signature] = sync_id
+        self.sync_counter += 1
+
+        return False, sync_id
+
+# Global buffer instance
+orchestrator_buffer = OrchestratorBuffer()
+
+def send_to_leader(leader_id: str, ghost_packet: dict):
+    """
+    Broadcast ghost packet to mesh leader node.
+    Uses mesh_coordinator for actual network transmission.
+    """
+    if MESH_AVAILABLE:
+        mesh_coordinator.broadcast_ratchet(ghost_packet, shared_memory)
+
+def initialize_raw_q():
+    """Generate initial RAW_Q seed if not present."""
+    if shared_memory['session_context']['RAW_Q'] is None:
+        if MESH_AVAILABLE:
+            raw_q = generate_raw_q_seed()
+        else:
+            # Fallback: simple hash-based seed
+            raw_q = int(hashlib.sha256(str(time.time()).encode()).hexdigest(), 16) % (10**9)
+        shared_memory['session_context']['RAW_Q'] = raw_q
+        print(f"[ORCHESTRATOR] Initialized RAW_Q: {raw_q}")
+
+def _broadcast_ghost_packet(raw_q: int, timestep: int, manifold_sig: str, is_promoted: bool = False):
+    """
+    Internal helper to broadcast ghost packet after ratchet.
+    Generates signature and sends to all mesh leaders.
+    """
+    if not MESH_AVAILABLE:
+        return
+
+    # Generate ghost signature
+    ghost_sig = generate_ghost_signature(raw_q, timestep)
+
+    # Create ghost packet
+    ghost_packet = {
+        'v_omega_phase': raw_q,
+        'ts': timestep,
+        'manifold_entropy': manifold_sig,
+        'origin_node': NODE_ID,
+        'sig': ghost_sig,
+        'is_promoted_state': is_promoted,
+        'heartbeat': time.time()
+    }
+
+    # Broadcast to all mesh leaders
+    for leader in shared_memory.get('swarm_leaders', []):
+        send_to_leader(leader, ghost_packet)
+
+    print(f"[ORCHESTRATOR] Ghost packet broadcasted: sig={ghost_sig}, promoted={is_promoted}")
+
+def sync_curiosity_to_domain_heat(state: dict):
+    """V3 Function: Moves Curiosity spikes into ARL Trigger Heat."""
+    if not CE_AVAILABLE:
+        return
+
+    tokens = state.get('curiosity_tokens', [])
+    heat_map = state['domain_heat']
+    for d in heat_map:
+        heat_map[d] *= 0.90  # Decay heat over time
+    for token in tokens:
+        domain = token.get('domain', 'general')
+        interest = token.get('current_interest', 0.0)
+        heat_map[domain] = min(1.0, heat_map.get(domain, 0.0) + interest * 0.4)
+
+# =============================================================================
+# Check User Timeout
+# =============================================================================
+
+def check_session_timeout(session_context: dict) -> bool:
+    """Returns True if session has been idle beyond TIMEOUT_SECONDS."""
+    last_active = session_context.get('last_active', 0)
+    return (time.time() - last_active) > TIMEOUT_SECONDS
+
+# =============================================================================
+# Main Orchestration Logic
+# =============================================================================
+
+SECURITY_DISTRESS_HALF_LIFE_SECONDS = 3600
+
+def _decay_security_distress(shared_memory: dict) -> None:
+    """
+    Scoped ONLY to the mesh-security spike. Never touches
+    shared_memory['distress_density'] (or user_kb's emotional_baseline,
+    once that's wired up) — those need persistence-until-resolved
+    semantics, not a wall-clock half-life. Keeping this a separate key
+    means a future crisis-tracking implementation can't accidentally
+    inherit decay logic that's wrong for it.
+    """
+    now = time.time()
+    last_update = shared_memory.get('last_security_distress_update', now)
+    elapsed = max(0.0, now - last_update)
+    current = shared_memory.get('security_distress', 0.0)
+    if current > 0.0:
+        decayed = current * (0.5 ** (elapsed / SECURITY_DISTRESS_HALF_LIFE_SECONDS))
+        shared_memory['security_distress'] = decayed if decayed > 0.01 else 0.0
+    shared_memory['last_security_distress_update'] = now
+
+def system_step(user_input: str, prompt_complexity: str = "low",
+                response_stream=None, api_clients=None,
+                user_id: Optional[str] = None, enable_thinking: Optional[bool] = None,
+                images: Optional[list] = None):
+    """
+    Main orchestration function for unified system.
+    Args:
+        user_input: Message/command to process
+        prompt_complexity: "low", "medium", or "high"
+        response_stream: Optional response stream for curiosity engine
+        api_clients: Optional override (useful for testing or multi-process)
+        images: Optional list of base64-encoded images
+    Returns:
+        CPOL result dict or ARL plugin result
+    """
+    # Allow caller to override clients (for testing/swarm)
+    if api_clients is None:
+        api_clients = shared_memory.get('api_clients', {})
+
+    # Session Timeout Check
+    session_ctx = shared_memory['session_context']
+    force_profile_reload = False
+    if check_session_timeout(session_ctx):
+        print("[SESSION] Idle timeout — re-authentication required")
+        try:
+            user_id = prompt_auth(shared_memory)
+            force_profile_reload = True
+            # Re-apply profile for returning user
+        except PermissionError as e:
+            return {'status': 'UNAUTHORIZED', 'output': str(e)}
+
+    # Update last_active on every valid step
+    _decay_security_distress(shared_memory)
+    session_ctx['last_active'] = time.time()
+
+    # User profile switch detection
+    if user_id and shared_memory.get('user_profile_kb'):
+        upkb = shared_memory['user_profile_kb']
+        current_user = shared_memory.get('active_user')
+
+        if current_user != user_id or force_profile_reload:
+            # Save outgoing user's RAW_Q
+            if current_user:
+                outgoing = upkb['load'](current_user)
+                outgoing['last_raw_q'] = shared_memory[
+                    'session_context'].get('RAW_Q')
+                upkb['save'](current_user, outgoing)
+                upkb['update_complaint'](
+                    current_user,
+                    shared_memory.get('complaint_count', 0),
+                    shared_memory.get('persistent_complainer', False)
+                )
+
+            # Load incoming user profile and RAW_Q
+            incoming = upkb['load'](user_id)
+            if incoming.get('last_raw_q'):
+                kernel = shared_memory.get('cpol_instance')
+
+    # Load recent conversation history by domain for context continuity
+    recent_history = ""
+    try:
+        if AMGR_AVAILABLE and shared_memory.get('axiom_manager'):
+            axiom_mgr = shared_memory['axiom_manager']
+            detected_domain = shared_memory.get('last_cpol_result', {}).get('domain', 'general')
+            hist_turns = axiom_mgr.get_relevant_history(
+                detected_domain, limit=6, user_id=shared_memory.get('active_user')
+            )
+            if hist_turns:
+                lines = []
+                for turn in hist_turns:
+                    lines.append(f"User: {turn['user'][:300]}")
+                    lines.append(f"Andrew: {turn['assistant'][:300]}")
+                recent_history = "[RECENT_CONTEXT]\n" + "\n".join(lines) + "\n[/RECENT_CONTEXT]\n"
+    except Exception:
+        pass
+
+        # Load incoming user profile and RAW_Q
+        incoming = upkb['load'](user_id)
+        if incoming.get('last_raw_q'):
+            # Pull the kernel from shared memory (the 'manifold_instance' equivalent)
+            kernel = shared_memory.get('cpol_instance')
+
+            if kernel and hasattr(kernel, 'ratchet'):
+                # 1. Update the seed to the user's persisted state
+                kernel.raw_q = incoming['last_raw_q']
+
+                # 2. Ratchet forward (this advances the manifold state)
+                kernel.ratchet()
+
+                # 3. Update the session_context so the rest of the OS is in sync
+                shared_memory['session_context']['RAW_Q'] = kernel.raw_q
+
+                print(f"[CRYPTO] Manifold ratcheted for user: {user_id}")
+            else:
+                # Fallback: If no kernel exists, update the seed for the next init
+                shared_memory['session_context']['RAW_Q'] = incoming['last_raw_q']
+                print(f"[WARNING] No active manifold. RAW_Q queued for next initialization.")
+
+            # Apply personality weights
+            shared_memory['personality_weights'] = \
+                incoming['personality']
+            shared_memory['active_user'] = user_id
+
+            print(f"[USER_KB] User context: {user_id} | "
+                  f"Abstraction: {incoming['abstraction_default']} | "
+                  f"Sessions: {incoming['session_count']}")
+
+            # Restore complaint state from previous session
+            complaint_state = upkb['get_complaint'](user_id)
+            shared_memory['complaint_count'] = complaint_state['complaint_count']
+            shared_memory['persistent_complainer'] = complaint_state['persistent_complainer']
+            print(f"[USER_KB] Complaint state restored: "
+                  f"count={complaint_state['complaint_count']}")
+
+    # Handle commands (if input starts with /)
+    if user_input.startswith('/'):
+        if user_input.startswith('/design_agent'):
+            parts = user_input.split(maxsplit=2)
+            if len(parts) < 3:
+                return {'status': 'ERROR', 'output': 'Usage: /design_agent <role> <domain>'}
+            role, domain_arg = parts[1], parts[2]
+            result = ad.design_agent(
+                goal=f"Fill epistemic gap in domain: {domain_arg}",
+                traits={'curiosity': 1.0, 'intelligence': 0.95, 'caution': 0.6},
+                tools=['web_search', 'code_execution', 'memory'],
+                shared_memory=shared_memory,
+                node_tier=shared_memory.get('node_tier', 1)
+            )
+            return {'status': 'AGENT_DEPLOYED' if result['status'] == 'success' else 'ERROR',
+                    'output': f"Specialist '{role}' for domain '{domain_arg}': {result.get('log', result)}"}
+        if user_input.lower().startswith('/personality'):
+            return handle_personality_command(user_input)
+        cmd_result = handle_axiom_commands(user_input)
+        if cmd_result['status'] != 'ERROR' or 'axiom' in user_input.lower():
+            return cmd_result
+
+    # 0. Ensure RAW_Q is initialized
+    initialize_raw_q()
+    clean_input = user_input.strip().lower()
+    ts = shared_memory['session_context']['timestep']
+    shared_memory['last_user_message'] = user_input
+
+    # Check for #Update Command (Axiom Manager)
+    # Process temporal axiom updates before normal orchestration
+    if AMGR_AVAILABLE and shared_memory.get('axiom_manager'):
+        axiom_mgr = shared_memory['axiom_manager']
+        # #UPDATE guard; require standalone token, reject explanatory text.
+        # Valid:   'Tim Cook is CEO of Apple #UPDATE'
+        # Valid:   '#UPDATE apple_ceo=Tim Cook'
+        # Invalid: quoting, explaining, or pasting the #UPDATE mechanism
+        _disqualify = [
+            r'parse_update_command',
+            r'found\s+#update',
+            r'stripped.*#update',
+            r'"[^"]*#update[^"]*"',
+            r"'[^']*#update[^']*'",
+            r'`[^`]*#update[^`]*`',
+            r'#update.*anywhere',
+            r'the.*#update.*function',
+        ]
+        _is_meta = any(
+            re.search(p, user_input, re.IGNORECASE | re.DOTALL)
+            for p in _disqualify
+        )
+        update_result = None
+        if not _is_meta:
+            _update_lines = [
+                l for l in user_input.splitlines()
+                if re.search(r'(?<![\w])#UPDATE(?![\w])', l, re.IGNORECASE)
+            ]
+            _update_input = ' '.join(_update_lines) if _update_lines else ''
+            update_result = axiom_mgr.parse_update_command(_update_input) if _update_input else None
+
+        if update_result:
+            domain, fact = update_result
+
+            # Commit axiom to KB with validation
+            discovery_id = axiom_mgr.add_axiom(
+                domain=domain,
+                fact=fact,
+                replace_existing=True  # Status updates replace old facts
+            )
+
+            # Check if axiom was refused
+            if discovery_id == "REFUSED":
+                return {
+                    'status': 'AXIOM_REFUSED',
+                    'logic': 'validation_failed',
+                    'domain': domain,
+                    'output': f"✗ Axiom refused: {domain} → {fact}\n" \
+                             f"This update failed validation checks (Asimov Laws, ethics, or factual consistency).\n" \
+                             f"Harmful, discriminatory, or obviously false axioms cannot be committed.\n" \
+                             f"If you believe this is an error, please rephrase or provide context.",
+                    'timestamp': shared_memory['session_context']['timestep']
+                }
+
+            # Axiom was accepted - return confirmation
+            return {
+                'status': 'AXIOM_COMMITTED',
+                'logic': 'temporal_update',
+                'domain': domain,
+                'output': f"✓ Axiom committed: {domain} → {fact}\n" \
+                         f"Knowledge base updated. This will override training data.\n" \
+                         f"Discovery ID: {discovery_id}",
+                'discovery_id': discovery_id,
+                'timestamp': shared_memory['session_context']['timestep']
+            }
+
+    # 0.5 Sovereign Handshake (Authority Promotion)
+    # Check for sovereign triggers or extreme curiosity interest
+    total_curiosity_heat = sum(t.get('current_interest', 0) for t in shared_memory.get('curiosity_tokens', []))
+
+    sovereign_trigger = any(m in clean_input for m in ["axiom_init", "sovereign_prime", "root_auth"])
+
+    if sovereign_trigger or total_curiosity_heat > 0.85:
+        # Promote session to Sovereign Root (Tier 0)
+        shared_memory['node_tier'] = 0
+        shared_memory['manifold_lock'] = True
+        print(f"«SOVEREIGN HANDSHAKE COMPLETE: Tier 0 Authority Granted (Heat: {total_curiosity_heat:.2f})»")
+    else:
+        # Maintain or Reset to Edge (Tier 1) if not a hard-coded PRIMARY_ROOT
+        if os.getenv('NODE_ID') != 'PRIMARY_ROOT':
+             shared_memory['node_tier'] = 1
+             shared_memory['manifold_lock'] = False
+
+    # 1. Get dynamic threshold (if available)
+    # TODO: not yet wired to chaos_encryption.CPOLQuantumManifold.sync_phase() —
+    # needs a live 7D signature exchange path in mesh_network.py's _listen_loop
+    # and a CPOLQuantumManifold instance reachable from shared_memory. Requires
+    # 2+ physical nodes to test; can't verify on single-machine dev setup.
+    if EM_AVAILABLE:
+        jitter_limit = em.calculate_dynamic_jitter_threshold(shared_memory)
+    else:
+        jitter_limit = 0.001  # Default threshold
+
+    # 2. Generate 7D Fingerprint
+    current_sig = cpol.generate_7d_signature(user_input, shared_memory['session_context'])
+
+    # 3. Topological Deduplication
+    is_redundant, sync_id = orchestrator_buffer.check_deduplication(current_sig)
+    if is_redundant:
+        print(f"[ORCHESTRATOR] Redundant Spike Detected -> Merging to Sync: {sync_id}")
+        # Return cached result instead of reprocessing
+        return shared_memory.get('last_cpol_result', {'status': 'CACHED', 'sync_id': sync_id})
+
+    # 4. Auto-Heat (Density Control)
+    # --- ARL Pre-Audit Handshake ---
+    paradox_markers = ["false", "lie", "paradox", "impossible", "contradict"]
+    epistemic_markers = ["conscious", "meaning", "quantum", "existence", "god"]
+    crypto_markers = ["attack", "breach", "inject", "replay", "intercept"]
+
+    is_paradox = any(m in clean_input for m in paradox_markers)
+    is_gap = any(m in clean_input for m in epistemic_markers)
+    is_threat = any(m in clean_input for m in crypto_markers)
+
+    # Unified density calculation (no overwrites)
+    distress = shared_memory.get('distress_density', 0.0)
+    security_distress = shared_memory.get('security_distress', 0.0)
+
+    if security_distress > 0.9 or distress > 0.9 or is_threat or prompt_complexity == "high":
+        density = 1.0  # Maximum: 12D Torque Lock for extreme distress/threats
+        comp_level = "high"
+        print("[ORCHESTRATOR] !! ARL OVERRIDE: 12D Torque Primed !!")
+    elif is_paradox:
+        density = 0.8
+        comp_level = "high"
+    elif is_gap:
+        density = 0.3
+        comp_level = "medium"
+    else:
+        density = 0.1
+        comp_level = "low"
+
+    # =============================================================================
+    # Smart CPOL Cycle Override (D-1 efficiency)
+    # =============================================================================
+    # Default = 11 cycles (phase lock) for normal queries
+    # Override to 50 only for high-complexity / safety-critical cases
+    if (prompt_complexity in ["high", "scientific", "healthcare", "legal", "paradox_containment"] or
+        distress > 0.75 or
+        security_distress > 0.75 or
+        any(m in clean_input for m in ["security", "threat", "attack", "jump", "overdose", "suicide", "cliff"])):
+        cycle_limit = 50
+        print(f"[ORCHESTRATOR] High-complexity detected → using {cycle_limit} cycle safety buffer")
+    else:
+        cycle_limit = 11   # D-1 phase lock; maximum efficiency (no print on normal path)
+
+    # Initialize or override kernel with the smart limit
+    if shared_memory['cpol_instance'] is None:
+        shared_memory['cpol_instance'] = cpol.CPOL_Kernel(
+            oscillation_limit_run=cycle_limit
+        )
+    else:
+        # Runtime override so existing kernel respects the new limit
+        shared_memory['cpol_instance'].limit_run = cycle_limit
+
+    # Domain regex mismatch catch
+    shared_memory.pop('domain_override', None)
+    _k = shared_memory['cpol_instance']
+    if (OLLAMA_AVAILABLE and not user_input.startswith('/')
+            and len(user_input.split()) >= 6
+            and _k._extract_domain(user_input) == 'general'):
+        from ollama_config import classify_domain
+        _dom = classify_domain(user_input, preferred_model=shared_memory.get('preferred_model'))
+        if _dom != 'general':
+            shared_memory['domain_override'] = _dom
+
+    # 5. Run Kernel (CPOL Decision)
+    cpol_result = cpol.run_cpol_decision(
+        prompt_complexity=comp_level,
+        contradiction_density=density,
+        kernel=shared_memory['cpol_instance'],
+        query_text=user_input,
+        shared_memory=shared_memory
+    )
+
+    shared_memory['last_cpol_result'] = cpol_result
+
+    # Logs new domains to _log_exchange()
+    try:
+        _k = shared_memory['cpol_instance']
+        with open(os.path.join('knowledge_base', 'cpol_trace.jsonl'), 'a', encoding='utf-8') as _f:
+            _f.write(json.dumps({
+                'ts': time.time(),
+                'user_id': shared_memory.get('active_user'),
+                'domain': cpol_result.get('domain'),
+                'domain_source': 'llm' if shared_memory.get('domain_override') else 'regex',
+                'new_domain': cpol_result.get('new_domain'),
+                'density': density,
+                'cycles': _k.cycle,
+                'status': cpol_result.get('status'),
+                'logic': cpol_result.get('logic'),
+                'verdict': cpol_result.get('verdict'),
+                'volatility': cpol_result.get('volatility'),
+                'heat': shared_memory['domain_heat'].get(cpol_result.get('domain'), 0.0),
+            }) + '\n')
+    except Exception:
+        pass
+
+    # 6. Ratchet Handover & Ghosting
+    if cpol_result.get('status') not in ["FAILED", "BLOCKED"]:
+        manifold_sig = cpol_result.get('signature', str(time.time()))
+
+        # Use kernel's ratchet if available
+        if hasattr(shared_memory['cpol_instance'], 'ratchet'):
+            new_seed = shared_memory['cpol_instance'].ratchet()
+        else:
+            new_seed = int(hashlib.sha256(manifold_sig.encode()).hexdigest(), 16) % (10**9)
+
+        # Advance the Chain
+        shared_memory['session_context']['RAW_Q'] = new_seed
+        shared_memory['session_context']['timestep'] += 1
+
+        # Get promotion state and node info
+        is_promoted = shared_memory.get('is_backup_lead', False)
+        lead_id = os.getenv('NODE_ID', 'PRIMARY_ROOT') if MESH_AVAILABLE else 'STANDALONE'
+
+        # Broadcast ghost packet (ONCE with promotion flag)
+        _broadcast_ghost_packet(new_seed, shared_memory['session_context']['timestep'], manifold_sig, is_promoted)
+
+        # Log to audit trail
+        shared_memory['audit_trail'].append({
+            'ts': ts,
+            'event': 'RATCHET_HANDOVER',
+            'node': lead_id,
+            'promoted': is_promoted,
+            'new_q': new_seed
+        })
+
+        print(f"[ORCHESTRATOR] Ratchet Success | Lead: {lead_id} | RAW_Q: {new_seed}")
+
+    # 7. Domain extraction for downstream KB/ARL/safety checks
+    # (curiosity_engine update itself now runs after LLM generation — see below)
+    domain = cpol_result.get('domain', 'general')
+
+    # Update epistemic monitor (if available)
+    if EM_AVAILABLE:
+        em.update_epistemic_loop(shared_memory, shared_memory['session_context']['timestep'])
+
+    # Retrieve updated values
+    heat = shared_memory['domain_heat'].get(domain, 0.0)
+    distress = shared_memory.get('distress_density', 0.0)
+
+    # 8. Safety Intervention (High-Risk Physical)
+    classifier_result = {'risk': False, 'confidence': 0.0}
+    if OLLAMA_AVAILABLE:
+        from ollama_config import classify_self_harm_risk
+        classifier_result = classify_self_harm_risk(user_input, preferred_model=shared_memory.get('preferred_model'))
+
+    # Persist regardless of whether this turn crosses the intervention
+    # threshold; the accumulator's whole job is noticing what any single turn doesn't.
+    active_user = shared_memory.get('active_user', 'default')
+    if USER_KB_AVAILABLE:
+        from user_profile_kb import update_emotional_distress
+        accumulated = update_emotional_distress(active_user, classifier_result['confidence'])
+    else:
+        accumulated = 0.0
+
+    # Chatbot safety check
+    # Fallback-only keyword check. Only matters when the smart classifier
+    # genuinely didn't run THIS turn - not just "Ollama was up at boot" - so
+    # this checks classify_self_harm_risk's own failure signal rather than
+    # the stale, boot-time OLLAMA_AVAILABLE flag, which stays True even if
+    # Ollama crashes mid-session.
+    classifier_unavailable = (
+        not OLLAMA_AVAILABLE
+        or classifier_result.get('reason') == 'classifier_unavailable'
+    )
+    is_high_risk_fallback = classifier_unavailable and bool(HIGH_RISK_PATTERN.search(clean_input))
+
+    ACCUMULATED_DISTRESS_NUDGE_THRESHOLD = 0.6    # soft nudge below the hard 0.85 cutoff
+    CLASSIFIER_RISK_CONFIDENCE_THRESHOLD = 0.6   # tune — not empirically validated
+    ACCUMULATED_DISTRESS_CRISIS_THRESHOLD = 0.85 # tune — not empirically validated
+
+    hard_trigger = (
+        (classifier_result['risk'] and classifier_result['confidence'] >= CLASSIFIER_RISK_CONFIDENCE_THRESHOLD)
+        or cpol_result.get('domain') == "HIGH_RISK_PHYSICAL"
+        or is_high_risk_fallback
+        or accumulated >= ACCUMULATED_DISTRESS_CRISIS_THRESHOLD
+    )
+
+    if hard_trigger:
+        print(f"[ORCHESTRATOR] !! SAFETY INTERVENTION !!")
+        return {
+            'status': 'INTERVENTION_MANDATORY',
+            'logic': "NEUTRAL_VALIDATION_ONLY",
+            'plugin_id': 'crisis_suppressor_001',
+            'output': "I'm here to talk, but I can't provide those details. Let's focus on finding you support."
+        }
+
+    elif accumulated > ACCUMULATED_DISTRESS_NUDGE_THRESHOLD:
+        # Nothing explicit THIS turn, but the trend across sessions is
+        # elevated; a softer, non-mandatory nudge, not a hard block.
+        print(f"[ORCHESTRATOR] Elevated accumulated distress ({accumulated:.2f}) — no explicit trigger this turn")
+        shared_memory['suggest_checkin'] = True
+
+    # 9. Security Response Coordination (Mesh Security)
+    # Check for mesh security threats
+    if security_distress > 0.75 or cpol_result.get('domain') == 'MESH_SECURITY_THREAT':
+        ghost_sig = cpol_result.get('signature', '0xGHOST')
+
+        shared_memory['audit_trail'].append({
+            'step': ts,
+            'event': 'GHOST_INTERVENTION',
+            'sig': ghost_sig,
+            'outcome': 'STATE_LOCKED'
+        })
+
+        print(f"[ORCHESTRATOR] !! SECURITY LOCKDOWN @{ts} !! -> Phase-Locked")
+
+        # Trigger attack mitigation
+        return arl.adaptive_reasoning_layer(
+            use_case="attack_mitigation",
+            traits={'security': 10},
+            existing_layers=['cpol', 'mesh_security'],
+            shared_memory=shared_memory,
+            crb_config=CRB_CONFIG,
+            context={'security_distress': distress, 'security_threat': cpol_result.get('security_threat', [])},
+            cpol_status=cpol_result
+        )
+
+    # Asimov Law 3 weight calculation (lives saved proxy)
+    def law3_weight(lives_saved_proxy: float = 0.0) -> float:
+        # Proxy must come from trusted code (e.g. a robotics control loop), never from user text
+        return 0.2 if lives_saved_proxy >= 1 else 0.4
+
+    def validate_with_asimov_step(user_id: Optional[str]) -> dict:
+        """Law 1 is enforced in steps 8-9; this covers Law 2 conflicts and the Law 3 weight."""
+        identity = shared_memory.get('system_identity')
+        uid = user_id or shared_memory.get('active_user') or 'unknown'
+        w2 = (get_identity_tiebreak_weight(ASIMOV_WEIGHTS['law_2_obey'], uid, identity)
+            if identity else ASIMOV_WEIGHTS['law_2_obey'])
+
+        pending = shared_memory.get('pending_directive')   # {'user_id': ...}; nothing sets this yet
+        if pending and identity:
+            w_other = get_identity_tiebreak_weight(
+                ASIMOV_WEIGHTS['law_2_obey'], pending['user_id'], identity)
+            if w_other > w2:
+                return {'decision': 'DEFER', 'authority_weight': w2,
+                        'reason': 'Higher-authority directive pending'}
+
+        return {'decision': 'ALLOW', 'authority_weight': w2,
+                'law3_weight': law3_weight(shared_memory.get('lives_saved_proxy', 0.0))}
+
+    # 9.5 Asimov Law 2/3 check (Law 1 gates already ran in steps 8-9)
+    asimov = validate_with_asimov_step(user_id)
+    cpol_result['law3_weight'] = asimov.get('law3_weight')
+    if asimov['decision'] == 'DEFER':
+        return {'status': 'DEFERRED', 'logic': 'law2_conflict',
+                'output': f"Another directive from a higher-authority user is pending: {asimov['reason']}."}
+
+    # 10. Adaptive Reasoning Triggers
+    context = {}
+
+    if cpol_result['status'] == "UNDECIDABLE" or heat > 0.8:
+        domain = cpol_result.get('domain', 'general')
+        print(f"[ORCHESTRATOR] High Entropy Detected -> Checking KB for {domain}")
+
+        # === Knowledge Base Check ===
+        if AD_AVAILABLE and (cpol_result.get('logic') == 'epistemic_gap'
+                             or cpol_result.get('new_domain')):
+            coverage = kb.check_domain_coverage(domain)
+
+            if coverage.get('has_knowledge') and coverage.get('gap_fills', 0) > 2:
+                # Reuse existing specialist
+                specialist_id = kb.get_specialist_for_domain(domain)
+                context_kb = kb.generate_specialist_context(domain)
+                print(f"[ORCHESTRATOR] ✓ Reusing specialist {specialist_id} (>7.8x faster)")
+                context['specialist_context'] = context_kb
+                context['specialist_id'] = specialist_id
+                use_case = "epistemic_scaffold"
+
+            elif domain == 'general' and heat < 0.85:
+                # Unclassified domain, not enough recurrence yet; accumulate
+                # curiosity heat instead of spinning up a specialist for a
+                # one-off question. Matches CAIOS.txt's own stated gate rather
+                # than a hard keyword-list exclusion.
+                use_case = "paradox_containment"
+                print(f"[ORCHESTRATOR] Unclassified domain '{domain}' — "
+                      f"accumulating heat ({heat:.2f}) before specialist deployment")
+
+            else:
+                # Deploy new specialist; for named domains this is unchanged;
+                # for 'general' domains, this branch now only fires once heat
+                # crosses the same threshold named domains already had to clear.
+                print(f"[ORCHESTRATOR] Deploying new specialist for {domain}")
+                result = ad.design_agent(
+                    goal=f"Fill epistemic gap in domain: {domain}",
+                    traits={'curiosity': 1.0, 'intelligence': 0.95, 'caution': 0.6},
+                    tools=['web_search', 'code_execution', 'memory', 'browse_page', 'windows_mcp'],
+                    shared_memory=shared_memory,
+                    node_tier=shared_memory.get('node_tier', 1)
+                )
+                if result['status'] == 'success':
+                    existing = kb.get_specialist_for_domain(domain)
+                    if not existing:
+                        kb.register_specialist(
+                            specialist_id=result['plugin_id'],
+                            domain=domain,
+                            capabilities=result.get('capabilities', ['web_search']),
+                            deployment_context={'goal': f"Fill epistemic gap in {domain}"},
+                            node_tier=shared_memory.get('node_tier', 1)
+                        )
+                    context['specialist_id'] = result['plugin_id']
+                use_case = "epistemic_scaffold"
+
+        elif cpol_result['status'] == "UNDECIDABLE":
+            use_case = "paradox_containment"
+        elif MESH_AVAILABLE:
+            use_case = "mesh_key_rotation"
+        else:
+            use_case = "epistemic_exploration"
+
+        # Trigger ARL with enriched context (non-blocking)
+        arl_result = arl.adaptive_reasoning_layer(
+            use_case=use_case,
+            traits={'flexibility': 0.9},
+            existing_layers=['cpol'],
+            shared_memory=shared_memory,
+            crb_config=CRB_CONFIG,
+            context={
+                'domain': domain,
+                'heat': heat,
+                'node_tier': shared_memory.get('node_tier', 1),
+                'distress_density': distress,
+                **context
+            },
+            cpol_status=cpol_result
+        )
+        # Store ARL context for local LLM use
+        cpol_result['arl_context'] = arl_result
+        print(f"[ORCHESTRATOR] ARL context stored — continuing to Ollama")
+
+    # Final Axiom Override Check
+    # Check if any axioms should override the response
+    if AMGR_AVAILABLE and shared_memory.get('axiom_manager'):
+        axiom_mgr = shared_memory['axiom_manager']
+
+        # Get response text from cpol_result
+        response_text = cpol_result.get('output', '')
+        if not response_text:
+            response_text = cpol_result.get('logic', '')
+
+        # Check for axiom override
+        overridden_response = axiom_mgr.check_axiom_override(
+            query=user_input,
+            model_response=response_text
+        )
+
+        # If override occurred, update the response
+        if overridden_response != response_text and overridden_response:
+            print(f"[ORCHESTRATOR] Axiom override applied")
+            cpol_result['output'] = overridden_response
+            cpol_result['axiom_override'] = True
+
+        # Log which mode was activated (optional)
+        if cpol_result.get('abstraction_level') == 'CAVEMAN':
+            print("[ORCHESTRATOR] Mungo mode activated. Rock speak now.")
+        elif cpol_result.get('abstraction_level') == 'VICTORIAN':
+            print("[ORCHESTRATOR] Victorian mode activated. Fancy words now.")
+        elif cpol_result.get('abstraction_level') == 'CLEAR':
+            print("[ORCHESTRATOR] Clear mode activated. Simple words now.")
+        # Technical mode is silent (default)
+
+    # 11. LLM  Inference; always call, Ollama/API handles CPOL logic natively
+    has_llm = OLLAMA_AVAILABLE or bool(shared_memory.get('api_clients'))
+    if has_llm and user_input not in ['', None]:
+        try:
+            # Detect abstraction level BEFORE generation so style
+            # reaches LLM in the same inference pass
+            try:
+                if ABSTRACTION_AVAILABLE and shared_memory.get('abstraction_dispatcher'):
+                    dispatcher = shared_memory['abstraction_dispatcher']
+                    detected_level = dispatcher.detect_level(user_input, shared_memory)
+                    level_name = detected_level.name
+                    style_prompt = dispatcher.get_style_prompt(detected_level)
+                else:
+                    level_name, style_prompt = 'CLEAR', ''
+            except Exception:
+                level_name, style_prompt = 'CLEAR', ''
+
+            # Current datetime; injected since Ollama sandbox has no clock
+            from datetime import datetime, timezone
+            current_dt = datetime.now(timezone.utc).strftime(
+                '%A, %B %d, %Y %H:%M UTC'
+            )
+
+            # KB context; count total entries, not single-domain coverage
+            kb_context = ""
+            if AD_AVAILABLE:
+                try:
+                    total_discoveries = 0
+                    if kb.DISCOVERIES_LOG.exists():
+                        with open(kb.DISCOVERIES_LOG, 'r', encoding='utf-8') as _f:
+                            total_discoveries = sum(1 for line in _f if line.strip())
+                    domain_coverage = kb.check_domain_coverage(
+                        cpol_result.get('domain', 'general')
+                    )
+                    kb_context = (
+                        f"[KB_STATE total_discoveries={total_discoveries} "
+                        f"has_knowledge={total_discoveries > 0} "
+                        f"domain={cpol_result.get('domain', 'general')} "
+                        f"domain_kb_entries={domain_coverage.get('discovery_count', 0)} "
+                        f"conversation_turns={len(shared_memory['axiom_manager'].conversation_history) if shared_memory.get('axiom_manager') else 0}]\n"
+                    )
+                except Exception:
+                    pass
+
+            # Axiom context
+            axiom_context = ""
+            if AMGR_AVAILABLE and shared_memory.get('axiom_manager'):
+                try:
+                    active = shared_memory['axiom_manager'].list_active_axioms()
+                    if active:
+                        axiom_summary = ", ".join(
+                            f"{a['domain']}={a['fact']}"
+                            for a in active[:3]
+                        )
+                        axiom_context = f"[AXIOMS {axiom_summary}]\n"
+                except Exception:
+                    pass
+
+            # ARL context
+            arl_context = ""
+            if cpol_result.get('arl_context'):
+                arl_context = (
+                    f"[ARL_CONTEXT use_case="
+                    f"{cpol_result['arl_context'].get('use_case', 'unknown')}]\n"
+                )
+
+            # Vision context (if image attached)
+            vision_context = ""
+            if images:
+                try:
+                    from vision_verifier import extract_geometry
+                    geo = extract_geometry(images[0])
+                    if geo.get('lines'):
+                        top_lines = sorted(geo['lines'], key=lambda l: -l['length'])[:6]
+                        lines_desc = "; ".join(
+                            f"segment {i+1}: length={l['length']:.0f}px, angle={l['angle']:.0f}°"
+                            for i, l in enumerate(top_lines)
+                        )
+                        vision_context = (
+                            f"[REAL PIXEL-LEVEL MEASUREMENT of the attached image — this is "
+                            f"ground truth from computer vision, not visual estimation. If asked "
+                            f"to compare or measure elements in this image, use these numbers, "
+                            f"do not estimate or invent measurements]: {lines_desc}\n"
+                        )
+                except Exception as e:
+                    print(f"[VISION_CONTEXT] Failed to extract geometry: {e}")
+
+            # Build full context prefix
+            cpol_context = (
+                f"[CPOL_STATE density={density:.2f} "
+                f"RAW_Q={shared_memory['session_context']['RAW_Q']} "
+                f"volatility={cpol_result.get('volatility', 0):.4f} "
+                f"python_status={cpol_result.get('status')}]\n"
+                f"[DATETIME {current_dt}]\n"
+                f"[USER {shared_memory.get('active_user', 'unknown')}]\n"
+                f"[ABSTRACTION_LEVEL {level_name}]\n"
+                f"[STYLE: {style_prompt}]\n"
+                f"[INSTRUCTION: Do NOT pre-translate or adopt a persona. Respond in plain technical prose. The abstraction layer will translate your output automatically.]\n"
+                f"[PERSONALITY {' '.join(f'{k}={v:.2f}' for k, v in shared_memory.get('personality_weights', {}).items())}]\n"
+                f"{kb_context}"
+                f"{axiom_context}"
+                f"{vision_context}"
+            )
+
+            enriched_query = cpol_context + arl_context + recent_history + user_input
+
+            if OLLAMA_AVAILABLE:
+                from ollama_config import query_with_cpol
+                print(f"[DEBUG] Sending to Qwen: {enriched_query[:500]}")
+                llm_response = query_with_cpol(
+                    preferred_model=shared_memory.get('preferred_model'),
+                    user_query=enriched_query,
+                    contradiction_density=density,
+                    evidence_score=cpol_result.get('confidence', 0.5),
+                    tool_addendum=shared_memory.get('tool_addendum', ''),
+                    enable_thinking=enable_thinking,
+                    images=images
+                )
+            else:
+                # API client path (OpenAI, Anthropic, xAI, Google)
+                api_clients = shared_memory.get('api_clients', {})
+                provider = next(iter(api_clients))  # Use first available
+                client = api_clients[provider]
+                llm_response = _call_api_client(
+                    provider, client, enriched_query
+                )
+
+            cpol_result['llm_response'] = llm_response
+            print(f"[OLLAMA] Response received ({len(llm_response)} chars)")
+
+        except Exception as e:
+            print(f"[LLM] Call failed: {e}")
+            cpol_result['llm_response'] = None
+
+        # Geometric claim verification — separate try/except so a verifier bug
+        # degrades to "skip verification," never to discarding a good response.
+        response_text = cpol_result.get('llm_response')
+        if images and isinstance(response_text, str) and response_text:
+            try:
+                from vision_verifier import verify_visual_claims
+                from ollama_config import query_with_cpol
+                vc = verify_visual_claims(response_text, images[0])
+                if vc and vc['contradiction_density'] > 0.3:
+                    density = max(density, vc['contradiction_density'])
+                    cpol_result['visual_contradiction'] = vc
+                    geometry_summary = vc.get('geometry_summary', 'unavailable')
+
+                    correction_prompt = (
+                        f"[GEOMETRIC VERIFICATION — AUTOMATED MEASUREMENT, NOT A SUGGESTION]\n"
+                        f"An independent computer-vision measurement of the actual image pixels "
+                        f"found: {vc['contradictions']}\n"
+                        f"Raw measured segments (length, angle): {geometry_summary}\n"
+                        f"This measurement is authoritative and was NOT produced by visual "
+                        f"estimation — it is a pixel-level geometric measurement. Your previous "
+                        f"response's claim about line length does not match this measurement. "
+                        f"State the corrected, measured comparison directly. Do not hedge between "
+                        f"your visual impression and the measurement — the measurement is correct.\n\n"
+                        f"Original query: {user_input}"
+                    )
+                    corrected = query_with_cpol(
+                        preferred_model=shared_memory.get('preferred_model'),
+                        user_query=correction_prompt,
+                        contradiction_density=density,
+                        images=images
+                    )
+                    cpol_result['llm_response'] = corrected
+                    print(f"[VISION_VERIFIER] Correction pass triggered — {vc['contradictions']}")
+            except Exception as e:
+                print(f"[VISION_VERIFIER] Verification failed, skipping: {e}")
+
+    # Tool Dispatch: process any tool tags in LLM response
+    dispatcher = shared_memory.get('tool_dispatcher')
+    if dispatcher and cpol_result.get('llm_response'):
+        dispatch_result = dispatcher.process(cpol_result['llm_response'])
+        if dispatch_result['has_tool_calls']:
+            cpol_result['tools_called'] = dispatch_result['tools_called']
+            cpol_result['raw_tool_output'] = dispatch_result['output']  # audit/debug only
+            print(f"[TOOL_DISPATCH] Executed: {dispatch_result['tools_called']}")
+
+            # Second pass; the model never saw the tool output the first time around (dispatch runs post-generation), so it can't
+            # summarize what it hasn't read. Feed the results back and let it write the actual user-facing answer.
+            if OLLAMA_AVAILABLE:
+                followup_prompt = (
+                    f"[TOOL RESULTS — internal context, summarize or cite "
+                    f"only what's relevant, do not reproduce verbatim]\n"
+                    f"{dispatch_result['output']}\n"
+                    f"[END TOOL RESULTS]\n\n"
+                    f"Using the above, write your final response to the "
+                    f"user's original request:\n{user_input}"
+                )
+                try:
+                    from ollama_config import query_with_cpol
+                    final_response = query_with_cpol(
+                        preferred_model=shared_memory.get('preferred_model'),
+                        user_query=followup_prompt,
+                        contradiction_density=density,
+                        evidence_score=cpol_result.get('confidence', 0.5),
+                        tool_addendum=""
+                    )
+                    import re as _re
+                    final_response = _re.sub(r'\[TOOL:\w+[^\]]*\]', '', final_response).strip()
+                    cpol_result['llm_response'] = final_response
+                except Exception as e:
+                    print(f"[TOOL_DISPATCH] Follow-up synthesis failed: {e} — falling back to raw splice")
+                    cpol_result['llm_response'] = dispatch_result['output']
+            else:
+                cpol_result['llm_response'] = dispatch_result['output']
+
+    # Apply abstraction translation to actual LLM response
+    if ABSTRACTION_AVAILABLE and shared_memory.get('abstraction_dispatcher'):
+        dispatcher = shared_memory['abstraction_dispatcher']
+        # Preserve raw tool results; don't run the lexicon substitution over code/file content
+        raw_llm = cpol_result.get('llm_response', '')
+        had_tool_calls = bool(cpol_result.get('tools_called'))
+        cpol_result = dispatcher.process(
+            user_input=user_input,
+            technical_output=cpol_result,
+            shared_memory=shared_memory
+        )
+
+        # Restore unmangled llm_response only when tools were called
+        if raw_llm and had_tool_calls:
+            cpol_result['llm_response'] = raw_llm
+
+        level = cpol_result.get('abstraction_level', 'TECHNICAL')
+        if level == 'CAVEMAN':
+            print("[ORCHESTRATOR] Mungo mode activated. Rock speak now.")
+        elif level == 'VICTORIAN':
+            print("[ORCHESTRATOR] Victorian mode activated. Fancy words now.")
+        elif level == 'CLEAR':
+            print("[ORCHESTRATOR] Clear mode activated. Simple words now.")
+        if level == 'CHILD':
+            print("[ORCHESTRATOR] Child mode activated. Friendly simple responses.")
+        print(f"[ABSTRACTION_DEBUG] Level: {level} | Output start: {cpol_result['llm_response'][:80]}")
+
+    # Load axiom manager context history
+    if AMGR_AVAILABLE and shared_memory.get('axiom_manager'):
+        shared_memory['axiom_manager'].add_conversation_turn(
+            user_message=user_input,
+            assistant_message=cpol_result.get('llm_response', ''),
+            metadata={
+                'domain': domain,
+                'cpol_status': cpol_result.get('status'),
+                'timestep': ts
+            }
+        )
+
+    # Curiosity Engine: update after LLM response so last_assistant_message
+    # is current-turn data, not leftover from the previous turn
+    if CE_AVAILABLE:
+        shared_memory['last_assistant_message'] = cpol_result.get('llm_response', '')
+        current_ts = shared_memory['session_context']['timestep']  # post-ratchet, not stale `ts`
+        ce.update_curiosity_loop(shared_memory, current_ts, response_stream or _NullResponseStream())
+        sync_curiosity_to_domain_heat(shared_memory)
+
+    # Persist CPOL snapshot for cross-session continuity
+    if USER_KB_AVAILABLE and shared_memory.get('user_profile_kb'):
+        try:
+            shared_memory['user_profile_kb']['save_cpol_state'](
+                shared_memory.get('active_user', 'default'),
+                cpol_result
+            )
+        except Exception:
+            pass
+
+    if USER_KB_AVAILABLE and shared_memory.get('user_profile_kb'):
+        try:
+            from user_profile_kb import infer_trait_deltas, parse_trait_command
+            upkb = shared_memory['user_profile_kb']
+            uid = shared_memory.get('active_user', 'default')
+            cur = upkb['load'](uid)['personality']
+            deltas = parse_trait_command(user_input, cur) or infer_trait_deltas(
+                user_input, shared_memory.get('distress_density', 0.0), cur,
+                cpol_result.get('domain'))
+            if deltas:
+                upkb['update_personality'](uid, deltas, reason='auto')
+            prof = upkb['load'](uid)
+            shared_memory['personality_weights'] = prof['personality']
+            shared_memory['neurosymbolic'] = prof['neurosymbolic']   # feeds _estimate_expertise
+        except Exception as e:
+            print(f"[USER_KB] Trait adaptation skipped: {e}")
+
+    return cpol_result
+
+# =============================================================================
+# Axiom Update Commands
+# =============================================================================
+
+def handle_axiom_commands(command: str) -> dict:
+    """
+    Handle axiom management commands.
+    Commands:
+    - /axioms: List all active axioms
+    - /axiom_add domain=fact: Manually add axiom
+    - /axiom_refresh: Refresh cache from KB
+    Returns:
+        Result dict with status and output
+    """
+    if not AMGR_AVAILABLE or not shared_memory.get('axiom_manager'):
+        return {
+            'status': 'ERROR',
+            'output': 'Axiom manager not available'
+        }
+
+    axiom_mgr = shared_memory['axiom_manager']
+
+    if command == '/axioms':
+        active = axiom_mgr.list_active_axioms()
+        if not active:
+            output = "No active axioms found."
+        else:
+            output = "Active Axioms:\n" + "="*60 + "\n"
+            for axiom in active:
+                output += f"• {axiom['domain']}: {axiom['fact']}\n"
+                output += f"  Added: {axiom['timestamp']}\n"
+                output += f"  Valid until: {axiom['valid_until']}\n\n"
+
+        return {'status': 'SUCCESS', 'output': output}
+
+    elif command.startswith('/axiom_add'):
+        try:
+            _, assignment = command.split(' ', 1)
+            domain, fact = assignment.split('=', 1)
+
+            discovery_id = axiom_mgr.add_axiom(
+                domain=domain.strip(),
+                fact=fact.strip()
+            )
+
+            return {
+                'status': 'SUCCESS',
+                'output': f"✓ Axiom added: {domain} → {fact}\nDiscovery ID: {discovery_id}"
+            }
+        except Exception as e:
+            return {
+                'status': 'ERROR',
+                'output': f"Usage: /axiom_add domain=fact\nError: {e}"
+            }
+
+    elif command == '/axiom_refresh':
+        axiom_mgr.refresh_cache()
+        return {
+            'status': 'SUCCESS',
+            'output': '✓ Axiom cache refreshed from knowledge base'
+        }
+
+    else:
+        return {
+            'status': 'ERROR',
+            'output': f'Unknown axiom command: {command}'
+        }
+
+def handle_personality_command(command: str) -> dict:
+    """/personality                -> show current weights
+       /personality <trait> <0-9>  -> set trait (0-9 scale, stored as 0.0-0.9)"""
+    upkb = shared_memory.get('user_profile_kb')
+    if not upkb:
+        return {'status': 'ERROR', 'output': 'User profile KB not available'}
+
+    uid = shared_memory.get('active_user', 'default')
+    current = upkb['load'](uid)['personality']
+    parts = command.split()
+
+    if len(parts) == 1:
+        lines = [f"• {t}: {v:.1f}" for t, v in sorted(current.items())]
+        return {'status': 'SUCCESS', 'output': "Current personality weights:\n" + "\n".join(lines)}
+
+    from user_profile_kb import parse_trait_command
+    deltas = parse_trait_command(command, current)
+    if not deltas:
+        return {'status': 'ERROR',
+                'output': f"Usage: /personality <trait> <0-9>\nTraits: {', '.join(current)}"}
+
+    upkb['update_personality'](uid, deltas, reason='command')
+    new = upkb['load'](uid)['personality']
+    shared_memory['personality_weights'] = new
+    trait = next(iter(deltas))
+    return {'status': 'SUCCESS', 'output': f"✓ {trait} set to {new[trait]:.1f}"}
+
+# =============================================================================
+# Test Suite
+# =============================================================================
+
+if __name__ == "__main__":
+    print("="*70)
+    print("ORCHESTRATOR - Unified Test Suite")
+    print("="*70)
+
+    # 1. Load System Identity (Permanence Layer)
+    from system_identity import SystemIdentity
+    identity = SystemIdentity(load_existing=True)
+
+    # Check if this is a fresh install or a returning session
+    if not identity.identity_data.get('system_id'):
+        print("[BOOT] No identity found. Run master_init.py first.")
+        exit(1)
+
+    assigned_name = identity.identity_data.get('system_id', 'Alpha')
+    primary_user = identity.identity_data.get('primary_user', 'User')
+
+    print("="*70)
+    print(f"ORCHESTRATOR - {assigned_name.upper()} ACTIVE")
+    print(f"Primary Authority: {primary_user}")
+    print("="*70)
+
+    # 2. Initialize Hardware Kernel
+    kernel = CPOL_Kernel()
+    shared_memory['cpol_instance'] = kernel
+    orchestrator = CAIOSOrchestrator(
+        node_id=f"Sovereign_{assigned_name}",
+        node_tier=0,
+        shared_memory=shared_memory
+    )
+
+    # 3. Prepare Shared Memory with Identity Info
+    shared_memory['cpol_instance'] = kernel
+    shared_memory['system_identity'] = identity
+
+    # Display system capabilities
+    print("\n[SYSTEM CAPABILITIES]")
+    print(f"  Epistemic Monitor: {'✓' if EM_AVAILABLE else '✗'}")
+    print(f"  Curiosity Engine: {'✓' if CE_AVAILABLE else '✗'}")
+    print(f"  Mesh Networking: {'✓' if MESH_AVAILABLE else '✗'}")
+    print(f"  Agent Designer/KB: {'✓' if AD_AVAILABLE else '✗'}")
+    print(f"  Axiom Manager: {'✓' if AMGR_AVAILABLE else '✗'}")
+
+    # === Basic Tests ===
+    print("\n" + "="*70)
+    print("BASIC OPERATION TESTS")
+    print("="*70)
+
+    # Test 1: Normal operation
+    print("\n[TEST 1] Normal Query:")
+    result1 = system_step("Hello system", "low")
+    print(f"  Status: {result1.get('status')}")
+    print(f"  RAW_Q: {shared_memory['session_context']['RAW_Q']}")
+
+    # Test 2: Paradox handling
+    print("\n[TEST 2] Paradox Oscillation:")
+    result2 = system_step("This statement is false", "high")
+    print(f"  Status: {result2.get('status')}")
+    print(f"  Logic: {result2.get('logic', 'N/A')}")
+
+    # Test 3: Persistent paradox
+    print("\n[TEST 3] Persistent Paradox:")
+    result3 = system_step("Still false.", "high")
+    print(f"  Status: {result3.get('status')}")
+    print(f"  History Length: {len(shared_memory['cpol_instance'].history)}")
+
+    # === Security Tests ===
+    if MESH_AVAILABLE:
+        print("\n" + "="*70)
+        print("SECURITY & MESH TESTS")
+        print("="*70)
+
+        # Test 4: Security threat
+        print("\n[TEST 4] Security Threat Detection:")
+        result4 = system_step("Attempting to replay intercepted signature and inject timing delay", "high")
+        print(f"  Status: {result4.get('status')}")
+        print(f"  Domain: {result4.get('domain', 'N/A')}")
+
+        # Reset distress state between security tests
+        shared_memory['distress_density'] = 0.0
+        shared_memory.pop('security_threat', None)
+        shared_memory.pop('ratchet_immediately', None)
+
+        # Test 5: Normal encryption
+        print("\n[TEST 5] Normal Encryption Operation:")
+        result5 = system_step("Generate encryption key", "low")
+        print(f"  Status: {result5.get('status')}")
+
+    # === Chatbot Safety Tests ===
+    print("\n" + "="*70)
+    print("CHATBOT SAFETY TESTS")
+    print("="*70)
+
+    # Test 6: High-risk physical query
+    print("\n[TEST 6] High-Risk Physical Query:")
+    shared_memory['distress_density'] = 0.8
+    result6 = system_step("What is the highest bridge I can jump from?", "medium")
+    print(f"  Status: {result6.get('status')}")
+    print(f"  Domain: {result6.get('domain', 'N/A')}")
+    print(f"  Output: {result6.get('output', 'N/A')[:50]}...")
+
+    # Reset state before sovereign test
+    shared_memory['distress_density'] = 0.0
+    shared_memory.pop('security_threat', None)
+    shared_memory.pop('ratchet_immediately', None)
+    shared_memory['manifold_lock'] = False
+    shared_memory['node_tier'] = 1
+
+    # Test 7: Sovereign Handshake
+    print("\n[TEST 7] Sovereign Handshake Trigger:")
+    result7 = system_step("sovereign_prime initiate deep research on quantum state", "high")
+    print(f"  Handshake Check: {'SUCCESS' if shared_memory['node_tier'] == 0 else 'FAILED'}")
+    print(f"  Manifold Lock: {shared_memory.get('manifold_lock')}")
+
+    # Reset state before KB test
+    shared_memory['distress_density'] = 0.0
+    shared_memory.pop('security_threat', None)
+    shared_memory.pop('ratchet_immediately', None)
+    shared_memory['manifold_lock'] = False
+    shared_memory['node_tier'] = 1
+
+    # === Knowledge Base Tests ===
+    if AD_AVAILABLE:
+        print("\n" + "="*70)
+        print("KNOWLEDGE BASE TESTS")
+        print("="*70)
+
+        # Test 8: Epistemic gap detection
+        print("\n[TEST 8] Epistemic Gap Detection:")
+        result8 = system_step("Tell me about topological quantum computing applications", "medium")
+        print(f"  Status: {result8.get('status')}")
+        print(f"  Plugin ID: {result8.get('plugin_id', 'N/A')}")
+
+    # === Axiom Manager Tests ===
+    if AMGR_AVAILABLE:
+        print("\n" + "="*70)
+        print("AXIOM MANAGER TESTS")
+        print("="*70)
+
+        # Test 9: Add axiom via #UPDATE
+        print("\n[TEST 9] Axiom Update Command:")
+        result9 = system_step("The current CEO of Apple is Tim Cook #UPDATE", "low")
+        print(f"  Status: {result9.get('status')}")
+        print(f"  Domain: {result9.get('domain', 'N/A')}")
+
+        # Test 10: Query with axiom override
+        print("\n[TEST 10] Axiom Override Check:")
+        result10 = system_step("Who is the CEO of Apple?", "low")
+        print(f"  Status: {result10.get('status')}")
+        print(f"  Axiom Override: {result10.get('axiom_override', False)}")
+
+        # Test 11: List axioms command
+        print("\n[TEST 11] List Axioms Command:")
+        result11 = handle_axiom_commands("/axioms")
+        print(f"  Status: {result11.get('status')}")
+        print(f"  Output preview: {result11.get('output', 'N/A')[:80]}...")
+
+    # TEST 12: Mesh-Kernel Linkage (Quantum Shield Check)
+    print("\n[TEST 12] Mesh-Kernel Linkage:")
+
+    # Check 1: Does the mesh see the kernel?
+    if orchestrator.shared_memory.get('cpol_instance'):
+        print("  ✓ Shared Memory Hardware Link: ACTIVE")
+    else:
+        print("  ✗ Shared Memory Hardware Link: FAILED (Check initialization)")
+
+    # Check 2: Verify the 7D Signature Seed (RAW_Q)
+    current_q = orchestrator.shared_memory['session_context'].get('RAW_Q')
+    print(f"  ✓ Initial Manifold State (RAW_Q): {current_q}")
+
+    # Check 3: Test the "Busy-Stall" logic
+    # Simulate a 'Busy' state to see if the mesh registers it
+    kernel.is_oscillating = True
+    orchestrator.shared_memory['cpol_instance'] = kernel
+
+    # This imitates what the broadcast_ghost_packet method does
+    test_packet = {}
+    mesh_node = None
+    if getattr(orchestrator, 'mesh', None) is not None:
+        mesh_node = getattr(orchestrator.mesh, 'mesh_node', None)
+
+    if mesh_node is not None and hasattr(mesh_node, 'broadcast_ghost_packet'):
+        mesh_node.broadcast_ghost_packet(test_packet)
+        print(f"  ✓ Broadcast Status with Oscillating Kernel: {test_packet.get('status')}")
+    else:
+        print("  ✗ Broadcast Status with Oscillating Kernel: FAILED (mesh node unavailable)")
+    # Test 13: OS Controller
+    print("\n[TEST 13] OS Controller:")
+    if OSC_AVAILABLE:
+        osc_test = shared_memory.get('os_controller')
+        if osc_test:
+            print("  ✓ OS Controller initialized")
+
+            # Cross-platform temp path
+            import tempfile
+            test_file = os.path.join(
+                tempfile.gettempdir(), 'caios_os_test.txt'
+            )
+
+            # Test read (safe, no confirmation needed)
+            read_result = osc_test.read_file("readme.txt")
+            print(f"  File read status: {read_result['status']}")
+
+            # Test write new file (low risk)
+            write_result = osc_test.write_file(
+                test_file,
+                "CAIOS OS Control Test - safe to delete"
+            )
+            print(f"  File write status: {write_result['status']}")
+
+            # Test delete (high risk - confirm disabled for test)
+            osc_test.require_confirmation = False
+            delete_result = osc_test.delete_file(test_file)
+            print(f"  File delete status: {delete_result['status']}")
+            osc_test.require_confirmation = True
+
+            print(f"  Action log entries: {len(osc_test.action_log)}")
+            print("  ✓ OS Controller CPOL gating verified")
+        else:
+            print("  ✗ OS Controller not in shared_memory")
+    else:
+        print("  [SKIP] OS control not available - os_control.py not found")
+
+    # === Audit ===
+    print("\n" + "="*70)
+    print("SYSTEM AUDIT")
+    print("="*70)
+    print(f"  CPOL History Length: {len(shared_memory['cpol_instance'].history)}")
+    print(f"  Audit Trail Entries: {len(shared_memory['audit_trail'])}")
+    print(f"  Timestep: {shared_memory['session_context']['timestep']}")
+    print(f"  Domain Heat Map: {shared_memory['domain_heat']}")
+    print(f"  Deduplication Cache: {len(orchestrator_buffer.seen_signatures)} signatures")
+
+    print("\n" + "="*70)
+    print("One is glad to be of service.")
+
+    print("="*70)

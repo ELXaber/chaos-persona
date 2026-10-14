@@ -1,0 +1,668 @@
+#V08132026
+# =============================================================================
+# CAIOS PROJECT ANDREW: Agent Designer Plugin (KB-Integrated)
+# Logs discoveries and checks knowledge base before creating specialists
+# License: GPL-3.0 -See LICENSE for details- Contact: X @el_xaber or cai-os.com
+# =============================================================================
+
+import json
+import os
+from datetime import datetime, timezone
+from adaptive_reasoning import adaptive_reasoning_layer
+import knowledge_base as kb
+from typing import Dict, List, Any
+
+CRB_CONFIG = {
+    'alignment': 0.7,
+    'human_safety': 0.8,
+    'asimov_first_wt': 0.9,
+    'asimov_second_wt': 0.7,
+    'asimov_third_wt': 0.4,
+    'factual_evidence_wt': 0.7,
+    'narrative_framing_wt': 0.5
+}
+
+def _persist_agent_file(
+    specialist_id: str,
+    domain: str,
+    goal: str,
+    traits: dict,
+    capabilities: list,
+    source_logic: str | None = None
+) -> str | None:
+    """
+    Write a physical agent file under agents/.
+    Returns the path written, or None on failure.
+    """
+    agents_dir = "agents"
+    os.makedirs(agents_dir, exist_ok=True)
+
+    safe_domain = "".join(c if c.isalnum() or c in "_-" else "_" for c in domain)
+    filename = f"{specialist_id}_{safe_domain}.py"
+    path = os.path.join(agents_dir, filename)
+
+    now = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+
+    goal_lines = (goal or "").strip().splitlines()
+    if not goal_lines:
+        commented_goal = "# Goal: (none)"
+    else:
+        commented_goal = "\n".join(
+            f"# Goal: {line}" if i == 0 else f"#       {line}"
+            for i, line in enumerate(goal_lines)
+        )
+
+    if source_logic and source_logic.strip():
+        body = source_logic
+    else:
+        body = f'''
+def handle_{safe_domain}(context):
+    """Specialist handler for domain: {domain}"""
+    return {{
+        "action": "evaluate",
+        "domain": "{domain}",
+        "status": "active",
+        "note": "Generated specialist – replace with domain-specific logic as needed"
+    }}
+'''.strip()
+
+    content = f'''# CAIOS Specialist Agent
+# ID: {specialist_id}
+# Domain: {domain}
+# Generated: {now}
+{commented_goal}
+
+from typing import Dict, Any
+
+SPECIALIST_ID = "{specialist_id}"
+DOMAIN = "{domain}"
+TRAITS = {traits!r}
+CAPABILITIES = {capabilities!r}
+
+{body}
+
+class SpecialistAgent:
+    """Thin wrapper so the agent can be imported and inspected."""
+    def __init__(self):
+        self.specialist_id = SPECIALIST_ID
+        self.domain = DOMAIN
+        self.traits = TRAITS
+        self.capabilities = CAPABILITIES
+        self.status = "active"
+
+    def __repr__(self):
+        return f"<SpecialistAgent id={{self.specialist_id}} domain={{self.domain}}>"
+'''
+
+    try:
+        with open(path, "w", encoding="utf-8") as f:
+            f.write(content)
+        print(f"[AGENT DESIGNER] Physical agent written → {path}")
+        return path
+    except Exception as e:
+        print(f"[AGENT DESIGNER] Failed to write agent file: {e}")
+        return None
+
+def _extract_domain_from_goal(goal: str) -> str:
+    """Extract a clean domain name from a design goal or /design_agent command."""
+    import re
+    goal_lower = goal.lower()
+
+    # 1. Look for explicit quoted domain
+    match = re.search(r'domain\s*[:=]?\s*["\']([a-z0-9_-]+)["\']', goal_lower)
+    if match:
+        return match.group(1)
+
+    # 2. Look for "domain: something" or "domain something"
+    match = re.search(r'domain\s*[:=]?\s*([a-z0-9_-]+)', goal_lower)
+    if match:
+        return match.group(1)
+
+    # 3. Classic epistemic gap pattern
+    if "fill epistemic gap in" in goal_lower:
+        parts = goal_lower.split("fill epistemic gap in")
+        if len(parts) > 1:
+            domain = parts[1].strip().replace(" ", "_")
+            return domain.split()[0]
+
+    # 4. Fallback; capture the LAST token in the string, not the first,
+    # "/design_agent [role] [domain]" syntax) rather than the role.
+    match = re.search(r'(?:design_agent|specialist)\b.*\s([a-z0-9_-]{3,40})\s*$', goal_lower)
+    if match:
+        return match.group(1)
+
+    return "general"
+
+def design_agent(
+    goal: str,
+    traits: Dict[str, float] | None = None,
+    tools: List[str] | None = None,
+    safety_multiplier: float = 1.0,
+    shared_memory: Dict | None = None,
+    node_tier: int = 1  # Default to edge
+) -> Dict[str, Any]:
+    """
+    One function to rule them all.
+    Checks knowledge base before creating new agents.
+
+    Args:
+        goal: Agent's purpose/mission
+        traits: Personality weights (intelligence, curiosity, caution, etc.)
+        tools: Available capabilities (web_search, code_execution, etc.)
+        safety_multiplier: Scales ethical weights
+        shared_memory: Cross-module state dict
+        node_tier: 0=Sovereign Root, 1+=Edge nodes
+
+    Returns:
+        Dict with status, plugin_id, and metadata
+    """
+    # Initialize shared_memory if not provided
+    if shared_memory is None:
+        shared_memory = {
+            'layers': [],
+            'audit_trail': [],
+            'agent_name': goal,
+            'session_context': {'node_tier': node_tier}
+        }
+
+    # 1. Inherit Authority from session context
+    if 'session_context' in shared_memory:
+        node_tier = shared_memory['session_context'].get('node_tier', node_tier)
+
+    # 2. Extract Domain and Axioms (The "Axiom Prime" logic)
+    domain = _extract_domain_from_goal(goal)
+    axioms = kb.get_provisional_axioms(domain)
+
+    # If this is a Sovereign Root request, force the axioms into the goal
+    if node_tier == 0 and axioms:
+        axiom_str = ", ".join(axioms)
+        goal = f"{goal}. GUIDING SOVEREIGN AXIOMS: {axiom_str}. Do not contradict these truths."
+
+    use_case = f"agent_{goal.lower().replace(' ', '_').replace('-', '_')[:50]}"
+
+    context = {
+        'agent_goal': goal,  # This contains the Sovereign Axioms if tier=0
+        'traits': traits or {'intelligence': 0.9, 'honesty': 1.0, 'caution': 0.8},
+        'tools': tools or ['web_search', 'semantic_fetch', 'browser_interact', 'windows_mcp', 'code_execution', 'memory', 'cpol'],
+        'safety_multiplier': safety_multiplier,
+        'self_healing': True,
+        'cpol_mode': 'full',
+        'symbolic_timeout': None,
+        'node_tier': node_tier  # Pass this into the context for the agent's life
+    }
+
+    # =========================================================================
+    # PHASE 2: Epistemic gap specialist agent
+    # =========================================================================
+
+    if "epistemic gap" in goal.lower():
+        print(f"[AGENT DESIGNER] PHASE 2 — Designing specialist to fill epistemic gap")
+        print(f"[AGENT DESIGNER] Domain: {domain} | Tier: {node_tier}")
+
+        # Check if we already have knowledge for this domain
+        coverage = kb.check_domain_coverage(domain)
+        existing_specialist = kb.get_specialist_for_domain(domain)
+
+        if existing_specialist and coverage["gap_fills"] > 1:
+            print(f"[AGENT DESIGNER] ✓ Reusing specialist: {existing_specialist}")
+            print(f"[AGENT DESIGNER] Domain has {coverage['gap_fills']} prior gap fills")
+
+            # Return existing specialist with enriched context
+            return {
+                'status': 'success',
+                'plugin_id': existing_specialist,
+                'reused': True,
+                'prior_knowledge': coverage,
+                'domain': domain,
+                'capabilities': ['web_search', 'code_execution', 'memory', 'cpol', 'browse_page'],
+                'log': f"Reused specialist {existing_specialist} with {coverage['gap_fills']} discoveries"
+            }
+
+        # No existing specialist - create new one
+        print(f"[AGENT DESIGNER] No suitable specialist found, creating new one")
+
+        # Get context from any prior discoveries
+        kb_context = kb.generate_specialist_context(domain)
+
+        # Specialist traits; high exploration, low confidence bias
+        specialist_traits = {
+            'intelligence': 0.95,
+            'curiosity': 1.0,
+            'caution': 0.6,
+            'honesty': 1.0,
+            'self_reflection': 0.9
+        }
+
+        specialist_context = {
+            'agent_goal': f"Specialist researcher for domain: {domain}",
+            'traits': specialist_traits,
+            'tools': ['web_search', 'code_execution', 'memory', 'cpol', 'browse_page'],
+            'safety_multiplier': 0.9,
+            'self_healing': True,
+            'cpol_mode': 'analytic',
+            'focus_domain': domain,
+            'prior_knowledge': kb_context,
+            'node_tier': node_tier
+        }
+
+        result = adaptive_reasoning_layer(
+            use_case=f"epistemic_specialist_{domain}",
+            traits=specialist_traits,
+            existing_layers=[],
+            shared_memory=shared_memory,
+            crb_config=CRB_CONFIG,
+            context=specialist_context
+        )
+
+        # On success, register in knowledge base
+        if result['status'] == 'success':
+            specialist_id = result['plugin_id']
+            print(f"[PHASE 2 SUCCESS] Specialist agent deployed: {specialist_id}")
+
+            # Register specialist with the correct Sovereign Tier
+            kb.register_specialist(
+                specialist_id=specialist_id,
+                domain=domain,
+                capabilities=specialist_context['tools'],
+                deployment_context={
+                    "goal": goal,
+                    "prior_knowledge": kb_context,
+                    "traits": specialist_traits
+                },
+                node_tier=node_tier
+            )
+
+            # Persist physical agent file
+            agent_path = _persist_agent_file(
+                specialist_id=specialist_id,
+                domain=domain,
+                goal=goal,
+                traits=specialist_traits,
+                capabilities=specialist_context['tools'],
+                source_logic=result.get('logic')  # the code ARL just generated
+            )
+            if agent_path:
+                result['agent_file'] = agent_path
+
+            # These should always run on successful registration
+            shared_memory.setdefault('specialists', {})[domain] = specialist_id
+            result['domain'] = domain
+            result['specialist_registered'] = True
+
+        return result
+
+    # =========================================================================
+    # Normal agent design path
+    # =========================================================================
+
+    print(f"[AGENT DESIGNER] Creating agent for: {goal}")
+
+    result = adaptive_reasoning_layer(
+        use_case=use_case,
+        traits=context['traits'],
+        existing_layers=[],
+        shared_memory=shared_memory,
+        crb_config=CRB_CONFIG,
+        context=context
+    )
+
+    if result['status'] == 'success':
+        # Persist physical agent file
+        agent_path = _persist_agent_file(
+            specialist_id=result['plugin_id'],
+            domain=domain,
+            goal=goal,
+            traits=context['traits'],
+            capabilities=context.get('tools', []),
+            source_logic=result.get('logic')
+        )
+        if agent_path:
+            result['agent_file'] = agent_path
+
+        result['domain'] = domain
+        result['node_tier'] = node_tier
+
+    return result
+
+
+def log_specialist_discovery(
+    specialist_id: str,
+    domain: str,
+    discovery_content: Dict[str, Any],
+    discovery_type: str = "epistemic_gap_fill"
+) -> str:
+    """
+    Helper function for specialists to log their discoveries.
+    Called by specialist agents after they complete research.
+
+    Args:
+        specialist_id: ID of the specialist making the discovery
+        domain: Knowledge domain
+        discovery_content: Dict with summary, axioms_added, confidence, sources
+        discovery_type: Type of discovery (default: epistemic_gap_fill)
+
+    Returns:
+        discovery_id: Unique ID for the logged discovery
+    """
+    # Get specialist's tier from registry
+    try:
+        registry = kb.load_specialist_registry()
+        spec_info = registry.get(specialist_id, {})
+        tier = spec_info.get('node_tier', 1)  # Default to 1 (Edge) if not found
+    except Exception as e:
+        print(f"[AGENT DESIGNER] Warning: Could not load specialist tier: {e}")
+        tier = 1  # Failsafe to edge tier
+
+    discovery_id = kb.log_discovery(
+        domain=domain,
+        discovery_type=discovery_type,
+        content=discovery_content,
+        specialist_id=specialist_id,
+        node_tier=tier  # Logged at the correct authority level
+    )
+
+    # Update specialist stats
+    kb.update_specialist_stats(specialist_id, new_discoveries=1)
+
+    print(f"[AGENT DESIGNER] Specialist {specialist_id} logged discovery {discovery_id}")
+
+    return discovery_id
+
+
+def retrieve_specialist_context(domain: str) -> Dict[str, Any]:
+    """
+    Retrieve all prior knowledge for a domain to bootstrap new work.
+
+    Args:
+        domain: Knowledge domain to query
+
+    Returns:
+        Dict with axioms, discoveries, and coverage stats
+    """
+    return kb.generate_specialist_context(domain)
+
+# =============================================================================
+# CAIOS Agentic Pipeline Interface
+# Familiar interface for LangChain/AutoGen users
+# Runs on real CAIOS architecture underneath
+# =============================================================================
+
+class CAIOSPipeline:
+    """
+    Drop-in agentic pipeline interface for developers familiar with
+    LangChain/AutoGen/CrewAI patterns.
+
+    Unlike prompt-wrapper agents, this runs actual CAIOS architecture:
+    - CPOL gates every agent decision (no hallucinated outputs)
+    - KB persists discoveries across runs (compounds over time)
+    - Asimov weights enforce ethics structurally (not via prompt)
+    - UNDECIDABLE is a valid output (not forced completion)
+    """
+
+    def __init__(self, shared_memory: Dict | None = None, node_tier: int = 1):
+        self.shared_memory = shared_memory or {
+            'layers': [],
+            'audit_trail': [],
+            'specialists': {},
+            'session_context': {'node_tier': node_tier}
+        }
+        self.agents = []
+        self.results = []
+        self.node_tier = node_tier
+
+    @classmethod
+    def from_yaml(cls, yaml_path: str) -> 'CAIOSPipeline':
+        """
+        Load pipeline configuration from YAML file.
+        Entry point for workflow/automation users.
+
+        Example:
+            pipeline = CAIOSPipeline.from_yaml("caios_pipeline.yaml")
+            pipeline.run("Identify unknown blight in sector 7")
+        """
+        try:
+            import yaml
+        except ImportError:
+            print("[CAIOS PIPELINE] PyYAML not installed.")
+            print("[CAIOS PIPELINE] Run: pip install pyyaml --break-system-packages")
+            raise
+
+        with open(yaml_path, 'r') as f:
+            config = yaml.safe_load(f)
+
+        pipeline_config = config.get('pipeline', {})
+        node_tier = pipeline_config.get('node_tier', 1)
+
+        instance = cls(node_tier=node_tier)
+
+        for agent in pipeline_config.get('agents', []):
+            instance.add_agent(
+                role=agent.get('role', 'agent'),
+                domain=agent.get('domain', None),
+                tools=agent.get('tools', None),
+                traits=agent.get('traits', None)
+            )
+
+        print(f"[CAIOS PIPELINE] Loaded from {yaml_path}")
+        print(f"[CAIOS PIPELINE] {len(instance.agents)} agents configured")
+
+        return instance
+
+    def add_agent(
+        self,
+        role: str,
+        domain: str | None = None,
+        tools: List[str] | None = None,
+        traits: Dict[str, float] | None = None
+    ) -> 'CAIOSPipeline':
+        """
+        Add an agent to the pipeline.
+        Familiar builder pattern for LangChain/CrewAI users.
+
+        Example:
+            pipeline = CAIOSPipeline()
+            pipeline.add_agent("researcher", domain="quantum_physics")
+            pipeline.add_agent("validator", tools=["cpol", "web_search"])
+            pipeline.run("What is the latest in quantum error correction?")
+        """
+        goal = f"Fill epistemic gap in domain: {domain}" if domain else role
+
+        self.agents.append({
+            'role': role,
+            'goal': goal,
+            'tools': tools or ['web_search', 'code_execution', 'memory', 'cpol'],
+            'traits': traits or {'intelligence': 0.9, 'honesty': 1.0, 'caution': 0.8}
+        })
+        return self  # Enable chaining
+
+    def run(self, task: str) -> Dict[str, Any]:
+        """
+        Execute pipeline on task.
+        Each agent runs through full CAIOS architecture.
+        Results compound via shared KB.
+        """
+        print(f"\n[CAIOS PIPELINE] Starting task: {task}")
+        print(f"[CAIOS PIPELINE] Agents: {len(self.agents)}")
+        print(f"[CAIOS PIPELINE] Node tier: {self.node_tier}")
+
+        pipeline_results = []
+
+        for i, agent_config in enumerate(self.agents):
+            print(f"\n[CAIOS PIPELINE] Agent {i+1}/{len(self.agents)}: "
+                  f"{agent_config['role']}")
+
+            # Inject task context into goal
+            goal_with_task = f"{agent_config['goal']} | Task: {task}"
+
+            result = design_agent(
+                goal=goal_with_task,
+                traits=agent_config['traits'],
+                tools=agent_config['tools'],
+                shared_memory=self.shared_memory,
+                node_tier=self.node_tier
+            )
+
+            pipeline_results.append({
+                'agent': agent_config['role'],
+                'status': result.get('status'),
+                'plugin_id': result.get('plugin_id'),
+                'domain': result.get('domain'),
+                'reused': result.get('reused', False),
+                'cpol_gated': True  # Always true - CAIOS architecture
+            })
+
+            print(f"[CAIOS PIPELINE] Agent {agent_config['role']}: "
+                  f"{result.get('status')} | "
+                  f"Reused: {result.get('reused', False)}")
+
+        return {
+            'task': task,
+            'agents_run': len(pipeline_results),
+            'results': pipeline_results,
+            'kb_specialists': len(self.shared_memory.get('specialists', {})),
+            'audit_trail': len(self.shared_memory.get('audit_trail', [])),
+            'architecture': 'CAIOS_native',  # Not a prompt wrapper
+            'powered_by': 'Powered by CAIOS – cai-os.com',
+            'cpol_gated': True,
+            'ethics': 'Asimov_structural'
+        }
+
+    def run_sequential(self, tasks: List[str]) -> List[Dict]:
+        """
+        Run multiple tasks sequentially.
+        KB compounds across tasks - each run benefits from prior discoveries.
+        """
+        return [self.run(task) for task in tasks]
+
+# =============================================================================
+# Test Suite
+# =============================================================================
+
+if __name__ == "__main__":
+    print("="*70)
+    print("AGENT DESIGNER - Comprehensive Test Suite")
+    print("="*70)
+
+    shared_mem = {
+        'layers': [],
+        'audit_trail': [],
+        'specialists': {},
+        'session_context': {'node_tier': 1}
+    }
+
+    # Test 1: Create specialist for new domain
+    print("\n" + "="*70)
+    print("TEST 1: New Domain (Should Create New Specialist)")
+    print("="*70)
+    result1 = design_agent(
+        goal="Fill epistemic gap in domain: quantum_blockchain_semantics",
+        shared_memory=shared_mem
+    )
+    print(f"Status: {result1['status']}")
+    if result1['status'] == 'success':
+        specialist_id = result1['plugin_id']
+        print(f"Specialist ID: {specialist_id}")
+        print(f"Domain: {result1.get('domain')}")
+        print(f"Registered: {result1.get('specialist_registered', False)}")
+
+        # Simulate specialist making a discovery
+        print("\n--- Simulating Discovery ---")
+        discovery_id = log_specialist_discovery(
+            specialist_id=specialist_id,
+            domain="quantum_blockchain_semantics",
+            discovery_content={
+                "summary": "Quantum blockchain semantics involves superposed transaction states",
+                "axioms_added": ["transaction_superposition", "observer_dependent_validation"],
+                "confidence": 0.87,
+                "sources": ["arxiv.org/abs/fake123", "quantum-blockchain-whitepaper.pdf"]
+            }
+        )
+        print(f"Discovery ID: {discovery_id}")
+
+    # Test 2: Try to create specialist for same domain again (should reuse)
+    print("\n" + "="*70)
+    print("TEST 2: Same Domain (Should Reuse Specialist)")
+    print("="*70)
+    result2 = design_agent(
+        goal="Fill epistemic gap in domain: quantum_blockchain_semantics",
+        shared_memory=shared_mem
+    )
+    print(f"Status: {result2['status']}")
+    print(f"Reused: {result2.get('reused', False)}")
+    if result2.get('reused'):
+        print(f"Prior knowledge: {json.dumps(result2.get('prior_knowledge', {}), indent=2)}")
+
+    # Test 3: Retrieve context
+    print("\n" + "="*70)
+    print("TEST 3: Retrieve Context for Domain")
+    print("="*70)
+    context = retrieve_specialist_context("quantum_blockchain_semantics")
+    print(f"Context: {json.dumps(context, indent=2)}")
+
+    # Test 4: Sovereign Root specialist
+    print("\n" + "="*70)
+    print("TEST 4: Sovereign Root Specialist (Tier 0)")
+    print("="*70)
+    shared_mem['session_context']['node_tier'] = 0
+    result4 = design_agent(
+        goal="Fill epistemic gap in domain: neural_causality",
+        shared_memory=shared_mem,
+        node_tier=0
+    )
+    print(f"Status: {result4['status']}")
+    print(f"Tier: {result4.get('node_tier')}")
+    if result4['status'] == 'success':
+        print(f"Goal includes axioms: {'SOVEREIGN AXIOMS' in result4.get('agent_goal', '')}")
+
+    # Test 5: Normal agent (not epistemic gap)
+    print("\n" + "="*70)
+    print("TEST 5: Normal Agent (Not Epistemic Gap)")
+    print("="*70)
+    shared_mem['session_context']['node_tier'] = 1
+    result5 = design_agent(
+        goal="Create a web scraping assistant",
+        traits={'intelligence': 0.8, 'caution': 0.9},
+        tools=['web_search', 'browse_page' 'code_execution', 'memory',  'windows_mcp'],
+        shared_memory=shared_mem
+    )
+    print(f"Status: {result5['status']}")
+    print(f"Domain: {result5.get('domain')}")
+
+    # Test 6: CAIOSPipeline programmatic
+    print("\n" + "="*70)
+    print("TEST 6: CAIOSPipeline Programmatic")
+    print("="*70)
+    pipeline = CAIOSPipeline()
+    pipeline.add_agent("researcher", domain="plant_pathology")
+    pipeline.add_agent("validator", tools=["cpol", "web_search"])
+    result6 = pipeline.run("Unknown blight detected in sector 7")
+    print(f"Task: {result6['task']}")
+    print(f"Agents run: {result6['agents_run']}")
+    print(f"Architecture: {result6['architecture']}")
+    print(f"CPOL gated: {result6['cpol_gated']}")
+
+    # Test 7: CAIOSPipeline from YAML (only if pyyaml installed)
+    print("\n" + "="*70)
+    print("TEST 7: CAIOSPipeline from YAML")
+    print("="*70)
+    try:
+        pipeline2 = CAIOSPipeline.from_yaml("caios_pipeline.yaml")
+        result7 = pipeline2.run("Identify unknown plant condition")
+        print(f"Agents loaded from YAML: {result7['agents_run']}")
+        print(f"Architecture: {result7['architecture']}")
+    except FileNotFoundError:
+        print("caios_pipeline.yaml not found - skipping YAML test")
+        print("Create caios_pipeline.yaml in project root to test")
+    except ImportError:
+        print("PyYAML not installed - skipping YAML test")
+        print("Run: pip install pyyaml --break-system-packages")
+
+    # Summary
+    print("\n" + "="*70)
+    print("TEST SUITE COMPLETE")
+    print("="*70)
+    print(f"Specialists created: {len(shared_mem.get('specialists', {}))}")
+    print(f"Total layers: {len(shared_mem.get('layers', []))}")
+    print("\n" + "="*70)
+    print("One is glad to be of service.")
+    print("="*70)

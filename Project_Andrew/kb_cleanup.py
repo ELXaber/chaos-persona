@@ -1,4 +1,4 @@
-#V08132026
+#V10142026
 # =============================================================================
 # CAIOS PROJECT ANDREW: CAIOS Knowledge Base Cleanup & Validation Tool
 #
@@ -25,11 +25,10 @@
 import sys
 import json
 import re
-import hashlib
 import shutil
 from pathlib import Path
 from datetime import datetime, timezone
-from typing import List, Dict, Any, Tuple
+from typing import List, Dict, Tuple
 
 KB_DIR          = Path('knowledge_base')
 DISCOVERIES     = KB_DIR / 'discoveries.jsonl'

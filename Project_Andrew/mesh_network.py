@@ -1,4 +1,4 @@
-#V08132026
+#V10142026
 # =============================================================================
 # CAIOS PROJECT ANDREW: Mesh Transport Layer
 # Handles ghost packet broadcasting, 7D signature exchange, node discovery
@@ -238,7 +238,7 @@ class MeshNode:
         self.listener_thread.daemon = True
         self.listener_thread.start()
 
-        print(f"[MESH] Listening for ghost packets...")
+        print("[MESH] Listening for ghost packets...")
 
     def _listen_loop(self, callback_fn: Callable):
         """Background loop for receiving packets."""
@@ -327,7 +327,7 @@ class MeshNode:
         if is_valid:
             print(f"[MESH] ✓ Ghost signature verified: {received_sig}")
         else:
-            print(f"[MESH] ✗ Ghost signature mismatch!")
+            print("[MESH] ✗ Ghost signature mismatch!")
 
         return is_valid
 
@@ -342,7 +342,7 @@ class MeshNode:
 
         # --- QUANTUM SECURITY OVERRIDE ---
         if peer.get('status') == 'BUSY_OSCILLATING' and time_since_last_seen > 25:
-            print(f"[SECURITY] Node {peer_id} Busy-Stall detected. Invalidating current RAW_Q window.")
+            print("[SECURITY] Node {peer_id} Busy-Stall detected. Invalidating current RAW_Q window.")
             self.trigger_emergency_ratchet(peer_id)
 
         return (time.time() - peer['last_seen']) > timeout
@@ -509,7 +509,7 @@ class UDPMeshNode:
         self.socket.close()
 
 # =============================================================================
-# Test Suite 
+# Test Suite
 # =============================================================================
 
 if __name__ == "__main__":
@@ -702,7 +702,7 @@ if __name__ == "__main__":
     print("="*70)
     print(f"ZeroMQ available: {ZMQ_AVAILABLE}")
     print(f"Crypto available: {CRYPTO_AVAILABLE}")
-    print(f"Tests passed: 5/5")
+    print("Tests passed: 5/5")
     print("\n" + "="*70)
     print("One is glad to be of service.")
     print("="*70 + "\n")

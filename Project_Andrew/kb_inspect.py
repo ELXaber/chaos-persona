@@ -1,4 +1,4 @@
-#V08132026
+#V10142026
 # =============================================================================
 # CAIOS PROJECT ANDREW: Knowledge Base Inspector - CLI Tool
 # Usage: python kb_inspect.py [command] [args]
@@ -7,7 +7,6 @@
 
 import sys
 import json
-from pathlib import Path
 from typing import Optional
 import knowledge_base as kb
 from datetime import datetime, timezone

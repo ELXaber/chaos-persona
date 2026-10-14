@@ -1,4 +1,4 @@
-#V08132026
+#V10142026
 # =============================================================================
 # CAIOS PROJECT ANDREW: Master Integration & Sovereign Boot
 # Pre-requisites auto-install from run_caios.bat or run_caios.sh - fallback directions below
@@ -235,7 +235,7 @@ def run_system_diagnostic():
     if choice == 'y':
         MY_NODE_ID = "Alpha_Sovereign"
         MY_TIER = 0
-        print(f"\n[BOOT] Identity confirmed: SOVEREIGN (Primary Oscillator)")
+        print("\n[BOOT] Identity confirmed: SOVEREIGN (Primary Oscillator)")
     else:
         # Fallback for Edge nodes
         import socket

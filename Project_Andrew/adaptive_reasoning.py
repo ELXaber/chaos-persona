@@ -1,4 +1,4 @@
-#V08132026
+#V10142026
 # =============================================================================
 # CAIOS PROJECT ANDREW: Adaptive Reasoning Layer
 # Ethical Foundation; Immutable
@@ -23,7 +23,6 @@ This disclaimer is part of the source code and cannot be removed.
 
 import hashlib
 import ast
-import re
 from datetime import datetime, timezone
 from typing import Dict, List, Any
 from textwrap import dedent
@@ -302,7 +301,7 @@ def verify_ghost_signature(ghost_log_entry: Dict[str, Any], shared_memory: Dict[
     if sig == validation_hash:
         print(f"[ARL] Ghost Signature Verified: {sig} (Phase-Locked)")
         return True
-    print(f"[ARL] !! WARNING !! Ghost Signature Mismatch.")
+    print("[ARL] !! WARNING !! Ghost Signature Mismatch.")
     return False
 
 # =========================================================================

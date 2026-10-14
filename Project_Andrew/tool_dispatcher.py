@@ -1,4 +1,4 @@
-#V09242026
+#V10142026
 # =============================================================================
 # CAIOS PROJECT ANDREW: Tool Dispatcher
 # Intercepts LLM output for structured tool calls and routes them to the
@@ -38,7 +38,7 @@
 import re
 import os
 import json
-from typing import Dict, Any, List, Tuple, Optional
+from typing import Dict, Any, List, Tuple
 from datetime import datetime, timezone
 
 try:

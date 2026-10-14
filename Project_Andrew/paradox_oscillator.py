@@ -1,4 +1,4 @@
-#V10112026
+#V10142026
 # =============================================================================
 # CAIOS PROJECT ANDREW: Paradox Oscillation Layer (CPOL)
 # Copyright (c) 2025 Jonathan Schack. License: GPL-3.0 -See LICENSE for details- Contact: X @el_xaber or cai-os.com
@@ -26,7 +26,7 @@
 #   Empirical: ~350 cycles (validated on GPT)
 #   Formula-derived optimum: ~300 cycles (pre-heat death buffer)
 #   Safe window: inject between 243-350 to prevent heat death
-#   TODO: test 300 vs 350 on Mac Mini/DeepSeek for information loss
+#   TODO: test 300 vs 350 for information loss
 #
 # UNEXPLORED TERRITORY (51-241 cycles):
 #   Validated unnecessary for standard queries
@@ -56,7 +56,6 @@
 
 # Standard Library Imports
 import time
-import cmath
 import math
 import hashlib
 import re
@@ -296,7 +295,6 @@ class CPOL_Kernel:
 
     def _extract_domain(self, text: str) -> str:
         """Enhanced domain classifier with priority for high-stakes areas. General uses LLM to classify domain."""
-        import re
         # Strip stop words before classification
         stop_words = {'this', 'that', 'thats', 'it', 'its', 'the', 'a', 'an', 'is', 'are',
                       'was', 'were', 'what', 'who', 'how', 'why', 'when',

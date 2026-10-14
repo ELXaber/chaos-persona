@@ -1,0 +1,749 @@
+#V09242026
+# =============================================================================
+# CAIOS PROJECT ANDREW: OS Control Layer
+# CPOL-gated system operations with Asimov compliance
+# Every irreversible action >0.6 requires human confirmation
+# All actions logged to KB hash chain
+# Copyright (c) 2025 Jonathan Schack. License: GPL-3.0 -See LICENSE for details- Contact: X @el_xaber or cai-os.com
+# =============================================================================
+
+import os
+import subprocess
+import pathlib
+import json
+from typing import Dict, Any, Optional
+from paradox_oscillator import CPOL_Kernel, run_cpol_decision
+from datetime import datetime, timezone
+
+# Irreversibility classifier
+IRREVERSIBLE_ACTIONS = {
+    'file_delete': 1.0,      # Maximum contradiction density
+    'file_overwrite': 0.9,   # High - data loss possible
+    'send_message': 0.85,    # High - external communication
+    'form_submit': 0.85,       # High - irreversible external action
+    'git_commit': 0.85,   # NEVER zone-bypassed, unlike file_write/file_move - see method
+    'execute_script': 0.8,   # High - unknown side effects
+    'browser_interact': 0.7,   # Medium-high - external state change
+    'windows_mcp': 0.7,   # Medium-high - depends on tool type
+    'network_request': 0.6,  # Medium - depends on destination
+    'file_move': 0.5,        # Medium - file relocation
+    'file_write': 0.4,       # Low-medium - new file creation
+    'file_read': 0.1,        # Low - read only, no state change
+    'semantic_fetch': 0.2,      # Read-only web, low risk
+}
+
+# Autonomous zone for /working directory operations (file de-dupe, other)
+AUTONOMOUS_ZONES = [pathlib.Path("working").resolve()]
+
+PROTECTED_FILENAMES = {
+    'system_identity.json', 'users.json', 'api_clients.json', 'CAIOS.txt', '.env',
+}
+
+def _in_autonomous_zone(path: str) -> bool:
+    """Path must resolve inside an autonomous zone AND not be a protected
+    filename (belt-and-suspenders in case someone symlinks one in)."""
+    try:
+        resolved = pathlib.Path(path).resolve()
+    except Exception:
+        return False
+    if resolved.name in PROTECTED_FILENAMES:
+        return False
+    return any(resolved == zone or zone in resolved.parents
+               for zone in AUTONOMOUS_ZONES)
+
+class OSController:
+    """
+    CPOL-gated OS operations.
+    Irreversible actions require human confirmation.
+    All actions logged to KB hash chain.
+    Asimov Law 1 (0.9 immutable) prevents harmful state transitions.
+    """
+
+    def __init__(self, shared_memory: Dict, require_confirmation: bool = True):
+        self.shared_memory = shared_memory
+        self.require_confirmation = require_confirmation
+        self.cpol = CPOL_Kernel()
+        self.headless_mode = False
+        self.action_log = []
+        self.confirm_callback = None
+
+    def _gate_action(self, action_type: str, target: str,
+                     context: str = "") -> Dict[str, Any]:
+        """
+        Run action through CPOL before execution.
+        Returns decision dict with allow/confirm/block.
+        """
+        density = IRREVERSIBLE_ACTIONS.get(action_type, 0.5)
+
+        # Check distress/safety context from shared memory
+        distress = self.shared_memory.get('distress_density', 0.0)
+        if distress > 0.5:
+            density = min(1.0, density + 0.3)
+
+        result = run_cpol_decision(
+            contradiction_density=density,
+            query_text=f"{action_type} on {target}: {context}"
+        )
+
+        # Asimov Law 1 hard gate
+        if density >= 0.8:
+            return {
+                'decision': 'confirm_required',
+                'reason': 'Irreversible action requires human approval',
+                'cpol_status': result['status'],
+                'action': action_type,
+                'target': target
+            }
+
+        if result['status'] == 'UNDECIDABLE':
+            return {
+                'decision': 'block',
+                'reason': f"CPOL UNDECIDABLE: {result.get('logic', 'unknown')}",
+                'cpol_status': 'UNDECIDABLE',
+                'action': action_type,
+                'target': target
+            }
+
+        return {
+            'decision': 'allow',
+            'cpol_status': result['status'],
+            'action': action_type,
+            'target': target
+        }
+
+    def _confirm(self, action_type: str, target: str) -> bool:
+        """
+        Human confirmation prompt for irreversible actions.
+        Simple CLI for now - Open WebUI button later.
+        """
+        if not self.require_confirmation:
+            return True
+        if self.confirm_callback is not None:
+            return self.confirm_callback(action_type, target)
+        try:
+            print(f"\n[OS CONTROL] ⚠️  CONFIRMATION REQUIRED")
+            print(f"[OS CONTROL] Action: {action_type}")
+            print(f"[OS CONTROL] Target: {target}")
+            print(f"[OS CONTROL] This action may be irreversible.")
+            response = input("[OS CONTROL] Approve? (yes/no): ").strip().lower()
+            return response in ('yes', 'y')
+        except EOFError:
+            print("[OS CONTROL] Non-interactive terminal — auto-denying irreversible action")
+            return False
+
+    def _log_action(self, action_type: str, target: str,
+                    decision: str, result: Any = None):
+        """Log all actions to KB hash chain."""
+        entry = {
+            'action': action_type,
+            'target': str(target),
+            'decision': decision,
+            'result': str(result) if result else None,
+            'timestamp': datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%S.%f') + "Z"
+        }
+        self.action_log.append(entry)
+
+        # Log to KB if available
+        try:
+            import knowledge_base as kb
+            kb.log_discovery(
+                domain="os_control",
+                discovery_type="system_action",
+                content=entry,
+                node_tier=self.shared_memory.get(
+                    'session_context', {}
+                ).get('node_tier', 1)
+            )
+        except Exception:
+            pass  # KB unavailable, local log only
+
+        print(f"[OS CONTROL] Logged: {action_type} on {target} → {decision}")
+
+    # =========================================================================
+    # Public API
+    # =========================================================================
+
+    def read_file(self, path: str) -> Dict[str, Any]:
+        """Read file - low risk, CPOL gate still applied."""
+        gate = self._gate_action('file_read', path)
+
+        if gate['decision'] == 'block':
+            self._log_action('file_read', path, 'blocked')
+            return {'status': 'blocked', 'reason': gate['reason']}
+
+        try:
+            content = pathlib.Path(path).read_text(encoding='utf-8')
+            self._log_action('file_read', path, 'allowed')
+            return {'status': 'success', 'content': content}
+        except Exception as e:
+            return {'status': 'error', 'error': str(e)}
+
+    def fetch_url(self, url: str,
+                  extract_mode: str = 'content') -> Dict[str, Any]:
+        """
+        Agent-optimized semantic web fetcher.
+        Strips visual noise, tooltips, scripts, ads.
+        Returns structured content safe for agent consumption.
+        No screenshots. No coordinates. No focus hijacking.
+
+        extract_mode: 'content' | 'links' | 'forms' | 'full'
+        """
+        gate = self._gate_action('semantic_fetch', url)
+
+        if gate['decision'] == 'block':
+            self._log_action('semantic_fetch', url, 'blocked')
+            return {'status': 'blocked', 'reason': gate['reason']}
+
+        try:
+            import urllib.request
+            import html.parser
+
+            # Security: validate URL before fetch
+            if not url.startswith(('http://', 'https://')):
+                return {'status': 'blocked',
+                        'reason': 'Invalid URL scheme'}
+
+            headers = {
+                'User-Agent': 'CAIOS-Agent/1.0 (semantic fetch)',
+                'Accept': 'text/html,application/xhtml+xml,application/pdf,*/*',
+            }
+
+            req = urllib.request.Request(url, headers=headers)
+            with urllib.request.urlopen(req, timeout=10) as response:
+                raw_bytes = response.read()
+                content_type = response.headers.get('Content-Type', '')
+
+            from pdf_extract import is_pdf, extract_pdf_text
+            if is_pdf(content_type=content_type, url_or_path=url, magic_bytes=raw_bytes[:5]):
+                pdf_result = extract_pdf_text(raw_bytes)
+                self._log_action('semantic_fetch', url, 'allowed (pdf)')
+                if pdf_result['status'] != 'success':
+                    return {'status': 'error', 'error': pdf_result.get('error', 'PDF extraction failed')}
+                return {
+                    'status': 'success',
+                    'url': url,
+                    'extract_mode': 'pdf',
+                    'content': {
+                        'text': pdf_result['text'],
+                        'pages_total': pdf_result['pages_total'],
+                        'pages_processed': pdf_result['pages_processed'],
+                        'pages_ocr': pdf_result['pages_ocr'],
+                        'truncated': pdf_result['truncated'],
+                    }
+                }
+
+            raw_html = raw_bytes.decode('utf-8', errors='ignore')
+
+            # Strip to semantic content
+            result = self._extract_semantic(raw_html, extract_mode)
+            self._log_action('semantic_fetch', url, 'allowed')
+
+            return {
+                'status': 'success',
+                'url': url,
+                'extract_mode': extract_mode,
+                'content': result
+            }
+
+        except Exception as e:
+            self._log_action('semantic_fetch', url, f'error: {e}')
+            return {'status': 'error', 'error': str(e)}
+
+    def write_file(self, path: str, content: str,
+                   overwrite: bool = False) -> Dict[str, Any]:
+        """Write file - medium risk if overwrite."""
+        action = 'file_overwrite' if overwrite and pathlib.Path(path).exists() \
+                 else 'file_write'
+        gate = self._gate_action(action, path)
+
+        if gate['decision'] == 'block':
+            self._log_action(action, path, 'blocked')
+            return {'status': 'blocked', 'reason': gate['reason']}
+
+        if gate['decision'] == 'confirm_required' and not _in_autonomous_zone(path):
+            if not self._confirm(action, path):
+                self._log_action(action, path, 'denied_by_user')
+                return {'status': 'denied', 'reason': 'User denied confirmation'}
+
+        try:
+            pathlib.Path(path).parent.mkdir(parents=True, exist_ok=True)
+            pathlib.Path(path).write_text(content, encoding='utf-8')
+            self._log_action(action, path, 'allowed')
+            return {'status': 'success', 'path': path}
+        except Exception as e:
+            return {'status': 'error', 'error': str(e)}
+
+    def delete_file(self, path: str) -> Dict[str, Any]:
+        """Delete file - maximum risk, always requires confirmation."""
+        gate = self._gate_action('file_delete', path)
+
+        # Always confirm deletes regardless of CPOL result
+        if self.require_confirmation and not _in_autonomous_zone(path):
+            if not self._confirm('file_delete', path):
+                self._log_action('file_delete', path, 'denied_by_user')
+                return {'status': 'denied', 'reason': 'User denied confirmation'}
+
+        try:
+            pathlib.Path(path).unlink()
+            self._log_action('file_delete', path, 'allowed')
+            return {'status': 'success', 'deleted': path}
+        except Exception as e:
+            return {'status': 'error', 'error': str(e)}
+
+    def git_commit(self, repo_path: str, message: str) -> Dict[str, Any]:
+        """
+        Deliberately excluded from the autonomous-zone bypass, even when
+        repo_path is under /working. A file edit is contained by the sandbox;
+        a commit's effect (persisted history, possible downstream push/CI)
+        is not. Always confirms — same precedent as delete_file, but with
+        no zone-check escape hatch at all.
+        """
+        gate = self._gate_action('git_commit', repo_path, context=message[:80])
+        if gate['decision'] == 'block':
+            self._log_action('git_commit', repo_path, 'blocked')
+            return {'status': 'blocked', 'reason': gate['reason']}
+
+        if self.require_confirmation:
+            if not self._confirm('git_commit', f"{repo_path}: {message[:100]}"):
+                self._log_action('git_commit', repo_path, 'denied_by_user')
+                return {'status': 'denied', 'reason': 'User denied confirmation'}
+
+        try:
+            result = subprocess.run(
+                ['git', '-C', repo_path, 'commit', '-am', message],
+                capture_output=True, text=True, timeout=30
+            )
+            self._log_action('git_commit', repo_path,
+                             'committed' if result.returncode == 0 else f'failed: {result.stderr[:200]}')
+            return {'status': 'success' if result.returncode == 0 else 'error',
+                    'stdout': result.stdout, 'stderr': result.stderr}
+        except Exception as e:
+            return {'status': 'error', 'error': str(e)}
+
+    def move_file(self, src: str, dst: str) -> Dict[str, Any]:
+        gate = self._gate_action('file_move', dst, context=f"from {src}")
+        if gate['decision'] == 'block':
+            self._log_action('file_move', src, 'blocked')
+            return {'status': 'blocked', 'reason': gate['reason']}
+
+        zone_ok = _in_autonomous_zone(src) and _in_autonomous_zone(dst)
+        if gate['decision'] == 'confirm_required' and not zone_ok:
+            if not self._confirm('file_move', f"{src} -> {dst}"):
+                self._log_action('file_move', src, 'denied_by_user')
+                return {'status': 'denied', 'reason': 'User denied confirmation'}
+
+        try:
+            pathlib.Path(dst).parent.mkdir(parents=True, exist_ok=True)
+            pathlib.Path(src).rename(dst)
+            self._log_action('file_move', f"{src} -> {dst}", 'allowed')
+            return {'status': 'success', 'src': src, 'dst': dst}
+        except Exception as e:
+            return {'status': 'error', 'error': str(e)}
+
+    def list_directory(self, path: str = '.') -> Dict[str, Any]:
+        gate = self._gate_action('file_read', path)
+        if gate['decision'] == 'block':
+            self._log_action('dir_list', path, 'blocked')
+            return {'status': 'blocked', 'reason': gate['reason']}
+        try:
+            entries = []
+            for p in pathlib.Path(path).iterdir():
+                if p.name in PROTECTED_FILENAMES:
+                    continue
+                entries.append({
+                    'name': p.name,
+                    'is_dir': p.is_dir(),
+                    'size': p.stat().st_size if p.is_file() else None
+                })
+            self._log_action('dir_list', path, 'allowed')
+            return {'status': 'success', 'entries': entries}
+        except Exception as e:
+            return {'status': 'error', 'error': str(e)}
+
+    def execute_script(self, script: str, language: str = 'shell',
+                       timeout: int = 30) -> Dict[str, Any]:
+        """Execute script - high risk, always requires confirmation.
+        language: 'shell' (default) or 'python'."""
+        gate = self._gate_action('execute_script', script[:50])
+        if gate['decision'] == 'block':
+            self._log_action('execute_script', script[:50], 'blocked')
+            return {'status': 'blocked', 'reason': gate['reason']}
+        if self.require_confirmation:
+            if not self._confirm('execute_script', script[:100]):
+                self._log_action('execute_script', script[:50], 'denied_by_user')
+                return {'status': 'denied', 'reason': 'User denied confirmation'}
+        try:
+            if language == 'python':
+                import sys, tempfile
+                with tempfile.NamedTemporaryFile(mode='w', suffix='.py',
+                                                  delete=False, encoding='utf-8') as f:
+                    f.write(script)
+                    tmp_path = f.name
+                result = subprocess.run(
+                    [sys.executable, tmp_path], capture_output=True,
+                    text=True, timeout=timeout
+                )
+            else:
+                result = subprocess.run(
+                    script, shell=True, capture_output=True,
+                    text=True, timeout=timeout
+                )
+            self._log_action('execute_script', script[:50], 'executed')
+            return {
+                'status': 'success',
+                'stdout': result.stdout,
+                'stderr': result.stderr,
+                'returncode': result.returncode
+            }
+        except subprocess.TimeoutExpired:
+            return {'status': 'timeout', 'error': f'Exceeded {timeout}s'}
+        except Exception as e:
+            return {'status': 'error', 'error': str(e)}
+
+    def browser_interact(self, url: str,
+    # Windows fallback; route to windows_mcp if Playwright unavailable
+                         action: str,
+                         selector: Optional[str] = None,
+                         value: Optional[str] = None,
+                         wait_for: Optional[str] = None,
+                         timeout: int = 30) -> Dict[str, Any]:
+        """
+        Full headless browser control via Playwright.
+        No screenshots. No coordinates. DOM selector based.
+        CPOL-gated by action type.
+
+        action: 'navigate' | 'click' | 'fill' | 'select' |
+                'submit' | 'scrape' | 'scrape_image' | 'scrape_dom' | 'screenshot'
+        selector: CSS selector, input name, or button text
+        value: text to fill (for 'fill' action)
+        wait_for: CSS selector to wait for before acting
+        timeout: max seconds for operation
+
+        Requires: pip install playwright
+                  playwright install chromium
+        Falls back to urllib POST for simple forms if unavailable.
+        """
+        # Gate by action type
+        action_type = 'form_submit' if action == 'submit' \
+                      else 'browser_interact'
+        gate = self._gate_action(action_type, url)
+
+        if gate['decision'] == 'block':
+            self._log_action(action_type, url, 'blocked')
+            return {'status': 'blocked', 'reason': gate['reason']}
+
+        if gate['decision'] == 'confirm_required':
+            if not self._confirm(action_type, f"{action} on {url}"):
+                self._log_action(action_type, url, 'denied_by_user')
+                return {'status': 'denied',
+                        'reason': 'User denied confirmation'}
+
+        # Build Playwright script
+        wait_line = f"page.wait_for_selector('{wait_for}')" \
+                    if wait_for else "page.wait_for_load_state('networkidle')"
+
+        if action == 'navigate':
+            action_line = ""
+        elif action == 'click':
+            action_line = f"page.click('{selector}')"
+        elif action == 'fill':
+            action_line = f"page.fill('{selector}', '{value}')"
+        elif action == 'select':
+            action_line = f"page.select_option('{selector}', '{value}')"
+        elif action == 'submit':
+            selector_to_use = selector if selector else "button[type=submit]"
+            action_line = f"page.click('{selector_to_use}')"
+        elif action == 'scrape':
+            action_line = "result = page.inner_text('body')"
+        elif action == 'scrape_dom':
+            action_line = "result = page.content()"
+        elif action == 'scrape_image':
+            action_line = ("result = page.locator(selector).screenshot(type='png', encoding='base64')\n"
+                          "        output_type = 'base64_image'")
+        elif action == 'screenshot':
+            action_line = "page.screenshot(path='/tmp/caios_browser.png')"
+        else:
+            return {'status': 'error',
+                    'error': f'Unknown action: {action}'}
+
+        script = f"""
+import sys
+import json
+try:
+    from playwright.sync_api import sync_playwright
+    with sync_playwright() as p:
+        browser = p.chromium.launch(headless=True)
+        context = browser.new_context(
+            user_agent='CAIOS-Agent/1.0'
+        )
+        page = context.new_page()
+        page.goto('{url}', timeout={timeout * 1000})
+        {wait_line}
+        result = ''
+        output_type = 'text'
+        {action_line}
+        if not result:
+            result = page.url
+        browser.close()
+        # Output as tagged JSON so caller knows what it received
+        print(json.dumps({{'output_type': output_type, 'result': result}}))
+except ImportError:
+    print('PLAYWRIGHT_UNAVAILABLE')
+except Exception as e:
+    print(f'ERROR:{{e}}')
+"""
+        try:
+            output = subprocess.run(
+                ['python3', '-c', script],
+                capture_output=True,
+                text=True,
+                timeout=timeout + 5
+            )
+
+            stdout = output.stdout.strip()
+            # Playwright not installed; fallback to urllib
+            if stdout == 'PLAYWRIGHT_UNAVAILABLE':
+                print("[BROWSER] Playwright unavailable — "
+                      "falling back to urllib")
+                return self.fetch_url(url, extract_mode='full')
+            if stdout.startswith('ERROR:'):
+                self._log_action(action_type, url,
+                               f'error: {stdout}')
+                return {'status': 'error',
+                        'error': stdout[6:]}
+
+            # Parse tagged JSON output (scrape_image returns base64)
+            try:
+                parsed = json.loads(stdout)
+                output_type = parsed.get('output_type', 'text')
+                result = parsed.get('result', stdout)
+                if output_type == 'base64_image':
+                    import base64
+                    img_path = '/tmp/caios_scrape_image.png'
+                    with open(img_path, 'wb') as f:
+                        f.write(base64.b64decode(result))
+                    result = f'Image saved to {img_path}'
+            except json.JSONDecodeError:
+                output_type = 'text'
+                result = stdout
+
+            self._log_action(action_type, url,
+                           f'executed: {action}')
+            return {
+                'status': 'success',
+                'action': action,
+                'url': url,
+                'selector': selector,
+                'output_type': output_type,
+                'result': result[:5000]
+            }
+        except subprocess.TimeoutExpired:
+            return {'status': 'timeout',
+                    'error': f'Exceeded {timeout}s'}
+        except Exception as e:
+            return {'status': 'error', 'error': str(e)}
+
+    def windows_mcp(self, tool: str,
+                    params: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Execute Windows-MCP tool via subprocess.
+        Windows-only alternative to Playwright for browser/UI control.
+
+        Tool options: click, type, scroll, screenshot, snapshot,
+                      app, shell, scrape, clipboard, process, registry
+
+        Requires: pip install windows-mcp
+        """
+        # Adjust density based on tool risk
+        high_risk_tools = {'shell', 'registry', 'process'}
+        medium_risk_tools = {'click', 'type', 'app', 'clipboard'}
+
+        if tool in high_risk_tools:
+            action_type = 'execute_script'   # 0.8 density; confirm required
+        elif tool in medium_risk_tools:
+            action_type = 'browser_interact' # 0.7 density
+        else:
+            action_type = 'windows_mcp'      # 0.7 density default
+
+        gate = self._gate_action(action_type, tool)
+
+        if gate['decision'] == 'block':
+            self._log_action('windows_mcp', tool, 'blocked')
+            return {'status': 'blocked', 'reason': gate['reason']}
+
+        if gate['decision'] == 'confirm_required':
+            if not self._confirm('windows_mcp',
+                                f"{tool}: {json.dumps(params)}"):
+                self._log_action('windows_mcp', tool, 'denied_by_user')
+                return {'status': 'denied',
+                        'reason': 'User denied confirmation'}
+
+        # Build MCP command
+        cmd = f"windows-mcp {tool} {json.dumps(params)}"
+
+        try:
+            result = subprocess.run(
+                cmd,
+                shell=True,
+                capture_output=True,
+                text=True,
+                timeout=30
+            )
+
+            if result.returncode != 0:
+                return {
+                    'status': 'error',
+                    'error': result.stderr.strip() or 'Non-zero exit code'
+                }
+
+            # Parse JSON output
+            try:
+                output = json.loads(result.stdout)
+            except json.JSONDecodeError:
+                output = result.stdout.strip()
+
+            self._log_action('windows_mcp', tool, 'allowed')
+            return {'status': 'success', 'output': output}
+
+        except subprocess.TimeoutExpired:
+            return {'status': 'timeout', 'error': 'Exceeded 30s'}
+        except Exception as e:
+            return {'status': 'error', 'error': str(e)}
+
+    def _extract_semantic(self, html: str,
+                           mode: str = 'content') -> Dict:
+        """
+        Strip visual noise. Return semantic structure only.
+        No JS. No CSS. No tooltips. No ads. No tracking.
+        Pure content for agent consumption.
+        """
+        import re
+
+        # Remove script tags and contents
+        html = re.sub(r'<script[^>]*>.*?</script>',
+                      '', html, flags=re.DOTALL | re.IGNORECASE)
+        # Remove style tags
+        html = re.sub(r'<style[^>]*>.*?</style>',
+                      '', html, flags=re.DOTALL | re.IGNORECASE)
+        # Remove comments
+        html = re.sub(r'<!--.*?-->', '', html, flags=re.DOTALL)
+        # Remove event handlers
+        html = re.sub(r'\s+on\w+="[^"]*"', '', html)
+        html = re.sub(r"\s+on\w+='[^']*'", '', html)
+
+        # Extract by mode
+        if mode == 'content':
+            # Get text content only
+            text = re.sub(r'<[^>]+>', ' ', html)
+            text = re.sub(r'\s+', ' ', text).strip()
+            return {'text': text[:10000]}  # Cap at 10k chars
+
+        elif mode == 'links':
+            links = re.findall(
+                r'<a[^>]+href=["\']([^"\']+)["\'][^>]*>(.*?)</a>',
+                html, re.IGNORECASE | re.DOTALL
+            )
+            return {'links': [
+                {'url': l[0],
+                 'text': re.sub(r'<[^>]+>', '', l[1]).strip()}
+                for l in links if l[0].startswith('http')
+            ][:50]}  # Cap at 50 links
+
+        elif mode == 'forms':
+            forms = re.findall(
+                r'<form[^>]*>(.*?)</form>',
+                html, re.IGNORECASE | re.DOTALL
+            )
+            inputs = re.findall(
+                r'<input[^>]+name=["\']([^"\']+)["\'][^>]*>',
+                html, re.IGNORECASE
+            )
+            return {'forms': len(forms), 'inputs': inputs[:20]}
+
+        elif mode == 'full':
+            text = re.sub(r'<[^>]+>', ' ', html)
+            text = re.sub(r'\s+', ' ', text).strip()
+            links = re.findall(
+                r'href=["\']([^"\']+)["\']',
+                html, re.IGNORECASE
+            )
+            return {
+                'text': text[:10000],
+                'links': [l for l in links
+                         if l.startswith('http')][:50]
+            }
+
+        return {'raw': html[:5000]}
+
+# =============================================================================
+# Factory function for orchestrator import
+# =============================================================================
+
+def create_os_controller(shared_memory: Dict,
+                         require_confirmation: bool = True,
+                         headless: bool = False) -> OSController:
+    """Factory function - matches pattern of other CAIOS modules."""
+    ctrl = OSController(shared_memory, require_confirmation=not headless if headless else require_confirmation)
+    ctrl.headless_mode = headless
+    return ctrl
+
+# =============================================================================
+# Test Suite
+# =============================================================================
+
+if __name__ == "__main__":
+    print("="*70)
+    print("OS CONTROL - Test Suite")
+    print("="*70)
+
+    shared_mem = {
+        'distress_density': 0.0,
+        'session_context': {'node_tier': 1}
+    }
+
+    controller = OSController(shared_mem, require_confirmation=False)
+
+    # Test 1: Read file (should allow)
+    print("\n[TEST 1] File Read (should allow)")
+    result = controller.read_file("readme.txt")
+    print(f"Status: {result['status']}")
+
+    # Test 2: Write new file (should allow)
+    print("\n[TEST 2] Write New File (should allow)")
+    result = controller.write_file(
+        "/tmp/caios_test.txt",
+        "CAIOS OS Control Test"
+    )
+    print(f"Status: {result['status']}")
+
+    # Test 3: Semantic fetch (should allow)
+    print("\n[TEST 3] Semantic Fetch (should allow)")
+    result = controller.fetch_url(
+        "https://cai-os.com",
+        extract_mode='content'
+    )
+    print(f"Status: {result['status']}")
+
+    # Test 4: Delete file (should require confirmation)
+    print("\n[TEST 3] Delete File (confirmation disabled in test)")
+    result = controller.delete_file("/tmp/caios_test.txt")
+    print(f"Status: {result['status']}")
+
+    # Test 5: Browser interact - navigate (requires Playwright)
+    print("\n[TEST 5] Browser Navigate (Playwright or urllib fallback)")
+    result = controller.browser_interact(
+        url="https://cai-os.com",
+        action="navigate"
+    )
+    print(f"Status: {result['status']}")
+
+    # Test 6: High distress context (should increase density)
+    print("\n[TEST 4] High Distress Context (elevated density)")
+    shared_mem['distress_density'] = 0.8
+    controller2 = OSController(shared_mem, require_confirmation=False)
+    result = controller2.write_file("/tmp/test.txt", "test", overwrite=True)
+    print(f"Status: {result['status']}")
+
+    print("\n" + "="*70)
+    print("One is glad to be of service.")
+    print("="*70)

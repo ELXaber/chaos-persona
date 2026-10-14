@@ -1,4 +1,4 @@
-#V09042026
+#V10142026
 # =============================================================================
 # CAIOS PROJECT ANDREW: Web Bridge
 # Flask server that connects caios_chat_ui.html to the existing orchestrator/caios_chat.py stack.
@@ -10,7 +10,6 @@
 # =============================================================================
 
 import os
-import sys
 import json
 import time
 import hashlib
@@ -28,6 +27,7 @@ from typing import Dict, Optional, Any
 import faulthandler
 faulthandler.enable()
 
+# Flask optional use
 from flask import (
     Flask, request, jsonify, send_file,
     Response, stream_with_context

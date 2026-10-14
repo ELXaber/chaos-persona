@@ -1,4 +1,4 @@
-#V09242026
+#V10142026
 # =============================================================================
 # CAIOS PROJECT ANDREW: OS Control Layer
 # CPOL-gated system operations with Asimov compliance
@@ -7,7 +7,6 @@
 # Copyright (c) 2025 Jonathan Schack. License: GPL-3.0 -See LICENSE for details- Contact: X @el_xaber or cai-os.com
 # =============================================================================
 
-import os
 import subprocess
 import pathlib
 import json
@@ -121,10 +120,10 @@ class OSController:
         if self.confirm_callback is not None:
             return self.confirm_callback(action_type, target)
         try:
-            print(f"\n[OS CONTROL] ⚠️  CONFIRMATION REQUIRED")
-            print(f"[OS CONTROL] Action: {action_type}")
-            print(f"[OS CONTROL] Target: {target}")
-            print(f"[OS CONTROL] This action may be irreversible.")
+            print("\n[OS CONTROL] ⚠️  CONFIRMATION REQUIRED")
+            print("[OS CONTROL] Action: {action_type}")
+            print("[OS CONTROL] Target: {target}")
+            print("[OS CONTROL] This action may be irreversible.")
             response = input("[OS CONTROL] Approve? (yes/no): ").strip().lower()
             return response in ('yes', 'y')
         except EOFError:
