@@ -7,9 +7,11 @@
 # Copyright (c) 2025 Jonathan Schack. License: GPL-3.0 -See LICENSE for details- Contact: X @el_xaber or cai-os.com
 # =============================================================================
 
+import os
 import subprocess
 import pathlib
 import json
+import tempfile
 from typing import Dict, Any, Optional
 from paradox_oscillator import CPOL_Kernel, run_cpol_decision
 from datetime import datetime, timezone
@@ -460,7 +462,7 @@ class OSController:
             action_line = ("result = page.locator(selector).screenshot(type='png', encoding='base64')\n"
                           "        output_type = 'base64_image'")
         elif action == 'screenshot':
-            action_line = "page.screenshot(path='/tmp/caios_browser.png')"
+            action_line = "page.screenshot(path=os.path.join(tempfile.gettempdir(), 'caios_browser.png'))"
         else:
             return {'status': 'error',
                     'error': f'Unknown action: {action}'}
@@ -518,7 +520,7 @@ except Exception as e:
                 result = parsed.get('result', stdout)
                 if output_type == 'base64_image':
                     import base64
-                    img_path = '/tmp/caios_scrape_image.png'
+                    img_path = os.path.join(tempfile.gettempdir(), 'caios_scrape_image.png')
                     with open(img_path, 'wb') as f:
                         f.write(base64.b64decode(result))
                     result = f'Image saved to {img_path}'
