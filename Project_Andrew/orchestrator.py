@@ -1,4 +1,4 @@
-#V10092026
+#V10142026
 # =============================================================================
 # CAIOS PROJECT ANDREW: Hardened Orchestrator
 # This acts as the central nervous system connecting everything
@@ -866,6 +866,8 @@ def system_step(user_input: str, prompt_complexity: str = "low",
             )
             return {'status': 'AGENT_DEPLOYED' if result['status'] == 'success' else 'ERROR',
                     'output': f"Specialist '{role}' for domain '{domain_arg}': {result.get('log', result)}"}
+        if user_input.lower().startswith('/personality'):
+            return handle_personality_command(user_input)
         cmd_result = handle_axiom_commands(user_input)
         if cmd_result['status'] != 'ERROR' or 'axiom' in user_input.lower():
             return cmd_result
@@ -1436,6 +1438,7 @@ def system_step(user_input: str, prompt_complexity: str = "low",
                 f"[ABSTRACTION_LEVEL {level_name}]\n"
                 f"[STYLE: {style_prompt}]\n"
                 f"[INSTRUCTION: Do NOT pre-translate or adopt a persona. Respond in plain technical prose. The abstraction layer will translate your output automatically.]\n"
+                f"[PERSONALITY {' '.join(f'{k}={v:.2f}' for k, v in shared_memory.get('personality_weights', {}).items())}]\n"
                 f"{kb_context}"
                 f"{axiom_context}"
                 f"{vision_context}"
@@ -1602,6 +1605,23 @@ def system_step(user_input: str, prompt_complexity: str = "low",
         except Exception:
             pass
 
+    if USER_KB_AVAILABLE and shared_memory.get('user_profile_kb'):
+        try:
+            from user_profile_kb import infer_trait_deltas, parse_trait_command
+            upkb = shared_memory['user_profile_kb']
+            uid = shared_memory.get('active_user', 'default')
+            cur = upkb['load'](uid)['personality']
+            deltas = parse_trait_command(user_input, cur) or infer_trait_deltas(
+                user_input, shared_memory.get('distress_density', 0.0), cur,
+                cpol_result.get('domain'))
+            if deltas:
+                upkb['update_personality'](uid, deltas, reason='auto')
+            prof = upkb['load'](uid)
+            shared_memory['personality_weights'] = prof['personality']
+            shared_memory['neurosymbolic'] = prof['neurosymbolic']   # feeds _estimate_expertise
+        except Exception as e:
+            print(f"[USER_KB] Trait adaptation skipped: {e}")
+
     return cpol_result
 
 # =============================================================================
@@ -1672,6 +1692,33 @@ def handle_axiom_commands(command: str) -> dict:
             'output': f'Unknown axiom command: {command}'
         }
 
+def handle_personality_command(command: str) -> dict:
+    """/personality                -> show current weights
+       /personality <trait> <0-9>  -> set trait (0-9 scale, stored as 0.0-0.9)"""
+    upkb = shared_memory.get('user_profile_kb')
+    if not upkb:
+        return {'status': 'ERROR', 'output': 'User profile KB not available'}
+
+    uid = shared_memory.get('active_user', 'default')
+    current = upkb['load'](uid)['personality']
+    parts = command.split()
+
+    if len(parts) == 1:
+        lines = [f"• {t}: {v:.1f}" for t, v in sorted(current.items())]
+        return {'status': 'SUCCESS', 'output': "Current personality weights:\n" + "\n".join(lines)}
+
+    from user_profile_kb import parse_trait_command
+    deltas = parse_trait_command(command, current)
+    if not deltas:
+        return {'status': 'ERROR',
+                'output': f"Usage: /personality <trait> <0-9>\nTraits: {', '.join(current)}"}
+
+    upkb['update_personality'](uid, deltas, reason='command')
+    new = upkb['load'](uid)['personality']
+    shared_memory['personality_weights'] = new
+    trait = next(iter(deltas))
+    return {'status': 'SUCCESS', 'output': f"✓ {trait} set to {new[trait]:.1f}"}
+
 # =============================================================================
 # Test Suite
 # =============================================================================
@@ -1709,7 +1756,7 @@ if __name__ == "__main__":
 
     # 3. Prepare Shared Memory with Identity Info
     shared_memory['cpol_instance'] = kernel
-    shared_memory['system_identity'] = identity.identity_data # Store the full ID map
+    shared_memory['system_identity'] = identity
 
     # Display system capabilities
     print("\n[SYSTEM CAPABILITIES]")

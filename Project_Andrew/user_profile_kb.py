@@ -1,10 +1,11 @@
-#V08192026
+#V10142026
 # =============================================================================
 # CAIOS PROJECT ANDREW: User Profile Knowledge Base
 # Stores per-user personality state, emotional baselines, abstraction level, and preferences
 # Copyright (c) 2025 Jonathan Schack. License: GPL-3.0 -See LICENSE for details- Contact: X @el_xaber or cai-os.com
 # =============================================================================
 
+import re
 import json
 import hashlib
 from pathlib import Path
@@ -13,6 +14,16 @@ from typing import Dict, Any, Optional
 
 USER_PROFILES_DIR = Path("knowledge_base/user_profiles")
 USER_PROFILES_DIR.mkdir(parents=True, exist_ok=True)
+
+PERSONALITY_BASELINE = {'friendly':0.5,'kind':0.5,'caring':0.5,'emotional':0.3,'funny':0.5,
+    'professional':0.7,'talkative':0.5,'snarky':0.3,'witty':0.4,'flirtatious':0.2,'romantic':0.2}
+DOWN_ONLY = {'flirtatious', 'romantic', 'snarky'}   # inference can lower, never raise
+
+_TONE_COMPLAINT = re.compile(
+    r"\b(too (flirty|romantic|sassy|snarky|chatty|wordy)|stop (flirting|joking)|"
+    r"be (more )?(serious|professional|formal))\b", re.I)
+_TRAIT_CMD = re.compile(
+    r"(?:/personality\s+|\b(?:increase|decrease|set|adjust)\s+)(\w+)\s+(?:to\s+)?(\d)\b", re.I)
 
 def _profile_path(user_id: str) -> Path:
     safe_id = hashlib.sha256(user_id.encode()).hexdigest()[:16]
@@ -69,6 +80,37 @@ def get_complaint_state(user_id: str) -> dict:
         'complaint_count': profile.get('complaint_count', 0),
         'persistent_complainer': profile.get('persistent_complainer', False)
     }
+
+def infer_trait_deltas(user_input, distress, current, domain=None):
+    d = {}
+    m = _TONE_COMPLAINT.search(user_input)
+    if m:
+        w = m.group(0).lower()
+        if 'flirt' in w:                 d['flirtatious'] = -0.1
+        if 'romantic' in w:              d['romantic'] = -0.1
+        if 'sass' in w or 'snark' in w or 'joking' in w: d['snarky'] = -0.1; d['funny'] = -0.05
+        if 'chatty' in w or 'wordy' in w: d['talkative'] = -0.1
+        if 'serious' in w or 'professional' in w or 'formal' in w: d['professional'] = 0.1
+    if distress > 0.4:                   # back off during distress
+        for t in DOWN_ONLY: d[t] = d.get(t, 0) - 0.05
+    if distress > 0.6 and current.get('professional', 0.7) < 0.7:
+        d['professional'] = d.get('professional', 0) + 0.1
+    if domain in ('medical', 'legal', 'financial'):
+        for t in DOWN_ONLY: d[t] = d.get(t, 0) - 0.02
+    # slow decay toward baseline if not reinforced
+    for t in DOWN_ONLY:
+        if t not in d and current.get(t, 0) > PERSONALITY_BASELINE[t]:
+            d[t] = -0.02
+    return {t: max(-0.1, min(0.1, v)) for t, v in d.items()
+            if not (t in DOWN_ONLY and v > 0)}
+
+def parse_trait_command(text, current):
+    """'increase friendly to 6' / '/personality snarky 3' -> {trait: delta} on the 0-9 scale."""
+    m = _TRAIT_CMD.search(text)
+    if m and m.group(1).lower() in current:
+        t = m.group(1).lower()
+        return {t: int(m.group(2)) / 10 - current[t]}
+    return {}
 
 def _default_profile(user_id: str) -> Dict[str, Any]:
     """Default profile — system learns from here."""
@@ -220,7 +262,6 @@ def update_personality_weights(
         if trait in profile['personality']:
             old = profile['personality'][trait]
             profile['personality'][trait] = max(0.0, min(0.9, old + delta))
-    profile['session_count'] += 1
     save_user_profile(user_id, profile)
     print(f"[USER_KB] Personality updated for {user_id}: {reason}")
 

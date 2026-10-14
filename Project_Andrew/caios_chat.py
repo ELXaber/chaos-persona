@@ -1,4 +1,4 @@
-#V08132026
+#V10142026
 # =========================================================================
 # CAIOS PROJECT ANDREW: Inference Wrapper
 # Simple interactive chat that uses CAIOS.txt as the system prompt and any model client initialized by master_init.py
@@ -371,11 +371,14 @@ try:
         '/gearbox', '/lock L0', '/lock L1', '/lock L2', '/lock L3',
         '/mungo-stats', '/invert_idx',
         # Knowledge
-        '/axioms', '/axiom_add', '/axiom_refresh', '/rotate axioms',
+        '/axioms', '/axiom_add', '/axiom_refresh', '/rotate axioms', 'axiom_stats',
+        '/kb_sweep', '/kb_validate', '/kb_purge', '/kb_list_bad',
         # Agents
         '/design_agent', '/regen_raw_q',
         # System
-        '/whoami', '/mesh', 'exit', 'quit'
+        '/whoami', '/mesh', 'exit', 'quit',
+        # Personality
+        '/personality'
     ]
 
     def completer(text, state):
