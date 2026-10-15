@@ -1,4 +1,4 @@
-#V10102026
+#V10142026
 Chaos AI-OS (CAIOS)
 Copyright (c) 2025 Jonathan Schack (X @el_xaber) jon@cai-os.com
 
@@ -11,6 +11,7 @@ The intent is for open-source use by adults, free for individuals, families, aca
 
 Quickstart see SETUP.md
 The run_caios.bt or .sh will install all of the dependencies including Python or MCP, you only need to manually download Ollama.
+If you've already installed and run CAIOS and are wondering why it behaves differently from other local LLMs, you're in the right place. If you haven't run it yet, SETUP.md is the place to start.
 
 ### Chaos AI-OS Light vΩ (Single-File Demo)
 Want to test the full post-binary stack without installing anything?
