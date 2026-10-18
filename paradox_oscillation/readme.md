@@ -1,5 +1,8 @@
 **Chaos and contradiction, when structurally managed, become the source of stability and information integrity.**
 
+The theory was based on a revision of non-Hermitian mechanics: ψ/∂t = (−iħ/2m)(∂²ψ/∂y² + ∂²ψ/∂z²) + Vψ
+Physics reference that partly validates the theory: https://www.sciencedaily.com/releases/2026/03/260321012705.htm
+
 Chaos AI-OS Paradox Oscillation Layer (CPOL)
 A Computational Metaphor for Accelerated Paradox Resolution and Hallucination Reduction in LLMs
 Whitepaper Draft v1.0 — Prepared for Patent Sub-Filing Under Chaos AI-OS
