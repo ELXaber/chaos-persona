@@ -1,5 +1,9 @@
 **Chaos and contradiction, when structurally managed, become the source of stability and information integrity.**
 
+The theory was based on a revision of non-Hermitian mechanics: ψ/∂t = (−iħ/2m)(∂²ψ/∂y² + ∂²ψ/∂z²) + Vψ
+
+The 12D manifold isn't a metaphor. Here is the 48-dimensional topology of quantum light discovered in 2026. The CPOL kernel is the software implementation of this geometry: https://www.sciencedaily.com/releases/2026/03/260321012705.htm
+
 Chaos AI-OS Paradox Oscillation Layer (CPOL)
 A Computational Metaphor for Accelerated Paradox Resolution and Hallucination Reduction in LLMs
 Whitepaper Draft v1.0 — Prepared for Patent Sub-Filing Under Chaos AI-OS
