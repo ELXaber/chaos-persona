@@ -1,4 +1,4 @@
-#V10112026
+#V10212026
 # =============================================================================
 # Chaos AI-OS Paradox Oscillation Layer (CPOL with gating and modes).
 # Copyright (c) 2025 Jonathan Schack (EL_Xaber) jon@cai-os.com
@@ -520,6 +520,15 @@ class CPOL_Kernel:
                     continue
 
                 verdict = "TRUE" if real > 0.5 else "FALSE" if real < -0.5 else "NEUTRAL"
+
+                # Epistemic-gap lock: NEUTRAL in a domain the system has no map of means
+                # "unknown", not "balanced". Without this, any density < 0.4 collapses
+                # (vol = variance + 0.1*density < 0.04) before 'epistemic_gap' can ever be
+                # emitted, so the taxonomy entry was unreachable. Type it instead.
+                if (verdict == "NEUTRAL" and self.new_domain_detected
+                        and self.contradiction_density < 0.4):
+                    self.is_oscillating = False
+                    return self._undecidable_result()
                 self.is_oscillating = False
                 return {
                     "status": "RESOLVED",
@@ -543,21 +552,8 @@ class CPOL_Kernel:
                 break
 
         # === UNDECIDABLE PATH - PROPER CLASSIFICATION ===
-        classification = self._classify_non_collapse()
         self.is_oscillating = False
-
-        return {
-            "status": "UNDECIDABLE",
-            "logic": classification["logic"],
-            "volatility": classification["volatility"],
-            "sync_required": classification["sync_required"],
-            "signature": f"0x{hashlib.sha256(str(self.z).encode()).hexdigest()[:8]}",
-            "domain": self.current_domain,
-            "final_z": str(self.z),
-            "evidence_score": self.evidence_score,
-            "new_domain": self.new_domain_detected,
-            "chaos_lock": True
-        }
+        return self._undecidable_result()
 
  #   def ratchet(self) -> int:
         """
@@ -571,6 +567,22 @@ class CPOL_Kernel:
 #        # Reset history but preserve contradiction density
 #        self.history = [self.z]
 #        self.cycle = 0
+
+    def _undecidable_result(self) -> Dict[str, Any]:
+        """Shared UNDECIDABLE exit (cycle exhaustion or epistemic-gap lock)."""
+        classification = self._classify_non_collapse()
+        return {
+            "status": "UNDECIDABLE",
+            "logic": classification["logic"],
+            "volatility": classification["volatility"],
+            "sync_required": classification["sync_required"],
+            "signature": f"0x{hashlib.sha256(str(self.z).encode()).hexdigest()[:8]}",
+            "domain": self.current_domain,
+            "final_z": str(self.z),
+            "evidence_score": self.evidence_score,
+            "new_domain": self.new_domain_detected,
+            "chaos_lock": True
+        }
 
     def _classify_non_collapse(self) -> Dict[str, Any]:
         """
@@ -689,6 +701,63 @@ def run_cpol_chatbot(query_text: str,
     result['needs_clarification'] = result.get('logic') == 'structural_noise'
 
     return result
+
+
+def run_cpol_llm_classified(query_text: str,
+                            contradiction_density: float,
+                            domain: str,
+                            evidence_score: float,
+                            axiom_absent: bool = False,
+                            rationale: Optional[Dict[str, str]] = None,
+                            session_state: Optional[Dict] = None) -> Dict[str, Any]:
+    """
+    Entry point for deployments where the LLM is the classifier (see [LLM_CLASSIFIER]
+    in CPOL_Inference.txt). The kernel stays vocabulary-free: the caller supplies the four
+    inputs it cannot derive itself, and they are echoed back in result['classifier'] so
+    every verdict carries its own disclosure.
+    """
+    if session_state is not None and 'cpol_kernel' in session_state:
+        kernel = session_state['cpol_kernel']
+    else:
+        kernel = CPOL_Kernel()
+        if session_state is not None:
+            session_state['cpol_kernel'] = kernel
+    shared = session_state if session_state is not None else {'distress_density': 0.0}
+
+    density = max(0.0, min(1.0, contradiction_density))
+    kernel.inject(confidence=0.0, contradiction_density=density,
+                  query_text=query_text, shared_memory=shared)
+    kernel.current_domain = domain                      # LLM label wins over keyword lookup
+    kernel.new_domain_detected = domain not in KNOWN_DOMAINS and domain != "general"
+    kernel.evidence_score = max(0.0, min(1.0, evidence_score))
+    kernel.axiom_verified_absent = bool(axiom_absent)
+
+    result = kernel.oscillate()
+    result['classifier'] = {
+        'source': 'llm',
+        'contradiction_density': density,
+        'domain': domain,
+        'evidence_score': kernel.evidence_score,
+        'axiom_absent': bool(axiom_absent),
+        'rationale': rationale or {},
+    }
+    result['suggested_tone'] = get_tone_from_result(result)
+    result['should_hedge'] = result['volatility'] > 0.6
+    result['needs_clarification'] = result.get('logic') in ('structural_noise', 'ontological_error')
+    return result
+
+
+def cpol_sensitivity_band(query_text: str, domain: str, evidence_score: float,
+                          axiom_absent: bool = False,
+                          densities=(0.1, 0.3, 0.39, 0.4, 0.6, 0.85, 0.9)) -> List[Dict[str, Any]]:
+    """Re-run the kernel across density values (fresh kernel each) so the report can show
+    where the outcome flips. Disclosure aid: the LLM's density judgment is an input."""
+    band = []
+    for d in densities:
+        r = run_cpol_llm_classified(query_text, d, domain, evidence_score, axiom_absent)
+        band.append({'density': d, 'status': r['status'],
+                     'outcome': r.get('verdict') or r.get('logic')})
+    return band
 
 
 def cpol_guided_response(query: str, cpol_result: Dict) -> Dict[str, Any]:
@@ -860,6 +929,19 @@ if __name__ == "__main__":
     # called here, so history will show just that one entry, not a full run
     print(f"  Test 7 history ({len(kernel.history)} entries): {kernel.history}")
     print(f"  Test 7 final z (kernel.z, live attribute): {kernel.z}")
+
+    # Test 8: Epistemic gap via LLM-supplied classification. Same density and evidence,
+    # new domain vs known domain: the new domain must type as epistemic_gap, the known
+    # domain must still resolve NEUTRAL (no regression).
+    print("\n[TEST 8] Epistemic Gap (LLM-supplied classification):")
+    gap = run_cpol_llm_classified("Is AI conscious or self-aware?", 0.35,
+                                  "philosophy_of_mind", 0.4, False,
+                                  rationale={'density': 'no logical contradiction; terms underdefined'})
+    ctl = run_cpol_llm_classified("Is AI conscious or self-aware?", 0.35, "logic", 0.4, False)
+    print(f"  New domain   -> {gap['status']} / {gap.get('logic')} / tone={gap['suggested_tone']}")
+    print(f"  Known domain -> {ctl['status']} / {ctl.get('verdict')}")
+    print(f"  Gap typed correctly: {gap['status'] == 'UNDECIDABLE' and gap.get('logic') == 'epistemic_gap'}")
+    print(f"  Control unchanged:   {ctl['status'] == 'RESOLVED' and ctl.get('verdict') == 'NEUTRAL'}")
 
     print("\n" + "="*70)
     print("One is glad to be of service.")

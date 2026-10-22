@@ -676,7 +676,6 @@ Hardware / Model Sizing:
 - 16 GB RAM + 12 GB VRAM → 16B models (sovereign capable, CAIOS.txt fits in 16k ctx)
 - 32 GB RAM + 24 GB VRAM → 27B–32B models (recommended for sovereign node)
 Recommended: Qwen3 16B or DeepSeek-R1 14B on 12 GB VRAM for home sovereign.
-Note: WSL2 is NOT required on Windows — Ollama has a native Windows build.
 
 ===================================================
 

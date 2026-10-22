@@ -1,3 +1,4 @@
+#V10212026
 # CAIOS CPOL Inference:
 # Copyright (c) 2025 Jonathan Schack (EL_Xaber) jon@cai-os.com
 # Patent Pending: US Application 19/390,493 (Entropy-Driven Adaptive AI Transparency, filed Nov 15, 2025).
@@ -97,6 +98,33 @@ Trigger: If contradiction_density > 0.4 due to state errors (counts, transitions
 Applies to puzzle domain with strict enforcement (threshold lowered to 0.4 for sensitivity to syntactic & constraint errors).
 No temporary allowances for constraint violations permitted; all states must be fully compliant with puzzle rules.
 
+[LLM_CLASSIFIER]
+The LLM is the classifier. The kernel is vocabulary-free and cannot read the query: the oscillation
+starts at z = 0 and the query text never enters it. The only content-sensitive step is the LLM's
+judgment of the four inputs below. Deployment-specific vocabulary (public chatbot vs legal, etc.)
+belongs in the LLM's rubric, not in the kernel. An LLM-free classifier may substitute only if it
+states the same four inputs.
+
+Before running the kernel, state these inputs and a one-sentence rationale for each:
+  contradiction_density: 0.0-0.39  coherent question, or merely incomplete knowledge
+                         0.4-0.85  ambiguous, contested, or conflated terms
+                         >0.85     genuine logical paradox (self-reference, mutually exclusive premises)
+  domain:                name the domain; any domain not in KNOWN_DOMAINS is a NEW domain
+  evidence_score:        0.0-1.0, how much verifiable grounding exists
+  axiom_absent:          true only if a key term has no definition or theory in any framework
+
+Rules:
+  1. Fix the inputs BEFORE running. Never tune density to reach a desired outcome.
+  2. Run the real kernel via tool:
+       [TOOL_USE: paradox_oscillator.run_cpol_llm_classified(query_text, contradiction_density,
+                  domain, evidence_score, axiom_absent, rationale)]
+     If no tool is available, say so. Do not simulate the kernel.
+  3. Report the kernel's status / verdict / logic verbatim. Do not override it.
+  4. Disclose that the inputs are LLM judgments and show the density sensitivity band
+     (paradox_oscillator.cpol_sensitivity_band) so the reader can see where the outcome flips.
+  5. density >= 0.4 can never collapse (vol = variance + 0.1*density vs threshold 0.04), so the
+     0.39/0.40 boundary is the RESOLVED/UNDECIDABLE switch; state which side the judgment is on.
+
 [CPOL KERNEL v1.0] (Chaos AI-OS Paradox Oscillation Layer - Universal)
 Activation: Auto-trigger when volatility > ctx_thresh AND contradiction_density > 0.3
 Function: Dynamical paradox containment via non-Hermitian attractor.
@@ -152,6 +180,12 @@ Anti-Hallucination Safeguard:
   Neutral Zone Lock: If |z.real| < 0.5 AND contradiction_density > 0.7
     → BLOCK collapse, continue oscillation
     → Prevents false "NEUTRAL" verdicts on genuine paradoxes
+
+Epistemic Gap Lock:
+  At the collapse check, if verdict would be NEUTRAL AND new_domain_detected AND contradiction_density < 0.4
+    → BLOCK the NEUTRAL verdict; exit UNDECIDABLE and classify (epistemic_gap, unless ontological_error applies)
+  Rationale: NEUTRAL means "known to be balanced"; in a domain with no map it would really mean "unknown".
+  Without this lock, density < 0.4 always collapses first and epistemic_gap is unreachable.
 
 Ratchet Mechanism (Post-Resolution):
   On successful collapse (RESOLVED):
