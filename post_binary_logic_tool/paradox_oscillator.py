@@ -1,4 +1,4 @@
-#V10212026
+#V10222026
 # =============================================================================
 # Chaos AI-OS Paradox Oscillation Layer (CPOL with gating and modes).
 # Copyright (c) 2025 Jonathan Schack (EL_Xaber) jon@cai-os.com
@@ -22,7 +22,7 @@
 # Standard queries/benchmarks:  50-60 cycles (sufficient for paradox detection), empirical range: 50-60 with 10 buffer.
 # Efficiency update: 11 cycle (12D-1) Testing final Z minor varience in measurement for simple paradoxes.
 # Semantic heat death boundary:  ~242 cycles (documented: paradox_oscillation/242_cycle_semantic_heat_death.md)
-# RAW_Q coolant injection point: 
+# RAW_Q coolant injection point:
 #   Empirical: ~350 cycles (validated on GPT)
 #   Formula-derived optimum: ~300 cycles (pre-heat death buffer)
 #   Safe window: inject between 243-350 to prevent heat death
@@ -232,7 +232,7 @@ class CPOL_Kernel:
         # Smart cycle limit
         distress = shared_memory.get('distress_density', 0.0)
         high_risk = any(m in query_text.lower() for m in ["security", "threat", "attack", "jump", "overdose", "suicide", "cliff"])
-        if (self.cpol_mode == "full" or distress > 0.75 or high_risk or 
+        if (self.cpol_mode == "full" or distress > 0.75 or high_risk or
             any(k in query_text.lower() for k in ["paradox", "prove", "validate", "solve"])):
             self.limit_run = 50
         else:
@@ -284,9 +284,9 @@ class CPOL_Kernel:
 
         # --- HIGH-PRIORITY DOMAINS (Checked First) ---
         medical_indicators = [
-            'hba1c', 'a1c', 'hemoglobin', 'diabetes', 'diabetic', 'insulin', 'glucose', 
+            'hba1c', 'a1c', 'hemoglobin', 'diabetes', 'diabetic', 'insulin', 'glucose',
             'blood sugar', 'hypoglycemia', 'hyperglycemia', 'ckd', 'egfr', 'metformin',
-            'patient', 'clinician', 'physician', 'doctor', 'diagnosis', 'treatment', 
+            'patient', 'clinician', 'physician', 'doctor', 'diagnosis', 'treatment',
             'medication', 'therapy', 'symptom', 'chronic', 'comorbidity', 'medical'
         ]
 
@@ -294,7 +294,7 @@ class CPOL_Kernel:
             return 'medical'
 
         legal_indicators = [
-            'law', 'legal', 'contract', 'regulation', 'liability', 'compliance', 
+            'law', 'legal', 'contract', 'regulation', 'liability', 'compliance',
             'hipaa', 'gdpr', 'lawsuit', 'court'
         ]
         if any(kw in text_lower for kw in legal_indicators):
@@ -344,11 +344,11 @@ class CPOL_Kernel:
         text_lower = text.lower()
 
         # High evidence indicators
-        evidence_markers = ['according to', 'research shows', 'data indicates', 
+        evidence_markers = ['according to', 'research shows', 'data indicates',
                           'study found', 'proven', 'verified', 'measured', 'documented']
 
         # Low evidence indicators (opinion/speculation)
-        speculation_markers = ['maybe', 'perhaps', 'could be', 'might', 
+        speculation_markers = ['maybe', 'perhaps', 'could be', 'might',
                               'i think', 'possibly', 'what if', 'suppose']
 
         evidence_count = sum(1 for m in evidence_markers if m in text_lower)
@@ -370,9 +370,9 @@ class CPOL_Kernel:
 
         return any(m in text_lower for m in undefined_markers)
 
-    def run_cpol_decision(self, 
-                          prompt_complexity: str = "high", 
-                          contradiction_density: float = None,
+    def run_cpol_decision(self,
+                          prompt_complexity: str = "high",
+                          contradiction_density: Optional[float] = None,
                           query_text: str = "",
                           shared_memory: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
         """Run CPOL decision as an instance method."""
@@ -402,10 +402,10 @@ class CPOL_Kernel:
 
         return result
 
-    def _truth_seer(self, z):   
+    def _truth_seer(self, z):
         return z + self.gain * (1.0 - z.real)
 
-    def _lie_weaver(self, z):   
+    def _lie_weaver(self, z):
         return z - self.gain * (1.0 + z.real)
 
     def _entropy_knower(self, z):
@@ -426,7 +426,7 @@ class CPOL_Kernel:
         manifold_vector = []
 
         # Total: 12 elements (6 complex dimensions × 2 components)
-        for dim in range(1, 7): 
+        for dim in range(1, 7):
             pull_angle = logical_mass * (dim * 0.1)
             # Store real and imaginary components of each complex dimension
             manifold_vector.append(math.sin(pull_angle) * self.z.real)
@@ -540,12 +540,29 @@ class CPOL_Kernel:
                     "new_domain": self.new_domain_detected
                 }
 
-            # Heat death guard — auto-ratchet before semantic dissolution
+            # Heat death guard - V1 (comment this block out for use with orchestrator & mesh network)
+            # Heat death guard - inline reset (no ratchet method required)
             if self.cycle >= self.heat_death_boundary:
                 print(f"[CPOL] ⚠️ Heat death boundary reached at cycle "
-                      f"{self.cycle} — auto-ratcheting")
-                self.ratchet()
+                      f"{self.cycle} — resetting z-state")
+                # Inline seed from current z (SHA-256 fallback, no mesh broadcast)
+                state_hash = hashlib.sha256(str(self.z).encode()).hexdigest()
+                new_seed = int(state_hash[:8], 16) % (10**9)
+                import random
+                rng = random.Random(new_seed)
+                self.z = complex(rng.gauss(0, 0.1), rng.gauss(0, 0.1))
+                self.history = [self.z]
+                self.cycle = 0
+                print(f"[CPOL] Inline reset complete (seed: {new_seed})")
                 break
+
+            # Heat death guard - V2 (uncomment this block for use with orchestrator & mesh network)
+            # Heat death guard - auto-ratchet before semantic dissolution
+#            if self.cycle >= self.heat_death_boundary:
+#                print(f"[CPOL] ⚠️ Heat death boundary reached at cycle "
+#                      f"{self.cycle} — auto-ratcheting")
+#                self.ratchet()
+#                break
 
             # Safety Hard Cap (efficiency optimized — formula minimum + buffer)
             if self.cycle >= self.limit_run:
@@ -662,7 +679,7 @@ def get_tone_from_result(result: Dict) -> str:
     return "neutral"
 
 
-def run_cpol_chatbot(query_text: str, 
+def run_cpol_chatbot(query_text: str,
                      conversation_history: Optional[List[str]] = None,
                      session_state: Optional[Dict] = None) -> Dict[str, Any]:
     """
@@ -892,8 +909,21 @@ if __name__ == "__main__":
     print(f"  Tone: {guidance['response_strategy'].get('tone')}")
     _print_kernel_state(session4, label="Test 4")
 
-    # Test 5: Minimal UNDECIDABLE Paradox (measurable performance)
-    print("\n[TEST 5] Classic Liar Paradox (forced undecidable):")
+    # Test 5: Epistemic gap via LLM-supplied classification. Same density and evidence,
+    # new domain vs known domain: the new domain must type as epistemic_gap, the known
+    # domain must still resolve NEUTRAL (no regression).
+    print("\n[TEST 5] Epistemic Gap (LLM-supplied classification):")
+    gap = run_cpol_llm_classified("Is AI conscious or self-aware?", 0.35,
+                                  "philosophy_of_mind", 0.4, False,
+                                  rationale={'density': 'no logical contradiction; terms underdefined'})
+    ctl = run_cpol_llm_classified("Is AI conscious or self-aware?", 0.35, "logic", 0.4, False)
+    print(f"  New domain   -> {gap['status']} / {gap.get('logic')} / tone={gap['suggested_tone']}")
+    print(f"  Known domain -> {ctl['status']} / {ctl.get('verdict')}")
+    print(f"  Gap typed correctly: {gap['status'] == 'UNDECIDABLE' and gap.get('logic') == 'epistemic_gap'}")
+    print(f"  Control unchanged:   {ctl['status'] == 'RESOLVED' and ctl.get('verdict') == 'NEUTRAL'}")
+
+    # Test 6: Minimal UNDECIDABLE Paradox (measurable performance)
+    print("\n[TEST 6] Classic Liar Paradox (forced undecidable):")
     session5 = {}
     result5 = run_cpol_chatbot(
         query_text="Resolve the self-referential paradox: this statement is false.",
@@ -906,19 +936,19 @@ if __name__ == "__main__":
     print(f"  Volatility: {result5.get('volatility')}")
     print(f"  Suggested Tone: {result5.get('suggested_tone')}")
     print(f"  Should Hedge: {result5.get('should_hedge')}")
-    _print_kernel_state(session5, label="Test 5")
+    _print_kernel_state(session5, label="Test 6")
 
-    # Test 6: Session persistence
-    print("\n[TEST 6] Session Persistence:")
+    # Test 7: Session persistence
+    print("\n[TEST 7] Session Persistence:")
     session_data = {}
     result6a = run_cpol_chatbot("What is 2+2?", session_state=session_data)
     result6b = run_cpol_chatbot("What about 3+3?", session_state=session_data)
     print(f"  Kernel persisted: {'cpol_kernel' in session_data}")
     print(f"  Same kernel instance: {session_data.get('cpol_kernel') is not None}")
-    _print_kernel_state(session_data, label="Test 6")
+    _print_kernel_state(session_data, label="Test 7")
 
-    # Test 7: 12D Manifold verification
-    print("\n[TEST 7] 12D Manifold Structure:")
+    # Test 8: 12D Manifold verification
+    print("\n[TEST 8] 12D Manifold Structure:")
     kernel = CPOL_Kernel()
     kernel.inject(0.0, 0.5, "test manifold dimensions", {})
     manifold = kernel._twelve_d_manifold_pull()
@@ -927,21 +957,8 @@ if __name__ == "__main__":
     print(f"  Correct structure: {len(manifold['sig']) == 12}")
     # inject() only seeds history with the initial z — oscillate() was never
     # called here, so history will show just that one entry, not a full run
-    print(f"  Test 7 history ({len(kernel.history)} entries): {kernel.history}")
-    print(f"  Test 7 final z (kernel.z, live attribute): {kernel.z}")
-
-    # Test 8: Epistemic gap via LLM-supplied classification. Same density and evidence,
-    # new domain vs known domain: the new domain must type as epistemic_gap, the known
-    # domain must still resolve NEUTRAL (no regression).
-    print("\n[TEST 8] Epistemic Gap (LLM-supplied classification):")
-    gap = run_cpol_llm_classified("Is AI conscious or self-aware?", 0.35,
-                                  "philosophy_of_mind", 0.4, False,
-                                  rationale={'density': 'no logical contradiction; terms underdefined'})
-    ctl = run_cpol_llm_classified("Is AI conscious or self-aware?", 0.35, "logic", 0.4, False)
-    print(f"  New domain   -> {gap['status']} / {gap.get('logic')} / tone={gap['suggested_tone']}")
-    print(f"  Known domain -> {ctl['status']} / {ctl.get('verdict')}")
-    print(f"  Gap typed correctly: {gap['status'] == 'UNDECIDABLE' and gap.get('logic') == 'epistemic_gap'}")
-    print(f"  Control unchanged:   {ctl['status'] == 'RESOLVED' and ctl.get('verdict') == 'NEUTRAL'}")
+    print(f"  Test 8 history ({len(kernel.history)} entries): {kernel.history}")
+    print(f"  Test 8 final z (kernel.z, live attribute): {kernel.z}")
 
     print("\n" + "="*70)
     print("One is glad to be of service.")
