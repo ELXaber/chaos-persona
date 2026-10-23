@@ -267,6 +267,14 @@ class CPOL_Kernel:
             self.current_domain = override
             self.new_domain_detected = override not in KNOWN_DOMAINS
 
+    def _domain_uncovered(self) -> bool:
+        if not KB_AVAILABLE:
+            return True
+        try:
+            return not kb.check_domain_coverage(self.current_domain)["has_knowledge"]
+        except Exception:
+            return True
+
     def _extract_domain(self, text: str) -> str:
         """Enhanced domain classifier with priority for high-stakes areas. General uses LLM to classify domain."""
         import re
@@ -517,6 +525,12 @@ class CPOL_Kernel:
 
                 # Prevent collapse in neutral zone with high density
                 if abs(real) < 0.5 and self.contradiction_density > 0.7:
+                    continue
+                if (abs(real) < 0.5
+                        and self.new_domain_detected
+                        and self.current_domain != "general"
+                        and self.evidence_score <= 0.5
+                    ):
                     continue
 
                 verdict = "TRUE" if real > 0.5 else "FALSE" if real < -0.5 else "NEUTRAL"

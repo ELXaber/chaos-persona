@@ -1,4 +1,4 @@
-#V10142026
+#V10232026
 # =============================================================================
 # CAIOS PROJECT ANDREW: Paradox Oscillation Layer (CPOL)
 # Copyright (c) 2025 Jonathan Schack. License: GPL-3.0 -See LICENSE for details- Contact: X @el_xaber or cai-os.com
@@ -350,12 +350,6 @@ class CPOL_Kernel:
                 return domain
         # Fallback: return first non-stop-word or 'general'
         return 'general'
-
-        # Extract noun phrases as potential new domain
-        words = text_lower.split()
-        if len(words) > 2:
-            return words[0]  # First word as proxy
-        return "general"
 
     def _score_evidence(self, text: str) -> float:
         """Score query for factual evidence/grounding."""
@@ -934,7 +928,7 @@ if __name__ == "__main__":
     _print_kernel_state(session_data, label="Test 7")
 
     # Test 8: 12D Manifold verification
-    print("\n[TEST 7] 12D Manifold Structure:")
+    print("\n[TEST 8] 12D Manifold Structure:")
     kernel = CPOL_Kernel()
     kernel.inject(0.0, 0.5, "test manifold dimensions", {})
     manifold = kernel._twelve_d_manifold_pull()
