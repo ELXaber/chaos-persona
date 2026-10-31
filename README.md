@@ -44,11 +44,12 @@ Narrative drift → Bias creep | Entropy reset + axiom collapse | Propaganda r
 
 Quick Start
 1. Download from cai-os.com or Clone & Run: git clone https://github.com/ELXaber/chaos-persona/Project_Andrew or download https://github.com/ELXaber/chaos-persona/blob/main/Project_Andrew/Andrew.rar.
-2. Install Ollama and Python 3.11+
+2. Install Ollama or Llama.cpp and Python 3.11+
 3. See https://github.com/ELXaber/chaos-persona/blob/main/Project_Andrew/SETUP.md
 4. Run run_caios.bat or run_caios.sh depending on your OS.
     This will install Python dependencies, check VRAM, download a usable local LLM (defaults to qwen3.8:27b or qwen2.5:7b, or you can pre-download one), and walk you through the setup process.
-    If you prefer to run llama.cpp, see https://github.com/ELXaber/chaos-persona/blob/main/Project_Andrew/llamma_cpp_readme.txt
+    If you prefer to run llama.cpp or API key use instead of Ollama, skip run_caios.bat/.sh and run master_init.py instead.
+    If you are using Llama.cpp, download your preferred model first.
 
 
 Basic Architecture Overview:
