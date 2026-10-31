@@ -1,4 +1,4 @@
-#V10142026
+#V10282026
 # =============================================================================
 # CAIOS PROJECT ANDREW: Master Integration & Sovereign Boot
 # Pre-requisites auto-install from run_caios.bat or run_caios.sh - fallback directions below
@@ -361,7 +361,7 @@ def run_system_diagnostic():
     # 7. Create Ollama Configuration Bridge
     print("\n[STEP 6.5] Creating Ollama Configuration Bridge...")
     try:
-        # ollama_config.py is already in the repo
+        # llm_config.py is already in the repo
         # Just verify CAIOS.txt exists
         if not os.path.exists("CAIOS.txt"):
             print("⚠ CAIOS.txt not found - Ollama will run without system prompt")
@@ -369,8 +369,8 @@ def run_system_diagnostic():
             print("✓ CAIOS.txt found - will be loaded as Ollama system prompt")
 
         # Test import
-        import ollama_config
-        print(f"✓ Ollama config ready for Node Tier {ollama_config.NODE_TIER}")
+        import llm_config
+        print(f"✓ Ollama config ready for Node Tier {llm_config.NODE_TIER}")
 
     except Exception as e:
         print(f"⚠ Ollama config issue: {e}")

@@ -1,4 +1,4 @@
-#V10142026
+#V10282026
 # =========================================================================
 # CAIOS PROJECT ANDREW: Inference Wrapper
 # Simple interactive chat that uses CAIOS.txt as the system prompt and any model client initialized by master_init.py
@@ -12,6 +12,7 @@ import os
 import time
 import json
 import sys
+# import readline
 
 from typing import Dict, Any, List, Optional
 
@@ -64,12 +65,17 @@ def load_shared_memory() -> Dict[str, Any]:
     else:
         memory['api_clients'] = {}
 
-    # Add Ollama as available client if running
+    # Add Ollama/Llama.cpp as available client if running
     try:
-        import ollama_config
-        if ollama_config.check_ollama_available():
+        import llm_config
+        _backend = llm_config.detect_backend()
+        if _backend == 'ollama':
             memory['api_clients']['ollama_local'] = 'ollama'
-            memory['node_id'] = ollama_config.SYSTEM_ID
+            memory['node_id'] = llm_config.SYSTEM_ID
+        elif _backend == 'llamacpp':
+            memory['api_clients']['llama_local'] = 'llamacpp'
+            memory['node_id'] = llm_config.SYSTEM_ID
+        memory['active_backend'] = _backend
     except Exception:
         pass
 
@@ -268,6 +274,19 @@ def chat_with_model(provider: str, client: Any,
                 output = result.get('output', '')
             if not output or output == str(result):
                 output = "[Andrew] I processed that but couldn't generate a response. Please try rephrasing."
+
+            # Pass metrics to llm_metrics for UI TPS display
+            from llm_config import llm_metrics
+            llm_metrics["last_completion_tokens"] = result.get(
+                "completion_tokens",
+                llm_metrics.get("last_completion_tokens", 0)
+            )
+            llm_metrics["last_prompt_tokens"] = result.get(
+                "prompt_tokens",
+                llm_metrics.get("last_prompt_tokens", 0)
+            )
+            llm_metrics["last_backend"] = "orchestrator"
+
             return output
         else:
             return str(result)
@@ -278,7 +297,7 @@ def chat_with_model(provider: str, client: Any,
     # === 2. Fallback: Direct Ollama with full prompt ===
     try:
         import ollama
-        from ollama_config import get_cpol_ollama_params
+        from llm_config import get_cpol_ollama_params
 
         params = get_cpol_ollama_params(preferred_model=ollama_model)
         full_system_prompt = get_personalized_prompt()
@@ -293,6 +312,11 @@ def chat_with_model(provider: str, client: Any,
             options=params['options']
         )
         result = response.get('message', {}).get('content', '').strip()
+
+        # Update metrics for UI
+        llm_metrics["last_backend"] = "ollama"
+        llm_metrics["last_completion_tokens"] = 0
+
         return result if result else "[Andrew] No response generated."
 
     except Exception as e:

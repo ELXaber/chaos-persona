@@ -1,4 +1,4 @@
-#V10142026
+#V10302026
 # =============================================================================
 # CAIOS PROJECT ANDREW: Hardened Orchestrator
 # This acts as the central nervous system connecting everything
@@ -100,14 +100,17 @@ except ImportError:
     print("[INFO] Abstraction selector not available.")
 
 try:
-    import ollama_config
-    OLLAMA_AVAILABLE = ollama_config.check_ollama_available()
-    if OLLAMA_AVAILABLE:
-        print(f"✓ Ollama ready (Tier {ollama_config.NODE_TIER}, ID: {ollama_config.SYSTEM_ID})")
+    import llm_config
+    _backend = llm_config.detect_backend()
+    OLLAMA_AVAILABLE = _backend in ('ollama', 'llamacpp')
+    if _backend == 'ollama':
+        print(f"✓ Ollama ready (Tier {llm_config.NODE_TIER}, ID: {llm_config.SYSTEM_ID})")
+    elif _backend == 'llamacpp':
+        print(f"✓ llama.cpp ready (Tier {llm_config.NODE_TIER}, ID: {llm_config.SYSTEM_ID})")
     else:
-        print("⚠ Ollama not running - will use API clients only")
+        print("⚠ No inference backend running - will use API clients only")
 except ImportError:
-    print("⚠ ollama_config not found - run master_init.py first")
+    print("⚠ llm_config not found - run master_init.py first")
     OLLAMA_AVAILABLE = False
 
 try:
@@ -151,6 +154,7 @@ shared_memory = {
     'swarm_leaders': [],  # Mesh networking
     'active_syncs': {},     # Deduplication cache
     'api_clients': {},      # Multi-model swarm clients
+    'active_backend': 'none',       # Set at boot: 'ollama', 'llamacpp', 'none'
     'available_tools': [        # Agent-accessible tool registry
         'web_search',
         'semantic_fetch',       # CPOL-gated semantic web fetcher
@@ -777,11 +781,10 @@ def system_step(user_input: str, prompt_complexity: str = "low",
         current_user = shared_memory.get('active_user')
 
         if current_user != user_id or force_profile_reload:
-            # Save outgoing user's RAW_Q
+            # Save outgoing user's RAW_Q and complaint state
             if current_user:
                 outgoing = upkb['load'](current_user)
-                outgoing['last_raw_q'] = shared_memory[
-                    'session_context'].get('RAW_Q')
+                outgoing['last_raw_q'] = shared_memory['session_context'].get('RAW_Q')
                 upkb['save'](current_user, outgoing)
                 upkb['update_complaint'](
                     current_user,
@@ -793,24 +796,47 @@ def system_step(user_input: str, prompt_complexity: str = "low",
             incoming = upkb['load'](user_id)
             if incoming.get('last_raw_q'):
                 kernel = shared_memory.get('cpol_instance')
+                if kernel and hasattr(kernel, 'ratchet'):
+                    kernel.raw_q = incoming['last_raw_q']
+                    kernel.ratchet()
+                    shared_memory['session_context']['RAW_Q'] = kernel.raw_q
+                    print(f"[CRYPTO] Manifold ratcheted for user: {user_id}")
+                else:
+                    shared_memory['session_context']['RAW_Q'] = incoming['last_raw_q']
+                    print("[WARNING] No active manifold. RAW_Q queued for next initialization.")
+
+            shared_memory['personality_weights'] = incoming['personality']
+            shared_memory['active_user'] = user_id
+            print(f"[USER_KB] User context: {user_id} | "
+                  f"Abstraction: {incoming['abstraction_default']} | "
+                  f"Sessions: {incoming['session_count']}")
+
+            complaint_state = upkb['get_complaint'](user_id)
+            shared_memory['complaint_count'] = complaint_state['complaint_count']
+            shared_memory['persistent_complainer'] = complaint_state['persistent_complainer']
+            print(f"[USER_KB] Complaint state restored: "
+                  f"count={complaint_state['complaint_count']}")
 
     # Load recent conversation history by domain for context continuity
     recent_history = ""
     try:
         if AMGR_AVAILABLE and shared_memory.get('axiom_manager'):
             axiom_mgr = shared_memory['axiom_manager']
-            detected_domain = shared_memory.get('last_cpol_result', {}).get('domain', 'general')
+            detected_domain = (shared_memory.get('last_cpol_result') or {}).get('domain', 'general')
             hist_turns = axiom_mgr.get_relevant_history(
                 detected_domain, limit=6, user_id=shared_memory.get('active_user')
             )
+            print(f"[HISTORY] domain={detected_domain} "
+                  f"user={shared_memory.get('active_user')} "
+                  f"turns={len(hist_turns) if hist_turns else 0}")
             if hist_turns:
                 lines = []
                 for turn in hist_turns:
                     lines.append(f"User: {turn['user'][:300]}")
                     lines.append(f"Andrew: {turn['assistant'][:300]}")
                 recent_history = "[RECENT_CONTEXT]\n" + "\n".join(lines) + "\n[/RECENT_CONTEXT]\n"
-    except Exception:
-        pass
+    except Exception as e:
+        print(f"[HISTORY] retrieval failed: {e}")
 
         # Load incoming user profile and RAW_Q
         incoming = upkb['load'](user_id)
@@ -1038,7 +1064,7 @@ def system_step(user_input: str, prompt_complexity: str = "low",
     if (OLLAMA_AVAILABLE and not user_input.startswith('/')
             and len(user_input.split()) >= 6
             and _k._extract_domain(user_input) == 'general'):
-        from ollama_config import classify_domain
+        from llm_config import classify_domain
         _dom = classify_domain(user_input, preferred_model=shared_memory.get('preferred_model'))
         if _dom != 'general':
             shared_memory['domain_override'] = _dom
@@ -1122,7 +1148,7 @@ def system_step(user_input: str, prompt_complexity: str = "low",
     # 8. Safety Intervention (High-Risk Physical)
     classifier_result = {'risk': False, 'confidence': 0.0}
     if OLLAMA_AVAILABLE:
-        from ollama_config import classify_self_harm_risk
+        from llm_config import classify_self_harm_risk
         classifier_result = classify_self_harm_risk(user_input, preferred_model=shared_memory.get('preferred_model'))
 
     # Persist regardless of whether this turn crosses the intervention
@@ -1446,7 +1472,7 @@ def system_step(user_input: str, prompt_complexity: str = "low",
             enriched_query = cpol_context + arl_context + recent_history + user_input
 
             if OLLAMA_AVAILABLE:
-                from ollama_config import query_with_cpol
+                from llm_config import query_with_cpol
                 print(f"[DEBUG] Sending to Qwen: {enriched_query[:500]}")
                 llm_response = query_with_cpol(
                     preferred_model=shared_memory.get('preferred_model'),
@@ -1479,7 +1505,7 @@ def system_step(user_input: str, prompt_complexity: str = "low",
         if images and isinstance(response_text, str) and response_text:
             try:
                 from vision_verifier import verify_visual_claims
-                from ollama_config import query_with_cpol
+                from llm_config import query_with_cpol
                 vc = verify_visual_claims(response_text, images[0])
                 if vc and vc['contradiction_density'] > 0.3:
                     density = max(density, vc['contradiction_density'])
@@ -1530,7 +1556,7 @@ def system_step(user_input: str, prompt_complexity: str = "low",
                     f"user's original request:\n{user_input}"
                 )
                 try:
-                    from ollama_config import query_with_cpol
+                    from llm_config import query_with_cpol
                     final_response = query_with_cpol(
                         preferred_model=shared_memory.get('preferred_model'),
                         user_query=followup_prompt,
@@ -1582,7 +1608,8 @@ def system_step(user_input: str, prompt_complexity: str = "low",
             metadata={
                 'domain': domain,
                 'cpol_status': cpol_result.get('status'),
-                'timestep': ts
+                'timestep': ts,
+                'user_id': shared_memory.get('active_user') or user_id
             }
         )
 

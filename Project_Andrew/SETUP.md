@@ -1,4 +1,4 @@
-# V07262026
+# V10282026
 # CAIOS — Andrew  |  Quick Setup Guide
 
 > **What you need before starting:**
@@ -19,13 +19,24 @@ See Hardware Notes at the bottom for details.
 3. Run the installer — **check the box that says "Add Python to PATH"** before clicking Install
 4. Go to Windows Add/Remove Programs, select Add/Remove Windows components, and select the box that says Windows Subsystem for Linux. In Windows 11, it's under (Settings > Optional Features), then click More Windows Features, then select Windows Subsystem for Linux.
 
-### Step 2 — Install Ollama
+### Step 2 — Install Ollama or Llama:
+
+Ollama (default from setup.sh/.bat)
 1. Go to **https://ollama.com/download**
 2. Click "Download for Windows" and run the installer
 3. When it finishes, Ollama runs in the background automatically
 
+Llama.cpp
+1. Go to **https://github.com/ggerganov/llama.cpp**
+2. Download Llama for your CPU/Cuda version
+3. When it finishes, /llama-server -m your_model.gguf --ctx-size 32768 --port 8080
+
+
 ### Step 3 — Run the setup script
 1. Open the `Project_Andrew` folder after downloading the Andrew.rar from https://cai-os.com or https://github.com/ELXaber/chaos-persona/tree/main/Project_Andrew and extracting the files.
+
+If using Llama.cpp or API keys, skip step 2, download the model to use in Llama, and run Python master_init.py in a terminal window.
+
 2. Double-click **`run_caios.bat`**
 3. A terminal window opens and walks through the rest automatically:
    - Installs required packages
@@ -96,6 +107,40 @@ When you see **"Web UI: http://localhost:5000"**, open that in your browser.
 
 ---
 
+ ## Inference Backend
+  Backend is auto-detected. To override, set environment variable before launch:
+
+  Windows:
+    set CAIOS_BACKEND=ollama       # Force Ollama
+    set CAIOS_BACKEND=llamacpp     # Force llama.cpp
+
+  Linux/Mac:
+    export CAIOS_BACKEND=ollama
+    export CAIOS_BACKEND=llamacpp
+
+  To specify a llama.cpp model explicitly:
+    set CAIOS_LLAMACPP_MODEL=your_model_name   # Windows
+    export CAIOS_LLAMACPP_MODEL=your_model_name # Linux/Mac
+
+  llama.cpp server must be running on http://localhost:8080 (default port).
+  Change LLAMA_CPP_URL in llm_config.py if using a different port.
+
+---
+
+System options - only requires change if <16b model
+ - sugguested renamme CAIOS.txt to CAIOS_Full.txt and CAIOS_minimal.txt to CAIOS.txt
+
+ CAIOS.txt: Full system prompt. Requires --ctx-size 32768 minimum.
+                    Recommended for Qwen 27b and larger models.
+
+ CAIOS_minimal.txt: Stripped ethics/identity layer only (~600 tokens).
+                      Use for smaller models, constrained context windows,
+                      or steered GGUF testing where only ethical constraints
+                      need to load. Set CAIOS_PROMPT_PATH in llm_config.py:
+                        CAIOS_PROMPT_PATH = "CAIOS_minimal.txt"
+
+---
+
 ## First login
 
 When the browser opens, you'll see a sign-in screen:
@@ -140,6 +185,20 @@ Ollama is running, but no models are downloaded yet. Open a terminal and run:
 ollama pull qwen3:27b
 ```
 Then refresh the browser.
+
+**Backend not detected**
+  - Ensure Ollama is running: ollama serve
+  - Ensure llama.cpp server is running: ./llama-server -m model.gguf --port 8080
+  - Check http://localhost:8080/health for llama.cpp status
+  - Set CAIOS_BACKEND explicitly if auto-detection fails
+
+  ## System prompt truncated
+  - Increase context: restart llama-server with --ctx-size 32768
+  - Or switch to CAIOS_minimal.txt for small models
+
+  ## Wrong backend selected
+  - llama.cpp takes auto-detect priority over Ollama when both are running
+  - Force Ollama with: set CAIOS_BACKEND=ollama
 
 **Other issues: check for updates**
 If something in CAIOS isn't working as expected, check for updated versions by running update.sh or update.bat.

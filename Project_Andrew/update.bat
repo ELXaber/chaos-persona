@@ -1,4 +1,4 @@
-@rem V09242026
+@rem V10282026
 @echo off
 setlocal EnableDelayedExpansion
 title CAIOS — Update Check
@@ -39,7 +39,7 @@ set FILES=^
     abstraction_selector.py ^
     axiom_manager.py ^
     system_identity.py ^
-    ollama_config.py ^
+    llm_config.py ^
     caios_chat.py ^
     caios_bridge.py ^
     caios_mcp_client.py ^

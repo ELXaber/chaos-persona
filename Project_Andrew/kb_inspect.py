@@ -1,4 +1,4 @@
-#V10142026
+#V10282026
 # =============================================================================
 # CAIOS PROJECT ANDREW: Knowledge Base Inspector - CLI Tool
 # Usage: python kb_inspect.py [command] [args]

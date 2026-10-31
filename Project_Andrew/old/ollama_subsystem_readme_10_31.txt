@@ -4,9 +4,9 @@ Multi-LLM setup:
 CAIOS retains context, memory, system identity, and coherance while changing LLMs by default; it uses the LLM as a CPU.
 No changes are needed, but for the domain or density mapping or API fallback see below.
 
-This bridges CAIOS's ternary logic (CPOL) state to Ollama's inference parameters, ensuring the 12D manifold remains stable during local inference.
+This bridges CAIOS's ternary logic (CPOL) state to Ollama or Llama inference parameters, ensuring the 12D manifold remains stable during local inference.
 
-- API FALLBACK: If Ollama is unavailable, _call_api_client() routes to
+- API FALLBACK: If Llama is unavailable routes to Ollama, if Ollama is unavailable, _call_api_client() routes to
   OpenAI/Anthropic/xAI/Google. CPOL remains local; only LLM generation is
   cloud-based. Network latency adds 1-3s per query.
   Default: Enabled (graceful degradation).

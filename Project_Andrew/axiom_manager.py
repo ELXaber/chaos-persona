@@ -1,4 +1,4 @@
-#V08192026
+#V10302026
 # =============================================================================
 # CAIOS PROJECT ANDREW: Axiom Manager & Temporal Update Pipeline
 # Purpose: Enable local knowledge updates that override model training data without retraining. Kills the data center requirement.
@@ -108,6 +108,7 @@ class AxiomManager:
         self.last_refresh = None
         self.conversation_history = []
         self.max_history_turns = 50
+        self._current_user_id = None
         self._load_conversation_history()
 
     def _load_conversation_history(self):
@@ -358,12 +359,18 @@ class AxiomManager:
         if not hasattr(self, 'conversation_history'):
             self.conversation_history = []
 
+        meta = dict(metadata or {})
+        if 'user_id' not in meta and hasattr(self, '_current_user_id'):
+            meta['user_id'] = self._current_user_id
+
         turn = {
-            'user': user_message,
-            'assistant': assistant_message,
-            'metadata': metadata or {},
-            'timestamp': datetime.now(timezone.utc).isoformat() + "Z"
-        }
+                'user': user_message,
+                'andrew': assistant_message,          # standardize on "andrew"
+                'assistant': assistant_message,       # keep for backward compatibility if needed
+                'metadata': meta,
+                'timestamp': datetime.now(timezone.utc).isoformat() + "Z",
+                'user_id': meta.get('user_id')        # also top-level for easier filtering
+            }
 
         self.conversation_history.append(turn)
         self._save_conversation_history()
@@ -401,7 +408,7 @@ class AxiomManager:
         pool = self.conversation_history
         if user_id:
             # Filter by user ID in metadata
-            pool = [t for t in pool if t.get('metadata', {}).get('user_id') == user_id]
+            pool = [t for t in pool if t.get('user_id') == user_id or t.get('metadata', {}).get('user_id') == user_id]
         if domain:
             # Filter by domain in metadata
             pool = [t for t in pool if t.get('metadata', {}).get('domain') == domain]

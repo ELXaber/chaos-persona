@@ -1,4 +1,4 @@
-#V08302026
+#V10282026
 # =============================================================================
 # CAIOS PROJECT ANDREW: PDF Text Extraction
 # Shared helper for local file attachments (caios_bridge.py) and web-fetched

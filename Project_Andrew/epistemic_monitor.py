@@ -1,4 +1,4 @@
-#V09072026
+#V10282026
 # =============================================================================
 # CAIOS PROJECT ANDREW: Epistemic Monitor
 # Purpose: Dynamic jitter-tolerance calculation for mesh phase-lock sync.

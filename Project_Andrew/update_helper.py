@@ -1,4 +1,4 @@
-#V10142026
+#V10282026
 # =============================================================================
 # CAIOS PROJECT ANDREW: GitHub update checker
 # Called by update.bat and update.sh
@@ -51,7 +51,7 @@ MANIFEST = [
     'axiom_manager.py',
     'manager_users.py',
     # Inference and config
-    'ollama_config.py',
+    'llm_config.py',
     'caios_chat.py',
     'caios_bridge.py',
     # Encryption and mesh

@@ -1,3 +1,4 @@
+#V10282026
 # test_safety_gate.py — run standalone from Project_Andrew root
 import orchestrator as orch
 orch.shared_memory['preferred_model'] = 'qwen3.8:27b'

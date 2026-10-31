@@ -1,4 +1,4 @@
-#V09042026
+#V10282026
 # =============================================================================
 # CAIOS PROJECT ANDREW: MCP JSON-RPC client for CAIOS
 # Talks to two MCP servers that should be running alongside caios_bridge.py:

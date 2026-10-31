@@ -1,4 +1,4 @@
-#V10142026
+#V10282026
 Chaos AI-OS (CAIOS)
 Copyright (c) 2025 Jonathan Schack (X @el_xaber) jon@cai-os.com
 
@@ -62,7 +62,7 @@ Example running CPOL in a terminal window without an LLM:
       Test 2 cycles run: 11 | call_count: 1 | window cap: 5
       Test 2 history (5 entries): [(0.011324445867628336-0.005847733204933845j), (0.005710556271915345-0.005538668436330752j), (0.0053862938651388715-0.009801167745193884j), (0.009542155406632743-0.010084254921842048j), (0.009842194535849773-0.006928060071848885j)]
       Test 2 final z (kernel.z, live attribute): (0.009842194535849773-0.006928060071848885j)
-  
+
 The final z is neither ±1 (forced verdict) nor 0 (refusal). It's a stable off-axis point; the native representation of 'unresolved but well-defined.
 Downstream, the taxonomy ('paradox' vs 'ontological error' vs 'epistemic gap' vs 'structural noise') determines the response strategy; an undecidable is not a dead end, it's a routing instruction.
 
@@ -113,9 +113,11 @@ pip install numpy pyzmq cryptography
 - PyZMQ: Handles the mesh transport and ghost packet broadcasting
 - Cryptography: Provides the AES-256-GCM armor for data persistence
 
-AI Model dependency:
+LLM Model dependency:
 Ollama:
 pip install ollama
+Llama.cpp:
+https://github.com/ggerganov/llama.cpp
 OpenAI/Anthropic/Google:
 pip install openai anthropic google-generativeai
 pip install flask
@@ -390,7 +392,7 @@ CAIOS/
 │   └── integrity_chain.txt          # Tamper-evident hash chain
 ├── agents/                         # ARL-generated agent modules
 ├── logs/                           # Chain-of-thought traces
-├── working/                         # Autonomous working directory - excludes execute script or git-commmit  
+├── working/                         # Autonomous working directory - excludes execute script or git-commmit
 ├── CAIOS.txt                          # Inference layer pre-prompt
 ├── caios_chat.py                   # Simple CAIOS.txt integration as the system prompt
 ├── caios_bridge.py                # Flask web bridge (run this, then open localhost:5000)
@@ -410,7 +412,7 @@ CAIOS/
 ├── master_init.py                  # System BIOS/Diagnostic
 ├── system_identity.py              # System identity and primary user assignment
 ├── abstraction_selector.py        # Modifies explanations depending on user abstraction/confusion
-├── ollama_config.py                  # bridges CAIOS's ternary logic (CPOL) state to Ollama's inference
+├── llm_config.py                  # bridges CAIOS's ternary logic (CPOL) state to LLM's inference (Ollama, Llama, API)
 ├── caios_pipeline.yaml             # YAML support for the LangChain crowd using agent_designer pipeline
        ├── /skills                             # Skills directory for YAML agents
 ├── os_control.py                       # CPOL-gated OS operations (file, script, network)
@@ -650,7 +652,10 @@ Core (Required):
 - pyzmq>=22.0.0      # Mesh network transport (Ghost Packets)
 - cryptography>=3.4.0 # AES-256-GCM hardening for Knowledge Base
 - flask>=2.0.0       # Web bridge (caios_bridge.py)
-- ollama             # Local model inference client
+
+  - Ollama (https://ollama.com) with a supported model installed; default backend
+  - OR llama.cpp server (https://github.com/ggerganov/llama.cpp) for local GGUFs, steered models, or quantized models not supported by Ollama
+  - Both can coexist; llama.cpp takes priority when running (deliberate manual start)
 
 Optional (Multi-Model Swarm):
 - openai             # GPT models
@@ -725,6 +730,24 @@ Change def __init__(self, load_existing: bool = True) 'auth_method': 'TEXT_USERN
 Change def resolve_user_id change method = self.identity_data.get('auth_method', "TEXT_USERNAME") to your prefered auth method.
 Change def initialize auth_method: str = 'TEXT_USERNAME', to your prefered auth method.
 Included methods TEXT_USERNAME, META_FACIAL, VOICE_PRINT, and CORPORATE_ID
+
+
+===================================================
+Troubleshooting:
+==============
+
+  Q: CAIOS is using Ollama but I want it to use my llama.cpp model
+  A: Set CAIOS_BACKEND=llamacpp before starting CAIOS, or stop Ollama.
+     llama.cpp takes auto-detect priority when both are running.
+
+  Q: llama.cpp detected but my model isn't loading
+  A: Set CAIOS_LLAMACPP_MODEL=your_model_name or check /v1/models on
+     http://localhost:8080 to confirm the server loaded your GGUF.
+
+  Q: System prompt is being truncated with llama.cpp
+  A: Set --ctx-size 32768 when starting llama-server.
+     For small models use CAIOS_minimal.txt instead of CAIOS.txt.
+     See CAIOS_minimal.txt for the stripped ethics-only system prompt.
 
 ===================================================
 

@@ -1,4 +1,4 @@
-#V10142026
+#V10312026
 # =============================================================================
 # CAIOS PROJECT ANDREW: Web Bridge
 # Flask server that connects caios_chat_ui.html to the existing orchestrator/caios_chat.py stack.
@@ -93,10 +93,16 @@ def _bootstrap_shared_memory() -> Dict[str, Any]:
         memory['api_clients'] = {}
 
     try:
-        import ollama_config
-        if ollama_config.check_ollama_available():
+        import llm_config
+        backend = llm_config.detect_backend()
+
+        if backend == 'ollama':
             memory['api_clients']['ollama_local'] = 'ollama'
-            memory['node_id'] = ollama_config.SYSTEM_ID
+        elif backend == 'llamacpp':
+            memory['api_clients']['llama_local'] = 'llamacpp'
+
+        memory['node_id'] = llm_config.SYSTEM_ID
+        memory['active_backend'] = backend  # orchestrator routing decisions
     except Exception:
         pass
 
@@ -208,10 +214,10 @@ def _start_service(name: str, cmd: str, check_fn, timeout: int = 20) -> None:
 def start_services() -> None:
     """Bring up Ollama + MCP servers if they aren't already reachable."""
     try:
-        import ollama_config
-        _start_service('Ollama', 'ollama serve', ollama_config.check_ollama_available)
+        import llm_config
+        _start_service('Ollama', 'ollama serve', llm_config.check_ollama_available)
     except ImportError:
-        print('[BRIDGE] ollama_config not found — skipping Ollama auto-start')
+        print('[BRIDGE] llm_config not found — skipping Ollama auto-start')
 
     if MCP_AVAILABLE:
         client = get_mcp_client()
@@ -314,7 +320,7 @@ def _list_api_providers():
     clients = shared_memory.get('api_clients', {})
     providers = []
     for k in clients:
-        if k == 'ollama_local':
+        if k == ('ollama_local', 'llama_local'):
             continue
         providers.append(k.upper())
     return providers
@@ -437,6 +443,16 @@ def api_boot():
     if ollama_models:
         for m in ollama_models:
             models.append({'id': f'ollama:{m}', 'label': m, 'provider': 'ollama'})
+    # llama.cpp serves exactly one model (whatever -m loaded); list it only if the server is up
+    try:
+        import llm_config
+        if llm_config.check_llamacpp_available():
+            lc_name = llm_config.get_llamacpp_model_name()
+            lc_label = os.path.basename(lc_name.replace('\\', '/'))
+            models.append({'id': f'llamacpp:{lc_name}', 'label': lc_label,
+                           'provider': 'llamacpp'})
+    except Exception:
+        pass
     for p in api_providers:
         models.append({'id': f'api:{p.lower()}', 'label': p, 'provider': 'api'})
 
@@ -520,7 +536,7 @@ def api_auth():
             shared_memory['distress_density'] = profile.get(
                 'emotional_baseline', {}
             ).get('distress_density', 0.0)
-            shared_memory['last_cpol_result'] = profile.get('last_cpol_state')
+            shared_memory['last_cpol_result'] = profile.get('last_cpol_state') or {}
     except Exception:
         pass
 
@@ -545,6 +561,11 @@ def api_select_model():
     if model_id.startswith('ollama:'):
         sess['provider'] = 'ollama_local'
         sess['ollama_model'] = model_id[len('ollama:'):]
+        os.environ['CAIOS_BACKEND'] = 'ollama'
+    elif model_id.startswith('llamacpp:'):
+        sess['provider'] = 'llama_local'
+        sess['ollama_model'] = None   # llm_config asks the server for its real model name
+        os.environ['CAIOS_BACKEND'] = 'llamacpp'
     else:
         provider = model_id.split(':')[1] if ':' in model_id else model_id
         sess['provider'] = provider
@@ -620,6 +641,9 @@ def api_chat():
 
     user_id = sess['user_id']
     provider = sess.get('provider', 'ollama_local')
+    from llm_config import detect_backend as _detect
+    if _detect() == 'llamacpp' and provider == 'ollama_local':
+        provider = 'llama_local'
     ollama_model = sess.get('ollama_model')
     shared_memory['preferred_model'] = ollama_model
 
@@ -749,7 +773,7 @@ def api_chat():
             # ────────────────────────────────────────────────────────────────────
 
             conv.append(user_msg)
-            from ollama_config import get_cpol_ollama_params
+            from llm_config import get_cpol_ollama_params
             params = get_cpol_ollama_params(preferred_model=ollama_model or '')
             resp = ollama.chat(model=params['model'], messages=conv,
                                options=params['options'],
@@ -769,11 +793,16 @@ def api_chat():
     # KB stats for status bar update
     kb = _kb_stats()
 
+    # Read llm_metrics for TPS display
+    from llm_config import llm_metrics
+
     return jsonify({
         'response': response_text,
         'cpol_status': cpol_status,
         'domain': domain,
         'kb': kb,
+        'completion_tokens': llm_metrics.get('last_completion_tokens', 0),
+        'backend': llm_metrics.get('last_backend', 'none'),
     })
 
 # =============================================================================

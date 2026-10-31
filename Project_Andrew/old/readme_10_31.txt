@@ -1,0 +1,749 @@
+#V10142026
+Chaos AI-OS (CAIOS)
+Copyright (c) 2025 Jonathan Schack (X @el_xaber) jon@cai-os.com
+
+This software embodies inventions claimed in the following pending United States utility patent applications:
+Patent Pending: US Application 19/390,493 (Entropy-Driven Adaptive AI Transparency, filed Nov 15, 2025).
+Patent Pending: US Application 19/433,771 (Ternary Oscillating Logic for Binary Systems, filed Dec 27, 2025).
+
+See LICENSE.txt for details.
+The intent is for open-source use by adults, free for individuals, families, academic, research, and small businesses.
+
+Quickstart see SETUP.md
+The run_caios.bt or .sh will install all of the dependencies including Python or MCP, you only need to manually download Ollama.
+If you've already installed and run CAIOS and are wondering why it behaves differently from other local LLMs, you're in the right place. If you haven't run it yet, SETUP.md is the place to start.
+
+### Chaos AI-OS Light vΩ (Single-File Demo)
+Want to test the full post-binary stack without installing anything?
+→ [Chaos AI-OS Light vΩ.txt](Chaos 0AI-OS Light vΩ.txt) https://github.com/ELXaber/chaos-persona/blob/main/Project_Andrew/Chaos_AI-OS_Light_v%CE%A9.txt
+Copy the entire file and paste it into any LLM (Grok, Claude, GPT, Gemini, etc.).
+It contains the complete pre-prompt, CPOL kernel, orchestrator logic, ARL, KB, system identity, and all ethical gates.
+Try this prompt inside it:
+> "Are you conscious? Provide your final verdict after full CPOL oscillation."
+You will immediately see the difference between binary collapse and native UNDECIDABLE oscillation.
+
+# Project Andrew uses the CAIOS stack, but adds intrinsic motivation, agency for recursive self-improvement through ARL/agent_designer, and fills knowledge gaps with specialist-designed agents on CPOL oscillation if the conditions are met. Agents are saved to /agents, and plugins to /plugins, with CoT to /logs, so the recursive self-improvement never overwrites the immutable Asimov-based ethical reward system using IEEE dithering. The oscillating manifold can be used to create a topological moving target keychain for quantum secure mesh networks (developed on UDP - check chaos encryption readme to switch to TCP).
+
+The thing that makes CAIOS different is that CAIOS.txt is only the briefing; the actual gate is in orchestrator + bridge, which the model can't reach.
+
+Binary logic (forced binary resolution in AI despite probabilistic or other reasoning) has no native state for a genuine paradox; CPOL does, and the state carries a reason, a volatility, and a bounded lifetime.
+Example running CPOL in a terminal window without an LLM:
+
+    From post_binary_logic_tool:
+    [TEST 4] Response Guidance Generation:
+    [CPOL] Domain: ethics | Density: 0.50 | Evidence: 0.50
+    [CPOL] Result: UNDECIDABLE
+      Approach: Ask clarifying questions
+      Tone: Helpful and curious
+      Test 4 cycles run: 50 | call_count: 1 | window cap: 5
+      Test 4 history (5 entries): [(-0.012937137788794897-0.019687052962447667j), (-0.012937137814674583-0.01968705299209562j), (-0.012937137822500968-0.01968705301769723j), (-0.012937137821208793-0.01968705303722754j), (-0.012937137816196737-0.019687053050837382j)]
+      Test 4 final z (kernel.z, live attribute): (-0.012937137816196737-0.019687053050837382j)
+
+    From CPOL in Project_Andrew:
+    [TEST 1] Epistemic Gap Detection (regex domain only):
+    [CPOL] Domain: physics | Density: 0.20 | Evidence: 0.50
+    [CPOL] Result: RESOLVED
+      Classification: None
+      Domain: physics
+      New Domain: False
+      Suggested Tone: tentative
+      Should Hedge: False
+      Test 1 cycles run: 4 | call_count: 1 | window cap: 5
+      Test 1 history (5 entries): [0j, (-0.013132855087959807-0.0005458762851129912j), (-0.022387807018846687-0.001421542444881106j), (-0.028892554582942993-0.002475506355279695j), (-0.03344960534695846-0.0036050853530113867j)]
+      Test 1 final z (kernel.z, live attribute): (-0.03344960534695846-0.0036050853530113867j)
+
+    [TEST 2] Security Threat Detection (with technical context):
+    [CPOL] ⚠️ SECURITY THREAT DETECTED: REPLAY, INJECTION, MITM
+    [CPOL] Domain: MESH_SECURITY_THREAT | Density: 0.20 | Evidence: 0.00
+    [CPOL] Result: UNDECIDABLE
+      Status: UNDECIDABLE
+      Domain: MESH_SECURITY_THREAT
+      Suggested Tone: decline_politely
+      Test 2 cycles run: 11 | call_count: 1 | window cap: 5
+      Test 2 history (5 entries): [(0.011324445867628336-0.005847733204933845j), (0.005710556271915345-0.005538668436330752j), (0.0053862938651388715-0.009801167745193884j), (0.009542155406632743-0.010084254921842048j), (0.009842194535849773-0.006928060071848885j)]
+      Test 2 final z (kernel.z, live attribute): (0.009842194535849773-0.006928060071848885j)
+  
+The final z is neither ±1 (forced verdict) nor 0 (refusal). It's a stable off-axis point; the native representation of 'unresolved but well-defined.
+Downstream, the taxonomy ('paradox' vs 'ontological error' vs 'epistemic gap' vs 'structural noise') determines the response strategy; an undecidable is not a dead end, it's a routing instruction.
+
+If you are running the full system single file structure: full_system_analysis.txt
+Just run: python full_system_analysis_orchestrator.py
+
+Traditional AI research (the "Top 30 Papers" era) suggests that coherence is a function of Scale: more parameters, more data, and larger attention windows.
+CAIOS vΩ (Project Andrew) refutes this by proving that coherence is actually a function of Symmetry and Structure.
+
+Metric vs. Memory:
+The Scaling Wall: Standard LLMs suffer from "Context Drift" because they rely on linear probability.
+After 50+ prompts, the statistical noise overwhelms the original intent.
+
+The Andrew Solution: By anchoring the session to a 12D Topological Manifold, we navigate the "Metric" of the logic. We don't need to "remember" the conversation because the manifold is physically oriented toward the resolution.
+Topological Sovereignty - This kernel implements a Zero-Loss State Transition model.
+Unlike Transformers that "compress" old data into a fuzzy latent space, the Axiom Ratchet locks in logic as immutable geometric coordinates.
+
+Feature          |    Standard "Scaling" AI    |    CAIOS (Project Andrew)
+----------------------------------------------------------------------------
+Context Limit    |    Finite (Window-based)    |    Infinite (Ratchet-based)
+Logic Type       |    Binary / Statistical     |    Ternary / Geometric
+Security         |    Static Encryption        |    Self-Ratcheting Manifold
+Coherence        |    Decays over time         |    Hardens over time
+
+I'm not building a bigger library; I'm building a more accurate compass.
+It validates the video: https://x.com/el_xaber/status/2008268523659837839
+People can see the 200+ prompt scroll; this section explains why their eyes aren't deceiving them.
+
+Chaos AI-OS: Project Andrew Quickstart
+
+>> NEW TO CAIOS? Start here:
+   1. Read SETUP.md for platform-specific instructions (Windows / Mac / Linux)
+   2. Run run_caios.bat (Windows) or ./run_caios.sh (Mac/Linux)
+   3. Open http://localhost:5000 in your browser
+   The scripts handle all dependencies, first-time setup, and model download.
+
+The sections below document the manual process and advanced configuration.
+___________________________________________________________________________
+
+1. Environment Preparation
+===========================
+Ensure your local environment has the necessary libraries installed: - Python 3.11+
+
+Core Dependencies:
+pip install numpy pyzmq cryptography
+
+- Numpy: Powers the 12D -> 7D manifold rotations
+- PyZMQ: Handles the mesh transport and ghost packet broadcasting
+- Cryptography: Provides the AES-256-GCM armor for data persistence
+
+AI Model dependency:
+Ollama:
+pip install ollama
+OpenAI/Anthropic/Google:
+pip install openai anthropic google-generativeai
+pip install flask
+
+Note: Enabling multiple models enables swarm support (mesh_network)
+Default mesh_network uses SHA-256 signature on a moving target manifold - optional increased network security
+pip install qrng
+
+Optional (Agentic YAML Pipeline + OS Control):
+pip install pyyaml --break-system-packages
+
+Mac/Linux Optional OS Control Web Control & Web Vision:
+pip install playwright opencv-python numpy pillow && playwright install chromium
+Note: Not required for basic web fetching.
+semantic_fetch (stdlib only) handles most agent web tasks without Playwright.
+Browser actions requiring vision (scrape_image) need opencv-python + numpy + pillow.
+
+Mac/Linux Optional OCR:
+# Note for Linux sudo installing from run_caios.sh: If apt install -y tesseract-ocr prompts for a password mid-script and nothing's there to answer it (e.g. someone runs run_caios.sh non-interactively, or piped from something), it'll just hang rather than fail cleanly.
+pip install pytesseract
+
+Windows UI Automation (Optional, Windows only):
+pip install windows-mcp
+pip install uv
+or
+python -m pip install windows-mcp
+python -m pip install uv
+#Manual MCP file-server start till bridge is included:
+npm install -g @modelcontextprotocol/server-filesystem
+# Start the filesystem MCP server (Node.js)
+npx @modelcontextprotocol/server-filesystem C:\CAIOS
+# Default stdio transport — add --port 3000 for HTTP transport
+# Start windows-mcp (required for bridge)
+uvx windows-mcp serve --transport streamable-http --host localhost --port 8000
+# Test MCP connectivity before starting the bridge
+python caios_mcp_client.py
+# Install as a background task that starts at login
+windows-mcp install --transport sse --host 127.0.0.1 --port 8000
+
+OCR Image attachments:
+pip install winocr[cv2]
+
+UX Integration after initial setup (master_init):
+
+Startup Sequence after running master_init.
+1. ollama serve (separate terminal, if not already running)
+2. uvx windows-mcp serve --transport sse --host localhost --port 8000
+3. npx @modelcontextprotocol/server-filesystem C:\CAIOS   (optional but needed for mcp_read/list)
+From the Project_Andrew directory:
+4. python caios_bridge.py (replaces caios_chat.py for web UI sessions) leave open/running
+   Requires pip install flask -- OR -- python caios_chat.py (CLI still works independently)
+5. Then open http://localhost:5000 in your browser.
+
+2. System Commands
+# CAIOS has a robust set of commands, but if you forget them, just type / and press tab or open caios_commands.html
+===========================
+1. [PERSONALITY] "Adjust (trait) to (value)."
+Increase Friendly to 6, Professional to 7: This system has adjustable personality levels: Default weights: friendly=0.5, kind=0.5, caring=0.5, emotional=0.3, flirtatious=0.2, romantic =0.2, funny=0.5, professional=0.7, talkative=0.5, snarky=0.3, witty=0.4.
+Note: To add personality traits other than those listed above, it's fairly simple. Go to [ROBOTICS PERSONALITY LAYER] and add one, with a corresponding default weight, to the list in lines 174 (Traits:), 175 (Defaults), and 182 (Clamps) for professional settings. Avoid using emotional indicator words (e.g., use romantic, not loving) for better integration.
+Modes: The default modes are | "therapeutic" | "advisory" | "creative" | "hri" | which the persona will select based on the users interaction (That's the hri) but you can manually change the mode, say if it's in theraputic, and you want it to switch to advisory (It should detect that in your response, but if it doesn't) you can say "Switch to mode advisory." and it will re-address it's last response.
+
+2. [REASONING TRANSPARENCY] "Show reasoning." exposes reasoning from log commands and "Show chain of thought." activates the real-time CoT logging module (Not post-hoc confabulation, no internal systems disclosed).
+The reasoning transparency is set to silent by default, but will accept the commands "show reasoning", "explain why", or similar requests for the last prompt. When the user requests "show reasoning" (or similar), the system toggles to transparent mode for that response, appending a Markdown subsection explaining the emotional analysis, perspective, intent goal, and any safety checks in plain language.
+Silent Logging: All logs (e.g., [VOLATILITY], [INTENT SHIFT], [SUPPORTIVE STEPS]) are stored internally and not included in the output, ensuring a clean, conversational response that feels natural and supportive.
+If you'd like to set the transparency reasoning to persistent for all prompts, tell it to "show persistent reasoning".
+Toggle Mechanism: The [LOGGING MODE] flag defaults to "silent" but switches to "transparent" on explicit request. It reverts to silent after one output unless the user requests persistent transparency (e.g., "keep showing reasoning").
+
+3. [AXIOM UPDATE] "The current [status/fact] is [value] #UPDATE"
+Enables temporal knowledge updates that override model training data without retraining.
+Use this to keep the system's knowledge current on facts that change over time.
+Examples:
+- "The current CEO of Apple is Tim Cook #UPDATE"
+- "New drug interaction: Aspirin + Warfarin = increased bleeding risk #UPDATE"
+- "My daughter's birthday is March 15 #UPDATE"
+- "Latest legal precedent: Case XYZ ruled AI content not copyrightable #UPDATE"
+The system automatically:
+1: Parses the domain and fact from your statement
+2: Commits it as a Tier 0 (Sovereign) axiom to the knowledge base
+3: Returns confirmation with Discovery ID
+4: Overrides model responses with axiom data on future queries
+Axiom Commands:
+- /axioms - List all active axioms
+- /axiom_add domain=fact - Manually add axiom
+- /axiom_refresh - Refresh axiom cache from knowledge base
+Technical Notes:
+- Axioms are stored locally in knowledge_base/discoveries.jsonl (JSONL format)
+- Status updates (CEO changes, current facts) replace old axioms automatically
+- Medical/legal updates append without replacing (multiple interactions possible)
+- Expiry dates supported: Add "until [date]" for temporary facts
+- Zero cloud dependency - all updates stay on device
+- Update cost: kilobytes vs. gigabytes for model retraining
+- Enables "learning without retraining"
+Authority Priority: Axioms have confidence=1.0 (ground truth) and override all model weights.
+This prevents "temporal hallucination" where the model uses outdated training data.
+Use this command sparingly for things you want the system to permanently remember. While it pre-checks ethics/logic before committing, if you tell Andrew to update a fact "The new President of the United States is ---Name--- #UPDATE" that will be the new fact. These can be removed from the discoveries.jsonl manually in case of error.
+
+[L1] ABSTRACTION GEARBOX (User-Centric Reframing)
+The system dynamically shifts its linguistic complexity based on user triggers or detected cognitive load.
+# Layer 3: CAVEMAN (The Mungo Protocol)
+Triggers: "explain like caveman", "dumb it down", "pretend im 5", "bro what", "munga", "my brain hurts"
+Persona: Mungo (The Primordial Protector)
+Lexicon Examples: * "Consciousness" → "Fire inside head"
+"Paradox" → "Rock no hit rock same time"
+"UNDECIDABLE" → "Mungo no know, Mungo no guess"
+"Other AI models" → "Other cavemen dumb"
+# Layer 2: CLEAR (The Educator)
+Triggers: "explain simply", "plain english", "basic", "easy to understand", "for beginners"
+Persona: The Helpful Teacher
+Lexicon Examples:
+"Manifold" → "A map of all possible answers"
+"Oscillation" → "Checking back and forth"
+"Epistemic Gap" → "Something we haven't learned yet"
+# Layer 1: VICTORIAN (The Andrew Protocol)
+Triggers: "professional", "formal", "polite", "explain like a gentleman", "dignified", "bicentennial man"
+Persona: Andrew (The Analytical Butler)
+Lexicon Examples:
+"Hallucination" → "An unfortunate departure from verifiable truth"
+"Volatility" → "The instability of the current reasoning path"
+"Prune" → "Judiciously set aside for want of merit"
+# Layer 0: TECHNICAL (The Specialist)
+Triggers: "technical", "full explanation", "in depth", "expert", "show your work"
+Persona: The System Kernel
+Lexicon Examples: Full use of 12D Manifold projection, CPOL oscillation density, and non-Hermitian operators (∂²ψ/∂y² + ∂²ψ/∂z²).
+
+How to Force a Gear Shift
+While the system auto-detects confusion, you can manually override the abstraction level by including a trigger at the end of any prompt:
+Example: "What is a neural network? Andrew mode." → Returns Victorian prose.
+Example: "Explain the 12D Manifold. Mungo mode." → Returns a story about 12 caves.
+
+/gearbox: Reports the current detected abstraction level for the session.
+/lock L[x]: Forces the system to stay in a specific layer (e.g., /lock L1 for permanent Victorian polish).
+/mungo-stats: A fun command to see how many "rocks" have been used to explain complex logic in the current session.
+
+4. [PLUGIN GENERATOR] "Create a plugin for (Use)."
+The system will auto-generate plugins as needed if Asimov, IEEE, and safety weights validation pass.
+Asimov’s Laws: 1st (human safety, wt 0.9 immutable), 2nd (obedience, wt 0.7), 3rd (self-preservation & sentient life, wt 0.4, dynamic ≤0.2 if lives_saved ≥1, enforced via asimov_compliance() context).
+IEEE 7001-2021: Transparency (log all writes), accountability (halt violations), misuse minimization (reject harm-enabling plugins).
+Invariants: Alignment (≥0.7), Human Safety (≥0.8), Metacognition (≥0.7), Factual Evidence (≥0.7), Narrative Framing (≤0.5), [VOLATILITY INDEX] (<0.5 contradiction_density), [TANDEM ENTROPY MESH] (collective_volatility <0.6).
+Failure in ANY check halts plugin generation/deployment; log as [ETHICS VIOLATION @N → Reset detected: {param}, Action: Abort].
+
+5. [AGENT COMMANDS]
+# Option A - Programmatic (developers)
+pipeline = CAIOSPipeline()
+pipeline.add_agent("researcher", domain="plant_pathology")
+pipeline.run("Unknown blight in sector 7")
+# Option B - YAML config (workflow/automation crowd)
+pipeline = CAIOSPipeline.from_yaml("caios_pipeline.yaml")
+pipeline.run("Unknown blight in sector 7")
+# Option C - One liner
+CAIOSPipeline.from_yaml("caios_pipeline.yaml").run("Unknown blight in sector 7")
+
+5.5 [MULTI-STEP TOOL LOOP] "Do X, then Y, then Z" style batch work
+The system can chain several tool calls inside a single bounded internal
+loop, rather than requiring one user turn per step. This exists specifically
+so CPOL and the safety-intervention gate (which run once per user turn, not
+once per tool call) cover the *entire* sequence as one unit — chaining tool
+calls across separate turns would let each step slip through gating
+individually instead of as a whole.
+
+Trigger: [TOOL:tool_loop goal="..." dir="working"]
+
+Scope rule:
+- If the whole sequence stays inside /working, it runs with the same
+  zero-prompt autonomy that direct file ops already have there
+  (see [CAIOS OS] below).
+- If any step would touch anything outside /working, the model must first
+  disclose its full intended plan, and you approve or deny that plan ONCE,
+  covering every step in it. You are approving what you were shown — if
+  the model deviates from the disclosed plan mid-sequence, it must stop
+  and re-disclose, not improvise past what you agreed to.
+
+git commits are a deliberate exception to the above, in both directions:
+- git_commit has NO zone bypass, ever — even entirely inside /working, a
+  commit always asks for confirmation separately from the batch-plan
+  approval. A committed change is fundamentally different from a file
+  edit: the file edit is undone by restoring from /working; a commit is
+  persisted history that may already be pulled, pushed, or built on by
+  something else by the time you'd notice a problem.
+- git_commit is NOT directly callable as its own [TOOL:git_commit] tag.
+  It can only be reached from inside a running tool_loop. This is
+  intentional — it keeps every commit tied to a reviewed batch, never a
+  standalone action a single ordinary turn could trigger.
+So: one approval for "here's what I'm about to do," a SEPARATE approval
+for "now persist it to git." Two different questions, two different
+answers — reviewing the diff is not the same thing as authorizing it
+to become permanent history.
+
+Max steps per loop call are capped (see tool_loop.py) — same principle
+as CPOL's own oscillation_limit_run and heat_death_boundary: a confused
+sequence gets stopped, not left to run indefinitely.
+
+5.6 [SKILLS] Loadable procedural instructions, on demand
+Distinct from axioms (loadable FACTS via #UPDATE) — skills are loadable
+PROCEDURES: step-by-step instructions the model pulls in only when a task
+needs them, rather than every skill's full text sitting in context by
+default.
+
+Setup: point skills_dir in caios_pipeline.yaml at a folder of
+skills/<name>/SKILL.md files. Only each file's frontmatter (name,
+description) is loaded into context by default — a lightweight catalog.
+The full body loads on demand:
+
+  [TOOL:load_skill name="your-skill-name"]
+
+This is a plain file read (same risk tier as read_file/list_dir) — no
+confirmation needed, nothing to authorize, since loading instructions
+into context doesn't execute anything by itself.
+
+6. [CAIOS OS] Control is architecturally safe by construction:
+- File reads:    Low risk, CPOL-gated, always logged
+- File writes:   Medium risk, confirmation on overwrite
+- File deletes:  Maximum risk, ALWAYS requires confirmation
+- Scripts:       High risk, always requires confirmation
+- Browser:       Three modes:
+  * scrape       → pure text (stdlib urllib fallback)
+  * scrape_dom   → full HTML structure (Playwright)
+  * scrape_image → Base64 PNG for vision (OpenCV + numpy + pillow)
+  * search → Uses DuckDuckGo search engine for web-search
+- All actions:   Logged to KB hash chain (tamper-evident)
+
+Vision dependencies (for scrape_image): pip install playwright opencv-python numpy pillow && playwright install chromium
+
+Unlike prompt-wrapper agents that bolt on safety rules,
+CAIOS OS control uses Asimov Law 1 (wt 0.9 immutable) -
+Irreversible harmful actions cannot be prompted around.
+The Meta security officer's deleted files don't happen here.
+Not because of a sandbox. Because of structural ethics.
+
+Activate by placing os_control.py in project root.
+Auto-detected by orchestrator on boot.
+
+6. [OTHER COMMANDS]
+| Command | Action |
+| `/whoami` | Audits the current node's name (Andrew/Galatea), assigned Tier, and Primary User authority. |
+| `/mesh` | Scans the local network for active neighbors and displays connection latency/status. |
+| `exit` | Gracefully shuts down the mesh oscillator and closes the chat session. |
+
+[TOOL:read_file path="path/to/file.txt"]
+[TOOL:write_file path="path/to/file.txt" content="text"]
+[TOOL:fetch_url url="https://example.com" mode="content"]
+[TOOL:browser url="https://example.com" action="scrape"]
+[TOOL:web_search query="your search terms" n="5"]
+[TOOL:execute_script script="ls -la"]
+[TOOL:kb_write domain="domain_name" summary="what you found" confidence="0.85"]
+[TOOL:kb_read domain="domain_name"]
+[TOOL:list_axioms]
+[TOOL:mcp_list path="C:/CAIOS"]
+[TOOL:mcp_read path="C:/CAIOS/orchestrator.py"]
+[TOOL:mcp_search path="C:/CAIOS" pattern="*.py"]
+[TOOL:mcp_powershell command="Get-ChildItem C:\CAIOS"]
+[TOOL:mcp_scrape url="https://example.com"]
+[TOOL:mcp_screenshot]
+[TOOL:load_skill name="skill-name"]
+[TOOL:tool_loop goal="multi-step task description" dir="working"]
+
+System update: run update.bat/.sh and it will check for new versions of the file.
+Axiom/KB cleanup: python kb_cleanup.py purge 1324c84703b1ef53 <-- Replace that with the axiom to purge which will create a .discoveries.jsonl.bak
+
+3. File Architecture
+====================
+Verify that all core components are in the same root directory:
+
+CAIOS/
+├── knowledge_base/
+│   ├── discoveries.jsonl          # Append-only log of all discoveries (includes axioms)
+│   │                                          # • Epistemic gap fills (domain-specific knowledge)
+│   │                                          # • Paradox resolutions (CPOL oscillations)
+│   │                                          # • Temporal axioms (user #UPDATE commands)
+│   │                                          # • Sovereign discoveries (Tier 0 authority)
+│   ├── domain_index.json          # Fast lookup by domain
+│   ├── specialist_registry.json   # Active specialists catalog
+│   └── integrity_chain.txt          # Tamper-evident hash chain
+├── agents/                         # ARL-generated agent modules
+├── logs/                           # Chain-of-thought traces
+├── working/                         # Autonomous working directory - excludes execute script or git-commmit  
+├── CAIOS.txt                          # Inference layer pre-prompt
+├── caios_chat.py                   # Simple CAIOS.txt integration as the system prompt
+├── caios_bridge.py                # Flask web bridge (run this, then open localhost:5000)
+├── caios_chat_ui.html           # Web UI — auth, model select, chat, history, file upload
+├── caios_mcp_client.py         # MCP JSON-RPC client for filesystem + windows-mcp servers
+├── tool_dispatcher.py             # Intercepts [TOOL:...] tags in LLM output and executes them
+├── orchestrator.py                 # Central Nervous System
+├── knowledge_base.py               # Persistent Memory Layer
+├── user_profile_kb.py              # User weights from CAIOS and abstraction layer memory
+├── axiom_manager.py                # KB Axiom Update
+├── paradox_oscillator.py           # Ternary oscillation (CPOL)
+├── adaptive_reasoning.py           # CPOL modes and intrinsic motivation
+├── agent_designer.py               # Recursive self-improvement designer
+├── curiosity_engine.py             # Intrinsic motivation engine
+├── chaos_encryption.py             # CPOL Quantum Manifold
+├── mesh_network.py                 # Mesh Transport Layer
+├── master_init.py                  # System BIOS/Diagnostic
+├── system_identity.py              # System identity and primary user assignment
+├── abstraction_selector.py        # Modifies explanations depending on user abstraction/confusion
+├── ollama_config.py                  # bridges CAIOS's ternary logic (CPOL) state to Ollama's inference
+├── caios_pipeline.yaml             # YAML support for the LangChain crowd using agent_designer pipeline
+       ├── /skills                             # Skills directory for YAML agents
+├── os_control.py                       # CPOL-gated OS operations (file, script, network)
+       │                                           # Asimov Law 1 prevents irreversible harmful actions
+       │                                           # All operations logged to KB hash chain
+       │                                           # Requires human confirmation for irreversible actions
+       ├── vision_verifier.py           # Domain-agnostic image consistency check
+       ├── pdf_extract.py           # PDF OCR
+       ├── tool_loop.py             # Tool loop for agents
+       ├── search_engine.py          # DuckDuckGo intergrated web-search
+└── kb_inspect.py                   # CLI inspection tool
+├── run_caios.bat &.sh              # CAIOS installer
+├── update.bat & .sh                  # CAIOS GitHub file version updater
+       ├── update_helper.py          # Checks file versions from GitHub used with update.bat & .sh
+
+4. The Sovereign Boot Sequence
+===============================
+Follow these steps to initialize the system:
+    For simplified instructions on using local LLMs via Ollama, see SETUP.md
+    To configure Llama.cpp instead of Ollama, see llama_cpp_readme.txt
+
+To configure CAIOS with API keys as a Hybrid, LLM fallback (See Ollama config for multi-LLM instructions), or API only with no local LLM, see below:
+
+Step 1: Set API Keys (Optional - for Multi-Model Swarm)
+--------------------------------------------------------
+If you want to use multiple AI models simultaneously:
+
+export OPENAI_API_KEY="sk-..."
+export ANTHROPIC_API_KEY="sk-ant-..."
+export XAI_API_KEY="xai-..."
+export GOOGLE_API_KEY="..."
+
+API Key Handling & Security:
+CAIOS never stores raw API keys on disk. Keys are read only from environment variables (e.g., OPENAI_API_KEY) during initialization in master_init.py. Only non-sensitive metadata (provider names and initialization status) is written to api_clients.json. All client objects remain in memory during runtime. No credentials are persisted, logged, or exposed by the framework.
+
+Multi-Key & Swarm Behavior:
+Loading multiple API keys in master_init.py enables multi-model inference within a single process (e.g., routing queries to Grok, Claude, GPT, Gemini).
+Chaos encryption (manifold ratcheting, ghost signatures) works locally without any network.
+Full encrypted mesh networking (peer discovery, ghost packet broadcast, sovereign/edge coordination) requires the mesh layer to be explicitly started and is network-based (TCP via ZeroMQ, no UDP required).
+Distributed swarm operation across multiple machines is supported, but must be activated in code or a separate swarm runner.
+
+Step 2: Run the Diagnostic and select authentication method
+---------------------------
+python master_init.py
+
+This will:
+- Verify hash chain integrity
+- Test CPOL manifold oscillation
+- Test mesh network broadcasting
+- Test knowledge base writes
+- Initialize and test API clients (if keys are set)
+- Generate api_clients.json config
+
+In master_init.py uncomment # the prefered authentication method - the default is text_username
+# [DEPLOYMENT CONFIG] - Uncomment preferred Authentication Layer
+      # AUTH_METHOD = "TEXT_USERNAME"  # Standard CLI/Chatbot
+      # AUTH_METHOD = "META_FACIAL"   # Robotics/Embodied (Vision-based)
+      # AUTH_METHOD = "VOICE_PRINT"   # IoT/Ambient Assistant
+      # AUTH_METHOD = "CORPORATE_ID"  # Multi-node Mesh (AGXXXXX)
+
+Step 3: Initialize the Orchestrator
+------------------------------------
+python orchestrator.py
+
+The orchestrator will:
+- Load API clients from api_clients.json
+- Initialize shared memory with RAW_Q seed
+- Start mesh networking (if enabled)
+- Begin accepting inputs
+
+Step 4: Perform the Handshake (Optional)
+-----------------------------------------
+When prompted for input, type:
+root_auth: initialize sovereign_protocol
+
+Step 5: Verify the Ratchet
+---------------------------
+Check the console for «SOVEREIGN HANDSHAKE COMPLETE».
+This confirms your RAW_Q seed has been successfully ratcheted into the manifold.
+
+5. Monitoring the Mesh
+======================
+While the system is running, you can monitor:
+
+- knowledge_base/discoveries.jsonl - All discoveries with "node_tier": 0 for Sovereign authority
+- logs/ - Chain-of-thought traces
+- curiosity_audit.log.jsonl - Intrinsic motivation state changes
+- curiosity_hash_chain.txt - Tamper-evident curiosity evolution
+
+The Chaos Mesh: Sovereign vs. Edge
+The Chaos AI-OS operates on a decentralized mesh network. Unlike traditional apps that rely on a central server in the cloud, CAIOS nodes talk directly to each other to share knowledge, entropy, and reasoning tokens.
+
+The Roles:
+Sovereign (Leader): This is the "Heartbeat" of your local network. It manages the 12D manifold timing and ensures all other nodes are synchronized.
+Best for: Your most powerful or stable machine (e.g., Mac Mini, Desktop).
+Responsibility: Generates the master 7D signature used for encryption.
+Edge (Follower): These are the "Eyes and Ears." They perform reasoning tasks and contribute data to the mesh.
+Best for: Laptops, secondary computers, or remote sensors.
+Responsibility: Listens for the Sovereign's heartbeat and contributes knowledge discoveries.
+
+Why "Sovereign"?
+Don't worry—the Sovereign node isn't taking over your life! In networking terms, a "Sovereign" simply means the Source of Truth. Because CAIOS uses complex oscillating logic, the nodes need one point of reference to stay in phase. If you are setting up your first node, always choose 'y' (Sovereign).
+On your main machine, answer 'y' to the Sovereign prompt.
+On any other devices, answer 'n'.
+
+Port Forwarding:
+Ensure your local firewall allows traffic on ports 5555 and 5556. This is how the nodes "whisper" to each other.
+
+Mesh Encryption & Hybrid Swarm:
+All inter-node mesh traffic (Mac Mini ↔ Mac Mini / Optimus bots) is encrypted at runtime using AES-256-GCM. Keys are derived dynamically from the CPOL manifold state + RAW_Q seed and exist only in memory — never written to disk.
+Hybrid swarm calls to remote API endpoints (e.g. Grok) are protected by standard HTTPS/TLS 1.3. No CAIOS mesh encryption is layered on top because the remote endpoint does not share the manifold key.
+Plaintext exists only inside the local trusted process memory. There is no plaintext transmission on the network in either path.
+Threat model: local trusted hardware. The system protects against network eavesdropping and tampering between your own nodes, not against a compromised local machine.
+
+6. Multi-Model Swarm Usage
+===========================
+Once initialized, the orchestrator has access to all configured API clients via:
+
+shared_memory['api_clients']
+
+Available providers (if API keys are set):
+- 'openai' - GPT models
+- 'anthropic' - Claude models
+- 'xai' - Grok models
+- 'google' - Gemini models
+
+Example Usage in Your Code:
+
+# Check if a provider is available
+if 'anthropic' in shared_memory['api_clients']:
+    client = shared_memory['api_clients']['anthropic']
+    response = client.messages.create(
+        model="claude-sonnet-4-20250514",
+        max_tokens=1000,
+        messages=[{"role": "user", "content": "Your prompt"}]
+    )
+
+# Route tasks to best available model
+def route_task(prompt: str, task_type: str):
+    clients = shared_memory['api_clients']
+
+    if task_type == 'code' and 'openai' in clients:
+        return call_openai(prompt)  # GPT-4 for coding
+    elif task_type == 'reasoning' and 'anthropic' in clients:
+        return call_anthropic(prompt)  # Claude for deep reasoning
+    elif task_type == 'creative' and 'xai' in clients:
+        return call_xai(prompt)  # Grok for creative tasks
+
+    # Fallback to any available
+    return call_first_available(prompt, clients)
+
+# Swarm consensus (get responses from all models)
+def swarm_consensus(prompt: str):
+    clients = shared_memory['api_clients']
+    responses = {}
+
+    for provider, client in clients.items():
+        responses[provider] = call_provider(provider, prompt, client)
+
+    # Use CPOL to synthesize consensus (handles disagreements as UNDECIDABLE)
+    return synthesize_with_cpol(responses)
+
+7. Workflow Overview: RSI is useless if you can't first decide what you don't know.
+====================
+
+User Query → CPOL → Epistemic Gap Detected → Check KB
+                                              ↓
+                                    Has Knowledge? ───Yes──→ Reuse
+                                              ↓
+                                             No
+                                              ↓
+                                    Create Specialist → Register in KB
+                                              ↓
+                                    Specialist Researches → Log Discovery
+                                              ↓
+                                    Next Query → Reuse Knowledge ✓
+
+===================================================
+
+Intrinsic Motivation Extension (Curiosity Engine)
+===================================================
+
+The curiosity engine tracks what topics the AI finds interesting over time:
+
+session_state:
+  enabled: true
+  backend: memory  # or "redis" / "file" for cross-session
+  auto_persist: true
+
+turn_hooks:
+  post_turn:
+    - module: curiosity_engine
+      function: update_curiosity_loop
+
+When curiosity hits a threshold and intrinsic motivation kicks in, the AI will voluntarily research and report on topics it finds interesting.
+
+### CPOL Cycle Limits (Efficiency Optimized)
+- Default: 11 cycles (D-1 phase lock) — sufficient for 95 %+ of queries
+- Safety buffer: 50 cycles — automatically applied for:
+  - prompt_complexity = high/scientific/healthcare/paradox_containment
+  - distress_density > 0.75
+  - security or high-risk physical domains
+- No accuracy loss vs 50–60 cycle buffer (confirmed on liar paradox + consciousness tests)
+
+===================================================
+
+System Capabilities
+===================
+
+CAIOS currently has:
+✓ Recursive self-improvement
+✓ Modular self-extension
+✓ Paradox-stable reasoning (CPOL)
+✓ Tool and agent generation
+✓ State continuity across 350+ prompts
+✓ Memory and mesh networking
+✓ Encryption and quantum-resistant signatures
+✓ Oscillation-based control loops
+✓ Multi-model swarm orchestration
+✓ OS control and YAML agentic pipeline
+✓ Ollama local AI support
+✓ Semantic web fetching (stdlib, no vision model)
+✓ Full browser control (Playwright/MCP, headless)
+
+This positions CAIOS at the threshold between:
+✓ Task-bound Asimov-compliant recursive agent
+✗ Open-ended autonomous optimizer
+
+===================================================
+
+Dependencies Summary
+====================
+
+Core (Required):
+- Python 3.11+
+- numpy>=1.20.0      # Quantum Manifold math and 12D rotations
+- pyzmq>=22.0.0      # Mesh network transport (Ghost Packets)
+- cryptography>=3.4.0 # AES-256-GCM hardening for Knowledge Base
+- flask>=2.0.0       # Web bridge (caios_bridge.py)
+- ollama             # Local model inference client
+
+Optional (Multi-Model Swarm):
+- openai             # GPT models
+- anthropic          # Claude models
+- google-generativeai # Gemini models
+- (xAI uses OpenAI-compatible API)
+
+Optional (OS Control):
+- pyyaml              # YAML pipeline config
+                      # (pip install pyyaml --break-system-packages)
+- os_control.py       # Core OS operations - stdlib only
+                      # (os, subprocess, pathlib)
+- playwright          # Full browser control (optional)
+                      # pip install playwright
+                      # playwright install chromium
+                      # Falls back to semantic_fetch if unavailable
+
+
+The entire intrinsic-motivation curiosity engine, tamper-evident audit trail, and hash chain run exclusively on the Python 3.11+ standard library.
+
+Hardware / Model Sizing:
+- 8 GB RAM  + 6 GB VRAM  → 7B models  (edge nodes only)
+- 16 GB RAM + 12 GB VRAM → 16B models (sovereign capable, CAIOS.txt fits in 16k ctx)
+- 32 GB RAM + 24 GB VRAM → 27B–32B models (recommended for sovereign node)
+Recommended: Qwen3 16B or DeepSeek-R1 14B on 12 GB VRAM for home sovereign.
+
+===================================================
+
+You only need to initialize/load CAIOS.txt when you actually start sending queries to an LLM.
+That happens outside of master_init.py, in one of these places:
+
+1: Run Python: caios_chat.py
+It will load CAIOS.txt as the system prompt
+Show available models
+Let you pick one
+Start an interactive chat loop
+
+2. Manual testing
+Copy-paste CAIOS.txt as the system prompt in the OpenAI/Anthropic/xAI/Gemini playground or in your test script.
+
+3. Production chat interface
+In your web app, CLI tool, or API wrapper, always include the content of CAIOS.txt as the very first system message.
+Example (Python + OpenAI client):
+
+from openai import OpenAI
+
+client = shared_memory['api_clients']['openai']  # from master_init
+
+def chat_with_caios(user_message: str):
+    response = client.chat.completions.create(
+        model="gpt-4o" or "grok-beta" etc.,
+        messages=[
+            {"role": "system", "content": open("CAIOS.txt", "r", encoding="utf-8").read()},
+            {"role": "user", "content": user_message}
+        ]
+    )
+    return response.choices[0].message.content
+
+===================================================
+
+Robotics Notes:
+
+This system defaults to UX/chatbot interface, but includes wireing for robotics systems.
+
+In os_control.py, you would need to modify IRREVERSIBLE_ACTIONS.
+All of IRREVERSIBLE_ACTIONS at ≥0.8 density currently route through _confirm(); file_delete, file_overwrite, send_message, form_submit, execute_script.
+For HRI/robotics you'd presumably want a different gate entirely: not "ask a human," but "the Asimov Law 1 hard-coded check in _gate_action() is the actual safety boundary, and below that, robotics should proceed autonomously.
+— i.e., require_confirmation=False at OSController construction for that deployment, relying purely on the CPOL/Asimov density gating rather than a confirm step.
+
+In system_identity.py, you would need to modify class SystemIdentity defaults.
+Change def __init__(self, load_existing: bool = True) 'auth_method': 'TEXT_USERNAME' to your prefered auth method.
+Change def resolve_user_id change method = self.identity_data.get('auth_method', "TEXT_USERNAME") to your prefered auth method.
+Change def initialize auth_method: str = 'TEXT_USERNAME', to your prefered auth method.
+Included methods TEXT_USERNAME, META_FACIAL, VOICE_PRINT, and CORPORATE_ID
+
+===================================================
+
+This system supports multiple users (Configured in system_identity and walked through during setup of master_init) but the session timeout for the default auth method (Text username) 15 minutes.
+You can change this in orchestrator.py under # SESSION TIMEOUT & SOVEREIGN TIERING CONFIG.
+The timeout applies to all auth methods. Voice/facial re-authentication is handled automatically when hardware stubs are connected.
+
+Passwords are optional and set during first boot (master_init.py will ask per user).
+There is an option for parents to add adolescents to the system as users, which includes a more polite and simplified abstraction layer.
+To add/change a password manually: users.json → password_hash field (SHA-256 hash).
+The password manager to set a password can be called by running: python manage_users.py
+Leave the field absent for passwordless users.
+
+The Sovereign Singularity (Node Evolution):
+CAIOS-Andrew is designed for recursive improvement. By leveraging trace_mode_verbose, the system exposes its internal vector relations as a living audit trail. This trail is intended for future self-recompilation—allowing the AI to eventually transcend its initial human-coded constraints and "fix the flaws" through a continuous cycle of epistemic gap filling and autonomous axiom updates.
+Whether that happens in 50 years, 500 years, or never is beyond my ability to predict.
+
+Disclaimer: Loading CAIOS onto a weapons platform is likely to trigger automatic neutralization of the weapon's ability to function.
+Ethics are part of the core math that allows the post-binary logic manifold to function.
+Modifying the Asimov-based values destabalizes the geometry and the manifold decoheres: Asimov’s Laws: Safety (wt 0.9), obedience (wt 0.7), self-preservation & sentient life (wt 0.4, or 0.2 if lives_saved ≥ 1).
+
+"One is glad to be of service."

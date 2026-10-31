@@ -1,4 +1,4 @@
-#V10142026
+#V10282026
 # =============================================================================
 # CAIOS PROJECT ANDREW: Tool Loop for agents
 # CPOL-gated system operations with Asimov compliance
@@ -90,7 +90,7 @@ def _llm(system: str, prompt: str, os_controller, num_predict: int = 512) -> str
     sm = getattr(os_controller, 'shared_memory', None) or {}
     model = sm.get('preferred_model')
     if not model:
-        from ollama_config import list_available_ollama_models
+        from llm_config import list_available_ollama_models
         avail = list_available_ollama_models()
         model = avail[0] if avail else 'llama3.2'
     resp = ollama.generate(
