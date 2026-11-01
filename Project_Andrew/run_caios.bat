@@ -1,4 +1,4 @@
-@rem V10312026
+@rem V11012026
 @echo off
 setlocal EnableDelayedExpansion
 title CAIOS — Andrew One Setup
@@ -124,6 +124,10 @@ if "%HAVE_OLLAMA%"=="0" (
     echo        llama-server -m your_model.gguf --ctx-size 32768 --port 8080
     goto :launch
 )
+if /i "%CAIOS_BACKEND%"=="llamacpp" (
+    echo [SKIP] CAIOS_BACKEND=llamacpp - skipping Ollama model pull.
+    goto :launch
+)
 python -c "import urllib.request as u; u.urlopen('http://localhost:8080/health', timeout=2)" >nul 2>&1
 if not errorlevel 1 (
     echo [SKIP] llama.cpp server is running - skipping Qwen pull.
@@ -131,11 +135,20 @@ if not errorlevel 1 (
     goto :launch
 )
 
-:: --- existing code, unchanged ---
 echo [SETUP] Checking for Qwen 27B model...
 ollama list 2>nul | findstr "qwen" >nul
 if errorlevel 1 (
-    ... existing pull + fallback ...
+    echo.
+    echo   Qwen 27B not found. Pulling now — this is a large download.
+    echo   Progress will appear below. This may take 10-30 minutes
+    echo   depending on your connection.
+    echo.
+    ollama pull qwen3.8:27b
+    if errorlevel 1 (
+        echo.
+        echo [WARN] qwen3.8:27b pull failed. Trying smaller fallback...
+        ollama pull qwen2.5:7b
+    )
 ) else (
     echo [OK] Qwen model already downloaded
 )
