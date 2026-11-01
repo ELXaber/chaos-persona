@@ -411,8 +411,6 @@ def run_system_diagnostic():
     print("        DIAGNOSTIC COMPLETE: SYSTEM READY FOR SOVEREIGN BOOT")
     print("="*80)
 
-    start_services()
-
 def write_authorized_users(identity: SystemIdentity, filepath: str = "users.json", passwords: Optional[dict] = None):
     """
     Derive flat authorized user list from system_identity.
