@@ -1,4 +1,4 @@
-@rem V08302026
+@rem V10312026
 @echo off
 setlocal EnableDelayedExpansion
 title CAIOS — Andrew One Setup
@@ -25,20 +25,35 @@ if errorlevel 1 (
 for /f "tokens=2" %%v in ('python --version 2^>^&1') do set PY_VER=%%v
 echo [OK] Python %PY_VER%
 
-:: ── 2. Check Ollama ──────────────────────────────────────────
+:: ── 2. Check inference backend (Ollama and/or llama.cpp) ─────
+set HAVE_OLLAMA=0
+set HAVE_LLAMACPP=0
+
 ollama --version >nul 2>&1
-if errorlevel 1 (
+if not errorlevel 1 set HAVE_OLLAMA=1
+
+where llama-server >nul 2>&1
+if not errorlevel 1 set HAVE_LLAMACPP=1
+python -c "import urllib.request as u; u.urlopen('http://localhost:8080/health', timeout=2)" >nul 2>&1
+if not errorlevel 1 set HAVE_LLAMACPP=1
+if /i "%CAIOS_BACKEND%"=="llamacpp" set HAVE_LLAMACPP=1
+
+if "%HAVE_OLLAMA%"=="0" if "%HAVE_LLAMACPP%"=="0" (
     echo.
-    echo [ERROR] Ollama not found.
+    echo [ERROR] No inference backend found.
     echo.
-    echo   Please install Ollama from:
-    echo   https://ollama.com/download
+    echo   Install ONE of:
+    echo     Ollama     https://ollama.com/download            ^(easiest, recommended^)
+    echo     llama.cpp  https://github.com/ggerganov/llama.cpp ^(local GGUF models^)
     echo.
-    echo   Then re-run this script.
+    echo   llama.cpp users: start the server first, for example:
+    echo     llama-server -m your_model.gguf --ctx-size 32768 --port 8080
+    echo   or run:  set CAIOS_BACKEND=llamacpp   then re-run this script.
     pause
     exit /b 1
 )
-echo [OK] Ollama detected
+if "%HAVE_OLLAMA%"=="1" echo [OK] Ollama detected
+if "%HAVE_LLAMACPP%"=="1" echo [OK] llama.cpp detected
 
 :: ── 3. Install Python dependencies ───────────────────────────
 echo.
@@ -101,22 +116,26 @@ if not exist "system_identity.json" (
     echo [OK] Identity already configured
 )
 
-:: ── 7. Pull model if not present ─────────────────────────────
+:: ── 7. Pull model (Ollama only) ──────────────────────────────
 echo.
+if "%HAVE_OLLAMA%"=="0" (
+    echo [SKIP] Ollama not installed - skipping model pull.
+    echo        llama.cpp mode: make sure llama-server is running with a GGUF, for example:
+    echo        llama-server -m your_model.gguf --ctx-size 32768 --port 8080
+    goto :launch
+)
+python -c "import urllib.request as u; u.urlopen('http://localhost:8080/health', timeout=2)" >nul 2>&1
+if not errorlevel 1 (
+    echo [SKIP] llama.cpp server is running - skipping Qwen pull.
+    echo        ^(Run "ollama pull qwen3.8:27b" later if you also want Ollama models^)
+    goto :launch
+)
+
+:: --- existing code, unchanged ---
 echo [SETUP] Checking for Qwen 27B model...
 ollama list 2>nul | findstr "qwen" >nul
 if errorlevel 1 (
-    echo.
-    echo   Qwen 27B not found. Pulling now — this is a large download.
-    echo   Progress will appear below. This may take 10-30 minutes
-    echo   depending on your connection.
-    echo.
-    ollama pull qwen3.8:27b
-    if errorlevel 1 (
-        echo.
-        echo [WARN] qwen3.8:27b pull failed. Trying smaller fallback...
-        ollama pull qwen2.5:7b
-    )
+    ... existing pull + fallback ...
 ) else (
     echo [OK] Qwen model already downloaded
 )

@@ -1,4 +1,4 @@
-#V08302026
+#V08312026
 #!/usr/bin/env bash
 # CAIOS — Andrew One  |  First-Time Setup & Launch
 # Works on macOS (Intel + Apple Silicon) and Linux (Ubuntu/Debian/Arch)
@@ -57,10 +57,21 @@ if [[ -z "$PYTHON" ]]; then
   Then re-run this script."
 fi
 
-# ── 2. Check Ollama ──────────────────────────────────────────
-if ! command -v ollama &>/dev/null; then
+# ── 2. Check inference backend (Ollama and/or llama.cpp) ─────
+HAVE_OLLAMA=0
+HAVE_LLAMACPP=0
+command -v ollama &>/dev/null && HAVE_OLLAMA=1
+
+if command -v llama-server &>/dev/null \
+   || "$PYTHON" -c "import urllib.request as u; u.urlopen('http://localhost:8080/health', timeout=2)" &>/dev/null \
+   || [[ "${CAIOS_BACKEND:-}" == "llamacpp" ]]; then
+    HAVE_LLAMACPP=1
+fi
+
+# Neither found: install Ollama as the default (existing behavior)
+if [[ "$HAVE_OLLAMA" -eq 0 && "$HAVE_LLAMACPP" -eq 0 ]]; then
     echo ""
-    info "Ollama not found. Installing..."
+    info "No inference backend found. Installing Ollama (default)..."
     if [[ "$OS" == "mac" ]]; then
         if command -v brew &>/dev/null; then
             brew install ollama
@@ -69,11 +80,13 @@ if ! command -v ollama &>/dev/null; then
        (or install Homebrew first: https://brew.sh)"
         fi
     else
-        # Official Linux install script
         curl -fsSL https://ollama.com/install.sh | sh
     fi
+    HAVE_OLLAMA=1
 fi
-ok "Ollama $(ollama --version 2>/dev/null | head -1)"
+
+[[ "$HAVE_OLLAMA" -eq 1 ]] && ok "Ollama $(ollama --version 2>/dev/null | head -1)"
+[[ "$HAVE_LLAMACPP" -eq 1 ]] && ok "llama.cpp backend detected"
 
 # ── 3. Install Python dependencies ───────────────────────────
 echo ""
@@ -150,20 +163,32 @@ else
     ok "Identity already configured"
 fi
 
-# ── 7. Pull model ─────────────────────────────────────────────
+# ── 7. Model / backend check ─────────────────────────────────
 echo ""
-info "Checking for Qwen model..."
-if ! ollama list 2>/dev/null | grep -q "qwen"; then
-    echo ""
-    echo "  Qwen 27B not found. Pulling now."
-    echo "  This is a large download — may take 10-30 minutes."
-    echo ""
-    if ! ollama pull qwen3.8:27b; then
-        warn "qwen3.8:27b failed. Trying smaller fallback..."
-        ollama pull qwen2.5:7b || warn "Model pull failed — set one up manually with: ollama pull <model>"
+info "Checking inference backend..."
+
+# Prefer llama.cpp if its server is already up
+if "$PYTHON" -c "import urllib.request as u; u.urlopen('http://localhost:8080/health', timeout=2)" &>/dev/null \
+   || "$PYTHON" -c "import urllib.request as u; u.urlopen('http://localhost:8080/v1/models', timeout=2)" &>/dev/null; then
+    ok "llama.cpp server detected on :8080 — skipping Ollama model pull"
+    echo "         (Start with e.g. llama-server -m your_model.gguf --ctx-size 32768 --port 8080)"
+elif command -v ollama &>/dev/null; then
+    info "Checking for Qwen model in Ollama..."
+    if ! ollama list 2>/dev/null | grep -qi "qwen"; then
+        echo ""
+        echo "  Qwen model not found. Pulling qwen3.8:27b (large download, 10–30 min)..."
+        echo ""
+        if ! ollama pull qwen3.8:27b; then
+            warn "qwen3.8:27b failed — trying smaller fallback..."
+            ollama pull qwen2.5:7b || warn "Model pull failed. Set one up manually: ollama pull <model>"
+        fi
+    else
+        ok "Qwen model already present in Ollama"
     fi
 else
-    ok "Qwen model already downloaded"
+    warn "Neither llama.cpp server nor Ollama detected.
+         - For llama.cpp: start the server, then re-run or just launch the bridge.
+         - For Ollama: install from https://ollama.com then: ollama pull qwen3.8:27b"
 fi
 
 # ── 8. Launch ────────────────────────────────────────────────

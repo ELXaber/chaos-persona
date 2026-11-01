@@ -1,4 +1,4 @@
-#V10282026
+#V10312026
 # =============================================================================
 # CAIOS PROJECT ANDREW: Master Integration & Sovereign Boot
 # Pre-requisites auto-install from run_caios.bat or run_caios.sh - fallback directions below
@@ -159,6 +159,33 @@ def save_api_client_config(clients: dict, filepath: str = "api_clients.json"):
         json.dump(config, f, indent=2)
 
     return filepath
+
+def start_services() -> None:
+    """Optional: bring up Ollama if installed and not already running."""
+    try:
+        import shutil, llm_config
+        if shutil.which('ollama'):
+            if not llm_config.check_ollama_available():
+                print("[INIT] Starting Ollama...")
+                import subprocess
+                subprocess.Popen(
+                    ['ollama', 'serve'],
+                    stdout=subprocess.DEVNULL,
+                    stderr=subprocess.DEVNULL
+                )
+                # brief wait
+                import time
+                for _ in range(10):
+                    if llm_config.check_ollama_available():
+                        print("[INIT] Ollama ready")
+                        break
+                    time.sleep(0.5)
+            else:
+                print("[INIT] Ollama already running")
+        else:
+            print("[INIT] Ollama not installed — skipping (llama.cpp / API mode OK)")
+    except Exception as e:
+        print(f"[INIT] Service start skipped: {e}")
 
 def _prompt_password(username: str) -> Optional[str]:
     """
@@ -358,22 +385,22 @@ def run_system_diagnostic():
         print(f"✗ Identity initialization failed: {e}")
         traceback.print_exc()
 
-    # 7. Create Ollama Configuration Bridge
-    print("\n[STEP 6.5] Creating Ollama Configuration Bridge...")
+    # 7. Verify LLM configuration bridge
+    print("\n[STEP 7] Verifying LLM Configuration Bridge...")
     try:
-        # llm_config.py is already in the repo
-        # Just verify CAIOS.txt exists
         if not os.path.exists("CAIOS.txt"):
-            print("⚠ CAIOS.txt not found - Ollama will run without system prompt")
+            print("⚠ CAIOS.txt not found - the LLM will run without a system prompt")
         else:
-            print("✓ CAIOS.txt found - will be loaded as Ollama system prompt")
+            print("✓ CAIOS.txt found - will be loaded as the system prompt")
 
-        # Test import
         import llm_config
-        print(f"✓ Ollama config ready for Node Tier {llm_config.NODE_TIER}")
-
+        backend = llm_config.detect_backend()
+        print(f"✓ LLM config ready for Node Tier {llm_config.NODE_TIER} | backend: {backend}")
+        if backend == 'none':
+            print("  No inference backend is running yet. Start Ollama (ollama serve) or "
+                  "llama-server (-m model.gguf --port 8080) before launching the bridge.")
     except Exception as e:
-        print(f"⚠ Ollama config issue: {e}")
+        print(f"⚠ LLM config issue: {e}")
 
     # 8. Test Multi-Model Swarm (if clients available)
     if shared_memory['api_clients']:
@@ -384,6 +411,7 @@ def run_system_diagnostic():
     print("        DIAGNOSTIC COMPLETE: SYSTEM READY FOR SOVEREIGN BOOT")
     print("="*80)
 
+    start_services()
 
 def write_authorized_users(identity: SystemIdentity, filepath: str = "users.json", passwords: Optional[dict] = None):
     """
