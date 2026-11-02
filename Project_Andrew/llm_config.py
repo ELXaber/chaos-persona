@@ -1,4 +1,4 @@
-#V11012026
+#V11022026
 # =============================================================================
 # CAIOS PROJECT ANDREW: Ollama / llama.cpp Configuration Bridge
 # Bridges CAIOS's ternary logic (CPOL) state to inference parameters.
@@ -383,7 +383,7 @@ def classify_self_harm_risk(
                 available = list_available_ollama_models()
                 model = available[0] if available else 'llama3.2'
             response = ollama.generate(
-                model=model, prompt=user_input, system=system_prompt,
+                model=model, prompt=user_input, system=system_prompt, think=False,
                 options={"temperature": 0.0, "num_predict": 60}
             )
             text = (getattr(response, 'response', '') or '').strip()

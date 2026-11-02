@@ -1,4 +1,4 @@
-#V11012026
+#V11022026
 # =============================================================================
 # CAIOS PROJECT ANDREW: Hardened Orchestrator
 # This acts as the central nervous system connecting everything
@@ -1649,18 +1649,30 @@ def system_step(user_input: str, prompt_complexity: str = "low",
 
     if USER_KB_AVAILABLE and shared_memory.get('user_profile_kb'):
         try:
-            from user_profile_kb import infer_trait_deltas, parse_trait_command
+            from user_profile_kb import (infer_trait_deltas, parse_trait_command, adapt_personality,
+                                         mark_explicit, strip_attachments, _TONE_COMPLAINT)
             upkb = shared_memory['user_profile_kb']
             uid = shared_memory.get('active_user', 'default')
+            typed = strip_attachments(user_input)          # never infer from attached content
+            distress = shared_memory.get('distress_density', 0.0)
+            domain = cpol_result.get('domain')
             cur = upkb['load'](uid)['personality']
-            deltas = parse_trait_command(user_input, cur) or infer_trait_deltas(
-                user_input, shared_memory.get('distress_density', 0.0), cur,
-                cpol_result.get('domain'))
-            if deltas:
-                upkb['update_personality'](uid, deltas, reason='auto')
-            prof = upkb['load'](uid)
-            shared_memory['personality_weights'] = prof['personality']
-            shared_memory['neurosymbolic'] = prof['neurosymbolic']   # feeds _estimate_expertise
+
+            explicit = parse_trait_command(typed, cur)
+            if explicit:
+                upkb['update_personality'](uid, explicit, reason='command')
+                for t in explicit:
+                    mark_explicit(uid, t)
+            else:
+                reactive = infer_trait_deltas(typed, distress, cur, domain)   # complaints, distress back-off
+                if reactive:
+                    upkb['update_personality'](uid, reactive, reason='auto-reactive')
+                    if _TONE_COMPLAINT.search(typed):      # "too flirty" should stick, not decay back
+                        for t in reactive:
+                            mark_explicit(uid, t)
+
+            shared_memory['personality_weights'] = adapt_personality(uid, typed, distress, domain)
+            shared_memory['neurosymbolic'] = upkb['load'](uid)['neurosymbolic']
         except Exception as e:
             print(f"[USER_KB] Trait adaptation skipped: {e}")
 
@@ -1756,6 +1768,9 @@ def handle_personality_command(command: str) -> dict:
                 'output': f"Usage: /personality <trait> <0-9>\nTraits: {', '.join(current)}"}
 
     upkb['update_personality'](uid, deltas, reason='command')
+    from user_profile_kb import mark_explicit
+    for t in deltas:
+     mark_explicit(uid, t)
     new = upkb['load'](uid)['personality']
     shared_memory['personality_weights'] = new
     trait = next(iter(deltas))

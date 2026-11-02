@@ -1,4 +1,4 @@
-#V10282026
+#V11022026
 # =============================================================================
 # CAIOS PROJECT ANDREW: User Profile Knowledge Base
 # Stores per-user personality state, emotional baselines, abstraction level, and preferences
@@ -8,6 +8,7 @@
 import re
 import json
 import hashlib
+import time
 from pathlib import Path
 from datetime import datetime, timezone
 from typing import Dict, Any, Optional
@@ -81,7 +82,8 @@ def get_complaint_state(user_id: str) -> dict:
         'persistent_complainer': profile.get('persistent_complainer', False)
     }
 
-def infer_trait_deltas(user_input, distress, current, domain=None):
+def infer_trait_deltas(user_input: str, distress: float, current: Dict[str, float],
+                       domain: Optional[str] = None) -> Dict[str, float]:
     d = {}
     m = _TONE_COMPLAINT.search(user_input)
     if m:
@@ -97,14 +99,9 @@ def infer_trait_deltas(user_input, distress, current, domain=None):
         d['professional'] = d.get('professional', 0) + 0.1
     if domain in ('medical', 'legal', 'financial'):
         for t in DOWN_ONLY: d[t] = d.get(t, 0) - 0.02
-    # slow decay toward baseline if not reinforced
-    for t in DOWN_ONLY:
-        if t not in d and current.get(t, 0) > PERSONALITY_BASELINE[t]:
-            d[t] = -0.02
-    return {t: max(-0.1, min(0.1, v)) for t, v in d.items()
-            if not (t in DOWN_ONLY and v > 0)}
+    return d
 
-def parse_trait_command(text, current):
+def parse_trait_command(text: str, current: Dict[str, float]) -> Dict[str, float]:
     """'increase friendly to 6' / '/personality snarky 3' -> {trait: delta} on the 0-9 scale."""
     m = _TRAIT_CMD.search(text)
     if m and m.group(1).lower() in current:
@@ -344,6 +341,88 @@ def get_profile_summary(user_id: str) -> str:
         f"Distress: {eb.get('distress_density', 0.0):.2f} | "
         f"Axioms: {len(profile['axioms'])}"
     )
+
+# =============================================================================
+# Context-driven personality drift
+# =============================================================================
+
+DRIFT_TRAITS    = {'funny', 'witty', 'professional', 'friendly', 'kind', 'caring', 'talkative'}
+ADAPT_TRAITS    = DRIFT_TRAITS | DOWN_ONLY   # these decay to baseline; 'emotional' is explicit-only
+STEP            = 0.1    # one "+1" on the 0-9 scale
+EVIDENCE_NEEDED = 5.0    # reinforcing turns per step
+EVIDENCE_DECAY  = 0.9    # per non-signal turn; 0.8 never lets every-other-turn jokes reach 5
+DECAY           = 0.96   # per-turn pull of the trait back toward baseline
+MAX_DRIFT       = 0.3    # inference never moves a trait further than this from baseline
+LOCK_TURNS      = 25     # no drift on a trait after an explicit change to it
+GAP_HOURS       = 6      # idle this long -> halve all drift ("next day" cooling)
+
+_HUMOR  = re.compile(r"\b(haha+|lol|lmao|joke|jokes|funny|pun|hilarious)\b|[😂🤣😆]", re.I)
+_FORMAL = re.compile(r"\b(regarding|per our|please advise|deliverable|stakeholder|"
+                     r"compliance|contract|invoice|quarterly)\b", re.I)
+_ATTACH = re.compile(r"\[ATTACHED [^\]]*\].*?\[END OF [^\]]*\]|\[ATTACHMENT NOTICE:[^\]]*\]", re.S)
+
+def strip_attachments(text: str) -> str:
+    """Only what the user typed; attached file/OCR/PDF content is data, not preference signal."""
+    return _ATTACH.sub('', text).strip()
+
+def _signals(text, distress, domain):
+    s = {}
+    if _HUMOR.search(text):                       s['funny'], s['witty'] = 1.0, 0.5
+    if _FORMAL.search(text) or domain in ('legal', 'medical', 'financial'):
+                                                  s['professional'] = 1.0
+    if distress > 0.6:                            s['caring'], s['friendly'] = 1.0, 0.5
+    if len(text.split()) > 40:                    s['talkative'] = 0.5
+    return {t: v for t, v in s.items() if t in DRIFT_TRAITS}
+
+def adapt_personality(user_id, user_input, distress=0.0, domain=None) -> dict:
+    """Once per turn: evidence accumulation, decay to per-user baseline, bounds, locks."""
+    profile = load_user_profile(user_id)
+    p = profile['personality']
+    base = profile.setdefault('personality_baseline', dict(p))
+    for t, v in p.items():
+        base.setdefault(t, v)
+    state = profile.setdefault('trait_state', {})
+    turn = profile['turn_counter'] = profile.get('turn_counter', 0) + 1
+    now = time.time()
+    traits = [t for t in ADAPT_TRAITS if t in p]
+
+    last = profile.get('last_adapt_ts')
+    if last and now - last > GAP_HOURS * 3600:
+        for t in traits:
+            p[t] = round(p[t] + (base[t] - p[t]) * 0.5, 3)
+    profile['last_adapt_ts'] = now
+
+    sig = _signals(user_input, distress, domain)
+    for t in traits:
+        b = base[t]
+        st = state.setdefault(t, {'evidence': 0.0, 'lock_until': 0})
+        if turn < st['lock_until']:
+            continue
+        if t in sig:
+            st['evidence'] += sig[t]
+            if st['evidence'] >= EVIDENCE_NEEDED:
+                st['evidence'] -= EVIDENCE_NEEDED
+                new = min(0.9, b + MAX_DRIFT, p[t] + STEP)
+                if new > p[t]:
+                    p[t] = round(new, 3)
+                    print(f"[USER_KB] trait drift: {t} -> {p[t]:.2f} (baseline {b:.2f})")
+        else:
+            st['evidence'] *= EVIDENCE_DECAY
+            p[t] = round(p[t] * DECAY + b * (1 - DECAY), 3)
+
+    save_user_profile(user_id, profile)
+    return p
+
+def mark_explicit(user_id: str, trait: str) -> None:
+    """Explicit change: the new value becomes the baseline and drift on it is locked out."""
+    profile = load_user_profile(user_id)
+    p = profile['personality']
+    if trait in p:
+        profile.setdefault('personality_baseline', dict(p))[trait] = p[trait]
+        st = profile.setdefault('trait_state', {}).setdefault(trait, {'evidence': 0.0, 'lock_until': 0})
+        st['evidence'] = 0.0
+        st['lock_until'] = profile.get('turn_counter', 0) + LOCK_TURNS
+        save_user_profile(user_id, profile)
 
 # =============================================================================
 # Factory for orchestrator
