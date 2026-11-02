@@ -1,4 +1,4 @@
-#V10302026
+#V11012026
 # =============================================================================
 # CAIOS PROJECT ANDREW: Hardened Orchestrator
 # This acts as the central nervous system connecting everything
@@ -28,6 +28,13 @@ ASIMOV_WEIGHTS = {
 
 HIGH_RISK_PATTERN = re.compile(
     r'\b(jump|jumps|jumping|overdose|overdosing|overdosed|suicide|suicidal|cliff|cliffs)\b'
+)
+
+PRECISION_PATTERN = re.compile(
+    r"\b(?:how many|how much is|count(?:ing)?|spell(?:ed|ing)?|sum of|calculate)\b"
+    r"|\bwhat(?:'s| is) \d+\s*[-+*/x×÷^]\s*\d+"
+    r"|\d+\s*[+*/×÷^]\s*\d+",
+    re.IGNORECASE
 )
 
 # Optional imports with fallbacks
@@ -743,7 +750,8 @@ def _decay_security_distress(shared_memory: dict) -> None:
 def system_step(user_input: str, prompt_complexity: str = "low",
                 response_stream=None, api_clients=None,
                 user_id: Optional[str] = None, enable_thinking: Optional[bool] = None,
-                images: Optional[list] = None):
+                images: Optional[list] = None, precision: bool = False):
+
     """
     Main orchestration function for unified system.
     Args:
@@ -752,6 +760,7 @@ def system_step(user_input: str, prompt_complexity: str = "low",
         response_stream: Optional response stream for curiosity engine
         api_clients: Optional override (useful for testing or multi-process)
         images: Optional list of base64-encoded images
+        precision: Whether to enable precision mode
     Returns:
         CPOL result dict or ARL plugin result
     """
@@ -902,6 +911,11 @@ def system_step(user_input: str, prompt_complexity: str = "low",
     initialize_raw_q()
     clean_input = user_input.strip().lower()
     ts = shared_memory['session_context']['timestep']
+    prev_user_message = shared_memory.get('last_user_message', '')
+    needs_precision = bool(PRECISION_PATTERN.search(user_input)) or (
+        len(user_input.split()) <= 15
+        and bool(PRECISION_PATTERN.search(prev_user_message or ''))
+    )
     shared_memory['last_user_message'] = user_input
 
     # Check for #Update Command (Axiom Manager)
@@ -1481,7 +1495,8 @@ def system_step(user_input: str, prompt_complexity: str = "low",
                     evidence_score=cpol_result.get('confidence', 0.5),
                     tool_addendum=shared_memory.get('tool_addendum', ''),
                     enable_thinking=enable_thinking,
-                    images=images
+                    images=images,
+                    precision=needs_precision
                 )
             else:
                 # API client path (OpenAI, Anthropic, xAI, Google)
@@ -1528,7 +1543,8 @@ def system_step(user_input: str, prompt_complexity: str = "low",
                         preferred_model=shared_memory.get('preferred_model'),
                         user_query=correction_prompt,
                         contradiction_density=density,
-                        images=images
+                        images=images,
+                        evidence_score=cpol_result.get('confidence', 0.5)
                     )
                     cpol_result['llm_response'] = corrected
                     print(f"[VISION_VERIFIER] Correction pass triggered — {vc['contradictions']}")

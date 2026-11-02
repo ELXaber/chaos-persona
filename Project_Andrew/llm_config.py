@@ -1,4 +1,4 @@
-#V10312026
+#V11012026
 # =============================================================================
 # CAIOS PROJECT ANDREW: Ollama / llama.cpp Configuration Bridge
 # Bridges CAIOS's ternary logic (CPOL) state to inference parameters.
@@ -239,7 +239,8 @@ def get_cpol_ollama_params(
     preferred_model: Optional[str] = None,
     config: Optional[Dict] = None,
     domain: Optional[str] = None,
-    backend: Optional[str] = None
+    backend: Optional[str] = None,
+    precision: bool = False
 ) -> Dict:
     """Map CPOL state to inference parameters (Ollama or llama.cpp)."""
     if config is None:
@@ -267,6 +268,8 @@ def get_cpol_ollama_params(
     temperature = max(0.1, min(0.9, base_temp))
     if config.get('node_tier', 1) == 0:
         temperature *= 0.92
+    if precision:
+        temperature = min(temperature, 0.2)
 
     # Context / prompt sizing
     param_b = _extract_model_size_b(model)
@@ -485,7 +488,8 @@ def query_with_cpol(
     config: Optional[Dict] = None,
     tool_addendum: str = "",
     enable_thinking: Optional[bool] = None,
-    images: Optional[list] = None
+    images: Optional[list] = None,
+    precision: bool = False
 ) -> str:
     """
     Query the active inference backend with live CPOL-tuned parameters.
@@ -506,7 +510,7 @@ def query_with_cpol(
             contradiction_density = 0.12
 
     if enable_thinking is None:
-        enable_thinking = (contradiction_density or 0) > 0.3
+        enable_thinking = precision or (contradiction_density or 0) > 0.3
 
     assert contradiction_density is not None
     params = get_cpol_ollama_params(
@@ -514,7 +518,8 @@ def query_with_cpol(
         evidence_score=evidence_score,
         preferred_model=preferred_model,
         config=config,
-        backend=backend
+        backend=backend,
+        precision=precision
     )
 
     # Build identity prefix
