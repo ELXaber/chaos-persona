@@ -30,7 +30,7 @@ This bridges CAIOS's ternary logic (CPOL) state to Ollama or Llama inference par
 # Multi-Model Preload (Optional for DGX / high-VRAM setups)
 # =============================================================================
 
-# Uncomment and customize this block in ollama_config if you have 48GB+ VRAM
+# Uncomment and customize this block in llm_config if you have 48GB+ VRAM
 ACTIVE_MODELS = [
     "qwen3.6:27b",
     "meditron:7b"

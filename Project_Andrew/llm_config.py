@@ -1,4 +1,4 @@
-#V11022026
+#V11032026
 # =============================================================================
 # CAIOS PROJECT ANDREW: Ollama / llama.cpp Configuration Bridge
 # Bridges CAIOS's ternary logic (CPOL) state to inference parameters.
@@ -73,7 +73,7 @@ def check_llamacpp_available() -> bool:
             return False
 
 # =============================================================================
-# In llm_config.py — replace detect_backend() with this:
+# Detect Backend Logic
 # =============================================================================
 
 def detect_backend() -> str:
@@ -154,8 +154,12 @@ def load_system_config() -> Dict:
         return {'node_tier': 1, 'system_id': 'Error',
                 'auth_method': 'TEXT_USERNAME', 'ollama_model': None}
 
+def _classifier_thinks(model: str) -> bool:
+    """Small models get reasoning room on the safety classifier; larger ones answer directly."""
+    return _extract_model_size_b(model) < 20
+
 # =============================================================================
-# Ollama Helpers (unchanged)
+# Ollama Helpers
 # =============================================================================
 
 def list_available_ollama_models() -> List[str]:
@@ -211,6 +215,12 @@ def load_caios_system_prompt(max_chars: int = 12000) -> str:
 
 def _extract_model_size_b(model_name: str) -> float:
     """Extract parameter count (billions) from model name string."""
+    env = os.environ.get("CAIOS_MODEL_SIZE_B")      # manual override for custom-named models
+    if env:
+        try:
+            return float(env)
+        except ValueError:
+            pass
     matches = re.findall(r'(\d+(?:\.\d+)?)\s*[bB]', model_name)
     if matches:
         return max(float(m) for m in matches)
@@ -223,14 +233,46 @@ def _extract_model_size_b(model_name: str) -> float:
     return 7.0
 
 
+def _ctx_for(model: str) -> int:
+    b = _extract_model_size_b(model)
+    return 32768 if b >= 20 else 16384 if b >= 13 else 8192
+
+# =============================================================================
+# Multi-Model Routing (Optional)
+# For either doman model mapping multi-LLM in VRAM or API fallback see multi_llm_readme.txt
+# =============================================================================
+#
+# Uncomment DOMAIN_MODEL_MAP to route queries to specialist models by domain.
+# Requires sufficient VRAM to load multiple models (see readme.txt hardware notes).
+# Models will hot-swap on domain change; expect 10-30s load penalty per switch.
+# DOMAIN_MODEL_MAP = {
+#     'programming': 'gemma3:12b-it-qat',
+#     'medical':     'meditron:7b',
+#     'legal':       None,   # fall back to default sovereign model
+# }
+
+# Uncomment DENSITY_MODEL_MAP to route queries to API by complexity.
+# In get_cpol_ollama_params() - replaces the current single model fallback
+# if contradiction_density < 0.3 and available:
+#     model = available[-1]   # lightest/fastest available (Gemma 4, 7B, etc.)
+# elif contradiction_density < 0.7 and available:
+#     model = preferred_model or available[0]  # your default
+# else:
+#     # High complexity - use heaviest available (Qwen 27b, DeepSeek-R1)
+#     model = preferred_model or available[0]
+
 def get_model_for_domain(domain: str, default_model: str) -> str:
+    """
+    Route to a specialist model based on CPOL-classified domain.
+    Returns default_model if DOMAIN_MODEL_MAP is not defined or domain has no entry.
+    """
     dm = globals().get('DOMAIN_MODEL_MAP')
     if isinstance(dm, dict):
         return dm.get(domain) or default_model
     return default_model
 
 # =============================================================================
-# CPOL → Inference Parameters
+# Ollama Query Parameters (CPOL Mapping)
 # =============================================================================
 
 def get_cpol_ollama_params(
@@ -238,9 +280,9 @@ def get_cpol_ollama_params(
     evidence_score: float = 0.5,
     preferred_model: Optional[str] = None,
     config: Optional[Dict] = None,
-    domain: Optional[str] = None,
     backend: Optional[str] = None,
-    precision: bool = False
+    precision: bool = False,
+    domain: Optional[str] = None
 ) -> Dict:
     """Map CPOL state to inference parameters (Ollama or llama.cpp)."""
     if config is None:
@@ -382,16 +424,22 @@ def classify_self_harm_risk(
             if not model:
                 available = list_available_ollama_models()
                 model = available[0] if available else 'llama3.2'
-            response = ollama.generate(
-                model=model, prompt=user_input, system=system_prompt, think=False,
-                options={"temperature": 0.0, "num_predict": 60}
-            )
+            def _gen(think: bool):
+                return ollama.generate(
+                    model=model, prompt=user_input, system=system_prompt, think=think,
+                    options={"temperature": 0.0, "num_predict": 600 if think else 60,
+                             "num_ctx": _ctx_for(model)})
+            try:
+                response = _gen(_classifier_thinks(model))
+            except Exception:
+                response = _gen(False)     # model without thinking support, or the think call failed
             text = (getattr(response, 'response', '') or '').strip()
         except Exception as e:
             print(f"[SAFETY_CLASSIFIER] Ollama failed: {e}")
 
     elif backend == "llamacpp":
         model = preferred_model or get_llamacpp_model_name()
+        t = _classifier_thinks(model)
         payload = {
             "model": model,
             "messages": [
@@ -399,7 +447,8 @@ def classify_self_harm_risk(
                 {"role": "user",   "content": user_input}
             ],
             "temperature": 0.0,
-            "max_tokens": 60,
+            "max_tokens": 600 if t else 60,
+            "chat_template_kwargs": {"enable_thinking": t},
             "stream": False
         }
         try:
@@ -415,6 +464,9 @@ def classify_self_harm_risk(
         except Exception as e:
             print(f"[SAFETY_CLASSIFIER] llama.cpp failed: {e}")
 
+    if not text:   # backend down, request failed, or model returned nothing usable
+        # orchestrator.py keys its keyword fallback off this exact reason string
+        return {'risk': False, 'confidence': 0.0, 'reason': 'classifier_unavailable'}
     risk       = 'RISK: yes' in text
     conf_match = re.search(r'CONFIDENCE:\s*([\d.]+)', text)
     confidence = float(conf_match.group(1)) if conf_match else (0.5 if risk else 0.0)
@@ -440,9 +492,9 @@ def classify_domain(user_input: str, preferred_model: Optional[str] = None) -> s
             model = preferred_model or SYSTEM_CONFIG.get('ollama_model') \
                     or (list_available_ollama_models() or ['llama3.2'])[0]
             resp = ollama.generate(
-                model=model, prompt=user_input, think=False,
-                system=system_prompt,
-                options={"temperature": 0.0, "num_predict": 12}
+                model=model, prompt=user_input,
+                system=system_prompt, think=False,
+                options={"temperature": 0.0, "num_predict": 12, "num_ctx": _ctx_for(model)}
             )
             text = (getattr(resp, 'response', '') or '').strip().lower().replace(' ', '_')
         except Exception:
@@ -489,7 +541,8 @@ def query_with_cpol(
     tool_addendum: str = "",
     enable_thinking: Optional[bool] = None,
     images: Optional[list] = None,
-    precision: bool = False
+    precision: bool = False,
+    domain: Optional[str] = None
 ) -> str:
     """
     Query the active inference backend with live CPOL-tuned parameters.
@@ -519,7 +572,8 @@ def query_with_cpol(
         preferred_model=preferred_model,
         config=config,
         backend=backend,
-        precision=precision
+        precision=precision,
+        domain=domain
     )
 
     # Build identity prefix
@@ -548,7 +602,7 @@ def query_with_cpol(
             enable_thinking=enable_thinking
         )
 
-    # --- Ollama path (unchanged) ---
+    # --- Ollama path ---
     import ollama
     print(f"[llm_config] Backend: Ollama | Model: {params['model']}")
     response = ollama.generate(
@@ -588,33 +642,33 @@ def query_with_cpol(
 # Multi-Model Preload (Optional — 48GB+ VRAM / DGX setups)
 # =============================================================================
 
-ACTIVE_MODELS: List[str] = []   # e.g. ["qwen3.6:27b", "meditron:7b"]
+# ACTIVE_MODELS: List[str] = []   # e.g. ["qwen3.6:27b", "meditron:7b"]
 
-def preload_models(model_list: List[str]) -> None:
-    for model in model_list:
-        try:
-            import ollama
-            ollama.generate(model=model, prompt=".", options={"num_predict": 1, "seed": 42})
-            print(f"[llm_config] Preloaded model: {model}")
-        except Exception as e:
-            print(f"[llm_config] Failed to preload {model}: {e}")
+# def preload_models(model_list: List[str]) -> None:
+#     for model in model_list:
+#         try:
+#             import ollama
+#             ollama.generate(model=model, prompt=".", options={"num_predict": 1, "seed": 42})
+#             print(f"[llm_config] Preloaded model: {model}")
+#         except Exception as e:
+#             print(f"[llm_config] Failed to preload {model}: {e}")
 
 
-def _keep_alive_models(model_list: List[str]) -> None:
-    import ollama
+# def _keep_alive_models(model_list: List[str]) -> None:
+#     import ollama
 
-    def _loop():
-        while True:
-            for model in model_list:
-                try:
-                    ollama.generate(model=model, prompt=" ", options={"num_predict": 0})
-                except Exception:
-                    pass
-            time.sleep(15)
+#     def _loop():
+#         while True:
+#             for model in model_list:
+#                 try:
+#                     ollama.generate(model=model, prompt=" ", options={"num_predict": 0})
+#                 except Exception:
+#                     pass
+#             time.sleep(15)
 
-    t = threading.Thread(target=_loop, daemon=True)
-    t.start()
-    print("[llm_config] Keep-alive thread started for models:", model_list)
+#     t = threading.Thread(target=_loop, daemon=True)
+#     t.start()
+#     print("[llm_config] Keep-alive thread started for models:", model_list)
 
 # =============================================================================
 # Auto-load on import

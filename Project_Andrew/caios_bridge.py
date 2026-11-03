@@ -583,19 +583,26 @@ def api_set_thinking():
     body = request.get_json(silent=True) or {}
     token = body.get('token', '')
     mode = body.get('mode', 'auto')  # 'auto' | 'on' | 'off'
-
     sess = _sessions.get(token)
     if sess is None:
         return jsonify({'error': 'Invalid session'}), 401
-
     if mode == 'on':
         sess['enable_thinking'] = True
     elif mode == 'off':
         sess['enable_thinking'] = False
     else:
         sess['enable_thinking'] = None  # auto is density-based decision
-
     return jsonify({'ok': True, 'enable_thinking': sess['enable_thinking']})
+
+@app.route('/api/set_precision', methods=['POST'])
+def api_set_precision():
+    body = request.get_json(silent=True) or {}
+    sess = _sessions.get(body.get('token', ''))
+    if sess is None:
+        return jsonify({'error': 'Invalid session'}), 401
+    mode = body.get('mode', 'auto')          # 'auto' | 'on' | 'off'
+    sess['precision'] = True if mode == 'on' else False if mode == 'off' else None
+    return jsonify({'ok': True, 'precision': sess['precision']})
 
 # =============================================================================
 # Route: POST /api/upload

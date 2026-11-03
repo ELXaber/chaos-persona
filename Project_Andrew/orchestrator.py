@@ -1,4 +1,4 @@
-#V11022026
+#V11032026
 # =============================================================================
 # CAIOS PROJECT ANDREW: Hardened Orchestrator
 # This acts as the central nervous system connecting everything
@@ -750,7 +750,7 @@ def _decay_security_distress(shared_memory: dict) -> None:
 def system_step(user_input: str, prompt_complexity: str = "low",
                 response_stream=None, api_clients=None,
                 user_id: Optional[str] = None, enable_thinking: Optional[bool] = None,
-                images: Optional[list] = None, precision: bool = False):
+                images: Optional[list] = None, precision: Optional[bool] = None):
 
     """
     Main orchestration function for unified system.
@@ -912,9 +912,11 @@ def system_step(user_input: str, prompt_complexity: str = "low",
     clean_input = user_input.strip().lower()
     ts = shared_memory['session_context']['timestep']
     prev_user_message = shared_memory.get('last_user_message', '')
-    needs_precision = bool(PRECISION_PATTERN.search(user_input)) or (
-        len(user_input.split()) <= 15
-        and bool(PRECISION_PATTERN.search(prev_user_message or ''))
+    needs_precision = precision if precision is not None else (
+        bool(PRECISION_PATTERN.search(user_input)) or (
+            len(user_input.split()) <= 15
+            and bool(PRECISION_PATTERN.search(prev_user_message or ''))
+        )
     )
     shared_memory['last_user_message'] = user_input
 
@@ -1496,7 +1498,8 @@ def system_step(user_input: str, prompt_complexity: str = "low",
                     tool_addendum=shared_memory.get('tool_addendum', ''),
                     enable_thinking=enable_thinking,
                     images=images,
-                    precision=needs_precision
+                    precision=needs_precision,
+                    domain=domain
                 )
             else:
                 # API client path (OpenAI, Anthropic, xAI, Google)
@@ -1544,7 +1547,8 @@ def system_step(user_input: str, prompt_complexity: str = "low",
                         user_query=correction_prompt,
                         contradiction_density=density,
                         images=images,
-                        evidence_score=cpol_result.get('confidence', 0.5)
+                        evidence_score=cpol_result.get('confidence', 0.5),
+                        domain=domain
                     )
                     cpol_result['llm_response'] = corrected
                     print(f"[VISION_VERIFIER] Correction pass triggered — {vc['contradictions']}")
@@ -1578,7 +1582,8 @@ def system_step(user_input: str, prompt_complexity: str = "low",
                         user_query=followup_prompt,
                         contradiction_density=density,
                         evidence_score=cpol_result.get('confidence', 0.5),
-                        tool_addendum=""
+                        tool_addendum="",
+                        domain=domain
                     )
                     import re as _re
                     final_response = _re.sub(r'\[TOOL:\w+[^\]]*\]', '', final_response).strip()
