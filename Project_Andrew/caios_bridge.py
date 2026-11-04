@@ -1,4 +1,4 @@
-#V10312026
+#V11032026
 # =============================================================================
 # CAIOS PROJECT ANDREW: Web Bridge
 # Flask server that connects caios_chat_ui.html to the existing orchestrator/caios_chat.py stack.
@@ -214,8 +214,13 @@ def _start_service(name: str, cmd: str, check_fn, timeout: int = 20) -> None:
 def start_services() -> None:
     """Bring up Ollama + MCP servers if they aren't already reachable."""
     try:
-        import llm_config
-        _start_service('Ollama', 'ollama serve', llm_config.check_ollama_available)
+        import shutil, llm_config
+        if os.environ.get('CAIOS_BACKEND', '').lower() == 'llamacpp' or llm_config.check_llamacpp_available():
+            print('[BRIDGE] llama.cpp backend selected — skipping Ollama auto-start')
+        elif shutil.which('ollama'):
+            _start_service('Ollama', 'ollama serve', llm_config.check_ollama_available)
+        else:
+            print('[BRIDGE] Ollama not installed — skipping auto-start')
     except ImportError:
         print('[BRIDGE] llm_config not found — skipping Ollama auto-start')
 
@@ -593,16 +598,6 @@ def api_set_thinking():
     else:
         sess['enable_thinking'] = None  # auto is density-based decision
     return jsonify({'ok': True, 'enable_thinking': sess['enable_thinking']})
-
-@app.route('/api/set_precision', methods=['POST'])
-def api_set_precision():
-    body = request.get_json(silent=True) or {}
-    sess = _sessions.get(body.get('token', ''))
-    if sess is None:
-        return jsonify({'error': 'Invalid session'}), 401
-    mode = body.get('mode', 'auto')          # 'auto' | 'on' | 'off'
-    sess['precision'] = True if mode == 'on' else False if mode == 'off' else None
-    return jsonify({'ok': True, 'precision': sess['precision']})
 
 # =============================================================================
 # Route: POST /api/upload

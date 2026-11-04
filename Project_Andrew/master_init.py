@@ -1,4 +1,4 @@
-#V10312026
+#V11032026
 # =============================================================================
 # CAIOS PROJECT ANDREW: Master Integration & Sovereign Boot
 # Pre-requisites auto-install from run_caios.bat or run_caios.sh - fallback directions below
@@ -444,41 +444,18 @@ def write_authorized_users(identity: SystemIdentity, filepath: str = "users.json
     print(f"✓ users.json written: {len(user_list['users'])} users")
 
 def test_swarm_capabilities(clients: dict):
-    """Test that API clients can actually make calls."""
+    """Key check only: list models. No model names to maintain, no tokens spent."""
     for provider, client in clients.items():
         try:
-            if provider == 'openai':
-                # Quick test call
-                response = client.ChatCompletion.create(
-                    model="gpt-3.5-turbo",
-                    messages=[{"role": "user", "content": "test"}],
-                    max_tokens=5
-                )
-                print(f"✓ {provider.upper()} API call successful")
-
-            elif provider == 'anthropic':
-                response = client.messages.create(
-                    model="claude-3-haiku-20240307",
-                    max_tokens=5,
-                    messages=[{"role": "user", "content": "test"}]
-                )
-                print(f"✓ {provider.upper()} API call successful")
-
-            elif provider == 'xai':
-                response = client.chat.completions.create(
-                    model="grok-beta",
-                    messages=[{"role": "user", "content": "test"}],
-                    max_tokens=5
-                )
-                print(f"✓ {provider.upper()} API call successful")
-
+            if provider in ('openai', 'xai', 'anthropic'):
+                client.models.list()
             elif provider == 'google':
-                model = client.GenerativeModel('gemini-pro')
-                response = model.generate_content("test")
-                print(f"✓ {provider.upper()} API call successful")
-
+                next(iter(client.list_models()))
+            else:
+                continue
+            print(f"✓ {provider.upper()} key accepted")
         except Exception as e:
-            print(f"⚠ {provider.upper()} API test failed: {e}")
+            print(f"⚠ {provider.upper()} key check failed: {e}")
 
 
 if __name__ == "__main__":

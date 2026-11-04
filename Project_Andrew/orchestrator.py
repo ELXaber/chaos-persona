@@ -349,6 +349,27 @@ except ImportError:
 # API Client Loading (Multi-Model Swarm Support)
 # =============================================================================
 
+# The following commented-out code illustrates how to route queries to external API clients based on density and profile permissions. It is left here for reference and potential future use.
+# use_api = (ROUTE_COMPLEX_TO_API and density >= 0.7
+#            and shared_memory.get('api_clients') and profile_allows_api(uid))
+# if use_api:
+#     llm_response = _call_api_client(provider, client, enriched_query, system=full_system_prompt)
+#     if llm_response is None:                  # API failed: fall back to the local model
+#         llm_response = query_with_cpol(...)
+# else:
+#     llm_response = query_with_cpol(...)
+
+API_MODEL_DEFAULTS = {
+    'openai': 'gpt-4o',
+    'anthropic': 'claude-sonnet-4-6',
+    'xai': 'grok-beta',
+    'google': 'gemini-1.5-pro',
+}
+
+def _api_model(provider: str) -> str:
+    """CAIOS_<PROVIDER>_MODEL env var wins, so a provider rename needs no code edit."""
+    return os.environ.get(f"CAIOS_{provider.upper()}_MODEL") or API_MODEL_DEFAULTS[provider]
+
 def _call_api_client(provider: str, client: Any, query: str) -> str:
     """
     Fallback API client call when Ollama unavailable.
@@ -357,7 +378,7 @@ def _call_api_client(provider: str, client: Any, query: str) -> str:
     try:
         if provider == 'openai':
             response = client.chat.completions.create(
-                model="gpt-4o",
+                model=_api_model('openai'),
                 messages=[{"role": "user", "content": query}],
                 max_tokens=2048
             )
@@ -365,7 +386,7 @@ def _call_api_client(provider: str, client: Any, query: str) -> str:
 
         elif provider == 'anthropic':
             response = client.messages.create(
-                model="claude-sonnet-4-6",
+                model=_api_model('anthropic'),
                 max_tokens=2048,
                 messages=[{"role": "user", "content": query}]
             )
@@ -373,14 +394,14 @@ def _call_api_client(provider: str, client: Any, query: str) -> str:
 
         elif provider == 'xai':
             response = client.chat.completions.create(
-                model="grok-beta",
+                model=_api_model('xai'),
                 messages=[{"role": "user", "content": query}],
                 max_tokens=2048
             )
             return response.choices[0].message.content.strip()
 
         elif provider == 'google':
-            model = client.GenerativeModel("gemini-1.5-pro")
+            model = client.GenerativeModel(_api_model('google'))
             response = model.generate_content(query)
             return response.text.strip()
 
@@ -1215,29 +1236,40 @@ def system_step(user_input: str, prompt_complexity: str = "low",
         shared_memory['suggest_checkin'] = True
 
     # 9. Security Response Coordination (Mesh Security)
-    # Check for mesh security threats
     if security_distress > 0.75 or cpol_result.get('domain') == 'MESH_SECURITY_THREAT':
-        ghost_sig = cpol_result.get('signature', '0xGHOST')
+        # ARL verifies this entry against sha256(RAW_Q_step)[:8]; keep the kernel's own signature separately
+        ghost_sig = hashlib.sha256(
+            f"{shared_memory['session_context'].get('RAW_Q', 0)}_{ts}".encode()
+        ).hexdigest()[:8]
 
         shared_memory['audit_trail'].append({
             'step': ts,
             'event': 'GHOST_INTERVENTION',
             'sig': ghost_sig,
+            'cpol_sig': cpol_result.get('signature'),
             'outcome': 'STATE_LOCKED'
         })
 
         print(f"[ORCHESTRATOR] !! SECURITY LOCKDOWN @{ts} !! -> Phase-Locked")
 
-        # Trigger attack mitigation
-        return arl.adaptive_reasoning_layer(
+        arl_lock = arl.adaptive_reasoning_layer(
             use_case="attack_mitigation",
             traits={'security': 10},
             existing_layers=['cpol', 'mesh_security'],
             shared_memory=shared_memory,
-            crb_config=CRB_CONFIG,
-            context={'security_distress': distress, 'security_threat': cpol_result.get('security_threat', [])},
+            crb_config=_get_effective_crb_config(user_id or shared_memory.get('active_user')),
+            context={'security_distress': security_distress,
+                     'distress_density': max(distress, security_distress),
+                     'domain': cpol_result.get('domain'),
+                     'security_threat': cpol_result.get('security_threat', [])},
             cpol_status=cpol_result
         )
+        # ARL returns plugin/status data, never user-facing text; without this the bridge
+        # falls through to a plain chat call and answers the flagged message anyway.
+        arl_lock['status'] = 'SECURITY_INTERVENTION'
+        arl_lock.setdefault('output', "I can't help with that request. A security lockdown is active for this session.")
+        arl_lock['domain'] = cpol_result.get('domain')
+        return arl_lock
 
     # Asimov Law 3 weight calculation (lives saved proxy)
     def law3_weight(lives_saved_proxy: float = 0.0) -> float:
@@ -1337,7 +1369,7 @@ def system_step(user_input: str, prompt_complexity: str = "low",
             traits={'flexibility': 0.9},
             existing_layers=['cpol'],
             shared_memory=shared_memory,
-            crb_config=CRB_CONFIG,
+            crb_config=_get_effective_crb_config(user_id or shared_memory.get('active_user')),
             context={
                 'domain': domain,
                 'heat': heat,
