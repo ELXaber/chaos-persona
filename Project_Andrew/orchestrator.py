@@ -1,4 +1,4 @@
-#V11032026
+#V11042026
 # =============================================================================
 # CAIOS PROJECT ANDREW: Hardened Orchestrator
 # This acts as the central nervous system connecting everything
@@ -6,6 +6,7 @@
 # =============================================================================
 
 # Standard Library Imports
+from email.mime import text
 import time
 import hashlib
 import os
@@ -76,12 +77,11 @@ except ImportError:
     print("[INFO] Agent Designer/KB not available. Specialist deployment disabled.")
 
 try:
-    from axiom_manager import AxiomManager, create_axiom_manager
-    import axiom_manager as amgr
+    from axiom_manager import create_axiom_manager
     AMGR_AVAILABLE = True
 except ImportError:
     AMGR_AVAILABLE = False
-    print("[INFO] Axiom Manager/Axiom manager not available. KB Update disabled.")
+    print("[INFO] Axiom Manager not available. KB Update disabled.")
 
 try:
     import abstraction_selector as abstraction_selector_module
@@ -133,6 +133,8 @@ try:
     USER_KB_AVAILABLE = True
 except ImportError:
     USER_KB_AVAILABLE = False
+    def strip_attachments(text: str) -> str:
+        return text
     print("[INFO] User Profile KB not available.")
 
 os.makedirs("knowledge_base", exist_ok=True)
@@ -939,7 +941,7 @@ def system_step(user_input: str, prompt_complexity: str = "low",
             and bool(PRECISION_PATTERN.search(prev_user_message or ''))
         )
     )
-    shared_memory['last_user_message'] = user_input
+    shared_memory['last_user_message'] = strip_attachments(user_input)
 
     # Check for #Update Command (Axiom Manager)
     # Process temporal axiom updates before normal orchestration
@@ -1193,7 +1195,8 @@ def system_step(user_input: str, prompt_complexity: str = "low",
     active_user = shared_memory.get('active_user', 'default')
     if USER_KB_AVAILABLE:
         from user_profile_kb import update_emotional_distress
-        accumulated = update_emotional_distress(active_user, classifier_result['confidence'])
+        signal = classifier_result['confidence'] if classifier_result['risk'] else 0.0
+        accumulated = update_emotional_distress(active_user, signal)
     else:
         accumulated = 0.0
 
@@ -1221,6 +1224,8 @@ def system_step(user_input: str, prompt_complexity: str = "low",
     )
 
     if hard_trigger:
+        print(f"[SAFETY_DEBUG] risk={classifier_result} accumulated={accumulated:.2f} "
+          f"domain={cpol_result.get('domain')} fallback={is_high_risk_fallback}")
         print("[ORCHESTRATOR] !! SAFETY INTERVENTION !!")
         return {
             'status': 'INTERVENTION_MANDATORY',
@@ -1687,7 +1692,7 @@ def system_step(user_input: str, prompt_complexity: str = "low",
     if USER_KB_AVAILABLE and shared_memory.get('user_profile_kb'):
         try:
             from user_profile_kb import (infer_trait_deltas, parse_trait_command, adapt_personality,
-                                         mark_explicit, strip_attachments, _TONE_COMPLAINT)
+                                         mark_explicit, _TONE_COMPLAINT)
             upkb = shared_memory['user_profile_kb']
             uid = shared_memory.get('active_user', 'default')
             typed = strip_attachments(user_input)          # never infer from attached content

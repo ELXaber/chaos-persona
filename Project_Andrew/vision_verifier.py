@@ -1,4 +1,4 @@
-#V10282026
+#V11042026
 # =============================================================================
 # CAIOS PROJECT ANDREW: Vision Verifier
 # Domain-agnostic consistency check cross-references claims against measurements.
@@ -18,6 +18,10 @@ except ImportError:
     CV2_AVAILABLE = False
     print("[VISION_VERIFIER] opencv-python not installed — geometric "
           "verification disabled. Install: pip install opencv-python numpy")
+
+import hashlib, os
+_DEBUG = os.environ.get("CAIOS_VISION_DEBUG") == "1"
+_GEO_CACHE: Dict[str, Dict[str, Any]] = {}
 
 # =========================================================================
 # 1. Generic geometric feature extraction - no knowledge of "illusions"
@@ -102,7 +106,9 @@ def extract_geometry(image_b64: str) -> Dict[str, Any]:
     Pulls raw structural primitives from the image. Knows nothing about
     named patterns, just measures what's there.
     """
-
+    key = hashlib.sha256(image_b64.encode()).hexdigest()
+    if key in _GEO_CACHE:
+        return _GEO_CACHE[key]
     img_bytes = base64.b64decode(image_b64)
     img_array = np.frombuffer(img_bytes, dtype=np.uint8)
     img = cv2.imdecode(img_array, cv2.IMREAD_GRAYSCALE)
@@ -128,12 +134,14 @@ def extract_geometry(image_b64: str) -> Dict[str, Any]:
                 })
 
     lines = _merge_duplicate_edges(lines_raw)
-    print(f"[VISION_VERIFIER] Pre-merge: {[(l['length'], l['angle'], l['endpoints']) for l in lines_raw]}")
-    print(f"[VISION_VERIFIER] Post-merge: {[(l['length'], l['angle'], l['endpoints']) for l in lines]}")
+    if _DEBUG: print(f"[VISION_VERIFIER] Pre-merge: {[(l['length'], l['angle'], l['endpoints']) for l in lines_raw]}")
+    if _DEBUG: print(f"[VISION_VERIFIER] Post-merge: {[(l['length'], l['angle'], l['endpoints']) for l in lines]}")
 
-    return {'line_count': len(lines), 'lines': lines
-        # room to extend generically: shape count, color regions, etc.
-            }
+    result = {'line_count': len(lines), 'lines': lines}   # room to extend: shape count, color regions, etc.
+    _GEO_CACHE[key] = result
+    if len(_GEO_CACHE) > 8:
+        _GEO_CACHE.pop(next(iter(_GEO_CACHE)))
+    return result
 
 # =========================================================================
 # 2. Generic claim extraction - fixed comparative vocabulary
