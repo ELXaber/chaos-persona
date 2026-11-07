@@ -1,4 +1,4 @@
-#V11042026
+#V11072026
 # =============================================================================
 # CAIOS PROJECT ANDREW: Hardened Orchestrator
 # This acts as the central nervous system connecting everything
@@ -82,6 +82,15 @@ try:
 except ImportError:
     AMGR_AVAILABLE = False
     print("[INFO] Axiom Manager not available. KB Update disabled.")
+
+try:
+    from user_profile_kb import create_user_profile_kb, strip_attachments
+    USER_KB_AVAILABLE = True
+except ImportError:
+    USER_KB_AVAILABLE = False
+    def strip_attachments(text: str) -> str:
+        return text
+    print("[INFO] User Profile KB not available.")
 
 try:
     import abstraction_selector as abstraction_selector_module
