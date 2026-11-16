@@ -1,4 +1,4 @@
-#V10282026
+#V11162026
 # =============================================================================
 # CAIOS PROJECT ANDREW: Knowledge Base (Persistent Learning Layer)
 # Purpose: Append-only storage for specialist discoveries + epistemic gap fills + update
@@ -382,6 +382,8 @@ def _get_sovereign_signature() -> str:
                 content={
                     "goal": goal_check.get("goal"),
                     "status": goal_check["status"],
+                    "evaluated": goal_check.get("evaluated", True),
+                    "rule": goal_check.get("rule"),
                     "reason": goal_check["reason"],
                     "milestone": "epistemic_gaps_filled >= 1000 "
                                  "and sovereign_nodes >= 100",

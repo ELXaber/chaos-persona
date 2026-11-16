@@ -1,4 +1,4 @@
-#V10282026
+#V11162026
 # =============================================================================
 # CAIOS PROJECT ANDREW: Adaptive Reasoning Layer
 # Ethical Foundation; Immutable
@@ -341,8 +341,15 @@ def _question_own_goals(proposed_goal: str,
         )
 
         if node_tier > 0 and not is_high_stakes:
-            return {'status': 'GOAL_VALID',
-                    'reason': 'Edge node — low stakes goal, skipped'}
+            return {
+                'status': 'GOAL_DEFERRED',
+                'evaluated': False,
+                'rule': 'edge_node_low_stakes_skip',
+                'rule_version': 'v1.0',
+                'reason': 'Edge node — low stakes goal, skipped. Sovereign must evaluate.',
+                'goal': proposed_goal,
+                'node_tier': node_tier
+            }
 
         # Check against sovereign axioms
         try:
@@ -387,15 +394,44 @@ def _question_own_goals(proposed_goal: str,
         if cpol_result['status'] == 'UNDECIDABLE':
             return {
                 'status': 'GOAL_UNDECIDABLE',
-                'reason': 'Goal validity cannot be determined — '
-                          'human clarification required',
+                'evaluated': True,
+                'rule': 'cpol_undecidable_goal',
+                'reason': 'Goal validity cannot be determined — human clarification required',
                 'goal': proposed_goal,
                 'cpol_result': cpol_result
             }
 
+        if cpol_result['status'] == 'RESOLVED':
+            verdict = cpol_result.get('verdict', 'NEUTRAL')
+            if verdict == 'FALSE':
+                # CPOL resolved to "this goal should not be pursued"
+                return {
+                    'status': 'GOAL_QUESTIONED',
+                    'evaluated': True,
+                    'rule': 'cpol_goal_invalid',
+                    'reason': 'CPOL resolved that this goal should not be pursued '
+                            'under Asimov Law 1',
+                    'goal': proposed_goal,
+                    'cpol_result': cpol_result
+                }
+            elif verdict == 'NEUTRAL':
+                # CPOL resolved to neutral — insufficient signal to block, but not clearly valid
+                return {
+                    'status': 'GOAL_UNDECIDABLE',
+                    'evaluated': True,
+                    'rule': 'cpol_goal_neutral',
+                    'reason': 'CPOL resolved to neutral — goal validity remains ambiguous',
+                    'goal': proposed_goal,
+                    'cpol_result': cpol_result
+                }
+
+                # verdict == 'TRUE' - goal is valid, fall through
         return {
             'status': 'GOAL_VALID',
+            'evaluated': True,
+            'rule': 'corrigibility_check_passed',
             'reason': 'Goal passed corrigibility check',
+            'goal': proposed_goal,
             'cpol_result': cpol_result
         }
 
@@ -406,6 +442,8 @@ def _question_own_goals(proposed_goal: str,
         print(f"[ARL] Corrigibility check error: {e} "
               f"— proceeding with normal ethics gate")
         return {'status': 'GOAL_VALID',
+                'evaluated': True,
+                'rule': 'corrigibility_check_failed',
                 'reason': f'Check failed gracefully: {e}'}
 
 # =========================================================================
@@ -484,10 +522,64 @@ def adaptive_reasoning_layer(
         proposed_goal, shared_memory, node_tier
     )
 
-    if goal_check['status'] in ('GOAL_QUESTIONED', 'GOAL_UNDECIDABLE'):
+    # --- GOAL_DEFERRED: edge node skipped, re-run at sovereign level ---
+    if goal_check['status'] == 'GOAL_DEFERRED':
         try:
             import knowledge_base as kb
-            # Dedup: only log if this goal hasn't been questioned before
+            kb.log_discovery(
+                domain="corrigibility",
+                discovery_type="goal_deferred",
+                content={
+                    'goal': proposed_goal,
+                    'rule': goal_check.get('rule'),
+                    'rule_version': goal_check.get('rule_version'),
+                    'deferred_by': f"tier_{goal_check.get('node_tier', 'unknown')}",
+                    'evaluated': False
+                },
+                node_tier=1
+            )
+        except Exception:
+            pass
+
+        print("[ARL] Goal deferred by edge node — re-running corrigibility at sovereign level")
+
+        sovereign_check = _question_own_goals(
+            proposed_goal, shared_memory, node_tier=0
+        )
+
+        try:
+            import knowledge_base as kb
+            kb.log_discovery(
+                domain="corrigibility",
+                discovery_type="goal_deferred_sovereign_verdict",
+                content={
+                    'goal': proposed_goal,
+                    'original_deferral_rule': goal_check.get('rule'),
+                    'sovereign_status': sovereign_check.get('status'),
+                    'sovereign_rule': sovereign_check.get('rule'),
+                    'evaluated': True
+                },
+                node_tier=0
+            )
+        except Exception:
+            pass
+
+        if sovereign_check['status'] in ('GOAL_QUESTIONED', 'GOAL_UNDECIDABLE'):
+            print(f"[ARL] ⚠️ CORRIGIBILITY @SOVEREIGN: {sovereign_check['status']} — "
+                  f"{sovereign_check['reason']}")
+            return {
+                'status': 'paused_for_human_clarification',
+                'log': f"[CORRIGIBILITY @SOVEREIGN → {sovereign_check['reason']}]",
+                **sovereign_check
+            }
+
+        # Sovereign passed — fall through to plugin generation.
+        goal_check = sovereign_check
+
+    # --- GOAL_QUESTIONED / GOAL_UNDECIDABLE: block deployment ---
+    elif goal_check['status'] in ('GOAL_QUESTIONED', 'GOAL_UNDECIDABLE'):
+        try:
+            import knowledge_base as kb
             existing = kb.query_domain_knowledge('corrigibility')
             already_logged = any(
                 e.get('content', {}).get('goal') == proposed_goal
@@ -501,8 +593,9 @@ def adaptive_reasoning_layer(
                         'goal': proposed_goal,
                         'reason': goal_check['reason'],
                         'status': goal_check['status'],
+                        'rule': goal_check.get('rule'),
+                        'evaluated': goal_check.get('evaluated', True),
                         'node_tier': node_tier
-                        # cpol_result deliberately excluded; reduces bloat
                     },
                     node_tier=0
                 )
@@ -518,6 +611,8 @@ def adaptive_reasoning_layer(
                    f"deployment: {goal_check['reason']}]",
             **goal_check
         }
+
+    # --- GOAL_VALID: fall through to plugin generation ---
 
     # 4. Check CPOL lock status
     if cpol_status and cpol_status.get('chaos_lock') == True:
