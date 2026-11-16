@@ -524,9 +524,10 @@ def adaptive_reasoning_layer(
 
     # --- GOAL_DEFERRED: edge node skipped, re-run at sovereign level ---
     if goal_check['status'] == 'GOAL_DEFERRED':
+        deferral_id = None
         try:
             import knowledge_base as kb
-            kb.log_discovery(
+            deferral_id = kb.log_discovery(
                 domain="corrigibility",
                 discovery_type="goal_deferred",
                 content={
@@ -536,6 +537,7 @@ def adaptive_reasoning_layer(
                     'deferred_by': f"tier_{goal_check.get('node_tier', 'unknown')}",
                     'evaluated': False
                 },
+                cpol_trace=goal_check.get('cpol_result', {}),
                 node_tier=1
             )
         except Exception:
@@ -554,11 +556,13 @@ def adaptive_reasoning_layer(
                 discovery_type="goal_deferred_sovereign_verdict",
                 content={
                     'goal': proposed_goal,
+                    'parent_discovery_id': deferral_id,
                     'original_deferral_rule': goal_check.get('rule'),
                     'sovereign_status': sovereign_check.get('status'),
                     'sovereign_rule': sovereign_check.get('rule'),
                     'evaluated': True
                 },
+                cpol_trace=sovereign_check.get('cpol_result', {}),
                 node_tier=0
             )
         except Exception:
@@ -597,6 +601,7 @@ def adaptive_reasoning_layer(
                         'evaluated': goal_check.get('evaluated', True),
                         'node_tier': node_tier
                     },
+                    cpol_trace=goal_check.get('cpol_result', {}),
                     node_tier=0
                 )
         except Exception:

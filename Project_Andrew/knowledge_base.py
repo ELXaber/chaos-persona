@@ -7,6 +7,7 @@
 
 import json
 import hashlib
+import os
 from datetime import datetime, timezone
 from typing import Dict, List, Any, Optional
 from pathlib import Path
@@ -17,6 +18,7 @@ DISCOVERIES_LOG = KNOWLEDGE_BASE_DIR / "discoveries.jsonl"
 DOMAIN_INDEX = KNOWLEDGE_BASE_DIR / "domain_index.json"
 SPECIALIST_REGISTRY = KNOWLEDGE_BASE_DIR / "specialist_registry.json"
 HASH_CHAIN = KNOWLEDGE_BASE_DIR / "integrity_chain.txt"
+_SYSTEM_ID_CACHE = {"value": None, "mtime": 0}
 
 # Ensure directory exists
 KNOWLEDGE_BASE_DIR.mkdir(exist_ok=True)
@@ -60,9 +62,10 @@ def log_discovery(
         "content": content,
         "specialist_id": specialist_id,
         "node_tier": node_tier,        # Authority level preserved here
+        "system_id": _current_system_id(),
         "manifold_sig": str(manifold_sig),
         "cpol_trace": cpol_trace or {},
-        "version": "1.1"
+        "version": "1.2"
     }
 
     # 3. Finalize the Append-Only Hash Chain
@@ -197,7 +200,8 @@ def register_specialist(
         "context": deployment_context,
         "node_tier": node_tier,       # Authority inherited from Orchestrator
         "discovery_count": 0,
-        "status": "active"
+        "status": "active",
+        "system_id": _current_system_id()
     }
 
     save_specialist_registry(registry)
@@ -496,6 +500,20 @@ def _update_hash_chain(entry_str: str) -> None:
     with open(HASH_CHAIN, "a") as f:
         timestamp = datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%S.%f') + "Z"
         f.write(f"{timestamp} {new_hash}\n")
+
+def _current_system_id() -> str:
+    """Read system_id from system_identity.json with mtime-based cache."""
+    path = "system_identity.json"
+    try:
+        mtime = os.path.getmtime(path)
+        if _SYSTEM_ID_CACHE["value"] is None or _SYSTEM_ID_CACHE["mtime"] < mtime:
+            with open(path, "r", encoding="utf-8") as f:
+                identity = json.load(f)
+            _SYSTEM_ID_CACHE["value"] = identity.get("system_id", "unconfigured")
+            _SYSTEM_ID_CACHE["mtime"] = mtime
+        return _SYSTEM_ID_CACHE["value"]
+    except Exception:
+        return "unconfigured"
 
 # =============================================================================
 # Utility: Generate Training Data for New Specialists
