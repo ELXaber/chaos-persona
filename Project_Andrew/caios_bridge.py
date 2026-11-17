@@ -1,4 +1,4 @@
-#V11032026
+#V11162026
 # =============================================================================
 # CAIOS PROJECT ANDREW: Web Bridge
 # Flask server that connects caios_chat_ui.html to the existing orchestrator/caios_chat.py stack.
@@ -325,10 +325,22 @@ def _list_api_providers():
     clients = shared_memory.get('api_clients', {})
     providers = []
     for k in clients:
-        if k == ('ollama_local', 'llama_local'):
+        if k in ('ollama_local', 'llama_local'):
             continue
         providers.append(k.upper())
     return providers
+
+
+def _current_system_id() -> str:
+    """Read system_id from system_identity.json. Falls back to 'unconfigured'."""
+    try:
+        if os.path.exists("system_identity.json"):
+            with open("system_identity.json", "r", encoding="utf-8") as f:
+                identity = json.load(f)
+            return identity.get("system_id", "unconfigured")
+        return "unconfigured"
+    except Exception:
+        return "unconfigured"
 
 
 def _kb_stats() -> Dict:
@@ -368,6 +380,19 @@ def _load_history(n: int = 30, user_id: Optional[str] = None):
 
 def _log_exchange(user_input: str, response: str,
                   cpol_status: str, domain: str, user_id: str):
+    # Import at call time to avoid circular import at module load
+    try:
+        from llm_config import detect_backend
+        backend = detect_backend()
+        if backend == 'ollama':
+            model = shared_memory.get('preferred_model') or 'unknown'
+        elif backend == 'llamacpp':
+            from llm_config import get_llamacpp_model_name
+            model = get_llamacpp_model_name() or 'unknown'
+        else:
+            model = 'unknown'
+    except Exception:
+        backend, model = 'unknown', 'unknown'
     entry = {
         'timestamp': datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%S.%f') + 'Z',
         'user': user_input,
@@ -375,6 +400,9 @@ def _log_exchange(user_input: str, response: str,
         'cpol_status': cpol_status,
         'domain': domain,
         'user_id': user_id,
+        'system_id': _current_system_id(),
+        'backend': backend,
+        'model': model,
     }
     log = pathlib.Path('knowledge_base') / 'conversation_log.jsonl'
     log.parent.mkdir(exist_ok=True)

@@ -1,4 +1,4 @@
-#V11032026
+#V11162026
 # =============================================================================
 # CAIOS PROJECT ANDREW: Ollama / llama.cpp Configuration Bridge
 # Bridges CAIOS's ternary logic (CPOL) state to inference parameters.
@@ -122,10 +122,10 @@ def get_llamacpp_model_name() -> str:
             data = json.loads(r.read())
         models = data.get("data", [])
         if models:
-            return models[0].get("id", "local-model")
+            return models[0].get("id", "unknown-model")
     except Exception:
         pass
-    return "local-model"
+    return "unknown-model"
 
 # =============================================================================
 # System Config
