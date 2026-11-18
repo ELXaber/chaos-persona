@@ -1,4 +1,4 @@
-#V10282026
+#V11182026
 # =============================================================================
 # CAIOS PROJECT ANDREW: Tool Dispatcher
 # Intercepts LLM output for structured tool calls and routes them to the
@@ -532,7 +532,7 @@ class ToolDispatcher:
                 'write_file':     lambda: _handle_write_file(attrs, controller),
                 'delete_file':    lambda: _handle_delete_file(attrs, controller),
                 'move_file':      lambda: _handle_move_file(attrs, controller),
-                'list_directory': lambda: _handle_list_dir(attrs, controller),
+                'list_dir':       lambda: _handle_list_dir(attrs, controller),
                 'fetch_url':      lambda: _handle_fetch_url(attrs, controller),
                 'browser':        lambda: _handle_browser(attrs, controller),
                 'execute_script': lambda: _handle_execute_script(attrs, controller),
