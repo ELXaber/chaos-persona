@@ -1,4 +1,4 @@
-#V10302026
+#V11172026
 # =============================================================================
 # CAIOS PROJECT ANDREW: Axiom Manager & Temporal Update Pipeline
 # Purpose: Enable local knowledge updates that override model training data without retraining. Kills the data center requirement.
@@ -368,12 +368,11 @@ class AxiomManager:
                 'andrew': assistant_message,          # standardize on "andrew"
                 'assistant': assistant_message,       # keep for backward compatibility if needed
                 'metadata': meta,
-                'timestamp': datetime.now(timezone.utc).isoformat() + "Z",
+                'timestamp': datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%S.%f') + "Z",
                 'user_id': meta.get('user_id')        # also top-level for easier filtering
             }
 
         self.conversation_history.append(turn)
-        self._save_conversation_history()
 
         # Keep last 100 turns (configurable)
         max_turns = 100

@@ -1,4 +1,4 @@
-#V10282026
+#V11182026
 # =============================================================================
 # CAIOS PROJECT ANDREW: Knowledge Base Inspector - CLI Tool
 # Usage: python kb_inspect.py [command] [args]
@@ -96,6 +96,10 @@ def cmd_show_domain(domain: str):
 
         print(f"\n{i}. [{disc['type']}] {disc['timestamp'][:19]} | {tier_label}{conf_str}")
         print(f"   ID: {disc['discovery_id']}")
+        if disc.get('system_id'):
+            print(f"   System: {disc['system_id']}")
+        if disc.get('content', {}).get('parent_discovery_id'):
+            print(f"   Parent: {disc['content']['parent_discovery_id']}")
 
         # Show the Manifold Signature if present
         if 'manifold_sig' in disc and disc['manifold_sig'] != "0xUNVERIFIED":
@@ -188,6 +192,8 @@ def cmd_show_specialist(specialist_id: str):
     print(f"Discoveries: {info.get('discovery_count', 0)}")
     print(f"Last active: {info.get('last_active', 'Never')}")
     print(f"\nCapabilities: {', '.join(info.get('capabilities', []))}")
+    if info.get('system_id'):
+        print(f"System: {info['system_id']}")
 
     # Show deployment context
     print(f"\n{'Deployment Context':-^70}")
@@ -285,6 +291,20 @@ def cmd_stats():
     print(f"\n{'Authority Distribution':-^70}")
     print(f"Sovereign Truths (Tier 0):  {sovereign_count} discoveries | {sovereign_specialists} specialists")
     print(f"Edge Discoveries (Tier 1+): {edge_count} discoveries | {edge_specialists} specialists")
+    # NEW: system coverage
+    systems = set()
+    if kb.DISCOVERIES_LOG.exists():
+        with open(kb.DISCOVERIES_LOG, "r", encoding="utf-8") as f:
+            for line in f:
+                if line.strip():
+                    try:
+                        entry = json.loads(line.strip())
+                        sys_id = entry.get('system_id')
+                        if sys_id and sys_id != 'unconfigured':
+                            systems.add(sys_id)
+                    except json.JSONDecodeError:
+                        continue
+    print(f"Systems in KB: {len(systems)} ({', '.join(sorted(systems)) if systems else 'none'})")
 
     if tier_distribution:
         print(f"\n{'Detailed Tier Breakdown':-^70}")
@@ -403,14 +423,56 @@ def cmd_predict_gaps(domain: Optional[str] = None):
     if not predicted:
         print("No predicted gaps found.")
 
+# Format check; cryptographic audit in knowladge_base
 def cmd_verify_integrity():
     """Verify hash chain integrity."""
     if not kb.HASH_CHAIN.exists():
         print("No hash chain found.")
         return
 
+    """Verify hash chain integrity by recomputing each link."""
     print(f"\n{'='*70}")
     print(f"Verifying Hash Chain Integrity...")
+    print(f"{'='*70}")
+
+    result = kb.verify_integrity()
+
+    if result['status'] == 'missing':
+        print("❌ Chain or discoveries file missing")
+        print(f"{'='*70}")
+        return
+
+    if result['status'] == 'out_of_sync':
+        print(f"❌ {result['errors'][0]['reason']}")
+        print(f"❌ Integrity: COMPROMISED")
+        print(f"{'='*70}")
+        return
+
+    print(f"Total chain entries: {result['total_entries']}")
+
+    # Version breakdown
+    if result.get('version_counts'):
+        vc = result['version_counts']
+        versions_str = ", ".join(f"{v} ({n})" for v, n in sorted(vc.items()))
+        print(f"Schema versions: {versions_str}")
+
+    if result['status'] == 'intact':
+        print(f"✓ All {result['verified']} chain links verified")
+        print(f"✓ Every hash recomputed from prev_hash + entry_json")
+        print(f"✓ Integrity: INTACT")
+    else:
+        for err in result['errors']:
+            print(f"❌ Position {err['position']}: {err['reason']}")
+            if 'discovery_id' in err:
+                print(f"   Discovery: {err['discovery_id']}")
+            if 'version' in err:
+                print(f"   Version: {err['version']}")
+            if 'expected' in err:
+                print(f"   Expected: {err['expected']}...")
+                print(f"   Stored:   {err['stored']}...")
+        print(f"❌ Verified: {result['verified']}/{result['total_entries']}")
+        print(f"❌ Integrity: COMPROMISED")
+
     print(f"{'='*70}")
 
     with open(kb.HASH_CHAIN, "r", encoding="utf-8") as f:

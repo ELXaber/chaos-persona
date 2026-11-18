@@ -1,4 +1,4 @@
-#V11072026
+#V11182026
 # =============================================================================
 # CAIOS PROJECT ANDREW: Hardened Orchestrator
 # This acts as the central nervous system connecting everything
@@ -11,7 +11,7 @@ import time
 import hashlib
 import os
 import json
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from typing import Optional, Dict, Any
 
 # Local Kernel Imports
@@ -305,6 +305,19 @@ class CAIOSOrchestrator:
         # 4. Final memory storage and return
         self.shared_memory['last_assistant_message'] = final_text
         return final_text
+
+def _since_last_turn(axiom_mgr, user_id):
+    last = axiom_mgr.get_relevant_history(domain=None, limit=1, user_id=user_id)
+    if not last:
+        return None
+    raw = (last[0].get('timestamp') or '').replace('+00:00Z', '+00:00').replace('Z', '+00:00')
+    try:
+        t = datetime.fromisoformat(raw)
+    except ValueError:
+        return None
+    if t.tzinfo is None:
+        t = t.replace(tzinfo=timezone.utc)
+    return str(timedelta(seconds=int((datetime.now(timezone.utc) - t).total_seconds())))
 
 # =============================================================================
 # System Boot Logic
@@ -873,49 +886,13 @@ def system_step(user_input: str, prompt_complexity: str = "low",
             if hist_turns:
                 lines = []
                 for turn in hist_turns:
+                    raw_ts = turn.get('timestamp') or turn.get('metadata', {}).get('timestamp') or ''
+                    ts = raw_ts[:19].replace('T', ' ') or 'unknown'     # "2026-11-17 14:32:41" (UTC)
                     lines.append(f"User: {turn['user'][:300]}")
                     lines.append(f"Andrew: {turn['assistant'][:300]}")
                 recent_history = "[RECENT_CONTEXT]\n" + "\n".join(lines) + "\n[/RECENT_CONTEXT]\n"
     except Exception as e:
         print(f"[HISTORY] retrieval failed: {e}")
-
-        # Load incoming user profile and RAW_Q
-        incoming = upkb['load'](user_id)
-        if incoming.get('last_raw_q'):
-            # Pull the kernel from shared memory (the 'manifold_instance' equivalent)
-            kernel = shared_memory.get('cpol_instance')
-
-            if kernel and hasattr(kernel, 'ratchet'):
-                # 1. Update the seed to the user's persisted state
-                kernel.raw_q = incoming['last_raw_q']
-
-                # 2. Ratchet forward (this advances the manifold state)
-                kernel.ratchet()
-
-                # 3. Update the session_context so the rest of the OS is in sync
-                shared_memory['session_context']['RAW_Q'] = kernel.raw_q
-
-                print(f"[CRYPTO] Manifold ratcheted for user: {user_id}")
-            else:
-                # Fallback: If no kernel exists, update the seed for the next init
-                shared_memory['session_context']['RAW_Q'] = incoming['last_raw_q']
-                print("[WARNING] No active manifold. RAW_Q queued for next initialization.")
-
-            # Apply personality weights
-            shared_memory['personality_weights'] = \
-                incoming['personality']
-            shared_memory['active_user'] = user_id
-
-            print(f"[USER_KB] User context: {user_id} | "
-                  f"Abstraction: {incoming['abstraction_default']} | "
-                  f"Sessions: {incoming['session_count']}")
-
-            # Restore complaint state from previous session
-            complaint_state = upkb['get_complaint'](user_id)
-            shared_memory['complaint_count'] = complaint_state['complaint_count']
-            shared_memory['persistent_complainer'] = complaint_state['persistent_complainer']
-            print(f"[USER_KB] Complaint state restored: "
-                  f"count={complaint_state['complaint_count']}")
 
     # Handle commands (if input starts with /)
     if user_input.startswith('/'):
@@ -1445,10 +1422,14 @@ def system_step(user_input: str, prompt_complexity: str = "low",
             except Exception:
                 level_name, style_prompt = 'CLEAR', ''
 
-            # Current datetime; injected since Ollama sandbox has no clock
+            # Current datetime; injected since sandboxes have no clock
             current_dt = datetime.now(timezone.utc).strftime(
                 '%A, %B %d, %Y %H:%M UTC'
             )
+
+            since = (_since_last_turn(shared_memory.get('axiom_manager'),
+                                      shared_memory.get('active_user'))
+                     if AMGR_AVAILABLE else None)
 
             # KB context; count total entries, not single-domain coverage
             kb_context = ""
@@ -1521,6 +1502,7 @@ def system_step(user_input: str, prompt_complexity: str = "low",
                 f"volatility={cpol_result.get('volatility', 0):.4f} "
                 f"python_status={cpol_result.get('status')}]\n"
                 f"[DATETIME {current_dt}]\n"
+                f"[SINCE_LAST_TURN {since or 'none'}]\n"
                 f"[USER {shared_memory.get('active_user', 'unknown')}]\n"
                 f"[ABSTRACTION_LEVEL {level_name}]\n"
                 f"[STYLE: {style_prompt}]\n"

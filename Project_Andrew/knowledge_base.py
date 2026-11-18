@@ -1,4 +1,4 @@
-#V11162026
+#V11182026
 # =============================================================================
 # CAIOS PROJECT ANDREW: Knowledge Base (Persistent Learning Layer)
 # Purpose: Append-only storage for specialist discoveries + epistemic gap fills + update
@@ -500,6 +500,113 @@ def _update_hash_chain(entry_str: str) -> None:
     with open(HASH_CHAIN, "a") as f:
         timestamp = datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%S.%f') + "Z"
         f.write(f"{timestamp} {new_hash}\n")
+
+def verify_integrity() -> Dict[str, Any]:
+    """
+    Verify the hash chain by recomputing every link from discoveries.jsonl.
+
+    The chain is written by _update_hash_chain() as:
+        new_hash = sha256(prev_hash + entry_str)
+    where entry_str is the JSON of the discovery entry WITHOUT discovery_id
+    (discovery_id is added after the hash is computed).
+
+    VERSION HANDLING:
+    Entries are tagged with a version field:
+      - pre-1.1: no version field (treated as 1.0, no system_id)
+      - 1.1:    version="1.1", no system_id
+      - 1.2:    version="1.2", with system_id
+
+    The verifier is version-agnostic in its hashing: it strips only
+    discovery_id and re-serializes whatever else is in the entry. This
+    works for all known versions because the original hash was also
+    computed against the same entry shape that's now on disk.
+
+    The version field IS checked, however, so an unrecognized version
+    fails loudly at the version check rather than silently producing
+    hash mismatches that look like tampering.
+    """
+    KNOWN_VERSIONS = {"1.1", "1.2"}   # 1.0 = no version field
+
+    if not HASH_CHAIN.exists() or not DISCOVERIES_LOG.exists():
+        return {
+            'status': 'missing',
+            'total_entries': 0,
+            'verified': 0,
+            'errors': [{'reason': 'chain or discoveries file missing'}]
+        }
+
+    with open(HASH_CHAIN, "r", encoding="utf-8") as f:
+        chain_lines = [line.split() for line in f if line.strip()]
+    with open(DISCOVERIES_LOG, "r", encoding="utf-8") as f:
+        discovery_lines = [line.strip() for line in f if line.strip()]
+
+    if len(chain_lines) != len(discovery_lines):
+        return {
+            'status': 'out_of_sync',
+            'total_entries': len(chain_lines),
+            'verified': 0,
+            'errors': [{
+                'reason': f'chain has {len(chain_lines)} entries, '
+                          f'discoveries has {len(discovery_lines)}'
+            }]
+        }
+
+    errors = []
+    prev_hash = "0" * 64
+    verified = 0
+    version_counts: Dict[str, int] = {}
+
+    for i, (chain_parts, discovery_json) in enumerate(zip(chain_lines, discovery_lines)):
+        if len(chain_parts) < 2:
+            errors.append({'position': i, 'reason': 'malformed chain line'})
+            continue
+
+        stored_hash = chain_parts[1]
+
+        try:
+            entry = json.loads(discovery_json)
+        except json.JSONDecodeError as e:
+            errors.append({'position': i, 'reason': f'malformed discovery: {e}'})
+            continue
+
+        # Version check: refuse to verify unknown schema generations
+        entry_version = entry.get('version', '1.0')
+        if entry_version not in KNOWN_VERSIONS and entry_version != '1.0':
+            errors.append({
+                'position': i,
+                'discovery_id': entry.get('discovery_id', '?'),
+                'reason': f'unknown schema version: {entry_version}',
+            })
+            continue
+
+        version_counts[entry_version] = version_counts.get(entry_version, 0) + 1
+
+        # Recompute the hash — version-agnostic, strip only discovery_id
+        entry_for_hash = {k: v for k, v in entry.items() if k != 'discovery_id'}
+        entry_str = json.dumps(entry_for_hash, sort_keys=True)
+        expected_hash = hashlib.sha256((prev_hash + entry_str).encode()).hexdigest()
+
+        if expected_hash != stored_hash:
+            errors.append({
+                'position': i,
+                'discovery_id': entry.get('discovery_id', '?'),
+                'version': entry_version,
+                'reason': 'hash mismatch',
+                'expected': expected_hash[:16],
+                'stored': stored_hash[:16]
+            })
+        else:
+            verified += 1
+
+        prev_hash = stored_hash
+
+    return {
+        'status': 'intact' if not errors else 'compromised',
+        'total_entries': len(chain_lines),
+        'verified': verified,
+        'version_counts': version_counts,
+        'errors': errors
+    }
 
 def _current_system_id() -> str:
     """Read system_id from system_identity.json with mtime-based cache."""
