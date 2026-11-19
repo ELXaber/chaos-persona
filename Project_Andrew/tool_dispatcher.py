@@ -419,6 +419,7 @@ def _handle_tool_loop(attrs: Dict, controller) -> str:
 from pathlib import Path
 SKILLS_DIR = Path("skills")
 
+
 def _handle_load_skill(attrs: Dict, controller) -> str:
     name = attrs.get('name', '')
     if not name:
@@ -427,6 +428,20 @@ def _handle_load_skill(attrs: Dict, controller) -> str:
     if result['status'] == 'success':
         return f"[TOOL RESULT] load_skill({name}):\n{result['content']}"
     return f"[TOOL RESULT] load_skill failed: {result.get('error', result.get('reason', 'unknown'))}"
+
+
+def _skill_catalog() -> str:
+    rows = []
+    for p in sorted(SKILLS_DIR.glob('*/SKILL.md')):
+        head = p.read_text(encoding='utf-8', errors='replace')[:800]
+        name = re.search(r'^name:\s*(.+)$', head, re.M)
+        desc = re.search(r'^description:\s*(.+)$', head, re.M)
+        if name and desc:
+            rows.append(f"  {name.group(1).strip()}: {desc.group(1).strip()[:200]}")
+    if not rows:
+        return ""
+    return ('\n[SKILLS] Load one with [TOOL:load_skill name="<name>"] when the task matches:\n'
+            + "\n".join(rows) + "\n")
 
 # =============================================================================
 # Main Dispatcher
@@ -520,7 +535,7 @@ class ToolDispatcher:
         controller = self._get_controller()
 
         # File operations; needs controller
-        if tool_name in ('read_file', 'write_file', 'delete_file',
+        if tool_name in ('read_file', 'write_file', 'delete_file', 'move_file', 'list_dir',
                           'fetch_url', 'execute_script', 'browser',
                           'load_skill', 'tool_loop'):
             if not controller:
@@ -722,8 +737,7 @@ RULES:
 
 
 def get_tool_addendum() -> str:
-    """Returns the system prompt addendum that teaches the LLM to use tools."""
-    return TOOL_SYSTEM_ADDENDUM
+    return TOOL_SYSTEM_ADDENDUM + _skill_catalog()
 
 # =============================================================================
 # Factory
