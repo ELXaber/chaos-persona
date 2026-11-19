@@ -6,7 +6,8 @@ For the tool editor to work, rename the tool_dispatcher in /CAIOS to tool_dispat
 Leave everything else (init, apply, probe, schema, skills, verify, and readme) in this directory /skills/model_editor/.
 
 Start order:
-Ollama with the driver model, then the bridge (python caios_bridge.py). Set CAIOS_BACKEND=ollama explicitly.
+Ollama with the driver model, then the bridge (python caios_bridge.py). Set CAIOS_BACKEND=ollama explicitly if you plan on restarting the driver LLM.
+If the driver model is loaded on Ollama, it will maintain that connection to the UX, but Ollama is a fallback to Llama.cpp if that is already running.
 Target llama-server on port 8081 (no control vector): llama-server.exe -m <target.gguf> --port 8081 --ctx-size 8192 -ngl 99 --chat-template chatml.
 
 Session: ask the model to load the skill and describe the failure. When it runs apply_edits, a confirmation prompt appears in the bridge terminal and auto-denies after 30 seconds, so the user needs to be watching it.
