@@ -1,5 +1,7 @@
 Prereqs: a neuron-steering checkout with uv, the HF weights for the target (the first export downloads them), the env vars (CAIOS_NEURON_STEERING_DIR, CAIOS_EDIT_BASE_GGUF, optional export/probe backends), and skills/model_editor/ copied into the project.
 
+E.g., https://github.com/metrovoc/neuron-steering
+
 For the tool editor to work, rename the tool_dispatcher in /CAIOS to tool_dispatcher_old and place this tool_dispatcher in /CAIOS
 Leave everything else (init, apply, probe, schema, skills, verify, and readme) in this directory /skills/model_editor/.
 
