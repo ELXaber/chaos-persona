@@ -127,8 +127,8 @@ class EditOp:
 
     def validate(self) -> List[str]:
         errs = []
-        if not (0 <= self.layer < N_LAYERS):
-            errs.append(f"layer {self.layer} out of range 0..{N_LAYERS - 1}")
+        if not (1 <= self.layer < N_LAYERS):   # llama.cpp adds the vector after layer l >= 1
+            errs.append(f"layer {self.layer} out of range 1..{N_LAYERS - 1} (control vectors cannot steer layer 0)")
         if self.neuron < 0 or (N_NEURONS and self.neuron >= N_NEURONS):
             errs.append(f"neuron {self.neuron} out of range")
         if not (abs(self.dose) <= MAX_DOSE) or self.dose == 0:

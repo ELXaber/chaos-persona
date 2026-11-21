@@ -26,6 +26,20 @@ def _artifact_id(req: ApplyRequest) -> str:
 EXPORT_BACKEND = os.environ.get("CAIOS_EXPORT_BACKEND", "neuron_steering").lower()
 
 
+RESID_NORMS_PATH = os.environ.get("CAIOS_EDIT_RESID_NORMS",
+                                  os.path.join(str(ARTIFACT_DIR), "..", "resid_norms.json"))
+
+
+def _load_resid_norms() -> Dict[str, float]:
+    """Optional cache written by record_norms.py: {"14": 123.4, ...}. Missing or bad file = compute each time."""
+    try:
+        with open(RESID_NORMS_PATH, "r", encoding="utf-8") as f:
+            raw = json.load(f)
+        return {str(k): float(v) for k, v in raw.items() if float(v) > 0}
+    except Exception:
+        return {}
+
+
 def _build_export_cmd(req: ApplyRequest, out_path: str):
     """
     Returns (cmd_list, error). Backends:
@@ -48,6 +62,15 @@ def _build_export_cmd(req: ApplyRequest, out_path: str):
                "--model", HF_MODEL_ID, "-o", out_abs]
         for p in pushes:
             cmd += ["--push", p]
+        hint = os.environ.get("CAIOS_EXPORT_HINT", "")
+        if hint:
+            if not re.fullmatch(r"[A-Za-z0-9_.-]{1,40}", hint):
+                return None, "CAIOS_EXPORT_HINT has unsupported characters"
+            cmd += ["--hint", hint]
+        norms = _load_resid_norms()
+        for layer in sorted({int(e.layer) for e in req.edits}):
+            if str(layer) in norms:          # skips the slow transformers pass for this layer
+                cmd += ["--resid-norm", f"{layer}={float(norms[str(layer)])!r}"]   # repr: full precision, matches an uncached export
         return cmd, None
 
     if EXPORT_BACKEND == "cmd":
