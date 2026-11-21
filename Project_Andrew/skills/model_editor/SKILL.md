@@ -41,8 +41,24 @@ You never launch or restart servers. The USER applies each edit and relaunches t
 Tags cannot contain double quotes, square brackets, or JSON inside the attribute values. Do not
 write request files or regex. Use numbered attributes instead:
 
-probe:
-  [TOOL:probe_model mode="activations" fail1="How many e's are in the word seventeen?" ctrl1="How many letters are in the word banana?" ctrl2="What is 15 + 27?" top_k="20"]
+probe (modes: contrast, activations, logit_lens, search):
+  [TOOL:probe_model mode="contrast" fail1="How many e's are in the word seventeen?" fail2="Spell seventeen and count the e's" ctrl1="How many letters are in the word banana?" ctrl2="What is 15 + 27?" top_k="20"]
+      -> neurons that fire more (or less) on the failure prompts than on the controls. Start here.
+  [TOOL:probe_model mode="logit_lens" neurons="14:8949;13:7956"]
+      -> the tokens each neuron promotes or suppresses. Use it to justify a hypothesis before choosing a dose.
+  [TOOL:probe_model mode="search" words="four|3"]
+      -> neurons whose logit lens contains a word.
+  [TOOL:probe_model mode="activations" fail1="..."]
+      -> unusually strong neurons on one prompt.
+  [TOOL:probe_model mode="concept" words="counting letters|spelling" top_k="8"]
+      -> neurons whose output MEANS the phrase (runs the CLI; loads a small embedding model, slower the first time).
+         The sign of the dose is the push that promotes the concept. Default layers 8-21; widen with layers="4-23".
+  [TOOL:probe_model mode="hub" neurons="14:8949" top_k="12"]
+      -> what drives a neuron and what it writes into. Check this before pushing: it hints at collateral effects.
+Prompts must be one line with no double quotes or square brackets.
+Probes read the prompt's own tokens, not the model's generated answer, so contrast on a question alone can
+miss neurons that act while the answer is being written.
+Contrast score is signed: positive = more active on failures (try a negative dose); negative = less active (try positive).
 
 apply (edits are layer:neuron:dose joined by ';'; expected answers are alternatives joined by '|'):
   [TOOL:apply_edits label="fix-001" hypothesis="L14.N8949 over-weights a three prior" edits="14:8949:-1" target1="How many e's are in the word seventeen?" target1_expect="4|four" control1="How many letters are in the word banana?" control1_expect="6|six" control2="What is 15 + 27?" control2_expect="42"]

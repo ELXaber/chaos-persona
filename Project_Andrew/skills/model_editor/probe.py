@@ -1,79 +1,156 @@
 # skills/model_editor/probe.py
-# Read-only. The *backend* (whatever actually reads activations) is pluggable because it
-# needs full-precision HF weights, not the GGUF. Configure ONE of:
-#   CAIOS_PROBE_BACKEND=http  CAIOS_PROBE_URL=http://127.0.0.1:8791/<route>
-#       POST {"mode","prompt","layers","top_k"} -> {"neurons":[{"layer","neuron","score","note"?}]}
-#   CAIOS_PROBE_BACKEND=cmd   CAIOS_PROBE_CMD='["uv","run","python","my_probe.py","{mode}","{prompt}","{top_k}"]'
-#       stdout JSON in the same shape
-# Adapt _call_backend() to the explorer's real routes/CLI; everything else is backend-independent.
+# Read-only client for the neuron-steering GUI server (app/server.py), which holds the target
+# model (Qwen3.5-4B, "small") in neuron-explorer's runtime. Start it with:
+#     uv run python app/server.py        (default http://127.0.0.1:8787; set CAIOS_PROBE_URL if different)
+# Routes used (verified against app/server.py and app/models.py):
+#     POST /api/contrast  {model, a, b}      -> {"results": [{layer, neuron, expert, score, act}]}
+#     POST /api/fires     {model, text}      -> {"tokens", "per_token", "overall": [{layer, neuron, score, act, pos}]}
+#     GET  /api/lens      model,layer,neuron,k -> {"up": ..., "down": ...}   (weight-only logit lens)
+#     GET  /api/search    model,q            -> {"results": [{layer, neuron, sign}]}  (neurons whose lens has the word)
+# The server runs one job at a time and answers {"error": ...} when busy.
+# Two more modes run neuron_steering.find as a command (they are not server routes):
+#     concept  neurons whose steer lens MEANS a phrase (loads a small embedding model; first run builds a cache)
+#     hub      a neuron's strongest direct-path drivers and readers (cached weights only, fast)
 import json
 import os
 import re
 import subprocess
 import time
+import urllib.error
+import urllib.parse
 import urllib.request
-from collections import defaultdict
 from typing import Any, Dict, List
 
-from .schemas import ProbeRequest, PROBE_DIR, NEURON_STEERING_DIR
+from .schemas import NEURON_STEERING_DIR, PROBE_DIR, PROBE_MODEL, PROBE_URL, ProbeRequest
 
 _TOOL_TAG = re.compile(r"\[TOOL:\w+[^\]]*\]")
+TIMEOUT = 900   # the first call loads the model
 
 
-class ProbeNotConfigured(Exception):
+class ProbeError(Exception):
     pass
 
 
-def _call_backend(mode: str, prompt: str, layers, top_k: int) -> List[dict]:
-    backend = os.environ.get("CAIOS_PROBE_BACKEND", "").lower()
-    if backend == "http":
-        url = os.environ["CAIOS_PROBE_URL"]
-        body = json.dumps({"mode": mode, "prompt": prompt, "layers": layers, "top_k": top_k}).encode()
-        req = urllib.request.Request(url, data=body, headers={"Content-Type": "application/json"})
-        with urllib.request.urlopen(req, timeout=300) as r:
-            return json.loads(r.read().decode("utf-8")).get("neurons", [])
-    if backend == "cmd":
-        template = json.loads(os.environ["CAIOS_PROBE_CMD"])
-        sub = {"{mode}": mode, "{prompt}": prompt, "{top_k}": str(int(top_k)),
-               "{layers}": ",".join(map(str, layers or []))}
-        cmd = [sub.get(tok, tok) for tok in template]       # list, no shell
-        r = subprocess.run(cmd, cwd=NEURON_STEERING_DIR or None, capture_output=True,
-                           text=True, timeout=600)
-        if r.returncode != 0:
-            raise RuntimeError((r.stderr or r.stdout)[-500:])
-        return json.loads(r.stdout).get("neurons", [])
-    raise ProbeNotConfigured("set CAIOS_PROBE_BACKEND to 'http' or 'cmd' (see probe.py header)")
+def _http(method: str, path: str, body: Dict[str, Any] = None, query: Dict[str, Any] = None) -> Any:
+    url = PROBE_URL.rstrip("/") + path
+    if query:
+        url += "?" + urllib.parse.urlencode(query)
+    data = json.dumps(body).encode("utf-8") if body is not None else None
+    req = urllib.request.Request(url, data=data, method=method,
+                                 headers={"Content-Type": "application/json"} if data else {})
+    try:
+        with urllib.request.urlopen(req, timeout=TIMEOUT) as r:
+            out = json.loads(r.read().decode("utf-8"))
+    except urllib.error.URLError as e:
+        raise ProbeError(f"probe server not reachable at {PROBE_URL} ({e.reason}); "
+                         f"start it with: uv run python app/server.py")
+    if isinstance(out, dict) and out.get("error"):
+        raise ProbeError(str(out["error"]))
+    return out
 
 
-def _normalize(raw: List[dict]) -> List[dict]:
+def _rows(rows: List[dict], k: int) -> List[dict]:
     out = []
-    for n in raw:
+    for r in rows[:k]:
         try:
-            out.append({"layer": int(n["layer"]), "neuron": int(n["neuron"]),
-                        "score": float(n["score"]),
-                        "note": _TOOL_TAG.sub("[STRIPPED_TOOL_TAG]", str(n.get("note", "")))[:120]})
+            out.append({"layer": int(r["layer"]), "neuron": int(r["neuron"]),
+                        "score": round(float(r["score"]), 3)})
         except (KeyError, TypeError, ValueError):
             continue
     return out
 
 
-def _mean_scores(prompts: List[str], mode: str, layers, top_k: int) -> Dict[tuple, float]:
-    acc = defaultdict(float)
-    for p in prompts:
-        for n in _normalize(_call_backend(mode, p, layers, top_k)):
-            acc[(n["layer"], n["neuron"])] += n["score"]
-    return {k: v / max(len(prompts), 1) for k, v in acc.items()}   # missing = 0
+def _clip(x: Any, k: int = 16) -> Any:
+    """Lens output shape is the explorer's own; pass it through, bounded, with tool tags stripped."""
+    if isinstance(x, list):
+        x = x[:k]
+    return json.loads(_TOOL_TAG.sub("[STRIPPED_TOOL_TAG]", json.dumps(x))[:4000]) \
+        if len(json.dumps(x)) <= 4000 else str(x)[:2000]
 
 
-def rank_candidates(fail: Dict[tuple, float], ctrl: Dict[tuple, float], top_k: int) -> List[dict]:
-    """Neurons that differ most between failure prompts and control prompts. Pure code."""
-    keys = set(fail) | set(ctrl)
-    rows = [{"layer": k[0], "neuron": k[1],
-             "fail_mean": round(fail.get(k, 0.0), 4),
-             "ctrl_mean": round(ctrl.get(k, 0.0), 4),
-             "diff": round(fail.get(k, 0.0) - ctrl.get(k, 0.0), 4)} for k in keys]
-    rows.sort(key=lambda r: abs(r["diff"]), reverse=True)
-    return rows[:top_k]
+def _contrast(req: ProbeRequest) -> Dict[str, Any]:
+    r = _http("POST", "/api/contrast", {"model": PROBE_MODEL, "a": "\n".join(req.inputs),
+                                        "b": "\n".join(req.control_inputs)})
+    return {"candidates": _rows(r.get("results", []), req.top_k),
+            "meaning": "score = (mean activation on failure prompts - mean on controls) / the neuron's usual range. "
+                       "Positive: more active on failures (try a NEGATIVE dose to suppress it); "
+                       "negative: less active (try a POSITIVE dose)."}
+
+
+def _activations(req: ProbeRequest) -> Dict[str, Any]:
+    per = []
+    for p in req.inputs:
+        r = _http("POST", "/api/fires", {"model": PROBE_MODEL, "text": p})
+        per.append({"prompt": p, "tokens": r.get("tokens", [])[:60],
+                    "top": _rows(r.get("overall", []), req.top_k)})
+    return {"per_prompt": per,
+            "meaning": "score = activation relative to the neuron's usual range (|score| > 1 is unusually strong). "
+                       "Only the prompt's own tokens are read, not the model's generated answer."}
+
+
+def _lens(req: ProbeRequest) -> Dict[str, Any]:
+    out = {}
+    for n in req.neurons:
+        layer, neuron = (int(x) for x in n.split(":"))
+        r = _http("GET", "/api/lens", query={"model": PROBE_MODEL, "layer": layer, "neuron": neuron, "k": 12})
+        out[n] = {"pushes_toward": _clip(r.get("up")), "pushes_away_from": _clip(r.get("down"))}
+    return {"lens": out, "meaning": "tokens each neuron's output promotes (up) or suppresses (down)."}
+
+
+def _search(req: ProbeRequest) -> Dict[str, Any]:
+    out = {}
+    for w in req.words:
+        r = _http("GET", "/api/search", query={"model": PROBE_MODEL, "q": w})
+        out[w] = [{"layer": x.get("layer"), "neuron": x.get("neuron"), "sign": x.get("sign")}
+                  for x in r.get("results", [])[:req.top_k]]
+    return {"neurons_by_word": out,
+            "meaning": "neurons whose logit lens contains the word; sign + means a positive push promotes it."}
+
+
+def _cli(args: List[str], timeout: int) -> str:
+    if not NEURON_STEERING_DIR or not os.path.isdir(NEURON_STEERING_DIR):
+        raise ProbeError("CAIOS_NEURON_STEERING_DIR is not set to the neuron-steering checkout")
+    cmd = ["uv", "run", "python", "-m", "neuron_steering.find", *args]      # list, no shell
+    try:
+        r = subprocess.run(cmd, cwd=NEURON_STEERING_DIR, capture_output=True, text=True, timeout=timeout)
+    except FileNotFoundError:
+        raise ProbeError("`uv` not found on PATH")
+    except subprocess.TimeoutExpired:
+        raise ProbeError(f"find timed out after {timeout}s")
+    if r.returncode != 0:
+        raise ProbeError((r.stderr or r.stdout)[-500:])
+    return _TOOL_TAG.sub("[STRIPPED_TOOL_TAG]", r.stdout)[:4000]
+
+
+def _concept(req: ProbeRequest) -> Dict[str, Any]:
+    out_path = os.path.abspath(os.path.join(str(PROBE_DIR), f"concept_{int(time.time())}.json"))
+    phrases = [re.sub(r"^[-\s]+", "", w)[:60] for w in req.words]        # no leading '-' (option injection)
+    args = ["concept", "-k", str(min(req.top_k, 20)), "-o", out_path]
+    if req.layers:
+        args += ["--layers", req.layers]
+    text = _cli(args + ["--"] + phrases, timeout=900)
+    cands = []
+    try:
+        for c in json.load(open(out_path, encoding="utf-8")):
+            l, n, dose = c["pushes"][0]
+            cands.append({"name": str(c["name"])[:80], "layer": int(l), "neuron": int(n), "dose": float(dose)})
+    except Exception:
+        pass
+    return {"candidates": cands, "report": text,
+            "meaning": "neurons whose output means the phrase. The sign of dose is the push that PROMOTES the "
+                       "concept (use the opposite sign to suppress it). Default layers 8-21; widen with layers=\"4-23\"."}
+
+
+def _hub(req: ProbeRequest) -> Dict[str, Any]:
+    layer, neuron = (int(x) for x in req.neurons[0].split(":"))
+    text = _cli(["hub", str(layer), str(neuron), "-k", str(min(req.top_k, 16))], timeout=180)
+    return {"report": text,
+            "meaning": "'driven by' = neurons that feed this one; 'writes into' = neurons it feeds. "
+                       "Check these before pushing: they show what else a push is likely to move."}
+
+
+_MODES = {"contrast": _contrast, "activations": _activations, "logit_lens": _lens, "search": _search,
+          "concept": _concept, "hub": _hub}
 
 
 def run_probe(req: ProbeRequest) -> Dict[str, Any]:
@@ -81,22 +158,12 @@ def run_probe(req: ProbeRequest) -> Dict[str, Any]:
     if errs:
         return {"status": "error", "errors": errs}
     try:
-        # over-fetch per prompt so the differential has room to work
-        fetch_k = min(100, req.top_k * 5)
-        fail = _mean_scores(req.inputs, req.mode, req.layers, fetch_k)
-        ctrl = _mean_scores(req.control_inputs, req.mode, req.layers, fetch_k) if req.control_inputs else {}
-    except ProbeNotConfigured as e:
+        result = {"status": "ok", "mode": req.mode, **_MODES[req.mode](req)}
+    except ProbeError as e:
         return {"status": "error", "error": str(e)}
     except Exception as e:
-        return {"status": "error", "error": f"probe backend failed: {e}"}
-
-    result = {
-        "status": "ok", "mode": req.mode,
-        "candidates": rank_candidates(fail, ctrl, req.top_k),
-        "summary": f"{len(req.inputs)} failure / {len(req.control_inputs)} control prompts; "
-                   f"ranked by |fail_mean - ctrl_mean|",
-    }
-    path = os.path.join(str(PROBE_DIR), f"probe_{int(time.time())}.json")
+        return {"status": "error", "error": f"probe failed: {type(e).__name__}: {e}"}
+    path = os.path.join(str(PROBE_DIR), f"probe_{int(time.time())}_{req.mode}.json")
     with open(path, "w", encoding="utf-8") as f:
         json.dump({"request": vars(req), **result}, f, indent=2)
     result["log"] = path

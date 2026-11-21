@@ -47,36 +47,73 @@ def load_json_request(path: str) -> Dict[str, Any]:
 
 
 # ---- probe ------------------------------------------------------------------
+PROBE_URL = os.environ.get("CAIOS_PROBE_URL", "http://127.0.0.1:8787")   # neuron-steering app/server.py
+PROBE_MODEL = os.environ.get("CAIOS_PROBE_MODEL", "small")              # "small" = Qwen3.5-4B in that app
+PROBE_MODES = ("contrast", "activations", "logit_lens", "search", "concept", "hub")
+
+
+def clean_prompt(p: str) -> str:
+    """One line, bounded. The server's Contrast splits its inputs on newlines."""
+    return " ".join(str(p).split())[:300]
+
+
 @dataclass
 class ProbeRequest:
-    mode: Literal["activations", "influence", "logit_lens"]
-    inputs: List[str]                                   # failure prompts
+    mode: Literal["contrast", "activations", "logit_lens", "search", "concept", "hub"]
+    inputs: List[str] = field(default_factory=list)          # failure prompts
     control_inputs: List[str] = field(default_factory=list)  # prompts the model gets right
-    layers: Optional[List[int]] = None
+    neurons: List[str] = field(default_factory=list)         # "14:8949" addresses, for logit_lens
+    words: List[str] = field(default_factory=list)           # tokens (search) or phrases (concept)
+    layers: str = ""                                         # "first-last" for concept, e.g. "4-23"
     top_k: int = 20
 
     def validate(self) -> List[str]:
         errs = []
-        if self.mode not in ("activations", "influence", "logit_lens"):
-            errs.append(f"bad mode {self.mode!r}")
-        if not self.inputs:
-            errs.append("inputs (failure prompts) cannot be empty")
+        if self.mode not in PROBE_MODES:
+            errs.append(f"mode must be one of {PROBE_MODES}")
+        if not (1 <= self.top_k <= 60):
+            errs.append("top_k must be 1..60")
         if len(self.inputs) + len(self.control_inputs) > 16:
             errs.append("at most 16 prompts per probe")
-        if not (1 <= self.top_k <= 100):
-            errs.append("top_k must be 1..100")
-        for l in (self.layers or []):
-            if not (0 <= int(l) < N_LAYERS):
-                errs.append(f"layer {l} out of range")
+        if self.mode == "contrast" and not (self.inputs and self.control_inputs):
+            errs.append("contrast needs failure prompts (fail1..) and control prompts (ctrl1..)")
+        if self.mode == "activations" and not self.inputs:
+            errs.append("activations needs at least one failure prompt (fail1)")
+        if self.mode == "logit_lens":
+            if not self.neurons or len(self.neurons) > 8:
+                errs.append("logit_lens needs 1-8 neurons like 14:8949")
+            for n in self.neurons:
+                try:
+                    layer, neuron = (int(x) for x in n.split(":"))
+                    if not (0 <= layer < N_LAYERS) or neuron < 0:
+                        errs.append(f"neuron {n} out of range")
+                except ValueError:
+                    errs.append(f"bad neuron address {n!r} (use layer:neuron)")
+        if self.mode in ("search", "concept") and not (1 <= len(self.words) <= 4):
+            errs.append(f"{self.mode} needs 1-4 words/phrases")
+        if self.mode == "hub":
+            if len(self.neurons) != 1:
+                errs.append("hub needs exactly one neuron like 14:8949")
+            else:
+                try:
+                    layer, neuron = (int(x) for x in self.neurons[0].split(":"))
+                    if not (0 <= layer < N_LAYERS) or neuron < 0:
+                        errs.append("neuron out of range")
+                except ValueError:
+                    errs.append("bad neuron address (use layer:neuron)")
+        if self.layers and not re.fullmatch(r"\d{1,2}-\d{1,2}", self.layers):
+            errs.append("layers must look like 4-23")
         return errs
 
     @staticmethod
     def from_dict(d: Dict[str, Any]) -> "ProbeRequest":
         return ProbeRequest(
-            mode=d.get("mode", "activations"),
-            inputs=[str(x) for x in d.get("inputs", [])],
-            control_inputs=[str(x) for x in d.get("control_inputs", [])],
-            layers=[int(x) for x in d["layers"]] if d.get("layers") else None,
+            mode=d.get("mode", "contrast"),
+            inputs=[clean_prompt(x) for x in d.get("inputs", [])],
+            control_inputs=[clean_prompt(x) for x in d.get("control_inputs", [])],
+            neurons=[str(x) for x in d.get("neurons", [])],
+            words=[str(x).strip() for x in d.get("words", []) if str(x).strip()],
+            layers=str(d.get("layers", "")),
             top_k=int(d.get("top_k", 20)),
         )
 
@@ -163,12 +200,13 @@ def alts_to_regex(alts: str) -> str:
 
 
 def probe_from_attrs(attrs: Dict[str, str]) -> "ProbeRequest":
-    layers = attrs.get("layers")
     return ProbeRequest(
-        mode=attrs.get("mode", "activations"),
-        inputs=_numbered(attrs, "fail"),
-        control_inputs=_numbered(attrs, "ctrl"),
-        layers=[int(x) for x in layers.split(",") if x.strip()] if layers else None,
+        mode=attrs.get("mode", "contrast"),
+        inputs=[clean_prompt(x) for x in _numbered(attrs, "fail")],
+        control_inputs=[clean_prompt(x) for x in _numbered(attrs, "ctrl")],
+        neurons=[x.strip() for x in attrs.get("neurons", "").split(";") if x.strip()],
+        words=[x.strip() for x in attrs.get("words", "").split("|") if x.strip()],
+        layers=attrs.get("layers", ""),
         top_k=int(attrs.get("top_k", 20)),
     )
 
